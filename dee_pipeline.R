@@ -112,7 +112,9 @@ dee.pipeline<-function(SRR){
   system(COMMAND)
 }
 #lapply(runs_todo,dee.pipeline)
-mclapply(runs_todo,dee.pipeline,mc.cores=3)
+#mclapply(runs_todo,dee.pipeline,mc.cores=3)
+mclapply(runs_todo[1001:1105],dee.pipeline,mc.cores=1)
+
 
 
 

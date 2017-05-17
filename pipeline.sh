@@ -15,6 +15,7 @@ ORG=$2
 
 #ENVIRONMENT VARS
 PIPELINE=$0
+PIPELINE_MD5=$(md5sum $0 | cut -d ' ' -f1)
 CODE_DIR=$(dirname $PIPELINE)
 DEE_DIR=$(dirname $CODE_DIR)
 SW_DIR=$DEE_DIR/sw
@@ -53,7 +54,6 @@ NCBI_REFG=$REF_DIR/$ORG/ncbi/star
 # newly made gtf works properly
 NCBI_GTF=$(readlink -f $(find $REF_DIR/$ORG/ncbi/ -maxdepth 1 | grep .gtf$) )
 NCBI_REFT=$(readlink -f $(find $REF_DIR/$ORG/ncbi/kallisto/ -maxdepth 1 | grep fna.idx$) )
-
 
 #LIMITS
 DISKLIM=32000000
@@ -113,22 +113,25 @@ KALLISTO_STATUS=$SW_DIR/kallisto
 ##########################################################################
 cd $DATA_DIR
 mkdir $SRR ; cp $0 $SRR ; cd $SRR
-if [ -f ../$SRR.sra ] ; then mv ../$SRR.sra . ; fi
-ATTEMPTS=$SRR.attempts.txt
-
+#if [ -f ../$SRR.sra ] ; then mv ../$SRR.sra . ; fi
 echo "Starting $PIPELINE $CFG $URL
   current disk space = $DISK
-  free memory = $MEM " | tee $SRR.log
+  free memory = $MEM " | tee -a $SRR.log
 
 ##########################################################################
 # Check number of attempts
 ##########################################################################
+ATTEMPTS=$SRR.attempts.txt
+
+
 if [ -r $SRR.attempts.txt ] ; then
   NUM_ATTEMPTS=$(wc -l < $ATTEMPTS)
   if [ $NUM_ATTEMPTS -gt "2" ] ; then
     echo $SRR has already been tried 3 times, skipping ; exit
   fi
 fi
+DATE=`date +%Y-%m-%d:%H:%M:%S`
+echo $PIPELINE $PIPELINE_MD5 $DATE >> $ATTEMPTS
 
 ##########################################################################
 #Initial disk space check
@@ -201,6 +204,9 @@ else
   echo Unable to determine if colorspace or basespace. Quitting. | tee -a $SRR.log
 fi
 
+#quality encoding ie Illumina1.9
+QUALITY_ENCODING=$(grep -wm1 ^Encoding $SRR.log | cut -f2 | tr -d ' ')
+
 #diagnose read length then
 #save entire fastq data to log and delete fastqc zip file and html report
 FQ1_LEN=$(unzip -p ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc/fastqc_data.txt \
@@ -208,6 +214,14 @@ FQ1_LEN=$(unzip -p ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc/fastqc_data.txt \
 echo $SRR read1 length is $FQ1_LEN nt | tee -a $SRR.log
 unzip -p ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc/fastqc_data.txt | tee -a $SRR.log
 rm ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc.html
+
+FQ1_MIN_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | sort -g | head -1)
+FQ1_MEDIAN_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | numaverage -M)
+FQ1_MAX_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | sort -gr | head -1)
+
+FQ2_MIN_LEN=NULL
+FQ2_MEDIAN_LEN=NULL
+FQ2_MAX_LEN=NULL
 
 if [ $RDS == "PE" ] ; then
   FQ2=$(ls  | grep $SRR | grep fastq$ | sed -n 2p)
@@ -218,6 +232,10 @@ if [ $RDS == "PE" ] ; then
   echo $SRR read2 length is $FQ2_LEN nt | tee -a $SRR.log
   unzip -p ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc/fastqc_data.txt | tee -a $SRR.log
   rm ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc.html
+
+  FQ2_MIN_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | sort -g | head -1)
+  FQ2_MEDIAN_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | numaverage -M)
+  FQ2_MAX_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | sort -gr | head -1)
 fi
 
 ##########################################################################
@@ -238,11 +256,11 @@ if [ $CSPACE == "FALSE" ] ; then
   $PFQDUMP --threads 8 --outdir . --split-files --defline-qual + -s ${SRR}.sra
 fi
 
-NUMRDS=$(sed -n '2~4p' $FQ1 | wc -l)
-echo $SRR number of reads is $NUMRDS | tee -a $SRR.log
+FILESIZE=$(du -s $FQ1 | cut -f1)
+echo $SRR file size $FILESIZE | tee -a $SRR.log
 rm ${SRR}.sra
 
-if [ "$NUMRDS" -eq 0 ] ; then
+if [ "$FILESIZE" -eq 0 ] ; then
   echo $SRR has no reads. Aborting | tee -a $ATTEMPTS ; rm $FQ ; exit
 fi
 
@@ -252,28 +270,35 @@ echo $SRR completed basic pipeline successfully | tee -a $SRR.log
 echo $SRR Quality trimming
 ##########################################################################
 if [ $RDS == "SE" ] ; then
-  skewer -l 18 -q 10 -t $THREADS -o $SRR $FQ1
+  $SKEWER -l 18 -q 10 -k inf -t $THREADS -o $SRR $FQ1
   rm $FQ1
   FQ1=${SRR}-trimmed.fastq
 
 elif [ $RDS == "PE" ] ; then
-  skewer -l 18 -q 10 -t $THREADS -o $SRR $FQ1 $FQ2
+  $SKEWER -l 18 -q 10 -k inf -t $THREADS -o $SRR $FQ1 $FQ2
   rm $FQ1 $FQ2
   FQ1=${SRR}-trimmed-pair1.fastq
   FQ2=${SRR}-trimmed-pair2.fastq
 fi
 
-#append the skewer log and exit if there are no reads passing QC
-READCNT=$(wc -l < $FQ1 )
+# check to see that the skewer log was created - if not then there is a problem
+if [ ! -f ${SRR}-trimmed.log ] ; then
+  echo Skewer failed. Quitting | tee -a $SRR.log
+  rm $SRR.sra *fastq
+  exit
+fi
+
+# get read counts and append skewer log and exit if there are no reads passing QC
+READ_CNT_TOTAL=$(grep 'processed; of these:' ${SRR}-trimmed.log | cut -d ' ' -f1)
+READ_CNT_AVAIL=$(grep 'available; of these:' ${SRR}-trimmed.log | cut -d ' ' -f1)
 cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
-if [ $READCNT -eq "0" ] ; then
+if [ $READ_CNT_AVAIL -eq "0" ] ; then
   echo No reads passed QC. Quitting | tee -a $SRR.log
   rm $SRR.sra
   exit
 else
-  echo $READCNT reads passed initial QC | tee -a $SRR.log
+  echo $READ_CNT_AVAIL reads passed initial QC | tee -a $SRR.log
 fi
-
 
 ##########################################################################
 echo $SRR adapter diagnosis
@@ -307,7 +332,9 @@ if [ $RDS == "SE" ] ; then
         #shuffling the fq file to remove any tile effects
         paste - - - - < $FQ1 | shuf | tr '\t' '\n' > ${SRR}.fastq
         CLIP_LINE_NUM=$(echo $DENSITY $ADAPTER_THRESHOLD $READCNT | awk '{printf "%.0f\n", ($1-$2)/$1*$3*4}')
-        head -$CLIP_LINE_NUM ${SRR}.fastq | skewer -l 18 -t $THREADS -x $ADAPTER -o $SRR -
+        head -$CLIP_LINE_NUM ${SRR}.fastq | $SKEWER -l 18 -t $THREADS -x $ADAPTER -o $SRR -
+        READ_CNT_AVAIL=$(grep 'available; of these:' ${SRR}-trimmed.log | cut -d ' ' -f1)
+#FQ1 read len min max median
         cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
         CLIP_LINE_NUM1=$((CLIP_LINE_NUM+1))
         tail -n+$CLIP_LINE_NUM1 ${SRR}.fastq >> ${SRR}-trimmed.fastq && rm ${SRR}.fastq
@@ -347,7 +374,8 @@ elif [ $RDS == "PE" ] ; then
         CLIP_LINE_NUM=$(echo $DENSITY $ADAPTER_THRESHOLD $READCNT | awk '{printf "%.0f\n", ($1-$2)/$1*$3*4}')
         head -$CLIP_LINE_NUM ${SRR}_1.tmp.fastq > ${SRR}_1.fastq &
         head -$CLIP_LINE_NUM ${SRR}_2.tmp.fastq > ${SRR}_2.fastq ; wait
-        skewer -l 18 -t $THREADS -x $ADAPTER1 -y $ADAPTER2 -o $SRR ${SRR}_1.fastq ${SRR}_2.fastq
+        $SKEWER -l 18 -t $THREADS -x $ADAPTER1 -y $ADAPTER2 -o $SRR ${SRR}_1.fastq ${SRR}_2.fastq
+        READ_CNT_AVAIL=$(grep 'available; of these:' ${SRR}-trimmed.log | cut -d ' ' -f1)
         cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
         CLIP_LINE_NUM1=$((CLIP_LINE_NUM+1))
         tail -n+$CLIP_LINE_NUM1 ${SRR}_1.tmp.fastq >> ${SRR}-trimmed-pair1.fastq && rm ${SRR}_1.tmp.fastq
@@ -365,7 +393,9 @@ elif [ $RDS == "PE" ] ; then
 #  FQ2=${SRR}-trimmed-pair2.fastq
 fi
 
-#append the skewer log and exit if there are no reads passing QC
+#QcPassRate
+QC_PASS_RATE=$(echo $READ_CNT_AVAIL $READ_CNT_TOTAL | awk '{print $1/$2*100"%"}')
+
 FQSIZE=$(du -s $FQ1 | cut -f1)
 cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
 if [ $FQSIZE -eq "0" ] ; then
@@ -400,6 +430,10 @@ elif [ $RDS == "PE" ] ; then
   $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
   --outSAMtype None --genomeDir $ENS_REFG --sjdbGTFfile $ENS_GTF --readFilesIn=$FQ1 $FQ2
 fi
+
+#now grab some qc info from the star alignment for later
+UNIQ_MAPPED_READS=$(grep 'Uniquely mapped reads number' Log.final.out | awk '{print $NF}')
+
 cat Log.final.out | tee -a $SRR.log && rm Log.final.out Log.out Log.progress.out SJ.out.tab
 head -4 ReadsPerGene.out.tab | tee -a $SRR.log
 mv ReadsPerGene.out.tab $SRR.se.tsv
@@ -434,18 +468,32 @@ NegativeStrandReadsAssigned:$NEG_STRAND_CNT" | tee -a $SRR.log
 
 if [ $POS_STRAND_CNT -ge "$((NEG_STRAND_CNT*5))" ] ; then
   STRAND=1
+  STRANDED=PositiveStrand
   KALLISTO_STRAND_PARAMETER='--fr-stranded'
   echo "Dataset is classified positive stranded" | tee -a $SRR.log
 elif [ $NEG_STRAND_CNT -ge "$((POS_STRAND_CNT*5))" ] ; then
   STRAND=2
+  STRANDED=NegativeStrand
   KALLISTO_STRAND_PARAMETER='--rf-stranded'
   echo "Dataset is classified negative stranded" | tee -a $SRR.log
 else
   STRAND=0
+  STRANDED=Unstranded
   KALLISTO_STRAND_PARAMETER=''
   echo "Dataset is classified unstranded" | tee -a $SRR.log
 fi
 echo KALLISTO_STRAND_PARAMETER=$KALLISTO_STRAND_PARAMETER
+
+#now grab some qc info from the star alignment for later
+CUTCOL=$((STRAND+2))
+UNMAPPED_CNT=$(cut -f$CUTCOL $SRR.se.tsv | head -1)
+MULTIMAPPED_CNT=$(cut -f$CUTCOL $SRR.se.tsv | head -2 | tail -1)
+NOFEATURE_CNT=$(cut -f$CUTCOL $SRR.se.tsv | head -3 | tail -1)
+AMBIGUOUS_CNT=$(cut -f$CUTCOL $SRR.se.tsv | head -4 | tail -1)
+ASSIGNED_CNT=$(cut -f$CUTCOL $SRR.se.tsv | tail -n +5 | numsum)
+UNIQ_MAP_RATE=$(echo $UNIQ_MAPPED_READS $READ_CNT_AVAIL | awk '{print $1/$2*100"%"}')
+ASSIGNED_RATE=$(echo $ASSIGNED_CNT $READ_CNT_AVAIL | awk '{print $1/$2*100"%"}')
+
 #Now cut out columns to leave us with only the desired strand info
 CUTCOL=$((STRAND+2))
 cut -f1,$CUTCOL $SRR.sn.tsv | tail -n +5 > $SRR.sn.tsv.tmp && mv $SRR.sn.tsv.tmp $SRR.sn.tsv
@@ -475,7 +523,7 @@ echo $SRR running kallisto now
 ##########################################################################
 #Kallisto Ensembl
 if [ $RDS == "SE" ] ; then
-  echo $SRR Starting Kallisto single end mapping to ensembl reference transcriptome. kmer=$KMER
+  echo $SRR Starting Kallisto single end mapping to ensembl reference transcriptome. kmer=$KMER | tee -a $SRR.log
 ############################################
 # TODO need intelligent frag size specification
 ###########################################
@@ -483,27 +531,31 @@ if [ $RDS == "SE" ] ; then
   | tee -a $SRR.log && mv abundance.tsv $SRR.ke.tsv
   rm abundance.h5
 elif [ $RDS == "PE" ] ; then
-  echo $SRR Starting Kallisto paired end mapping to ensembl reference transcriptome
+  echo $SRR Starting Kallisto paired end mapping to ensembl reference transcriptome | tee -a $SRR.log
   $KALLISTO quant $KALLISTO_STRAND_PARAMETER -t $THREADS -o . -i $ENS_REFT $FQ1 $FQ2 2>&1 \
   | tee -a $SRR.log && mv abundance.tsv $SRR.ke.tsv
   rm abundance.h5
 fi
 
+# collect qc data
+PSEUDOMAPPED_CNT=$(grep 'reads pseudoaligned' $SRR.log | awk '{print $(NF-2)}' | tr -d ',')
+PSEUDOMAP_RATE=$(echo $PSEUDOMAPPED_CNT $READ_CNT_AVAIL | awk '{print $1/$2*100"%"}')
+
 #Kallisto NCBI
 if [ $RDS == "SE" ] ; then
-  echo $SRR Starting single end mapping to NCBI reference transcriptome
-  $KALLISTO quant $KALLISTO_STRAND_PARAMETER --single -l 25 -s 8 -t $THREADS -o . -i $NCBI_REFT $FQ1 2>&1 \
+  echo $SRR Starting single end mapping to NCBI reference transcriptome | tee -a $SRR.log
+  $KALLISTO quant $KALLISTO_STRAND_PARAMETER --single -l 100 -s 20 -t $THREADS -o . -i $NCBI_REFT $FQ1 2>&1 \
   | tee -a $SRR.log && mv abundance.tsv $SRR.kn.tsv
   rm abundance.h5
 elif [ $RDS == "PE" ] ; then
-  echo $SRR Starting Kallisto paired end mapping to NCBI reference transcriptome
+  echo $SRR Starting Kallisto paired end mapping to NCBI reference transcriptome | tee -a $SRR.log
   $KALLISTO quant $KALLISTO_STRAND_PARAMETER -t $THREADS -o . -i $NCBI_REFT $FQ1 $FQ2 2>&1 \
   | tee -a $SRR.log && mv abundance.tsv $SRR.kn.tsv
   rm abundance.h5
 fi
 
 # Tidy up files
-rm -rf run_info.json ${SRR}-trimmed.fastq _STARgenome
+rm -rf run_info.json ${SRR}-trimmed*.fastq _STARgenome
 
 # Check tsv files
 wc -l *tsv | tee -a $SRR.log
@@ -523,5 +575,33 @@ if [ $SN_NR -eq $SN_CNT -a $SE_NR -eq $SE_CNT -a $KN_NR -eq $((KN_CNT+1)) -a $KE
   touch $SRR.finished
 else
   echo "$SRR An error occurred. Count file line numbers don't match the reference." | tee -a $SRR.log
+  exit
 fi
-exit
+
+## Collect QC information
+
+## Output .qc file
+echo "SequenceFormat:$RDS
+QualityEncoding:$QUALITY_ENCODING
+Read1MinimumLength:$FQ1_MIN_LEN
+Read1MedianLength:$FQ1_MEDIAN_LEN
+Read1MaxLength:$FQ1_MAX_LEN
+Read2MinimumLength:$FQ2_MIN_LEN
+Read2MedianLength:$FQ2_MEDIAN_LEN
+Read2MaxLength:$FQ2_MAX_LEN
+NumReadsTotal:$READ_CNT_TOTAL
+NumReadsQcPass:$READ_CNT_AVAIL
+QcPassRate:$QC_PASS_RATE
+STAR_UniqMappedReads:$UNIQ_MAPPED_READS
+STAR_Strandedness:$STRANDED
+STAR_UnmappedReads:$UNMAPPED_CNT
+STAR_MultiMappedReads:$MULTIMAPPED_CNT
+STAR_NoFeatureReads:$NOFEATURE_CNT
+STAR_AmbiguousReads:$AMBIGUOUS_CNT
+STAR_AssignedReads:$ASSIGNED_CNT
+STAR_UniqMapRate:$UNIQ_MAP_RATE
+STAR_AssignRate:$ASSIGNED_RATE
+Kallisto_MappedReads:$PSEUDOMAPPED_CNT
+Kallisto_MapRate:$PSEUDOMAP_RATE
+QC_SUMMARY:${QC_SUMMARY}${REASON}" > $SRR.qc
+
