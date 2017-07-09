@@ -1,7 +1,13 @@
 #!/bin/bash
-set -x
 #sra2mx
 #Copyright Mark Ziemann 2015 to 2017 mark.ziemann@gmail.com
+
+#logging all commands
+set -x
+
+#allow aliasing and define exit
+shopt -s expand_aliases
+alias exit='rm *fastq *.sra *tsv ; exit'
 
 #JOB
 ##SRR to process
@@ -12,6 +18,8 @@ SRR=$(basename $SRR_FILE .sra)
 echo $SRR
 ##ORGANISM
 ORG=$2
+
+#exec 2>> $SRR.log ; exec >&1
 
 #ENVIRONMENT VARS
 PIPELINE=$0
@@ -48,12 +56,6 @@ ENS_REFG=$REF_DIR/$ORG/ensembl/star
 ENS_GTF=$(readlink -f $(find $REF_DIR/$ORG/ensembl/ -maxdepth 1 | grep .gtf$) )
 ENS_REFT=$(readlink -f $(find $REF_DIR/$ORG/ensembl/kallisto/ -maxdepth 1 | grep fa.idx$) )
 ENS_REFT_BT2=$(readlink -f $(find $REF_DIR/$ORG/ensembl/bowtie2/ -maxdepth 1 | grep .fa$) )
-NCBI_REFG=$REF_DIR/$ORG/ncbi/star
-# The ~/bfx/dee2/ref/dmelanogaster/ncbi/fix_gff.sh script should be used to convert gff into something
-# that STAR can understand but it must be checked that nonunique genenames dont exist and the
-# newly made gtf works properly
-NCBI_GTF=$(readlink -f $(find $REF_DIR/$ORG/ncbi/ -maxdepth 1 | grep .gtf$) )
-NCBI_REFT=$(readlink -f $(find $REF_DIR/$ORG/ncbi/kallisto/ -maxdepth 1 | grep fna.idx$) )
 
 #LIMITS
 DISKLIM=32000000
@@ -103,7 +105,7 @@ FEATURECOUNTS_STATUS=$SW_DIR/featureCounts
 KALLISTO_STATUS=$SW_DIR/kallisto
 
 #check all the reference sequences exist
-#if [[ ! -r $ENS_REFG || ! -r $ENS_GTF || ! -r $ENS_REFT || ! -r $NCBI_REFG || ! -r $NCBI_GTF || ! -r $NCBI_REFT ]] ; then
+#if [[ ! -r $ENS_REFG || ! -r $ENS_GTF || ! -r $ENS_REFT ] ; then
 #  echo One or more of the reference fasta or annotation files is missing or not readable. Quitting | tee -a $SRR.log
 #  exit
 #fi
@@ -123,11 +125,11 @@ echo "Starting $PIPELINE $CFG $URL
 ##########################################################################
 ATTEMPTS=$SRR.attempts.txt
 
-
 if [ -r $SRR.attempts.txt ] ; then
   NUM_ATTEMPTS=$(wc -l < $ATTEMPTS)
   if [ $NUM_ATTEMPTS -gt "2" ] ; then
-    echo $SRR has already been tried 3 times, skipping ; exit
+    echo $SRR has already been tried 3 times, skipping
+    exit
   fi
 fi
 DATE=`date +%Y-%m-%d:%H:%M:%S`
@@ -138,7 +140,8 @@ echo $PIPELINE $PIPELINE_MD5 $DATE >> $ATTEMPTS
 ##########################################################################
 DISK=$(df . | awk 'END{print$4}')
 if [ $DISK -lt $DISKLIM ] ; then
-  echo Error low disk space $DISK available $DISKLIM limit ; exit
+  echo Error low disk space $DISK available $DISKLIM limit
+  exit
 fi
 
 ##########################################################################
@@ -167,7 +170,7 @@ if [ $VALIDATE_SRA -eq 4 ] ; then
   echo $SRR.sra file validated | tee -a $SRR.log
 else
   echo $SRR.sra md5sums do not match. Deleting and exiting | tee -a $SRR.log
-  rm $SRR.sra ; exit
+  exit
 fi
 
 ##########################################################################
@@ -284,17 +287,18 @@ fi
 # check to see that the skewer log was created - if not then there is a problem
 if [ ! -f ${SRR}-trimmed.log ] ; then
   echo Skewer failed. Quitting | tee -a $SRR.log
-  rm $SRR.sra *fastq
   exit
 fi
 
 # get read counts and append skewer log and exit if there are no reads passing QC
 READ_CNT_TOTAL=$(grep 'processed; of these:' ${SRR}-trimmed.log | cut -d ' ' -f1)
 READ_CNT_AVAIL=$(grep 'available; of these:' ${SRR}-trimmed.log | cut -d ' ' -f1)
+# here #exit
+if [ -z "$READ_CNT_AVAIL" ] ; then READ_CNT_AVAIL=0 ; fi
+
 cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
 if [ $READ_CNT_AVAIL -eq "0" ] ; then
   echo No reads passed QC. Quitting | tee -a $SRR.log
-  rm $SRR.sra
   exit
 else
   echo $READ_CNT_AVAIL reads passed initial QC | tee -a $SRR.log
@@ -331,9 +335,10 @@ if [ $RDS == "SE" ] ; then
 
         #shuffling the fq file to remove any tile effects
         paste - - - - < $FQ1 | shuf | tr '\t' '\n' > ${SRR}.fastq
-        CLIP_LINE_NUM=$(echo $DENSITY $ADAPTER_THRESHOLD $READCNT | awk '{printf "%.0f\n", ($1-$2)/$1*$3*4}')
+        CLIP_LINE_NUM=$(echo $DENSITY $ADAPTER_THRESHOLD $READ_CNT_AVAIL | awk '{printf "%.0f\n", ($1-$2)/$1*$3*4}' | numround -n 4)
         head -$CLIP_LINE_NUM ${SRR}.fastq | $SKEWER -l 18 -t $THREADS -x $ADAPTER -o $SRR -
         READ_CNT_AVAIL=$(grep 'available; of these:' ${SRR}-trimmed.log | cut -d ' ' -f1)
+        if [ -z "$READ_CNT_AVAIL" ] ; then READ_CNT_AVAIL=0 ; fi
 #FQ1 read len min max median
         cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
         CLIP_LINE_NUM1=$((CLIP_LINE_NUM+1))
@@ -354,7 +359,7 @@ elif [ $RDS == "PE" ] ; then
 
   MINION_LOG=$FQ2.minion.log
   $MINION search-adapter -i $FQ2 > $MINION_LOG
-  ADAPTER1=$(head $MINION_LOG | grep -m1 sequence= | cut -d '=' -f2)
+  ADAPTER2=$(head $MINION_LOG | grep -m1 sequence= | cut -d '=' -f2)
   DENSITY2=$(head $MINION_LOG | grep -m1 'sequence-density=' | cut -d '=' -f2 | numround -c)
   cat $MINION_LOG | tee -a $SRR.log && rm $MINION_LOG
 
@@ -369,13 +374,14 @@ elif [ $RDS == "PE" ] ; then
 
       if [ $ADAPTER1_REF_CHECK -eq "0" -a $ADAPTER2_REF_CHECK -eq "0" ] ; then
         echo Adapter seq not found in reference. Now shuffling file before clipping | tee -a $SRR.log
-        paste $FQ1 $FQ2 | paste - - - - | shuf | awk -F'\t' '{OFS="\n"; print $1,$3,$5,$7 > "R1.fastq"; print $2,$4,$6,$8 > "R2.fastq"}'
+        paste <(cut -d ' ' -f1 $FQ1) <(cut -d ' ' -f1 $FQ2) | paste - - - - | shuf | awk -F'\t' '{OFS="\n"; print $1,$3,$5,$7 > "R1.fastq"; print $2,$4,$6,$8 > "R2.fastq"}'
         mv R1.fastq ${SRR}_1.tmp.fastq ; mv R2.fastq ${SRR}_2.tmp.fastq
-        CLIP_LINE_NUM=$(echo $DENSITY $ADAPTER_THRESHOLD $READCNT | awk '{printf "%.0f\n", ($1-$2)/$1*$3*4}')
+        CLIP_LINE_NUM=$(echo $DENSITY $ADAPTER_THRESHOLD $READ_CNT_AVAIL | awk '{printf "%.0f\n", ($1-$2)/$1*$3*4}' | numround -n 4)
         head -$CLIP_LINE_NUM ${SRR}_1.tmp.fastq > ${SRR}_1.fastq &
         head -$CLIP_LINE_NUM ${SRR}_2.tmp.fastq > ${SRR}_2.fastq ; wait
         $SKEWER -l 18 -t $THREADS -x $ADAPTER1 -y $ADAPTER2 -o $SRR ${SRR}_1.fastq ${SRR}_2.fastq
         READ_CNT_AVAIL=$(grep 'available; of these:' ${SRR}-trimmed.log | cut -d ' ' -f1)
+        if [ -z "$READ_CNT_AVAIL" ] ; then READ_CNT_AVAIL=0 ; fi
         cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
         CLIP_LINE_NUM1=$((CLIP_LINE_NUM+1))
         tail -n+$CLIP_LINE_NUM1 ${SRR}_1.tmp.fastq >> ${SRR}-trimmed-pair1.fastq && rm ${SRR}_1.tmp.fastq
@@ -387,20 +393,15 @@ elif [ $RDS == "PE" ] ; then
       fi
     fi
   fi
-#  skewer -l 18 -q 10 -t $THREADS -o $SRR $FQ1 $FQ2
-#  rm $FQ1 $FQ2
-#  FQ1=${SRR}-trimmed-pair1.fastq
-#  FQ2=${SRR}-trimmed-pair2.fastq
 fi
 
 #QcPassRate
 QC_PASS_RATE=$(echo $READ_CNT_AVAIL $READ_CNT_TOTAL | awk '{print $1/$2*100"%"}')
 
 FQSIZE=$(du -s $FQ1 | cut -f1)
-cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
+#cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
 if [ $FQSIZE -eq "0" ] ; then
   echo No reads passed QC. Quitting | tee -a $SRR.log
-  rm  $SRR.sra
   exit
 fi
 
@@ -424,11 +425,13 @@ echo $SRR Starting mapping phase
 # The ReadsPerGene.out.tab file contains count information
 echo $SRR starting STAR mapping to Ensembl genome | tee -a $SRR.log
 if [ $RDS == "SE" ] ; then
-  $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
-  --outSAMtype None --genomeDir $ENS_REFG --sjdbGTFfile $ENS_GTF --readFilesIn=$FQ1
+  head $FQ1 ; tail $FQ1
+  $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
+  --outSAMtype None --genomeDir $ENS_REFG --readFilesIn=$FQ1
 elif [ $RDS == "PE" ] ; then
-  $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
-  --outSAMtype None --genomeDir $ENS_REFG --sjdbGTFfile $ENS_GTF --readFilesIn=$FQ1 $FQ2
+  head $FQ1 $FQ2 ; tail $FQ1 $FQ2
+  $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
+  --outSAMtype None --genomeDir $ENS_REFG --readFilesIn=$FQ1 $FQ2
 fi
 
 #now grab some qc info from the star alignment for later
@@ -437,22 +440,6 @@ UNIQ_MAPPED_READS=$(grep 'Uniquely mapped reads number' Log.final.out | awk '{pr
 cat Log.final.out | tee -a $SRR.log && rm Log.final.out Log.out Log.progress.out SJ.out.tab
 head -4 ReadsPerGene.out.tab | tee -a $SRR.log
 mv ReadsPerGene.out.tab $SRR.se.tsv
-
-# Will need to investigate the compatibility of NCBI gff with STAR quantMode
-# the fix_gff.sh script will fix the gff into something STAR can use
-echo $SRR starting STAR mapping to NCBI genome | tee -a $SRR.log
-if [ $RDS == "SE" ] ; then
-  $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
-  --outSAMtype None --genomeDir $NCBI_REFG --sjdbGTFfile $NCBI_GTF \
-  --sjdbGTFtagExonParentTranscript gene_name --readFilesIn=$FQ1
-elif [ $RDS == "PE" ] ; then
-  $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
-  --outSAMtype None --genomeDir $NCBI_REFG --sjdbGTFfile $NCBI_GTF \
-  --sjdbGTFtagExonParentTranscript gene_name --readFilesIn=$FQ1 $FQ2
-fi
-cat Log.final.out | tee -a $SRR.log && rm Log.final.out Log.out Log.progress.out SJ.out.tab
-head -4 ReadsPerGene.out.tab | tee -a $SRR.log
-mv ReadsPerGene.out.tab $SRR.sn.tsv
 
 ##########################################################################
 echo $SRR diagnose strandedness now
@@ -496,7 +483,6 @@ ASSIGNED_RATE=$(echo $ASSIGNED_CNT $READ_CNT_AVAIL | awk '{print $1/$2*100"%"}')
 
 #Now cut out columns to leave us with only the desired strand info
 CUTCOL=$((STRAND+2))
-cut -f1,$CUTCOL $SRR.sn.tsv | tail -n +5 > $SRR.sn.tsv.tmp && mv $SRR.sn.tsv.tmp $SRR.sn.tsv
 cut -f1,$CUTCOL $SRR.se.tsv | tail -n +5 > $SRR.se.tsv.tmp && mv $SRR.se.tsv.tmp $SRR.se.tsv
 
 ##########################################################################
@@ -541,37 +527,27 @@ fi
 PSEUDOMAPPED_CNT=$(grep 'reads pseudoaligned' $SRR.log | awk '{print $(NF-2)}' | tr -d ',')
 PSEUDOMAP_RATE=$(echo $PSEUDOMAPPED_CNT $READ_CNT_AVAIL | awk '{print $1/$2*100"%"}')
 
-#Kallisto NCBI
-if [ $RDS == "SE" ] ; then
-  echo $SRR Starting single end mapping to NCBI reference transcriptome | tee -a $SRR.log
-  $KALLISTO quant $KALLISTO_STRAND_PARAMETER --single -l 100 -s 20 -t $THREADS -o . -i $NCBI_REFT $FQ1 2>&1 \
-  | tee -a $SRR.log && mv abundance.tsv $SRR.kn.tsv
-  rm abundance.h5
-elif [ $RDS == "PE" ] ; then
-  echo $SRR Starting Kallisto paired end mapping to NCBI reference transcriptome | tee -a $SRR.log
-  $KALLISTO quant $KALLISTO_STRAND_PARAMETER -t $THREADS -o . -i $NCBI_REFT $FQ1 $FQ2 2>&1 \
-  | tee -a $SRR.log && mv abundance.tsv $SRR.kn.tsv
-  rm abundance.h5
-fi
-
 # Tidy up files
 rm -rf run_info.json ${SRR}-trimmed*.fastq _STARgenome
 
 # Check tsv files
 wc -l *tsv | tee -a $SRR.log
+head *tsv | tee -a $SRR.log
 # Check that tsv files have the right number of entries
 
-SN_NR=$(wc -l < $SRR.sn.tsv)
 SE_NR=$(wc -l < $SRR.se.tsv)
-KN_NR=$(wc -l < $SRR.kn.tsv)
 KE_NR=$(wc -l < $SRR.ke.tsv)
-SN_CNT=$(cat $NCBI_GTF.cnt)
 SE_CNT=$(cat $ENS_GTF.cnt)
-KN_CNT=$(cat $NCBI_REFT.cnt)
 KE_CNT=$(cat $ENS_REFT.cnt)
 
-if [ $SN_NR -eq $SN_CNT -a $SE_NR -eq $SE_CNT -a $KN_NR -eq $((KN_CNT+1)) -a $KE_NR -eq $((KE_CNT+1)) ] ; then
+if [ $SE_NR -eq $SE_CNT -a $KE_NR -eq $((KE_CNT+1)) ] ; then
+
+  #now place header on the file for later
   echo $SRR completed mapping pipeline successfully | tee -a $SRR.log
+  sed -e "1i${SRR}" $SRR.se.tsv > tmp ; mv tmp  $SRR.se.tsv
+  sed -e "1i${SRR}_target_id\t${SRR}_length\t${SRR}_eff_length\t${SRR}_est_counts\t${SRR}_tpm" $SRR.ke.tsv | sed 2d > tmp ; mv tmp $SRR.ke.tsv
+
+  # gzip *tsv
   touch $SRR.finished
 else
   echo "$SRR An error occurred. Count file line numbers don't match the reference." | tee -a $SRR.log

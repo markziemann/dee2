@@ -29,6 +29,7 @@ CODEWD=getwd()
 PIPELINE=normalizePath("pipeline.sh")
 DATAWD=paste(normalizePath("../data/"),org,sep="/")
 SRADBWD=normalizePath("../sradb/")
+MXDIR=normalizePath("../mx/")
 setwd(SRADBWD)
 
 sqlfile <- 'SRAmetadb.sqlite'
@@ -69,6 +70,10 @@ finished_files<-list.files(path = ".", pattern = "finished" , full.names = FALSE
 runs_done<-basename(as.character(strsplit(finished_files,".finished")))
 runs_todo<-setdiff(runs, runs_done)
 setwd(CODEWD)
+
+print("load star genome in memory")
+LOAD_GENOME=paste("../sw/STAR --genomeLoad LoadAndExit --genomeDir ../ref/",org,"/ensembl/star",sep="")
+system(LOAD_GENOME)
 
 ##check system df disk usage in while loop
 ##start pipelines
@@ -112,75 +117,74 @@ dee.pipeline<-function(SRR){
   system(COMMAND)
 }
 #lapply(runs_todo,dee.pipeline)
-#mclapply(runs_todo,dee.pipeline,mc.cores=3)
-mclapply(runs_todo[1001:1105],dee.pipeline,mc.cores=1)
+mclapply(runs_todo[100:199],dee.pipeline,mc.cores=2)
+#mclapply(runs_todo[1001:1105],dee.pipeline,mc.cores=3)
+
+setwd(DATAWD)
+
+print("clear star genome from memory")
+CLEAR_RAM=paste("../../sw/STAR --genomeLoad Remove --genomeDir ../../ref/",org,"/ensembl/star",sep="")
+system(CLEAR_RAM)
+
+#define read.tsv
+read.tsv<-function(file, header = TRUE, sep = "\t", quote = "\"", dec = ".", fill = TRUE, comment.char = "", ...){
+read.table(file = file, header = header, sep = sep, quote = quote, dec = dec, fill = fill, row.names=1, comment.char = comment.char, ...)}
 
 
+print("generate a list of se tsv files to import and merge")
+##HERE
+filterempty<-function(file){CNT=length(readLines(file));if(CNT>0){print(file)}}
+
+se_list<-list.files(path = ".", pattern = "se.tsv" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
+se_list<-as.character(mclapply(se_list,filterempty))
+se<-do.call("cbind", lapply(se_list, read.tsv))
+print("se list finished OK")
+
+#sn_list<-list.files(path = ".", pattern = "sn.tsv" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
+#sn_list<-as.character(mclapply(sn_list,filterempty))
+#sn<-do.call("cbind", lapply(sn_list, read.tsv))
+#print("sn list finished OK")
+
+ke_list<-list.files(path = ".", pattern = "ke.tsv" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
+ke<-do.call("cbind", lapply(ke_list, read.tsv))
+COLS=paste(grep("_est_counts", names(ke), value = TRUE))
+ke_counts<-ke[,COLS]
+COLS=NULL
+COLS=paste(grep("_tpm", names(ke), value = TRUE))
+ke_tpm<-ke[,COLS]
+print("ke list finished OK")
+
+#kn_list<-list.files(path = ".", pattern = "kn.tsv" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
+#kn<-do.call("cbind", lapply(kn_list, read.tsv))
+#COLS=paste(grep("_est_counts", names(kn), value = TRUE))
+#kn_counts<-kn[,COLS]
+#COLS=NULL
+#COLS=paste(grep("_tpm", names(kn), value = TRUE))
+#kn_tpm<-kn[,COLS]
+#print("kn list finished OK")
+
+print("writing SE mx")
+OUT=paste(MXDIR,"/",org,"_se.tsv",sep="")
+write.table(se,file=OUT,sep="\t",quote=F,row.names=T)
+
+#print("writing SN mx")
+#OUT=paste(MXDIR,"/",org,"_sn.tsv",sep="")
+#write.table(sn,file=OUT,sep="\t",quote=F,row.names=T)
+
+print("writing KE counts mx")
+OUT=paste(MXDIR,"/",org,"_ke_counts.tsv",sep="")
+write.table(ke_counts,file=OUT,sep="\t",quote=F,row.names=T)
+
+print("writing KE tpm mx")
+OUT=paste(MXDIR,"/",org,"_ke_tpm.tsv",sep="")
+write.table(ke_tpm,file=OUT,sep="\t",quote=F,row.names=T)
+
+#print("writing KN counts mx")
+#OUT=paste(MXDIR,"/",org,"_kn_counts.tsv",sep="")
+#write.table(kn_counts,file=OUT,sep="\t",quote=F,row.names=T)
+
+#print("writing KN tpm mx")
+#OUT=paste(MXDIR,"/",org,"_kn_tpm.tsv",sep="")
+#write.table(kn_tpm,file=OUT,sep="\t",quote=F,row.names=T)
 
 
-
-
-
-
-
-q()
-#for (SRR in runs_todo[1000:2000]){
-for (SRR in runs_todo){
-  setwd(DATAWD)
-  print(paste("run",SRR))
-  #build SRR path for later pipeline
-  SRR_FILENAME=paste(SRR,".sra",sep="")
-  SRR_PATH=paste(DATAWD,SRR_FILENAME,sep="/")
-
-  #create directory if not present
-  if (!dir.exists(file.path(DATAWD, SRR))) {
-    dir.create(file.path(DATAWD, SRR))
-  }
-
-  #enter srr directory
-  setwd(file.path(DATAWD, SRR))
-
-  #download SRR file if not present and disk space is available
-  if(!file.exists(SRR_PATH)){
-    print(SRR_PATH)
-    DISK_AVAIL=system('df . | awk \'NR=="2"{print $4}\'',intern=TRUE)
-    DISK_LIM=100000000
-    if (DISK_AVAIL>DISK_LIM) {
-      #best to download SRA into the SRR subdirectory
-      ascpSRA ( SRR , sra_con, ascpCMD, fileType = 'sra', destDir = getwd() )
-      #kick off pipeline
-    }
-  }
-  COMMAND_ARGS=paste(SRR_PATH,org)
-  COMMAND=paste(PIPELINE,COMMAND_ARGS)
-  system(COMMAND)
-}
-
-
-
-
-
-q()
-#in_acc<-dm[,5]
-#ascpSRA(in_acc, sra_con, ascpCMD, fileType = 'sra', destDir = getwd())
-
-#this works
-#ascp -QT -l 300m -i  ~/.ascp/aspera-license  anonftp@ftp.ncbi.nlm.nih.gov:sra/sra-instant/reads/ByRun/sra/SRR/SRR536/SRR5366387/SRR5366387.sra .
------BEGIN DSA PRIVATE KEY-----
-MIIBuwIBAAKBgQDkKQHD6m4yIxgjsey6Pny46acZXERsJHy54p/BqXIyYkVOAkEp
-KgvT3qTTNmykWWw4ovOP1+Di1c/2FpYcllcTphkWcS8lA7j012mUEecXavXjPPG0
-i3t5vtB8xLy33kQ3e9v9/Lwh0xcRfua0d5UfFwopBIAXvJAr3B6raps8+QIVALws
-yeqsx3EolCaCVXJf+61ceJppAoGAPoPtEP4yzHG2XtcxCfXab4u9zE6wPz4ePJt0
-UTn3fUvnQmJT7i0KVCRr3g2H2OZMWF12y0jUq8QBuZ2so3CHee7W1VmAdbN7Fxc+
-cyV9nE6zURqAaPyt2bE+rgM1pP6LQUYxgD3xKdv1ZG+kDIDEf6U3onjcKbmA6ckx
-T6GavoACgYEAobapDv5p2foH+cG5K07sIFD9r0RD7uKJnlqjYAXzFc8U76wXKgu6
-WXup2ac0Co+RnZp7Hsa9G+E+iJ6poI9pOR08XTdPly4yDULNST4PwlfrbSFT9FVh
-zkWfpOvAUc8fkQAhZqv/PE6VhFQ8w03Z8GpqXx7b3NvBR+EfIx368KoCFEyfl0vH
-Ta7g6mGwIMXrdTQQ8fZs
------END DSA PRIVATE KEY-----
-
-
-
-
-
-#dbGetQuery(sra_con, "SELECT library_strategy where 'Library Strategy' like RNA-Seq")
