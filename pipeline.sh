@@ -174,14 +174,16 @@ else
 fi
 
 ##########################################################################
-echo $SRR diagnose basespace/colorspace, single/paired-end and read length
+echo $SRR diagnose basespace colorspace, single/paired-end and read length
 ##########################################################################
 $FQDUMP -X 4000 --split-files $SRR.sra
 NUM_FQ=$(ls | grep $SRR | grep -v trimmed.fastq | grep -c fastq$)
 if [ $NUM_FQ -eq "1" ] ; then
+  ORIG_RDS=SE
   RDS=SE
   echo $SRR is single end | tee -a $SRR.log
 elif [ $NUM_FQ -eq "2" ] ; then
+  ORIG_RDS=PE
   RDS=PE
   echo $SRR is paired end | tee -a $SRR.log
 else
@@ -245,7 +247,7 @@ fi
 echo $SRR if colorspace, then quit
 ##########################################################################
 if [ $CSPACE == "TRUE" ] ; then
-  Colorspace data is excluded from analysis for now
+  echo Colorspace data is excluded from analysis for now
   exit
 fi
 
@@ -291,8 +293,8 @@ if [ ! -f ${SRR}-trimmed.log ] ; then
 fi
 
 # get read counts and append skewer log and exit if there are no reads passing QC
-READ_CNT_TOTAL=$(grep 'processed; of these:' ${SRR}-trimmed.log | cut -d ' ' -f1)
-READ_CNT_AVAIL=$(grep 'available; of these:' ${SRR}-trimmed.log | cut -d ' ' -f1)
+READ_CNT_TOTAL=$(grep 'processed; of these:' ${SRR}-trimmed.log | awk '{print $1}')
+READ_CNT_AVAIL=$(grep 'available; of these:' ${SRR}-trimmed.log | awk '{print $1}')
 # here #exit
 if [ -z "$READ_CNT_AVAIL" ] ; then READ_CNT_AVAIL=0 ; fi
 
@@ -332,14 +334,13 @@ if [ $RDS == "SE" ] ; then
       if [ $ADAPTER_REF_CHECK -eq "0" ] ; then
         echo Adapter seq not found in reference. Now shuffling file before clipping | tee -a $SRR.log
         #FQ1=${SRR}-trimmed.fastq this is the current name
-
         #shuffling the fq file to remove any tile effects
         paste - - - - < $FQ1 | shuf | tr '\t' '\n' > ${SRR}.fastq
         CLIP_LINE_NUM=$(echo $DENSITY $ADAPTER_THRESHOLD $READ_CNT_AVAIL | awk '{printf "%.0f\n", ($1-$2)/$1*$3*4}' | numround -n 4)
         head -$CLIP_LINE_NUM ${SRR}.fastq | $SKEWER -l 18 -t $THREADS -x $ADAPTER -o $SRR -
         READ_CNT_AVAIL=$(grep 'available; of these:' ${SRR}-trimmed.log | cut -d ' ' -f1)
         if [ -z "$READ_CNT_AVAIL" ] ; then READ_CNT_AVAIL=0 ; fi
-#FQ1 read len min max median
+        #FQ1 read len min max median
         cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
         CLIP_LINE_NUM1=$((CLIP_LINE_NUM+1))
         tail -n+$CLIP_LINE_NUM1 ${SRR}.fastq >> ${SRR}-trimmed.fastq && rm ${SRR}.fastq
@@ -408,28 +409,71 @@ fi
 ##########################################################################
 echo $SRR Starting mapping phase
 ##########################################################################
-# need to setup 4 alignments
+# need to setup 2 alignments
 # -kallisto ensembl
-# -kallisto ncbi
 # -star/featurecounts ensembl
-# -star/featurecounts ncbi
 
 #STAR Ensembl
-# runs star in gene-wise quant mode.
-# We can then skip samtools and htseq/featurecounts, but
-# unfortunately quant mode cannot currently be run with shared memory.
-# Also cannot avoid on the fly GTF inclusion as its a requirement of quantMode option
-# According to Google groups, quantMode counts only unique mappers but need to confirm this
+# runs star in gene-wise quant mode and avoid samtools and htseq/featurecounts.
+# quant mode can be used with sheared memory if indexed with GTF file
 # quantMode also looks like a nice way to diagnose the mapping strand
 # Strand information could then be used for kallisto options
 # The ReadsPerGene.out.tab file contains count information
-echo $SRR starting STAR mapping to Ensembl genome | tee -a $SRR.log
+
+# Before running the full mapping procedure for paired end reads, a sample of
+# 10000 forward and reverse reads first.
+
+if [ $RDS == "PE" ] ; then
+  echo $SRR testing PE reads STAR mapping to Ensembl genome | tee -a $SRR.log
+  head $FQ1 $FQ2 ; tail $FQ1 $FQ2
+
+  #test 10k reads FQ1
+  head -10000 $FQ1 > test.fq ; head -1000000 $FQ1 | tail -90000 >> test.fq
+  RD_CNT=$(sed -n '2~4p' < test.fq | wc -l)
+  $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
+  --outSAMtype None --genomeDir $ENS_REFG --readFilesIn=test.fq
+  MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
+  UNMAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | head -1)
+  rm test.fq ReadsPerGene.out.tab
+  R1_MAP_RATE=$(echo $MAPPED_CNT $RD_CNT | awk '{print $1/$2*100}' | numround)
+
+  #test 10k reads FQ2
+  head -10000 $FQ2 > test.fq ; head -100000 $FQ1 | tail -90000 >> test.fq
+  RD_CNT=$(sed '2~4p' test.fq | wc -l)
+  $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
+  --outSAMtype None --genomeDir $ENS_REFG --readFilesIn=test.fq
+  MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
+  UNMAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | head -1)
+  rm test.fq ReadsPerGene.out.tab
+  R2_MAP_RATE=$(echo $MAPPED_CNT $RD_CNT | awk '{print $1/$2*100}' | numround)
+
+  R1R2_DIFF=$((R1_MAP_RATE-R2_MAP_RATE))
+
+  if [ $R2_MAP_RATE -lt "40" -a $R1R2_DIFF -ge "20" ] ; then
+    echo Read2 map rate below 40%, dropping it and using Read1 only | tee -a $SRR.log
+    DROP_R2=TRUE
+    RDS="SE"
+    rm $FQ2
+  fi
+
+  R2R1_DIFF=$((R2_MAP_RATE-R1_MAP_RATE))
+
+  if [ $R1_MAP_RATE -lt "40" -a $R2R1_DIFF -ge "20" ] ; then
+    echo Read1 map rate below 40%, dropping it and using Read2 only | tee -a $SRR.log
+    DROP_R1=TRUE
+    RDS="SE"
+    mv $FQ2 $FQ1
+  fi
+fi
+
+## Now performing full alignment
 if [ $RDS == "SE" ] ; then
   head $FQ1 ; tail $FQ1
   $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $ENS_REFG --readFilesIn=$FQ1
 elif [ $RDS == "PE" ] ; then
-  head $FQ1 $FQ2 ; tail $FQ1 $FQ2
+  head $FQ1 $FQ2 ; tail $FQ1 $FQ2  head $FQ1 $FQ2 ; tail $FQ1 $FQ2
+  #proper PE mapping
   $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $ENS_REFG --readFilesIn=$FQ1 $FQ2
 fi
@@ -557,7 +601,7 @@ fi
 ## Collect QC information
 
 ## Output .qc file
-echo "SequenceFormat:$RDS
+echo "SequenceFormat:$ORIG_RDS
 QualityEncoding:$QUALITY_ENCODING
 Read1MinimumLength:$FQ1_MIN_LEN
 Read1MedianLength:$FQ1_MEDIAN_LEN
@@ -567,6 +611,13 @@ Read2MedianLength:$FQ2_MEDIAN_LEN
 Read2MaxLength:$FQ2_MAX_LEN
 NumReadsTotal:$READ_CNT_TOTAL
 NumReadsQcPass:$READ_CNT_AVAIL
+QcPassRate:$QC_PASS_RATE
+#New R1 and R2 map data for PE only
+PE_Read1_StarMapRateTest:${R1_MAP_RATE:-NA}
+PE_Read2_StarMapRateTest:${R2_MAP_RATE:-NA}
+PE_Read1_Excluded:"${DROP_R1:-FALSE}"
+PE_Read2_Excluded:"${DROP_R2:-FALSE}"
+MappingFormat:$RDS
 QcPassRate:$QC_PASS_RATE
 STAR_UniqMappedReads:$UNIQ_MAPPED_READS
 STAR_Strandedness:$STRANDED
