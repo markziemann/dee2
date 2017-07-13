@@ -618,7 +618,6 @@ PE_Read2_StarMapRateTest:${R2_MAP_RATE:-NA}
 PE_Read1_Excluded:"${DROP_R1:-FALSE}"
 PE_Read2_Excluded:"${DROP_R2:-FALSE}"
 MappingFormat:$RDS
-QcPassRate:$QC_PASS_RATE
 STAR_UniqMappedReads:$UNIQ_MAPPED_READS
 STAR_Strandedness:$STRANDED
 STAR_UnmappedReads:$UNMAPPED_CNT

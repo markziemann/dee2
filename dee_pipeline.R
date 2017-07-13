@@ -13,9 +13,6 @@ if(length(new.packages)) {
 source("https://bioconductor.org/biocLite.R") ; biocLite("SRAdb")
 }
 
-#if (!require("pacman")) install.packages("pacman")
-#pacman::p_load(SRAdb)
-#pacman::p_load(package1, package2, package_n), package2, package_n)
 library(SRAdb)
 
 #create a list of species full names
@@ -30,6 +27,8 @@ PIPELINE=normalizePath("pipeline.sh")
 DATAWD=paste(normalizePath("../data/"),org,sep="/")
 SRADBWD=normalizePath("../sradb/")
 MXDIR=normalizePath("../mx/")
+QUEUEWD=normalizePath("../queue/")
+
 setwd(SRADBWD)
 
 sqlfile <- 'SRAmetadb.sqlite'
@@ -70,6 +69,10 @@ finished_files<-list.files(path = ".", pattern = "finished" , full.names = FALSE
 runs_done<-basename(as.character(strsplit(finished_files,".finished")))
 runs_todo<-setdiff(runs, runs_done)
 setwd(CODEWD)
+queue_name=paste(QUEUEWD,"/",org,".queue.txt",sep="")
+write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
+SCP_COMMAND=paste("scp ",queue_name ," pi@192.168.0.99:~/Public")
+system(SCP_COMMAND)
 
 print("load star genome in memory")
 LOAD_GENOME=paste("../sw/STAR --genomeLoad LoadAndExit --genomeDir ../ref/",org,"/ensembl/star",sep="")
@@ -117,7 +120,7 @@ dee.pipeline<-function(SRR){
   system(COMMAND)
 }
 #lapply(runs_todo,dee.pipeline)
-mclapply(runs_todo[100:199],dee.pipeline,mc.cores=2)
+mclapply(runs_todo[2000:2002],dee.pipeline,mc.cores=5)
 #mclapply(runs_todo[1001:1105],dee.pipeline,mc.cores=3)
 
 setwd(DATAWD)
@@ -140,11 +143,6 @@ se_list<-as.character(mclapply(se_list,filterempty))
 se<-do.call("cbind", lapply(se_list, read.tsv))
 print("se list finished OK")
 
-#sn_list<-list.files(path = ".", pattern = "sn.tsv" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
-#sn_list<-as.character(mclapply(sn_list,filterempty))
-#sn<-do.call("cbind", lapply(sn_list, read.tsv))
-#print("sn list finished OK")
-
 ke_list<-list.files(path = ".", pattern = "ke.tsv" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
 ke<-do.call("cbind", lapply(ke_list, read.tsv))
 COLS=paste(grep("_est_counts", names(ke), value = TRUE))
@@ -154,22 +152,9 @@ COLS=paste(grep("_tpm", names(ke), value = TRUE))
 ke_tpm<-ke[,COLS]
 print("ke list finished OK")
 
-#kn_list<-list.files(path = ".", pattern = "kn.tsv" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
-#kn<-do.call("cbind", lapply(kn_list, read.tsv))
-#COLS=paste(grep("_est_counts", names(kn), value = TRUE))
-#kn_counts<-kn[,COLS]
-#COLS=NULL
-#COLS=paste(grep("_tpm", names(kn), value = TRUE))
-#kn_tpm<-kn[,COLS]
-#print("kn list finished OK")
-
 print("writing SE mx")
 OUT=paste(MXDIR,"/",org,"_se.tsv",sep="")
 write.table(se,file=OUT,sep="\t",quote=F,row.names=T)
-
-#print("writing SN mx")
-#OUT=paste(MXDIR,"/",org,"_sn.tsv",sep="")
-#write.table(sn,file=OUT,sep="\t",quote=F,row.names=T)
 
 print("writing KE counts mx")
 OUT=paste(MXDIR,"/",org,"_ke_counts.tsv",sep="")
@@ -178,13 +163,3 @@ write.table(ke_counts,file=OUT,sep="\t",quote=F,row.names=T)
 print("writing KE tpm mx")
 OUT=paste(MXDIR,"/",org,"_ke_tpm.tsv",sep="")
 write.table(ke_tpm,file=OUT,sep="\t",quote=F,row.names=T)
-
-#print("writing KN counts mx")
-#OUT=paste(MXDIR,"/",org,"_kn_counts.tsv",sep="")
-#write.table(kn_counts,file=OUT,sep="\t",quote=F,row.names=T)
-
-#print("writing KN tpm mx")
-#OUT=paste(MXDIR,"/",org,"_kn_tpm.tsv",sep="")
-#write.table(kn_tpm,file=OUT,sep="\t",quote=F,row.names=T)
-
-
