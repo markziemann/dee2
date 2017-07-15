@@ -653,8 +653,8 @@ MEM=$(free | awk 'NR==2{print $4}')
 NUM_CPUS=$(nproc)
 CPU_SPEED=$(lscpu | grep 'CPU max MHz:' | awk '{print $4}')
 
-ORGS=$(du -s $(find ../ref/ | grep /ensembl/star$) \
-| sort -k1g | awk -v m=$MEM 'm>($1*1.5)' | cut -d '/' -f3)
+ORGS=$(du -s $(find  $(pwd)/../ref/ | grep /ensembl/star$) \
+| sort -k1g | awk -v m=$MEM 'm>($1*1.5)' | sed 's#/ensembl/star##' | awk -F'/' '{print $NF}')
 
 IPHASH=$(curl ipinfo.io/ip | md5sum | awk '{print $1}')
 if [ $IPHASH == "bbcb41eb861fff23d7882dc61725a6d7" ] ; then
@@ -666,23 +666,20 @@ else
 fi
 
 MY_ORG=$(join -1 1 -2 1 \
-<(curl $ACC_URL | grep ORG | cut -d '>' -f2 \
-| tr -d ' .' | tr 'A-Z' 'a-z' | tr '()' ' ' | sort -k 1b,1) \
-<(echo $ORGS | tr ' ' '\n' | sort -k 1b,1) \
-| sort -k2gr | awk 'NR==1{print $1}' )
+<(curl $ACC_URL | grep ORG | cut -d '>' -f2 | tr -d ' .' | tr 'A-Z' 'a-z' | tr '()' ' ' | sort -k 1b,1) \
+<(echo $ORGS | tr ' ' '\n' | sort -k 1b,1) | sort -k2gr | awk 'NR==1{print $1}' )
 
-
+exit
 myfunc(){
 MY_ORG=$1
 ACCESSION=$(curl "${ACC_REQUEST}?ORG=${MY_ORG}&Submit"| grep 'ACCESSION=' | cut -d '=' -f2)
 ../sw/STAR --genomeLoad LoadAndExit --genomeDir ../ref/$MY_ORG/ensembl/star
-
 main "$ACCESSION" "$MY_ORG"
 }
 export -f myfunc
 
 count=1
-while [ $count -le 3 ]
+while [ $count -lt 2 ]
 do
     DIR=$(pwd)
     echo "$count"
@@ -690,3 +687,4 @@ do
     (( count++ ))
     cd $DIR
 done
+#MY_ORG=$(join -1 1 -2 1 <(curl '192.168.0.99/acc.html' | grep ORG | cut -d '>' -f2 | tr -d ' .' | tr 'A-Z' 'a-z' | tr '()' ' ' | sort -k 1b,1) <(echo $ORGS | tr ' ' '\n' | sort -k 1b,1) | sort -k2gr | awk 'NR==1{print $1}')
