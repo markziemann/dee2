@@ -64,5 +64,18 @@ TIME=$(date +%s)
 sed "s/$/\t${TIME}/" $ALLOCATED | awk '($3-$2)>86400 {print $1}' >> $TODO
 sort -u -o $TODO $TODO
 
-exit 1
-
+#detail joblist length for each organism
+TIME=$(date +%s)
+ACC_HTML=/var/www/html/acc.html
+EDIT_TIME=$(stat --format "%Y" $ACC_HTML)
+DIFF=$((TIME-EDIT_TIME))
+if [ "$DIFF" -gt "86400" ] ; then
+#if [ "$DIFF" -gt "0" ] ; then
+  touch $ACC_HTML
+  ORGLIST="athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae"
+  for ORG in $ORGLIST ; do
+    TODO=${DATA}/${ORG}.queue.txt
+    NUMJOBS=$(wc -l < $TODO)
+    sed -i "/${ORG}/s/[0-9]//g;/${ORG}/s/()/(${NUMJOBS})/" $ACC_HTML
+  done
+fi

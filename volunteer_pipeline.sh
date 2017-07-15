@@ -2,6 +2,9 @@
 #sra2mx
 #Copyright Mark Ziemann 2015 to 2017 mark.ziemann@gmail.com
 
+set -x
+
+main(){
 #logging all commands
 set -x
 
@@ -24,7 +27,7 @@ ORG=$2
 #ENVIRONMENT VARS
 PIPELINE=$0
 PIPELINE_MD5=$(md5sum $0 | cut -d ' ' -f1)
-CODE_DIR=$(dirname $PIPELINE)
+CODE_DIR=$(pwd)
 DEE_DIR=$(dirname $CODE_DIR)
 SW_DIR=$DEE_DIR/sw
 PATH=$PATH:$SW_DIR
@@ -630,3 +633,60 @@ Kallisto_MappedReads:$PSEUDOMAPPED_CNT
 Kallisto_MapRate:$PSEUDOMAP_RATE
 QC_SUMMARY:${QC_SUMMARY}${REASON}" > $SRR.qc
 
+}
+export -f main
+
+#TODO
+#-get free memory, num CPUs and CPU speed DONE
+#-select ORG based on memory and queue size DONE
+#-determine parallel jobs
+#load star genome gracefully
+#GO!
+#Transmit data and cleanup files
+
+#dump star genomes from memory
+for DIR in $(find $(pwd)/../ref/ | grep /ensembl/star$ | sed 's#\/code\/\.\.##' ) ; do
+  echo $DIR ; ../sw/STAR --genomeLoad Remove --genomeDir $DIR
+done
+
+MEM=$(free | awk 'NR==2{print $4}')
+NUM_CPUS=$(nproc)
+CPU_SPEED=$(lscpu | grep 'CPU max MHz:' | awk '{print $4}')
+
+ORGS=$(du -s $(find ../ref/ | grep /ensembl/star$) \
+| sort -k1g | awk -v m=$MEM 'm>($1*1.5)' | cut -d '/' -f3)
+
+IPHASH=$(curl ipinfo.io/ip | md5sum | awk '{print $1}')
+if [ $IPHASH == "bbcb41eb861fff23d7882dc61725a6d7" ] ; then
+  ACC_URL="192.168.0.99/acc.html"
+  ACC_REQUEST="192.168.0.99/cgi-bin/acc.sh"
+else
+  ACC_URL="http://mdz-analytics.com/acc.html"
+  ACC_REQUEST="http://mdz-analytics.com/cgi-bin/acc.sh"
+fi
+
+MY_ORG=$(join -1 1 -2 1 \
+<(curl $ACC_URL | grep ORG | cut -d '>' -f2 \
+| tr -d ' .' | tr 'A-Z' 'a-z' | tr '()' ' ' | sort -k 1b,1) \
+<(echo $ORGS | tr ' ' '\n' | sort -k 1b,1) \
+| sort -k2gr | awk 'NR==1{print $1}' )
+
+
+myfunc(){
+MY_ORG=$1
+ACCESSION=$(curl "${ACC_REQUEST}?ORG=${MY_ORG}&Submit"| grep 'ACCESSION=' | cut -d '=' -f2)
+../sw/STAR --genomeLoad LoadAndExit --genomeDir ../ref/$MY_ORG/ensembl/star
+
+main "$ACCESSION" "$MY_ORG"
+}
+export -f myfunc
+
+count=1
+while [ $count -le 3 ]
+do
+    DIR=$(pwd)
+    echo "$count"
+    myfunc $MY_ORG
+    (( count++ ))
+    cd $DIR
+done

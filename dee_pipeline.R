@@ -120,7 +120,7 @@ dee.pipeline<-function(SRR){
   system(COMMAND)
 }
 #lapply(runs_todo,dee.pipeline)
-mclapply(runs_todo[2000:2002],dee.pipeline,mc.cores=5)
+mclapply(runs_todo[2000:3000],dee.pipeline,mc.cores=5)
 #mclapply(runs_todo[1001:1105],dee.pipeline,mc.cores=3)
 
 setwd(DATAWD)
