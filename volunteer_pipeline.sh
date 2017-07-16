@@ -633,6 +633,8 @@ Kallisto_MappedReads:$PSEUDOMAPPED_CNT
 Kallisto_MapRate:$PSEUDOMAP_RATE
 QC_SUMMARY:${QC_SUMMARY}${REASON}" > $SRR.qc
 
+cd ..
+zip -r $SRR.$ORG.zip $SRR
 }
 export -f main
 
@@ -660,16 +662,17 @@ IPHASH=$(curl ipinfo.io/ip | md5sum | awk '{print $1}')
 if [ $IPHASH == "bbcb41eb861fff23d7882dc61725a6d7" ] ; then
   ACC_URL="192.168.0.99/acc.html"
   ACC_REQUEST="192.168.0.99/cgi-bin/acc.sh"
+  FTP_URL="192.168.0.99"
 else
   ACC_URL="http://mdz-analytics.com/acc.html"
   ACC_REQUEST="http://mdz-analytics.com/cgi-bin/acc.sh"
+  FTP_URL="ftp://110.22.195.164"
 fi
 
 MY_ORG=$(join -1 1 -2 1 \
 <(curl $ACC_URL | grep ORG | cut -d '>' -f2 | tr -d ' .' | tr 'A-Z' 'a-z' | tr '()' ' ' | sort -k 1b,1) \
 <(echo $ORGS | tr ' ' '\n' | sort -k 1b,1) | sort -k2gr | awk 'NR==1{print $1}' )
 
-exit
 myfunc(){
 MY_ORG=$1
 ACCESSION=$(curl "${ACC_REQUEST}?ORG=${MY_ORG}&Submit"| grep 'ACCESSION=' | cut -d '=' -f2)
@@ -679,11 +682,12 @@ main "$ACCESSION" "$MY_ORG"
 export -f myfunc
 
 count=1
-while [ $count -lt 2 ]
+while [ $count -lt 10 ]
 do
     DIR=$(pwd)
     echo "$count"
     myfunc $MY_ORG
+    ncftpput ${FTP_URL} incoming $ACCESSION.$MY_ORG.zip
     (( count++ ))
     cd $DIR
 done
