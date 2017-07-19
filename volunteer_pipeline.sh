@@ -10,7 +10,7 @@ set -x
 
 #allow aliasing and define exit
 shopt -s expand_aliases
-alias exit='rm *fastq *.sra *tsv ; exit'
+alias exit='rm *fastq *.sra *tsv ; return 1'
 
 #JOB
 ##SRR to process
@@ -651,7 +651,8 @@ for DIR in $(find $(pwd)/../ref/ | grep /ensembl/star$ | sed 's#\/code\/\.\.##' 
   echo $DIR ; ../sw/STAR --genomeLoad Remove --genomeDir $DIR
 done
 
-MEM=$(free | awk 'NR==2{print $4}')
+MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
+#MEM=$(free | awk 'NR==2{print $4}')
 NUM_CPUS=$(nproc)
 CPU_SPEED=$(lscpu | grep 'CPU max MHz:' | awk '{print $4}')
 
@@ -662,12 +663,14 @@ IPHASH=$(curl ipinfo.io/ip | md5sum | awk '{print $1}')
 if [ $IPHASH == "bbcb41eb861fff23d7882dc61725a6d7" ] ; then
   ACC_URL="192.168.0.99/acc.html"
   ACC_REQUEST="192.168.0.99/cgi-bin/acc.sh"
-  FTP_URL="192.168.0.99"
+  SFTP_URL="192.168.0.99"
 else
   ACC_URL="http://mdz-analytics.com/acc.html"
   ACC_REQUEST="http://mdz-analytics.com/cgi-bin/acc.sh"
-  FTP_URL="ftp://110.22.195.164"
+  SFTP_URL="110.22.195.164"
 fi
+
+#it would be awesome to get the private key here for sftp of the results later
 
 MY_ORG=$(join -1 1 -2 1 \
 <(curl $ACC_URL | grep ORG | cut -d '>' -f2 | tr -d ' .' | tr 'A-Z' 'a-z' | tr '()' ' ' | sort -k 1b,1) \
@@ -678,17 +681,71 @@ MY_ORG=$1
 ACCESSION=$(curl "${ACC_REQUEST}?ORG=${MY_ORG}&Submit"| grep 'ACCESSION=' | cut -d '=' -f2)
 ../sw/STAR --genomeLoad LoadAndExit --genomeDir ../ref/$MY_ORG/ensembl/star
 main "$ACCESSION" "$MY_ORG"
+
+
 }
 export -f myfunc
 
 count=1
-while [ $count -lt 10 ]
-do
+while [ $count -lt 10 ] ; do
     DIR=$(pwd)
     echo "$count"
     myfunc $MY_ORG
-    ncftpput ${FTP_URL} incoming $ACCESSION.$MY_ORG.zip
+#   ncftpput ${FTP_URL} incoming $ACCESSION.$MY_ORG.zip
+    mkdir .ssh ; 
+
+cat << EOF > .ssh/guestuser
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEAyLJ5TihXnb2ATexgYMIkzpHgopCbctWKH8rrPZNN6PALRYjg
+1ozfeMFylSvQilFw+6bCe7HlqUQ3e6pS/jHJukEyzbJOEVR4AwuZxxctI4QH00AL
+2eDvWvlEOChlxPg8Er5SjPziUXw8Ov3bNLvFHSQ7qlNb/gbKhKvzl6Lk0n6Yzl9C
+/eiwzTKjfEKfXAZ51fjyD2fmSFaVleq+t3zviZaGftFtOLKtDA9wXXiosYrBufEf
+zixujQF04Hzv+Eg814bjzgkSpZiDyS735NUzu0PCbnXNjZA6QiymisOkhx0J7w3r
+vn/gmlYMmeBa5GZZsnnfRBvj0grQIefkLS30RwIDAQABAoIBAHVdUWzwUJRxPjfT
+dGUBA689RaUrdYxI7hY7fyeqHdSLk7vdGMa+6OxgDBbJ4ZERoUW4tmDJnqlGuD98
+Uj5OdU6TVBdQHzEpOWlmfk4b8oyjaEQUXxnR3YdQ36ELlsAB/ndjjzjdpafLRBmn
+XGpRKCsrhizLxK8f34yIVdImMzQYQ7Enki003AgmEWZ/hZmOJtbXWHq/MIGk67Gq
+rD3UJL+w0OVgQMYdD57CNBlpQIVDu4Z2C7NPLW/n2DiatzZ+7wOSWfc3I2Gu1E5o
+/YV84Pa0dzwpCnBSNuWtrieSHgF96R2rBk/2slN/q1MV0XAFxFqnup1A/YpmdCI2
+04+Q5vkCgYEA/IzR+nGquL/bJevGhtanMMxGMVSZJuCYGQU33R/WrWbDz1AJqPtd
+/rQlFWcfkK4hpcZdGNIoVkH3aa/mfhMfGx1DEScxzoFaPEj2vKBDldPYyMW7owVH
+ByPP0EiWwmERi7Ds6o/F325b2w0c1+waOTbA1eD9/dUZzExgVeBYes0CgYEAy3BS
+TJ+5/wu0XkQi2qqUck4hdB6VrmLujTGcT6MmOyncGL0Y6SR9cvf51UpbPsCQpCEm
+bOvRia/3wq9ovKIP3Zx22+SFSeu0bGeYo+i2ofzxl4XzZo3JIMpJtRXahn4BAH5E
+PzXd/Hs4AkCgnQB3HXDyp3FSDFxC0V7/jvO+U2MCgYEAioAb47IUg09MOuarsGTl
+ucA9Om5/sy92mjofYdhFHkF+XyIwughoivd2Yt90Ex87+rLneWY/ktaIfeBmknug
+EnmgvzZ0fSC5QNhu4BEwH2nXuHugJI4PXt4H6Nz2ONGNEsPLmfOQ+7CFFYOCbvPf
+icL6TBEgmeUVSdIU/uOTAn0CgYAN6OsnpBAymRlHDL+ZVep6ek8dQm4Xk1oeO1Ml
+utEFYJJU+rD2V/Ff6AakB8Z/XulE36Nh9SnJkUeOfzHZG/ebvnP+Cvz2FfCrLNYp
+9uJt5v6ZzqXa0Dz9SfeKMylS4tCsuPVvoP5BoictOEADHCII2E0vF7d1cuV6rVUp
+8A6GYwKBgQCc8T4sr/wF/BKkk+kCBUpsYibqIxnTw7Rjl/+gUJL5IR3ynmWuJkUt
+Qzab+/WnlQMuslmCLxXXOijq5lEDJLJ0m9hZ0sdC+j13jsTCEOnyj/XJ3VgLKifP
+8itVEOnDffxs+RKeaXWhPiSll/wp6SlSuIdI2VpYMd15LtmkSkZSYg==
+-----END RSA PRIVATE KEY-----
+EOF
+
+cat << EOF > .ssh/guestuser.pub
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIsnlOKFedvYBN7GBgwiTOkeCikJty1Yofyus9k03o8AtFiODWjN94wXKVK9CKUXD7psJ7seWpRDd7qlL+Mcm6QTLNsk4RVHgDC5nHFy0jhAfTQAvZ4O9a+UQ4KGXE+DwSvlKM/OJRfDw6/ds0u8UdJDuqU1v+BsqEq/OXouTSfpjOX0L96LDNMqN8Qp9cBnnV+PIPZ+ZIVpWV6r63fO+JloZ+0W04sq0MD3BdeKixisG58R/OLG6NAXTgfO/4SDzXhuPOCRKlmIPJLvfk1TO7Q8Judc2NkDpCLKaKw6SHHQnvDeu+f+CaVgyZ4FrkZlmyed9EG+PSCtAh5+QtLfRH mdz@opti
+EOF
+
+chmod -R 700 .ssh
+sftp -i .ssh/guestuser guestuser@$SFTP_URL << EOF
+put $ACCESSION.$MY_ORG.zip
+EOF
+
+#rm -rf .ssh
     (( count++ ))
     cd $DIR
 done
+exit
 #MY_ORG=$(join -1 1 -2 1 <(curl '192.168.0.99/acc.html' | grep ORG | cut -d '>' -f2 | tr -d ' .' | tr 'A-Z' 'a-z' | tr '()' ' ' | sort -k 1b,1) <(echo $ORGS | tr ' ' '\n' | sort -k 1b,1) | sort -k2gr | awk 'NR==1{print $1}')
+
+
+# alternative to ncftp are scp and sftp which are more secure
+# I prefer sftp because users can only upload files to "incoming"
+# and not see other files. Users need to be jailed from viewing,
+# and modyfying other files on the system.
+# sftp authentication and upload can be automated like this
+
+
+
