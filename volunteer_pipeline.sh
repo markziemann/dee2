@@ -634,7 +634,7 @@ Kallisto_MapRate:$PSEUDOMAP_RATE
 QC_SUMMARY:${QC_SUMMARY}${REASON}" > $SRR.qc
 
 cd ..
-zip -r $SRR.$ORG.zip $SRR
+#zip -r $SRR.$ORG.zip $SRR
 }
 export -f main
 
@@ -687,12 +687,12 @@ main "$ACCESSION" "$MY_ORG"
 export -f myfunc
 
 count=1
-while [ $count -lt 10 ] ; do
+while [ $count -lt 200 ] ; do
     DIR=$(pwd)
     echo "$count"
     myfunc $MY_ORG
 #   ncftpput ${FTP_URL} incoming $ACCESSION.$MY_ORG.zip
-    mkdir .ssh ; 
+    mkdir .ssh
 
 cat << EOF > .ssh/guestuser
 -----BEGIN RSA PRIVATE KEY-----
@@ -729,6 +729,9 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIsnlOKFedvYBN7GBgwiTOkeCikJty1Yofyus9k03o
 EOF
 
 chmod -R 700 .ssh
+cp $0 $ACCESSION
+zip -r $ACCESSION.$MY_ORG.zip $ACCESSION
+
 sftp -i .ssh/guestuser guestuser@$SFTP_URL << EOF
 put $ACCESSION.$MY_ORG.zip
 EOF
