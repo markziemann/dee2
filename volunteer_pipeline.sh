@@ -54,12 +54,6 @@ SUBJUNC=/data/app/bin/subjunc
 FEATURECOUNTS=$SW_DIR/featureCounts
 KALLISTO=$SW_DIR/kallisto
 
-#REFERENCE SEQ AND ANNOTATIONS
-ENS_REFG=$REF_DIR/$ORG/ensembl/star
-ENS_GTF=$(readlink -f $(find $REF_DIR/$ORG/ensembl/ -maxdepth 1 | grep .gtf$) )
-ENS_REFT=$(readlink -f $(find $REF_DIR/$ORG/ensembl/kallisto/ -maxdepth 1 | grep fa.idx$) )
-ENS_REFT_BT2=$(readlink -f $(find $REF_DIR/$ORG/ensembl/bowtie2/ -maxdepth 1 | grep .fa$) )
-
 #LIMITS
 DISKLIM=32000000
 DLLIM=1
@@ -107,11 +101,85 @@ SUBJUNC_STATUS=/data/app/bin/subjunc
 FEATURECOUNTS_STATUS=$SW_DIR/featureCounts
 KALLISTO_STATUS=$SW_DIR/kallisto
 
-#check all the reference sequences exist
-#if [[ ! -r $ENS_REFG || ! -r $ENS_GTF || ! -r $ENS_REFT ] ; then
-#  echo One or more of the reference fasta or annotation files is missing or not readable. Quitting | tee -a $SRR.log
-#  exit
-#fi
+#check all the reference sequences exist and create if necessary
+#REFERENCE SEQ AND ANNOTATIONS
+MYREF_DIR=$REF_DIR/$ORG/ensembl/
+if [ ! -d $MYREF_DIR ] ; then
+  mkdir -p $MYREF_DIR
+fi
+
+ENS_GTF=$(readlink -f $(find $MYREF_DIR/ -maxdepth 1 | grep .gtf$) )
+if [ -z $ENS_GTF || ! -r $ENS_GTF  ] ; then
+  cd $ENS_REFG
+  wget -O index.html ftp://ftp.ensembl.org/pub/release-88/gtf/
+  GTFDIR_URL=$(grep _$(echo $ORG | cut -c2-) index.html | cut -d '"' -f2)
+  wget -O index.html $GTFDIR_URL
+  GTFURL=$(cut -d '"' -f2 index.html | grep [0-9][0-9].gtf.gz)
+  wget $GTFURL
+  gunzip *gtf.gz
+  ENS_GTF=$(readlink -f $(find $REF_DIR/$ORG/ensembl/ -maxdepth 1 | grep .gtf$) )
+  cd -
+fi
+
+KAL_DIR=$MYREF_DIR/kallisto
+if [ ! -d $KAL_DIR ] ; then
+  mkdir -p $KAL_DIR
+fi
+
+ENS_REFT=$(readlink -f $(find $KAL_DIR -maxdepth 1 | grep fa.idx$) )
+if [ -z $ENS_REFT || ! -r $ENS_REFT  ] ; then
+  cd $ENS_REFG
+  wget -O index.html ftp://ftp.ensembl.org/pub/release-88/fasta/
+  CDNADIR_URL=$(grep _$(echo $ORG | cut -c2-) index.html | cut -d '"' -f2)/cdna/
+  wget -O index.html $CDNADIR_URL
+  CDNAURL=$(cut -d '"' -f2 index.html | grep cdna.all.fa.gz)
+  wget $CDNAURL
+  gunzip *cdna.all.fa.gz
+  ENS_REFT=$(readlink -f $(find $REF_DIR/$ORG/ensembl/ -maxdepth 1 | grep cdna.all.fa$) )
+  #kallisto index here
+  FA=$(find . | grep cdna.all.fa$)
+  for KMER in `seq 11 2 29` ; do
+    kallisto index -i ${FA}.k$KMER.idx -k $KMER $FA
+  done
+  kallisto index -i $FA.idx $FA
+  wait
+  for IDX in *idx ; do grep -c '>' $FA > $IDX.cnt ; done
+  cd -
+fi
+
+BT2_DIR=$MYREF_DIR/bowtie2
+if [ ! -d $BT2_DIR ] ; then
+  mkdir -p $BT2_DIR
+fi
+
+ENS_REFT_BT2=$(readlink -f $(find $BT2_DIR -maxdepth 1 | grep .fa$) )
+if [ -z $ENS_REFT_BT2 || ! -r $ENS_REFT_BT2  ] ; then
+  cd $BT2_DIR
+  cp ../*cdna.all.fa .
+  creating bowtie2 index
+  bowtie2-build --threads $(nproc) -f *fa *fa
+  ENS_REFT_BT2=*fa
+  cd -
+fi
+
+ENS_REFG=$MYREF_DIR/star
+if [ ! -d $ENS_REFG ] ; then
+  mkdir -p $ENS_REFG
+fi
+
+if [ ! -r $ENS_REFG/SA || ! -r $ENS_REFG/SAindex ] ; then
+  echo Creating star index
+  cd $ENS_REFG
+  GTF=`find . | grep gtf$`
+  FA=`find . | egrep '(fa$|.fna$)'`
+  CWD=`pwd`
+  $STAR --runMode genomeGenerate \
+  --sjdbGTFfile $GTF \
+  --genomeDir $CWD  \
+  --genomeFastaFiles $CWD/$FA \
+  --runThreadN `nproc`
+  cd -
+fi
 
 ##########################################################################
 # Lets get started
