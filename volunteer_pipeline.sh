@@ -48,6 +48,7 @@ FASTQC=$SW_DIR/FastQC/fastqc
 SKEWER=$SW_DIR/skewer
 MINION=$SW_DIR/kraken/./minion
 BOWTIE2=$SW_DIR/bowtie2-2.3.1/bowtie2
+BOWTIE2BUILD=$SW_DIR/bowtie2-2.3.1/bowtie2-build
 SOLIDTRIMMER=$SW_DIR/solid-trimmer.py
 STAR=$SW_DIR/STAR
 SUBJUNC=/data/app/bin/subjunc
@@ -143,8 +144,9 @@ fi
 
 # download the necessary reference files
 GTF=$MYREF_DIR/$(basename $GTFURL .gz)
-if [ -z $GTF || ! -r $GTF  ] ; then
+if [ -z $GTF ] || [ ! -r $GTF  ] ; then
   cd $MYREF_DIR
+  if [ -r $(basename $GTFURL) ] ; then rm $(basename $GTFURL) ; fi
   wget $GTFURL
   gunzip $(basename $GTFURL)
   GTF=$MYREF_DIR/$(basename $GTFURL .gz)
@@ -152,20 +154,22 @@ if [ -z $GTF || ! -r $GTF  ] ; then
 fi
 
 GDNA=$MYREF_DIR/$(basename $GDNAURL .gz)
-if [ -z $GDNA || ! -r $GDNA  ] ; then
+if [ -z $GDNA ] || [ ! -r $GDNA  ] ; then
   cd $MYREF_DIR
+  if [ -r $(basename $GDNAURL) ] ; then rm $(basename $GDNAURL) ; fi
   wget $GDNAURL
   gunzip $(basename $GDNAURL)
-  GDNA=$($MYREF_DIR/$(basename $GDNAURL .gz))
+  GDNA=$MYREF_DIR/$(basename $GDNAURL .gz)
   cd -
 fi
 
 CDNA=$MYREF_DIR/$(basename $CDNAURL .gz)
-if [ -z $CDNA || ! -r $CDNA  ] ; then
+if [ -z $CDNA ] || [ ! -r $CDNA  ] ; then
   cd $MYREF_DIR
+  if [ -r $(basename $CDNAURL) ] ; then rm $(basename $CDNAURL) ; fi
   wget $CDNAURL
   gunzip $(basename $CDNAURL)
-  CDNA=$($MYREF_DIR/$(basename $CDNAURL .gz))
+  CDNA=$MYREF_DIR/$(basename $CDNAURL .gz)
   cd -
 fi
 
@@ -176,10 +180,10 @@ if [ ! -d $BT2_DIR ] ; then
 fi
 
 BT2_REF=$BT2_DIR/$(basename $CDNA)
-if [ -z $BT2_REF || ! -r $BT2_REF  ] ; then
+if [ -z $BT2_REF ] || [ ! -r $BT2_REF  ] ; then
   cd $BT2_DIR ; ln $CDNA .
   #creating bowtie2 index
-  bowtie2-build --threads $(nproc) -f $(basename $CDNA) $(basename $CDNA)
+  $BOWTIE2BUILD --threads $(nproc) -f $(basename $CDNA) $(basename $CDNA)
   ENS_REFT_BT2=$BT2_DIR/$(basename $CDNA)
   cd -
 fi
@@ -190,7 +194,8 @@ if [ ! -d $KAL_DIR ] ; then
 fi
 
 KAL_REF=$KAL_DIR/$(basename $CDNA).idx
-if [ -z $KAL_REF || ! -r $KAL_REF  ] ; then
+if [ -z $KAL_REF ] || [ ! -r $KAL_REF  ] ; then
+  cd $KAL_DIR
   #kallisto index here
   for KMER in `seq 11 2 29` ; do
     kallisto index -i $(basename $CDNA).k$KMER.idx -k $KMER $(basename $CDNA)
@@ -206,7 +211,7 @@ if [ ! -d $STAR_DIR ] ; then
   mkdir -p $STAR_DIR
 fi
 
-if [ ! -r $STAR_DIR/SA || ! -r $STAR_DIR/SAindex ] ; then
+if [ ! -r $STAR_DIR/SA ] || [ ! -r $STAR_DIR/SAindex ] ; then
   echo Creating star index
   cd $STAR_DIR
   ln $GDNA $GTF .
@@ -762,35 +767,41 @@ MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
 NUM_CPUS=$(nproc)
 CPU_SPEED=$(lscpu | grep 'CPU max MHz:' | awk '{print $4}')
 
-ORGS=$(du -s $(find  $(pwd)/../ref/ | grep /ensembl/star$) \
-| sort -k1g | awk -v m=$MEM 'm>($1*1.5)' | sed 's#/ensembl/star##' | awk -F'/' '{print $NF}')
+if [ -z $MY_ORG ] ; then
+  ORGS=$(echo 'athaliana	2853904
+celegans	2652204
+dmelanogaster	3403644
+drerio	14616592
+ecoli	1576132
+hsapiens	28968508
+mmusculus	26069664
+rnorvegicus	26913880
+scerevisiae	1644684' | awk -v M=$MEM 'M>($2*10)' | sort -k2gr | awk '{print $1}')
 
-IPHASH=$(curl ipinfo.io/ip | md5sum | awk '{print $1}')
-if [ $IPHASH == "bbcb41eb861fff23d7882dc61725a6d7" ] ; then
-  ACC_URL="192.168.0.99/acc.html"
-  ACC_REQUEST="192.168.0.99/cgi-bin/acc.sh"
-  SFTP_URL="192.168.0.99"
-else
-  ACC_URL="http://mdz-analytics.com/acc.html"
-  ACC_REQUEST="http://mdz-analytics.com/cgi-bin/acc.sh"
-  SFTP_URL="110.22.195.164"
+  IPHASH=$(curl ipinfo.io/ip | md5sum | awk '{print $1}')
+  if [ $IPHASH == "bbcb41eb861fff23d7882dc61725a6d7" ] ; then
+    ACC_URL="192.168.0.99/acc.html"
+    ACC_REQUEST="192.168.0.99/cgi-bin/acc.sh"
+    SFTP_URL="192.168.0.99"
+  else
+    ACC_URL="http://mdz-analytics.com/acc.html"
+    ACC_REQUEST="http://mdz-analytics.com/cgi-bin/acc.sh"
+    SFTP_URL="110.22.195.164"
+  fi
+
+  #it would be awesome to get the private key here for sftp of the results later
+  MY_ORG=$(join -1 1 -2 1 \
+  <(curl $ACC_URL | grep ORG | cut -d '>' -f2 | tr -d ' .' | tr 'A-Z' 'a-z' | tr '()' ' ' | sort -k 1b,1) \
+  <(echo $ORGS | tr ' ' '\n' | sort -k 1b,1) | sort -k2gr | awk 'NR==1{print $1}' )
+
+  myfunc(){
+  MY_ORG=$1
+  ACCESSION=$(curl "${ACC_REQUEST}?ORG=${MY_ORG}&Submit"| grep 'ACCESSION=' | cut -d '=' -f2)
+  ../sw/STAR --genomeLoad LoadAndExit --genomeDir ../ref/$MY_ORG/ensembl/star
+  main "$ACCESSION" "$MY_ORG"
+  }
+  export -f myfunc
 fi
-
-#it would be awesome to get the private key here for sftp of the results later
-
-MY_ORG=$(join -1 1 -2 1 \
-<(curl $ACC_URL | grep ORG | cut -d '>' -f2 | tr -d ' .' | tr 'A-Z' 'a-z' | tr '()' ' ' | sort -k 1b,1) \
-<(echo $ORGS | tr ' ' '\n' | sort -k 1b,1) | sort -k2gr | awk 'NR==1{print $1}' )
-
-myfunc(){
-MY_ORG=$1
-ACCESSION=$(curl "${ACC_REQUEST}?ORG=${MY_ORG}&Submit"| grep 'ACCESSION=' | cut -d '=' -f2)
-../sw/STAR --genomeLoad LoadAndExit --genomeDir ../ref/$MY_ORG/ensembl/star
-main "$ACCESSION" "$MY_ORG"
-
-
-}
-export -f myfunc
 
 count=1
 while [ $count -lt 200 ] ; do
