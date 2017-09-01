@@ -72,11 +72,6 @@ if [ ! -d "$SW_DIR" ] ; then
   exit 1
 fi
 
-if [ ! -d "$REF_DIR" ] ; then
-  echo reference sequence directory does not exist! Quitting.
-  exit 1
-fi
-
 #check if these are directories
 if [ ! -d "$DATA_DIR"  ] ; then
   echo data directory does not exist! Quitting.
@@ -108,16 +103,84 @@ if [ ! -d $MYREF_DIR ] ; then
   mkdir -p $MYREF_DIR
 fi
 
-ENS_GTF=$(readlink -f $(find $MYREF_DIR/ -maxdepth 1 | grep .gtf$) )
-if [ -z $ENS_GTF || ! -r $ENS_GTF  ] ; then
-  cd $ENS_REFG
-  wget -O index.html ftp://ftp.ensembl.org/pub/release-88/gtf/
-  GTFDIR_URL=$(grep _$(echo $ORG | cut -c2-) index.html | cut -d '"' -f2)
-  wget -O index.html $GTFDIR_URL
-  GTFURL=$(cut -d '"' -f2 index.html | grep [0-9][0-9].gtf.gz)
+if [ $ORG == "athaliana" ] ; then
+  GTFURL="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.36.gtf.gz"
+  GDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna_sm.toplevel.fa.gz"
+  CDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/fasta/arabidopsis_thaliana/cdna/Arabidopsis_thaliana.TAIR10.cdna.all.fa.gz"
+elif [ $ORG == "celegans" ] ; then
+  GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/caenorhabditis_elegans/Caenorhabditis_elegans.WBcel235.90.gtf.gz"
+  GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/caenorhabditis_elegans/dna/Caenorhabditis_elegans.WBcel235.dna_sm.toplevel.fa.gz"
+  CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/caenorhabditis_elegans/cdna/Caenorhabditis_elegans.WBcel235.cdna.all.fa.gz"
+elif [ $ORG == "dmelanogaster" ] ; then
+  GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/drosophila_melanogaster/Drosophila_melanogaster.BDGP6.90.gtf.gz"
+  GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/drosophila_melanogaster/dna/Drosophila_melanogaster.BDGP6.dna_sm.toplevel.fa.gz"
+  CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/drosophila_melanogaster/cdna/Drosophila_melanogaster.BDGP6.cdna.all.fa.gz"
+elif [ $ORG == "drerio" ] ; then
+  GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/danio_rerio/Danio_rerio.GRCz10.90.gtf.gz"
+  GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/danio_rerio/dna/Danio_rerio.GRCz10.dna_sm.toplevel.fa.gz"
+  CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/danio_rerio/cdna/Danio_rerio.GRCz10.cdna.all.fa.gz"
+elif [ $ORG == "ecoli" ] ; then
+  GTFURL="ftp://ftp.ensemblgenomes.org/pub/bacteria/release-36/gtf/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655/Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.36.gtf.gz"
+  GDNAURL="ftp://ftp.ensemblgenomes.org/pub/bacteria/release-36/fasta/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655/dna/Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.dna_sm.chromosome.Chromosome.fa.gz"
+  CDNAURL="ftp://ftp.ensemblgenomes.org/pub/bacteria/release-36/fasta/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655/cdna/Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.cdna.all.fa.gz"
+elif [ $ORG == "hsapiens" ] ; then
+  GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/homo_sapiens/Homo_sapiens.GRCh38.90.gtf.gz"
+  GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa.gz"
+  CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz"
+elif [ $ORG == "mmusculus" ] ; then
+  GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/mus_musculus/Mus_musculus.GRCm38.90.gtf.gz"
+  GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna_sm.primary_assembly.fa.gz"
+  CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/mus_musculus/cdna/Mus_musculus.GRCm38.cdna.all.fa.gz"
+elif [ $ORG == "rnorvegicus" ] ; then
+  GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/rattus_norvegicus/Rattus_norvegicus.Rnor_6.0.90.gtf.gz"
+  GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/rattus_norvegicus/dna/Rattus_norvegicus.Rnor_6.0.dna_sm.toplevel.fa.gz"
+  CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/rattus_norvegicus/cdna/Rattus_norvegicus.Rnor_6.0.cdna.all.fa.gz"
+elif [ $ORG == "scerevisiae" ] ; then
+  GTFURL="ftp://ftp.ensemblgenomes.org/pub/release-90/fungi/gtf/saccharomyces_cerevisiae/Saccharomyces_cerevisiae.R64-1-1.36.gtf.gz"
+  GDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-90/fungi/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna_sm.toplevel.fa.gz"
+  CDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-90/fungi/fasta/saccharomyces_cerevisiae/cdna/Saccharomyces_cerevisiae.R64-1-1.cdna.all.fa.gz"
+fi
+
+# download the necessary reference files
+GTF=$MYREF_DIR/$(basename $GTFURL .gz)
+if [ -z $GTF || ! -r $GTF  ] ; then
+  cd $MYREF_DIR
   wget $GTFURL
-  gunzip *gtf.gz
-  ENS_GTF=$(readlink -f $(find $REF_DIR/$ORG/ensembl/ -maxdepth 1 | grep .gtf$) )
+  gunzip $(basename $GTFURL)
+  GTF=$MYREF_DIR/$(basename $GTFURL .gz)
+  cd -
+fi
+
+GDNA=$MYREF_DIR/$(basename $GDNAURL .gz)
+if [ -z $GDNA || ! -r $GDNA  ] ; then
+  cd $MYREF_DIR
+  wget $GDNAURL
+  gunzip $(basename $GDNAURL)
+  GDNA=$($MYREF_DIR/$(basename $GDNAURL .gz))
+  cd -
+fi
+
+CDNA=$MYREF_DIR/$(basename $CDNAURL .gz)
+if [ -z $CDNA || ! -r $CDNA  ] ; then
+  cd $MYREF_DIR
+  wget $CDNAURL
+  gunzip $(basename $CDNAURL)
+  CDNA=$($MYREF_DIR/$(basename $CDNAURL .gz))
+  cd -
+fi
+
+# setup the necessary genome transcriptome indexes
+BT2_DIR=$MYREF_DIR/bowtie2
+if [ ! -d $BT2_DIR ] ; then
+  mkdir -p $BT2_DIR
+fi
+
+BT2_REF=$BT2_DIR/$(basename $CDNA)
+if [ -z $BT2_REF || ! -r $BT2_REF  ] ; then
+  cd $BT2_DIR ; ln $CDNA .
+  #creating bowtie2 index
+  bowtie2-build --threads $(nproc) -f $(basename $CDNA) $(basename $CDNA)
+  ENS_REFT_BT2=$BT2_DIR/$(basename $CDNA)
   cd -
 fi
 
@@ -126,57 +189,32 @@ if [ ! -d $KAL_DIR ] ; then
   mkdir -p $KAL_DIR
 fi
 
-ENS_REFT=$(readlink -f $(find $KAL_DIR -maxdepth 1 | grep fa.idx$) )
-if [ -z $ENS_REFT || ! -r $ENS_REFT  ] ; then
-  cd $ENS_REFG
-  wget -O index.html ftp://ftp.ensembl.org/pub/release-88/fasta/
-  CDNADIR_URL=$(grep _$(echo $ORG | cut -c2-) index.html | cut -d '"' -f2)/cdna/
-  wget -O index.html $CDNADIR_URL
-  CDNAURL=$(cut -d '"' -f2 index.html | grep cdna.all.fa.gz)
-  wget $CDNAURL
-  gunzip *cdna.all.fa.gz
-  ENS_REFT=$(readlink -f $(find $REF_DIR/$ORG/ensembl/ -maxdepth 1 | grep cdna.all.fa$) )
+KAL_REF=$KAL_DIR/$(basename $CDNA).idx
+if [ -z $KAL_REF || ! -r $KAL_REF  ] ; then
   #kallisto index here
-  FA=$(find . | grep cdna.all.fa$)
   for KMER in `seq 11 2 29` ; do
-    kallisto index -i ${FA}.k$KMER.idx -k $KMER $FA
+    kallisto index -i $(basename $CDNA).k$KMER.idx -k $KMER $(basename $CDNA)
   done
-  kallisto index -i $FA.idx $FA
-  wait
-  for IDX in *idx ; do grep -c '>' $FA > $IDX.cnt ; done
+  kallisto index -i $(basename $CDNA).idx $(basename $CDNA)
+  for IDX in *idx ; do grep -c '>' $(basename $CDNA) > $IDX.cnt ; done
+  KAL_REF=$KAL_DIR/$(basename $CDNA).idx
   cd -
 fi
 
-BT2_DIR=$MYREF_DIR/bowtie2
-if [ ! -d $BT2_DIR ] ; then
-  mkdir -p $BT2_DIR
+STAR_DIR=$MYREF_DIR/star
+if [ ! -d $STAR_DIR ] ; then
+  mkdir -p $STAR_DIR
 fi
 
-ENS_REFT_BT2=$(readlink -f $(find $BT2_DIR -maxdepth 1 | grep .fa$) )
-if [ -z $ENS_REFT_BT2 || ! -r $ENS_REFT_BT2  ] ; then
-  cd $BT2_DIR
-  cp ../*cdna.all.fa .
-  creating bowtie2 index
-  bowtie2-build --threads $(nproc) -f *fa *fa
-  ENS_REFT_BT2=*fa
-  cd -
-fi
-
-ENS_REFG=$MYREF_DIR/star
-if [ ! -d $ENS_REFG ] ; then
-  mkdir -p $ENS_REFG
-fi
-
-if [ ! -r $ENS_REFG/SA || ! -r $ENS_REFG/SAindex ] ; then
+if [ ! -r $STAR_DIR/SA || ! -r $STAR_DIR/SAindex ] ; then
   echo Creating star index
-  cd $ENS_REFG
-  GTF=`find . | grep gtf$`
-  FA=`find . | egrep '(fa$|.fna$)'`
+  cd $STAR_DIR
+  ln $GDNA $GTF .
   CWD=`pwd`
   $STAR --runMode genomeGenerate \
-  --sjdbGTFfile $GTF \
+  --sjdbGTFfile $CWD/$(basename $GTF) \
   --genomeDir $CWD  \
-  --genomeFastaFiles $CWD/$FA \
+  --genomeFastaFiles $CWD/$(basename $GDNA) \
   --runThreadN `nproc`
   cd -
 fi
@@ -400,7 +438,7 @@ if [ $RDS == "SE" ] ; then
     if [ $DENSITY -gt $ADAPTER_THRESHOLD ] ; then
       echo Potential 3prime adapter identified. Now checking if in reference sequence | tee -a $SRR.log
       # Query to see if adapter sequence present in reference
-      ADAPTER_REF_CHECK=$($BOWTIE2 -f -x $ENS_REFT_BT2 -S /dev/stdout <(echo $ADAPTER | sed 's/^/>ADAPTER\n/') 2>>$SRR.log | awk '$1!~/^@/ && $2!=4' | wc -l )
+      ADAPTER_REF_CHECK=$($BOWTIE2 -f -x $BT2_REF -S /dev/stdout <(echo $ADAPTER | sed 's/^/>ADAPTER\n/') 2>>$SRR.log | awk '$1!~/^@/ && $2!=4' | wc -l )
 
       if [ $ADAPTER_REF_CHECK -eq "0" ] ; then
         echo Adapter seq not found in reference. Now shuffling file before clipping | tee -a $SRR.log
@@ -441,8 +479,8 @@ elif [ $RDS == "PE" ] ; then
     if [ $DENSITY -gt $ADAPTER_THRESHOLD ] ; then
       echo Potential 3prime adapter identified. Now checking if in reference sequence | tee -a $SRR.log
       # Query to see if adapter sequence present in reference
-      ADAPTER1_REF_CHECK=$($BOWTIE2 -f -x $ENS_REFT_BT2 -S /dev/stdout <(echo $ADAPTER1 | sed 's/^/>ADAPTER\n/') 2>>$SRR.log | awk '$1!~/^@/ && $2!=4' | wc -l )
-      ADAPTER2_REF_CHECK=$($BOWTIE2 -f -x $ENS_REFT_BT2 -S /dev/stdout <(echo $ADAPTER2 | sed 's/^/>ADAPTER\n/') 2>>$SRR.log | awk '$1!~/^@/ && $2!=4' | wc -l )
+      ADAPTER1_REF_CHECK=$($BOWTIE2 -f -x $BT2_REF -S /dev/stdout <(echo $ADAPTER1 | sed 's/^/>ADAPTER\n/') 2>>$SRR.log | awk '$1!~/^@/ && $2!=4' | wc -l )
+      ADAPTER2_REF_CHECK=$($BOWTIE2 -f -x $BT2_REF -S /dev/stdout <(echo $ADAPTER2 | sed 's/^/>ADAPTER\n/') 2>>$SRR.log | awk '$1!~/^@/ && $2!=4' | wc -l )
 
       if [ $ADAPTER1_REF_CHECK -eq "0" -a $ADAPTER2_REF_CHECK -eq "0" ] ; then
         echo Adapter seq not found in reference. Now shuffling file before clipping | tee -a $SRR.log
@@ -502,7 +540,7 @@ if [ $RDS == "PE" ] ; then
   head -10000 $FQ1 > test.fq ; head -1000000 $FQ1 | tail -90000 >> test.fq
   RD_CNT=$(sed -n '2~4p' < test.fq | wc -l)
   $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $ENS_REFG --readFilesIn=test.fq
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test.fq
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   UNMAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | head -1)
   rm test.fq ReadsPerGene.out.tab
@@ -512,7 +550,7 @@ if [ $RDS == "PE" ] ; then
   head -10000 $FQ2 > test.fq ; head -100000 $FQ1 | tail -90000 >> test.fq
   RD_CNT=$(sed '2~4p' test.fq | wc -l)
   $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $ENS_REFG --readFilesIn=test.fq
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test.fq
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   UNMAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | head -1)
   rm test.fq ReadsPerGene.out.tab
@@ -541,12 +579,12 @@ fi
 if [ $RDS == "SE" ] ; then
   head $FQ1 ; tail $FQ1
   $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $ENS_REFG --readFilesIn=$FQ1
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=$FQ1
 elif [ $RDS == "PE" ] ; then
   head $FQ1 $FQ2 ; tail $FQ1 $FQ2  head $FQ1 $FQ2 ; tail $FQ1 $FQ2
   #proper PE mapping
   $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $ENS_REFG --readFilesIn=$FQ1 $FQ2
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=$FQ1 $FQ2
 fi
 
 #now grab some qc info from the star alignment for later
@@ -628,12 +666,12 @@ if [ $RDS == "SE" ] ; then
 ############################################
 # TODO need intelligent frag size specification
 ###########################################
-  $KALLISTO quant $KALLISTO_STRAND_PARAMETER --single -l 100 -s 20 -t $THREADS -o . -i $ENS_REFT $FQ1 2>&1 \
+  $KALLISTO quant $KALLISTO_STRAND_PARAMETER --single -l 100 -s 20 -t $THREADS -o . -i $KAL_REF $FQ1 2>&1 \
   | tee -a $SRR.log && mv abundance.tsv $SRR.ke.tsv
   rm abundance.h5
 elif [ $RDS == "PE" ] ; then
   echo $SRR Starting Kallisto paired end mapping to ensembl reference transcriptome | tee -a $SRR.log
-  $KALLISTO quant $KALLISTO_STRAND_PARAMETER -t $THREADS -o . -i $ENS_REFT $FQ1 $FQ2 2>&1 \
+  $KALLISTO quant $KALLISTO_STRAND_PARAMETER -t $THREADS -o . -i $KAL_REF $FQ1 $FQ2 2>&1 \
   | tee -a $SRR.log && mv abundance.tsv $SRR.ke.tsv
   rm abundance.h5
 fi
