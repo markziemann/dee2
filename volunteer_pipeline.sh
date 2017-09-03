@@ -150,6 +150,7 @@ if [ -z $GTF ] || [ ! -r $GTF  ] ; then
   wget $GTFURL
   gunzip $(basename $GTFURL)
   GTF=$MYREF_DIR/$(basename $GTFURL .gz)
+  grep -cw gene $GTF > $GTF.cnt
   cd -
 fi
 
@@ -170,6 +171,7 @@ if [ -z $CDNA ] || [ ! -r $CDNA  ] ; then
   wget $CDNAURL
   gunzip $(basename $CDNAURL)
   CDNA=$MYREF_DIR/$(basename $CDNAURL .gz)
+  grep -c '>' $CDNA > $CDNA.cnt
   cd -
 fi
 
@@ -197,6 +199,7 @@ KAL_REF=$KAL_DIR/$(basename $CDNA).idx
 if [ -z $KAL_REF ] || [ ! -r $KAL_REF  ] ; then
   cd $KAL_DIR
   #kallisto index here
+  ln $CDNA .
   for KMER in `seq 11 2 29` ; do
     kallisto index -i $(basename $CDNA).k$KMER.idx -k $KMER $(basename $CDNA)
   done
@@ -695,8 +698,8 @@ head *tsv | tee -a $SRR.log
 
 SE_NR=$(wc -l < $SRR.se.tsv)
 KE_NR=$(wc -l < $SRR.ke.tsv)
-SE_CNT=$(cat $ENS_GTF.cnt)
-KE_CNT=$(cat $ENS_REFT.cnt)
+SE_CNT=$(cat $GTF.cnt)
+KE_CNT=$(cat $CDNA.cnt)
 
 if [ $SE_NR -eq $SE_CNT -a $KE_NR -eq $((KE_CNT+1)) ] ; then
 
