@@ -4,13 +4,16 @@
 
 set -x
 
+MY_ORG=$1
+MEM_FACTOR=10
+
 main(){
 #logging all commands
 set -x
 
 #allow aliasing and define exit
 shopt -s expand_aliases
-alias exit='rm *fastq *.sra *tsv ; return 1'
+alias exit="rm *fastq *.sra *tsv ; return 1"
 
 #JOB
 ##SRR to process
@@ -25,10 +28,10 @@ ORG=$2
 #exec 2>> $SRR.log ; exec >&1
 
 #ENVIRONMENT VARS
-PIPELINE=$0
-PIPELINE_MD5=$(md5sum $0 | cut -d ' ' -f1)
 CODE_DIR=$(pwd)
 DEE_DIR=$(dirname $CODE_DIR)
+PIPELINE=$CODE_DIR/$0
+PIPELINE_MD5=$(md5sum $PIPELINE | cut -d ' ' -f1)
 SW_DIR=$DEE_DIR/sw
 PATH=$PATH:$SW_DIR
 DATA_DIR=$DEE_DIR/data/$ORG
@@ -137,9 +140,9 @@ elif [ $ORG == "rnorvegicus" ] ; then
   GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/rattus_norvegicus/dna/Rattus_norvegicus.Rnor_6.0.dna_sm.toplevel.fa.gz"
   CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/rattus_norvegicus/cdna/Rattus_norvegicus.Rnor_6.0.cdna.all.fa.gz"
 elif [ $ORG == "scerevisiae" ] ; then
-  GTFURL="ftp://ftp.ensemblgenomes.org/pub/release-90/fungi/gtf/saccharomyces_cerevisiae/Saccharomyces_cerevisiae.R64-1-1.36.gtf.gz"
-  GDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-90/fungi/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna_sm.toplevel.fa.gz"
-  CDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-90/fungi/fasta/saccharomyces_cerevisiae/cdna/Saccharomyces_cerevisiae.R64-1-1.cdna.all.fa.gz"
+  GTFURL="ftp://ftp.ensemblgenomes.org/pub/release-36/fungi/gtf/saccharomyces_cerevisiae/Saccharomyces_cerevisiae.R64-1-1.36.gtf.gz"
+  GDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-36/fungi/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna_sm.toplevel.fa.gz"
+  CDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-36/fungi/fasta/saccharomyces_cerevisiae/cdna/Saccharomyces_cerevisiae.R64-1-1.cdna.all.fa.gz"
 fi
 
 # download the necessary reference files
@@ -200,9 +203,9 @@ if [ -z $KAL_REF ] || [ ! -r $KAL_REF  ] ; then
   cd $KAL_DIR
   #kallisto index here
   ln $CDNA .
-  for KMER in `seq 11 2 29` ; do
-    kallisto index -i $(basename $CDNA).k$KMER.idx -k $KMER $(basename $CDNA)
-  done
+#  for KMER in `seq 11 2 29` ; do
+#    kallisto index -i $(basename $CDNA).k$KMER.idx -k $KMER $(basename $CDNA)
+#  done
   kallisto index -i $(basename $CDNA).idx $(basename $CDNA)
   for IDX in *idx ; do grep -c '>' $(basename $CDNA) > $IDX.cnt ; done
   KAL_REF=$KAL_DIR/$(basename $CDNA).idx
@@ -231,7 +234,7 @@ fi
 # Lets get started
 ##########################################################################
 cd $DATA_DIR
-mkdir $SRR ; cp $0 $SRR ; cd $SRR
+mkdir $SRR ; cp $PIPELINE $SRR ; cd $SRR
 #if [ -f ../$SRR.sra ] ; then mv ../$SRR.sra . ; fi
 echo "Starting $PIPELINE $CFG $URL
   current disk space = $DISK
@@ -258,7 +261,7 @@ echo $PIPELINE $PIPELINE_MD5 $DATE >> $ATTEMPTS
 DISK=$(df . | awk 'END{print$4}')
 if [ $DISK -lt $DISKLIM ] ; then
   echo Error low disk space $DISK available $DISKLIM limit
-  exit
+  exit 1
 fi
 
 ##########################################################################
@@ -272,6 +275,24 @@ if [ ! -f $SRR.sra ] ; then
   PFX2=$(echo $SRR | cut -c-6)
   URL=anonftp@ftp.ncbi.nlm.nih.gov:sra/sra-instant/reads/ByRun/sra/${PFX1}/${PFX2}/${SRR}/${SRR}.sra
   ID=~/.ascp/aspera-license
+
+  if [ ! -r $ID ] ; then
+cat << EOF > $ID
+-----BEGIN DSA PRIVATE KEY-----
+MIIBuwIBAAKBgQDkKQHD6m4yIxgjsey6Pny46acZXERsJHy54p/BqXIyYkVOAkEp
+KgvT3qTTNmykWWw4ovOP1+Di1c/2FpYcllcTphkWcS8lA7j012mUEecXavXjPPG0
+i3t5vtB8xLy33kQ3e9v9/Lwh0xcRfua0d5UfFwopBIAXvJAr3B6raps8+QIVALws
+yeqsx3EolCaCVXJf+61ceJppAoGAPoPtEP4yzHG2XtcxCfXab4u9zE6wPz4ePJt0
+UTn3fUvnQmJT7i0KVCRr3g2H2OZMWF12y0jUq8QBuZ2so3CHee7W1VmAdbN7Fxc+
+cyV9nE6zURqAaPyt2bE+rgM1pP6LQUYxgD3xKdv1ZG+kDIDEf6U3onjcKbmA6ckx
+T6GavoACgYEAobapDv5p2foH+cG5K07sIFD9r0RD7uKJnlqjYAXzFc8U76wXKgu6
+WXup2ac0Co+RnZp7Hsa9G+E+iJ6poI9pOR08XTdPly4yDULNST4PwlfrbSFT9FVh
+zkWfpOvAUc8fkQAhZqv/PE6VhFQ8w03Z8GpqXx7b3NvBR+EfIx368KoCFEyfl0vH
+Ta7g6mGwIMXrdTQQ8fZs
+-----END DSA PRIVATE KEY-----
+EOF
+  fi
+
   ascp -l 500m -O 33001 -T -i $ID $URL . \
   || ( echo $SRR failed ascp download | tee -a $SRR.log ; sleep 5 ; exit)
   SRASIZE=$(du ${SRR}.sra)
@@ -412,7 +433,7 @@ fi
 # get read counts and append skewer log and exit if there are no reads passing QC
 READ_CNT_TOTAL=$(grep 'processed; of these:' ${SRR}-trimmed.log | awk '{print $1}')
 READ_CNT_AVAIL=$(grep 'available; of these:' ${SRR}-trimmed.log | awk '{print $1}')
-# here #exit
+
 if [ -z "$READ_CNT_AVAIL" ] ; then READ_CNT_AVAIL=0 ; fi
 
 cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
@@ -661,8 +682,10 @@ KMER=$((KMER-ADJUST))
 echo MeadianReadLen=$MEDIAN_LENGTH 20thPercentileLength=$D20 echo kmer=$KMER | tee -a $SRR.log
 
 if [ $KMER -lt "31" ] ; then
-  ENS_REFT=$(echo $ENS_REFT | sed "s#fa.idx#fa.k${KMER}.idx#")
-  NCBI_REFT=$(echo $NCBI_REFT | sed "s#fna.idx#fna.k${KMER}.idx#")
+  KAL_REF=$(echo $KAL_REF | sed "s#fa.idx#fa.k${KMER}.idx#")
+  if [ ! -r $KAL_REF ] ; then
+    kallisto index -i $(basename $CDNA).k$KMER.idx -k $KMER $(basename $CDNA)
+  fi
 fi
 
 ##########################################################################
@@ -753,14 +776,10 @@ cd ..
 export -f main
 
 #TODO
-#-get free memory, num CPUs and CPU speed DONE
-#-select ORG based on memory and queue size DONE
 #-determine parallel jobs
-#load star genome gracefully
-#GO!
-#Transmit data and cleanup files
+#-allow specific accessions
 
-#dump star genomes from memory
+echo Dumping star genomes from memory
 for DIR in $(find $(pwd)/../ref/ | grep /ensembl/star$ | sed 's#\/code\/\.\.##' ) ; do
   echo $DIR ; ../sw/STAR --genomeLoad Remove --genomeDir $DIR
 done
@@ -769,6 +788,30 @@ MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
 #MEM=$(free | awk 'NR==2{print $4}')
 NUM_CPUS=$(nproc)
 CPU_SPEED=$(lscpu | grep 'CPU max MHz:' | awk '{print $4}')
+
+if [ ! -z $MY_ORG ] ; then
+  ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae' \
+  | tr ' ' '\n' | grep -wc "$MY_ORG")
+  if [ $ORG_CHECK -ne 1 ] ; then
+    echo Organism not specified correctly. Check options and try again.
+    exit 1
+  fi
+
+  MEM_REQD=$(echo 'athaliana        2853904
+celegans        2652204
+dmelanogaster   3403644
+drerio  14616592
+ecoli   1576132
+hsapiens        28968508
+mmusculus       26069664
+rnorvegicus     26913880
+scerevisiae     1644684' | grep -w $MY_ORG | awk -v f=$MEM_FACTOR '{print $2*f}')
+
+  if [ $MEM_REQD -gt $MEM ] ; then
+    echo Error, analysis of $ORG data requires at least $(echo $MEM_REQD $MEM_FACTOR | awk '{print $1*$2}') kB in RAM, but there is only $MEM available.
+    exit 1
+  fi
+fi
 
 if [ -z $MY_ORG ] ; then
   ORGS=$(echo 'athaliana	2853904
@@ -781,38 +824,44 @@ mmusculus	26069664
 rnorvegicus	26913880
 scerevisiae	1644684' | awk -v M=$MEM 'M>($2*10)' | sort -k2gr | awk '{print $1}')
 
-  IPHASH=$(curl ipinfo.io/ip | md5sum | awk '{print $1}')
-  if [ $IPHASH == "bbcb41eb861fff23d7882dc61725a6d7" ] ; then
-    ACC_URL="192.168.0.99/acc.html"
-    ACC_REQUEST="192.168.0.99/cgi-bin/acc.sh"
-    SFTP_URL="192.168.0.99"
-  else
-    ACC_URL="http://mdz-analytics.com/acc.html"
-    ACC_REQUEST="http://mdz-analytics.com/cgi-bin/acc.sh"
-    SFTP_URL="110.22.195.164"
-  fi
-
-  #it would be awesome to get the private key here for sftp of the results later
+  #specify organism if it has not already been specified by user
   MY_ORG=$(join -1 1 -2 1 \
   <(curl $ACC_URL | grep ORG | cut -d '>' -f2 | tr -d ' .' | tr 'A-Z' 'a-z' | tr '()' ' ' | sort -k 1b,1) \
   <(echo $ORGS | tr ' ' '\n' | sort -k 1b,1) | sort -k2gr | awk 'NR==1{print $1}' )
 
-  myfunc(){
-  MY_ORG=$1
-  ACCESSION=$(curl "${ACC_REQUEST}?ORG=${MY_ORG}&Submit"| grep 'ACCESSION=' | cut -d '=' -f2)
-  ../sw/STAR --genomeLoad LoadAndExit --genomeDir ../ref/$MY_ORG/ensembl/star
-  main "$ACCESSION" "$MY_ORG"
-  }
-  export -f myfunc
 fi
 
+IPHASH=$(curl ipinfo.io/ip | md5sum | awk '{print $1}')
+if [ $IPHASH == "bbcb41eb861fff23d7882dc61725a6d7" ] ; then
+  ACC_URL="192.168.0.99/acc.html"
+  ACC_REQUEST="192.168.0.99/cgi-bin/acc.sh"
+  SFTP_URL="192.168.0.99"
+else
+  ACC_URL="http://mdz-analytics.com/acc.html"
+  ACC_REQUEST="http://mdz-analytics.com/cgi-bin/acc.sh"
+  SFTP_URL="110.22.195.164"
+fi
+
+myfunc(){
+MY_ORG=$1
+ACCESSION=$(curl "${ACC_REQUEST}?ORG=${MY_ORG}&Submit"| grep 'ACCESSION=' | cut -d '=' -f2)
+../sw/STAR --genomeLoad LoadAndExit --genomeDir ../ref/$MY_ORG/ensembl/star
+main "$ACCESSION" "$MY_ORG"
+}
+export -f myfunc
+
 count=1
-while [ $count -lt 200 ] ; do
+#while [ $count -lt 200 ] ; do
+while [ $count -lt 10 ] ; do
+    (( count++ ))
     DIR=$(pwd)
     echo "$count"
-    myfunc $MY_ORG
-#   ncftpput ${FTP_URL} incoming $ACCESSION.$MY_ORG.zip
-    mkdir .ssh
+    ( myfunc $MY_ORG ) && COMPLETE=1 || COMPLETE=0
+
+    if [ "$COMPLETE" -eq "1" ] ; then
+
+      if [ ! -r .ssh/guestuser ] ; then
+        mkdir .ssh
 
 cat << EOF > .ssh/guestuser
 -----BEGIN RSA PRIVATE KEY-----
@@ -849,26 +898,14 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIsnlOKFedvYBN7GBgwiTOkeCikJty1Yofyus9k03o
 EOF
 
 chmod -R 700 .ssh
-cp $0 $ACCESSION
-zip -r $ACCESSION.$MY_ORG.zip $ACCESSION
-
-sftp -i .ssh/guestuser guestuser@$SFTP_URL << EOF
+      fi
+      cp $0 $ACCESSION
+      zip -r $ACCESSION.$MY_ORG.zip $ACCESSION
+      sftp -i .ssh/guestuser guestuser@$SFTP_URL << EOF
 put $ACCESSION.$MY_ORG.zip
 EOF
 
 #rm -rf .ssh
-    (( count++ ))
     cd $DIR
+  fi
 done
-exit
-#MY_ORG=$(join -1 1 -2 1 <(curl '192.168.0.99/acc.html' | grep ORG | cut -d '>' -f2 | tr -d ' .' | tr 'A-Z' 'a-z' | tr '()' ' ' | sort -k 1b,1) <(echo $ORGS | tr ' ' '\n' | sort -k 1b,1) | sort -k2gr | awk 'NR==1{print $1}')
-
-
-# alternative to ncftp are scp and sftp which are more secure
-# I prefer sftp because users can only upload files to "incoming"
-# and not see other files. Users need to be jailed from viewing,
-# and modyfying other files on the system.
-# sftp authentication and upload can be automated like this
-
-
-

@@ -1,3 +1,13 @@
+#Todo:
+#-Dockerise pipeline
+#-Allow users to decide which SRR/SRP to run
+#-Configure index when required
+#REFERENCE SEQ AND ANNOTATIONS
+#ENS_REFG=$REF_DIR/$ORG/ensembl/star
+#ENS_GTF=$(readlink -f $(find $REF_DIR/$ORG/ensembl/ -maxdepth 1 | grep .gtf$) )
+#ENS_REFT=$(readlink -f $(find $REF_DIR/$ORG/ensembl/kallisto/ -maxdepth 1 | grep fa.idx$) )
+#ENS_REFT_BT2=$(readlink -f $(find $REF_DIR/$ORG/ensembl/bowtie2/ -maxdepth 1 | grep .fa$) )
+
 # Base image
 FROM ubuntu:16.04
 
@@ -25,7 +35,9 @@ RUN apt-get clean all && \
     fastqc \
     perl \
     unzip \
-    bowtie2
+    bowtie2 \
+    python3 \
+    python3-pip
 
 ########################################
 # SRA TOOLKIT WORKING
@@ -36,10 +48,17 @@ RUN tar zxfv /tmp/sratoolkit.${VERSION}-ubuntu64.tar.gz && \
     cp -r sratoolkit.${VERSION}-ubuntu64/bin/* /usr/
 
 ########################################
+# Install parallel-fastq-dump
+########################################
+#COPY get-pip.py .
+RUN pip3 install --upgrade pip
+RUN pip3 install parallel-fastq-dump
+
+########################################
 # ASCP and the NCBI license WORKING
 ########################################
 ADD http://download.asperasoft.com/download/sw/ascp-client/3.5.4/ascp-install-3.5.4.102989-linux-64.sh /tmp/
- No https, so verify sha1
+# No https, so verify sha1
 RUN test $(sha1sum /tmp/ascp-install-3.5.4.102989-linux-64.sh |cut -f1 -d\ ) = a99a63a85fee418d16000a1a51cc70b489755957 && \
     sh /tmp/ascp-install-3.5.4.102989-linux-64.sh
 RUN useradd data
@@ -79,7 +98,7 @@ ENTRYPOINT ["STAR"]
 RUN \
   wget -c https://github.com/pachterlab/kallisto/releases/download/v0.43.1/kallisto_linux-v0.43.1.tar.gz && \
   tar xf kallisto_linux-v0.43.1.tar.gz && \
-  cd kallisto_linux-v0.43.1 \
+  cd kallisto_linux-v0.43.1 && \
   chmod +x kallisto && \
   cp kallisto /usr/local/bin/kallisto  
 ENTRYPOINT ["kallisto"]
