@@ -5,7 +5,7 @@
 set -x
 
 MY_ORG=$1
-MEM_FACTOR=10
+MEM_FACTOR=2
 
 main(){
 #logging all commands
