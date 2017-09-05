@@ -68,12 +68,6 @@ MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
 # Lets test all the input variables
 ##########################################################################
 #check if these are directories
-if [ ! -d "$SW_DIR" ] ; then
-  echo software directory does not exist! Quitting.
-  exit 1
-fi
-
-#check if these are directories
 if [ ! -d "$DATA_DIR"  ] ; then
   mkdir -p $DATA_DIR
 fi
