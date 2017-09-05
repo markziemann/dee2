@@ -16,9 +16,6 @@ shopt -s expand_aliases
 alias exit="rm *fastq *.sra *tsv ; return 1"
 
 #JOB
-##SRR to process
-#URL=$1
-#SRR=`basename $URL | sed 's/.sra$//'`
 SRR_FILE=$1
 SRR=$(basename $SRR_FILE .sra)
 echo $SRR
@@ -42,21 +39,21 @@ QC_DIR=$DEE_DIR/qc
 #exit
 
 #SOFTWARE VARS
-VDBVAL=$SW_DIR/vdb-validate
-FQDUMP=$SW_DIR/fastq-dump
-ABIDUMP=$SW_DIR/abi-dump
-SRA_STAT=$SW_DIR/sra-stat
-PFQDUMP=$SW_DIR/parallel-fastq-dump
-FASTQC=$SW_DIR/FastQC/fastqc
-SKEWER=$SW_DIR/skewer
-MINION=$SW_DIR/kraken/./minion
-BOWTIE2=$SW_DIR/bowtie2-2.3.1/bowtie2
-BOWTIE2BUILD=$SW_DIR/bowtie2-2.3.1/bowtie2-build
-SOLIDTRIMMER=$SW_DIR/solid-trimmer.py
-STAR=$SW_DIR/STAR
-SUBJUNC=/data/app/bin/subjunc
-FEATURECOUNTS=$SW_DIR/featureCounts
-KALLISTO=$SW_DIR/kallisto
+#VDBVAL=$SW_DIR/vdb-validate
+#FQDUMP=$SW_DIR/fastq-dump
+#ABIDUMP=$SW_DIR/abi-dump
+#SRA_STAT=$SW_DIR/sra-stat
+#PFQDUMP=$SW_DIR/parallel-fastq-dump
+#FASTQC=$SW_DIR/FastQC/fastqc
+#SKEWER=$SW_DIR/skewer
+#MINION=$SW_DIR/kraken/./minion
+#BOWTIE2=$SW_DIR/bowtie2-2.3.1/bowtie2
+#BOWTIE2BUILD=$SW_DIR/bowtie2-2.3.1/bowtie2-build
+#SOLIDTRIMMER=$SW_DIR/solid-trimmer.py
+#STAR=$SW_DIR/STAR
+#SUBJUNC=/data/app/bin/subjunc
+#FEATURECOUNTS=$SW_DIR/featureCounts
+#KALLISTO=$SW_DIR/kallisto
 
 #LIMITS
 DISKLIM=32000000
@@ -78,27 +75,22 @@ fi
 
 #check if these are directories
 if [ ! -d "$DATA_DIR"  ] ; then
-  echo data directory does not exist! Quitting.
-  exit 1
-elif [ ! -w "$DATA_DIR"  ] ; then
-  echo data directory not writable! Quitting.
-  exit 1
+  mkdir -p $DATA_DIR
 fi
 
 if [ ! -d "$QC_DIR" ] ; then
-  echo QC report directory does not exist! Quitting.
-  exit 1
+  mkdir -p $QC_DIR
 fi
 
 #check that all the software is present and working
-FQDUMP_STATUS=$($FQDUMP -h | grep -xc './fastq-dump : 2.8.2')
-ABIDUMP_STATUS=$($ABIDUMP -h | grep -xc './abi-dump : 2.8.2')
-SKEWER_STATUS=$SW_DIR/skewer
-SOLIDTRIMMER_STATUS=$SW_DIR/solid-trimmer.py
-STAR_STATUS=$SW_DIR/STAR
-SUBJUNC_STATUS=/data/app/bin/subjunc
-FEATURECOUNTS_STATUS=$SW_DIR/featureCounts
-KALLISTO_STATUS=$SW_DIR/kallisto
+#FQDUMP_STATUS=$($FQDUMP -h | grep -xc './fastq-dump : 2.8.2')
+#ABIDUMP_STATUS=$($ABIDUMP -h | grep -xc './abi-dump : 2.8.2')
+#SKEWER_STATUS=$SW_DIR/skewer
+#SOLIDTRIMMER_STATUS=$SW_DIR/solid-trimmer.py
+#STAR_STATUS=$SW_DIR/STAR
+#SUBJUNC_STATUS=/data/app/bin/subjunc
+#FEATURECOUNTS_STATUS=$SW_DIR/featureCounts
+#KALLISTO_STATUS=$SW_DIR/kallisto
 
 #check all the reference sequences exist and create if necessary
 #REFERENCE SEQ AND ANNOTATIONS
@@ -151,7 +143,7 @@ if [ -z $GTF ] || [ ! -r $GTF  ] ; then
   cd $MYREF_DIR
   if [ -r $(basename $GTFURL) ] ; then rm $(basename $GTFURL) ; fi
   wget $GTFURL
-  gunzip $(basename $GTFURL)
+  gunzip -f $(basename $GTFURL)
   GTF=$MYREF_DIR/$(basename $GTFURL .gz)
   grep -cw gene $GTF > $GTF.cnt
   cd -
@@ -162,7 +154,7 @@ if [ -z $GDNA ] || [ ! -r $GDNA  ] ; then
   cd $MYREF_DIR
   if [ -r $(basename $GDNAURL) ] ; then rm $(basename $GDNAURL) ; fi
   wget $GDNAURL
-  gunzip $(basename $GDNAURL)
+  gunzip -f $(basename $GDNAURL)
   GDNA=$MYREF_DIR/$(basename $GDNAURL .gz)
   cd -
 fi
@@ -172,7 +164,7 @@ if [ -z $CDNA ] || [ ! -r $CDNA  ] ; then
   cd $MYREF_DIR
   if [ -r $(basename $CDNAURL) ] ; then rm $(basename $CDNAURL) ; fi
   wget $CDNAURL
-  gunzip $(basename $CDNAURL)
+  gunzip -f $(basename $CDNAURL)
   CDNA=$MYREF_DIR/$(basename $CDNAURL .gz)
   grep -c '>' $CDNA > $CDNA.cnt
   cd -
@@ -188,7 +180,7 @@ BT2_REF=$BT2_DIR/$(basename $CDNA)
 if [ -z $BT2_REF ] || [ ! -r $BT2_REF  ] ; then
   cd $BT2_DIR ; ln $CDNA .
   #creating bowtie2 index
-  $BOWTIE2BUILD --threads $(nproc) -f $(basename $CDNA) $(basename $CDNA)
+  bowtie2-build --threads $(nproc) -f $(basename $CDNA) $(basename $CDNA)
   ENS_REFT_BT2=$BT2_DIR/$(basename $CDNA)
   cd -
 fi
@@ -222,7 +214,7 @@ if [ ! -r $STAR_DIR/SA ] || [ ! -r $STAR_DIR/SAindex ] ; then
   cd $STAR_DIR
   ln $GDNA $GTF .
   CWD=`pwd`
-  $STAR --runMode genomeGenerate \
+  STAR --runMode genomeGenerate \
   --sjdbGTFfile $CWD/$(basename $GTF) \
   --genomeDir $CWD  \
   --genomeFastaFiles $CWD/$(basename $GDNA) \
@@ -233,9 +225,9 @@ fi
 ##########################################################################
 # Lets get started
 ##########################################################################
+if [ ! -d $DATA_DIR ] ; then mkdir -p $DATA_DIR ; fi
 cd $DATA_DIR
 mkdir $SRR ; cp $PIPELINE $SRR ; cd $SRR
-#if [ -f ../$SRR.sra ] ; then mv ../$SRR.sra . ; fi
 echo "Starting $PIPELINE $CFG $URL
   current disk space = $DISK
   free memory = $MEM " | tee -a $SRR.log
@@ -303,7 +295,7 @@ echo $SRR Validate the SRA file
 ##########################################################################
 echo $SRR SRAfilesize $SRASIZE | tee -a $SRR.log
 md5sum $SRR.sra | tee -a $SRR.log
-VALIDATE_SRA=$($VDBVAL $SRR.sra &> /dev/stdout  | head -4 | awk '{print $NF}' | grep -c ok)
+VALIDATE_SRA=$(vdb-validate $SRR.sra &> /dev/stdout  | head -4 | awk '{print $NF}' | grep -c ok)
 if [ $VALIDATE_SRA -eq 4 ] ; then
   echo $SRR.sra file validated | tee -a $SRR.log
 else
@@ -314,7 +306,7 @@ fi
 ##########################################################################
 echo $SRR diagnose basespace colorspace, single/paired-end and read length
 ##########################################################################
-$FQDUMP -X 4000 --split-files $SRR.sra
+fastq-dump -X 4000 --split-files $SRR.sra
 NUM_FQ=$(ls | grep $SRR | grep -v trimmed.fastq | grep -c fastq$)
 if [ $NUM_FQ -eq "1" ] ; then
   ORIG_RDS=SE
@@ -330,7 +322,7 @@ else
 fi
 
 FQ1=$(ls  | grep $SRR | grep -m1 fastq$)
-$FASTQC $FQ1
+fastqc $FQ1
 FQ1BASE=$(basename $FQ1 .fastq)
 
 #diagnose colorspace or conventional
@@ -368,7 +360,7 @@ FQ2_MAX_LEN=NULL
 
 if [ $RDS == "PE" ] ; then
   FQ2=$(ls  | grep $SRR | grep fastq$ | sed -n 2p)
-  $FASTQC $FQ2
+  fastqc $FQ2
   FQ2BASE=$(basename $FQ2 .fastq)
   FQ2_LEN=$(unzip -p ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc/fastqc_data.txt \
   | grep 'Sequence length' | cut -f2)
@@ -396,7 +388,7 @@ rm ${SRR}*fastq
 if [ $CSPACE == "FALSE" ] ; then
   #$FQDUMP --split-files --defline-qual '+' ${SRR}.sra
   ##try parallelising with fastq-dump
-  $PFQDUMP --threads 8 --outdir . --split-files --defline-qual + -s ${SRR}.sra
+  parallel-fastq-dump --threads 8 --outdir . --split-files --defline-qual + -s ${SRR}.sra
 fi
 
 FILESIZE=$(du -s $FQ1 | cut -f1)
@@ -413,12 +405,12 @@ echo $SRR completed basic pipeline successfully | tee -a $SRR.log
 echo $SRR Quality trimming
 ##########################################################################
 if [ $RDS == "SE" ] ; then
-  $SKEWER -l 18 -q 10 -k inf -t $THREADS -o $SRR $FQ1
+  skewer -l 18 -q 10 -k inf -t $THREADS -o $SRR $FQ1
   rm $FQ1
   FQ1=${SRR}-trimmed.fastq
 
 elif [ $RDS == "PE" ] ; then
-  $SKEWER -l 18 -q 10 -k inf -t $THREADS -o $SRR $FQ1 $FQ2
+  skewer -l 18 -q 10 -k inf -t $THREADS -o $SRR $FQ1 $FQ2
   rm $FQ1 $FQ2
   FQ1=${SRR}-trimmed-pair1.fastq
   FQ2=${SRR}-trimmed-pair2.fastq
@@ -458,7 +450,7 @@ echo $SRR adapter diagnosis
 ADAPTER_THRESHOLD=2
 if [ $RDS == "SE" ] ; then
   MINION_LOG=$FQ1.minion.log
-  $MINION search-adapter -i $FQ1 > $MINION_LOG
+  minion search-adapter -i $FQ1 > $MINION_LOG
   ADAPTER=$(head $MINION_LOG | grep -m1 sequence= | cut -d '=' -f2)
   DENSITY=$(head $MINION_LOG | grep -m1 'sequence-density=' | cut -d '=' -f2 | numround -c)
   cat $MINION_LOG | tee -a $SRR.log && rm $MINION_LOG
@@ -467,7 +459,7 @@ if [ $RDS == "SE" ] ; then
     if [ $DENSITY -gt $ADAPTER_THRESHOLD ] ; then
       echo Potential 3prime adapter identified. Now checking if in reference sequence | tee -a $SRR.log
       # Query to see if adapter sequence present in reference
-      ADAPTER_REF_CHECK=$($BOWTIE2 -f -x $BT2_REF -S /dev/stdout <(echo $ADAPTER | sed 's/^/>ADAPTER\n/') 2>>$SRR.log | awk '$1!~/^@/ && $2!=4' | wc -l )
+      ADAPTER_REF_CHECK=$(bowtie2 -f -x $BT2_REF -S /dev/stdout <(echo $ADAPTER | sed 's/^/>ADAPTER\n/') 2>>$SRR.log | awk '$1!~/^@/ && $2!=4' | wc -l )
 
       if [ $ADAPTER_REF_CHECK -eq "0" ] ; then
         echo Adapter seq not found in reference. Now shuffling file before clipping | tee -a $SRR.log
@@ -475,14 +467,14 @@ if [ $RDS == "SE" ] ; then
         #shuffling the fq file to remove any tile effects
         paste - - - - < $FQ1 | shuf | tr '\t' '\n' > ${SRR}.fastq
         CLIP_LINE_NUM=$(echo $DENSITY $ADAPTER_THRESHOLD $READ_CNT_AVAIL | awk '{printf "%.0f\n", ($1-$2)/$1*$3*4}' | numround -n 4)
-        head -$CLIP_LINE_NUM ${SRR}.fastq | $SKEWER -l 18 -t $THREADS -x $ADAPTER -o $SRR -
+        head -$CLIP_LINE_NUM ${SRR}.fastq | skewer -l 18 -t $THREADS -x $ADAPTER -o $SRR -
         READ_CNT_AVAIL=$(grep 'available; of these:' ${SRR}-trimmed.log | cut -d ' ' -f1)
         if [ -z "$READ_CNT_AVAIL" ] ; then READ_CNT_AVAIL=0 ; fi
         #FQ1 read len min max median
         cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
         CLIP_LINE_NUM1=$((CLIP_LINE_NUM+1))
         tail -n+$CLIP_LINE_NUM1 ${SRR}.fastq >> ${SRR}-trimmed.fastq && rm ${SRR}.fastq
-        $MINION search-adapter -i ${SRR}-trimmed.fastq | tee -a $SRR.log
+        minion search-adapter -i ${SRR}-trimmed.fastq | tee -a $SRR.log
       else
         echo Potential adapter found in reference sequence. Continuing without clipping. | tee -a $SRR.log
       fi
@@ -491,13 +483,13 @@ if [ $RDS == "SE" ] ; then
 
 elif [ $RDS == "PE" ] ; then
   MINION_LOG=$FQ1.minion.log
-  $MINION search-adapter -i $FQ1 > $MINION_LOG
+  minion search-adapter -i $FQ1 > $MINION_LOG
   ADAPTER1=$(head $MINION_LOG | grep -m1 sequence= | cut -d '=' -f2)
   DENSITY1=$(head $MINION_LOG | grep -m1 'sequence-density=' | cut -d '=' -f2 | numround -c)
   cat $MINION_LOG | tee -a $SRR.log && rm $MINION_LOG
 
   MINION_LOG=$FQ2.minion.log
-  $MINION search-adapter -i $FQ2 > $MINION_LOG
+  minion search-adapter -i $FQ2 > $MINION_LOG
   ADAPTER2=$(head $MINION_LOG | grep -m1 sequence= | cut -d '=' -f2)
   DENSITY2=$(head $MINION_LOG | grep -m1 'sequence-density=' | cut -d '=' -f2 | numround -c)
   cat $MINION_LOG | tee -a $SRR.log && rm $MINION_LOG
@@ -518,15 +510,15 @@ elif [ $RDS == "PE" ] ; then
         CLIP_LINE_NUM=$(echo $DENSITY $ADAPTER_THRESHOLD $READ_CNT_AVAIL | awk '{printf "%.0f\n", ($1-$2)/$1*$3*4}' | numround -n 4)
         head -$CLIP_LINE_NUM ${SRR}_1.tmp.fastq > ${SRR}_1.fastq &
         head -$CLIP_LINE_NUM ${SRR}_2.tmp.fastq > ${SRR}_2.fastq ; wait
-        $SKEWER -l 18 -t $THREADS -x $ADAPTER1 -y $ADAPTER2 -o $SRR ${SRR}_1.fastq ${SRR}_2.fastq
+        skewer -l 18 -t $THREADS -x $ADAPTER1 -y $ADAPTER2 -o $SRR ${SRR}_1.fastq ${SRR}_2.fastq
         READ_CNT_AVAIL=$(grep 'available; of these:' ${SRR}-trimmed.log | cut -d ' ' -f1)
         if [ -z "$READ_CNT_AVAIL" ] ; then READ_CNT_AVAIL=0 ; fi
         cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
         CLIP_LINE_NUM1=$((CLIP_LINE_NUM+1))
         tail -n+$CLIP_LINE_NUM1 ${SRR}_1.tmp.fastq >> ${SRR}-trimmed-pair1.fastq && rm ${SRR}_1.tmp.fastq
         tail -n+$CLIP_LINE_NUM1 ${SRR}_2.tmp.fastq >> ${SRR}-trimmed-pair2.fastq && rm ${SRR}_2.tmp.fastq
-        $MINION search-adapter -i ${SRR}-trimmed-pair1.fastq | tee -a $SRR.log
-        $MINION search-adapter -i ${SRR}-trimmed-pair2.fastq | tee -a $SRR.log
+        minion search-adapter -i ${SRR}-trimmed-pair1.fastq | tee -a $SRR.log
+        minion search-adapter -i ${SRR}-trimmed-pair2.fastq | tee -a $SRR.log
       else
         echo Potential adapter found in reference sequence. Continuing without clipping. | tee -a $SRR.log
       fi
@@ -568,7 +560,7 @@ if [ $RDS == "PE" ] ; then
   #test 10k reads FQ1
   head -10000 $FQ1 > test.fq ; head -1000000 $FQ1 | tail -90000 >> test.fq
   RD_CNT=$(sed -n '2~4p' < test.fq | wc -l)
-  $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test.fq
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   UNMAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | head -1)
@@ -578,7 +570,7 @@ if [ $RDS == "PE" ] ; then
   #test 10k reads FQ2
   head -10000 $FQ2 > test.fq ; head -100000 $FQ1 | tail -90000 >> test.fq
   RD_CNT=$(sed '2~4p' test.fq | wc -l)
-  $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test.fq
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   UNMAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | head -1)
@@ -607,12 +599,12 @@ fi
 ## Now performing full alignment
 if [ $RDS == "SE" ] ; then
   head $FQ1 ; tail $FQ1
-  $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=$FQ1
 elif [ $RDS == "PE" ] ; then
   head $FQ1 $FQ2 ; tail $FQ1 $FQ2  head $FQ1 $FQ2 ; tail $FQ1 $FQ2
   #proper PE mapping
-  $STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=$FQ1 $FQ2
 fi
 
@@ -685,6 +677,7 @@ if [ $KMER -lt "31" ] ; then
   KAL_REF=$(echo $KAL_REF | sed "s#fa.idx#fa.k${KMER}.idx#")
   if [ ! -r $KAL_REF ] ; then
     kallisto index -i $(basename $CDNA).k$KMER.idx -k $KMER $(basename $CDNA)
+    for IDX in *idx ; do grep -c '>' $(basename $CDNA) > $IDX.cnt ; done
   fi
 fi
 
@@ -697,12 +690,12 @@ if [ $RDS == "SE" ] ; then
 ############################################
 # TODO need intelligent frag size specification
 ###########################################
-  $KALLISTO quant $KALLISTO_STRAND_PARAMETER --single -l 100 -s 20 -t $THREADS -o . -i $KAL_REF $FQ1 2>&1 \
+  kallisto quant $KALLISTO_STRAND_PARAMETER --single -l 100 -s 20 -t $THREADS -o . -i $KAL_REF $FQ1 2>&1 \
   | tee -a $SRR.log && mv abundance.tsv $SRR.ke.tsv
   rm abundance.h5
 elif [ $RDS == "PE" ] ; then
   echo $SRR Starting Kallisto paired end mapping to ensembl reference transcriptome | tee -a $SRR.log
-  $KALLISTO quant $KALLISTO_STRAND_PARAMETER -t $THREADS -o . -i $KAL_REF $FQ1 $FQ2 2>&1 \
+  kallisto quant $KALLISTO_STRAND_PARAMETER -t $THREADS -o . -i $KAL_REF $FQ1 $FQ2 2>&1 \
   | tee -a $SRR.log && mv abundance.tsv $SRR.ke.tsv
   rm abundance.h5
 fi
@@ -778,10 +771,15 @@ export -f main
 #TODO
 #-determine parallel jobs
 #-allow specific accessions
+#-working from within container
+
+if [ $(basename $(pwd)) != "code" ] ; then
+  mkdir code && cp ../$0 .
+fi
 
 echo Dumping star genomes from memory
 for DIR in $(find $(pwd)/../ref/ | grep /ensembl/star$ | sed 's#\/code\/\.\.##' ) ; do
-  echo $DIR ; ../sw/STAR --genomeLoad Remove --genomeDir $DIR
+  echo $DIR ; STAR --genomeLoad Remove --genomeDir $DIR
 done
 
 MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
@@ -844,26 +842,28 @@ fi
 
 myfunc(){
 MY_ORG=$1
+ACC_REQUEST=$2
 ACCESSION=$(curl "${ACC_REQUEST}?ORG=${MY_ORG}&Submit"| grep 'ACCESSION=' | cut -d '=' -f2)
-../sw/STAR --genomeLoad LoadAndExit --genomeDir ../ref/$MY_ORG/ensembl/star
-main "$ACCESSION" "$MY_ORG"
+STAR --genomeLoad LoadAndExit --genomeDir ../ref/$MY_ORG/ensembl/star >/dev/null
+echo $ACCESSION
 }
 export -f myfunc
 
 count=1
 #while [ $count -lt 200 ] ; do
-while [ $count -lt 10 ] ; do
+while [ $count -lt 3 ] ; do
     (( count++ ))
     DIR=$(pwd)
     echo "$count"
-    ( myfunc $MY_ORG ) && COMPLETE=1 || COMPLETE=0
+    ACCESSION=$(myfunc $MY_ORG $ACC_REQUEST)
+    ( main "$ACCESSION" "$MY_ORG") && COMPLETE=1 || COMPLETE=0
 
     if [ "$COMPLETE" -eq "1" ] ; then
 
-      if [ ! -r .ssh/guestuser ] ; then
-        mkdir .ssh
+      if [ ! -r ~/.ssh/guestuser ] ; then
+        mkdir ~/.ssh
 
-cat << EOF > .ssh/guestuser
+cat << EOF > ~/.ssh/guestuser
 -----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEAyLJ5TihXnb2ATexgYMIkzpHgopCbctWKH8rrPZNN6PALRYjg
 1ozfeMFylSvQilFw+6bCe7HlqUQ3e6pS/jHJukEyzbJOEVR4AwuZxxctI4QH00AL
@@ -893,15 +893,15 @@ Qzab+/WnlQMuslmCLxXXOijq5lEDJLJ0m9hZ0sdC+j13jsTCEOnyj/XJ3VgLKifP
 -----END RSA PRIVATE KEY-----
 EOF
 
-cat << EOF > .ssh/guestuser.pub
+cat << EOF > ~/.ssh/guestuser.pub
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIsnlOKFedvYBN7GBgwiTOkeCikJty1Yofyus9k03o8AtFiODWjN94wXKVK9CKUXD7psJ7seWpRDd7qlL+Mcm6QTLNsk4RVHgDC5nHFy0jhAfTQAvZ4O9a+UQ4KGXE+DwSvlKM/OJRfDw6/ds0u8UdJDuqU1v+BsqEq/OXouTSfpjOX0L96LDNMqN8Qp9cBnnV+PIPZ+ZIVpWV6r63fO+JloZ+0W04sq0MD3BdeKixisG58R/OLG6NAXTgfO/4SDzXhuPOCRKlmIPJLvfk1TO7Q8Judc2NkDpCLKaKw6SHHQnvDeu+f+CaVgyZ4FrkZlmyed9EG+PSCtAh5+QtLfRH mdz@opti
 EOF
 
-chmod -R 700 .ssh
+chmod -R 700 ~/.ssh
       fi
-      cp $0 $ACCESSION
+      cd ../data/$MY_ORG
       zip -r $ACCESSION.$MY_ORG.zip $ACCESSION
-      sftp -i .ssh/guestuser guestuser@$SFTP_URL << EOF
+      sftp -i ~/.ssh/guestuser guestuser@$SFTP_URL << EOF
 put $ACCESSION.$MY_ORG.zip
 EOF
 
