@@ -1,13 +1,3 @@
-#Todo:
-#-Dockerise pipeline
-#-Allow users to decide which SRR/SRP to run
-#-Configure index when required
-#REFERENCE SEQ AND ANNOTATIONS
-#ENS_REFG=$REF_DIR/$ORG/ensembl/star
-#ENS_GTF=$(readlink -f $(find $REF_DIR/$ORG/ensembl/ -maxdepth 1 | grep .gtf$) )
-#ENS_REFT=$(readlink -f $(find $REF_DIR/$ORG/ensembl/kallisto/ -maxdepth 1 | grep fa.idx$) )
-#ENS_REFT_BT2=$(readlink -f $(find $REF_DIR/$ORG/ensembl/bowtie2/ -maxdepth 1 | grep .fa$) )
-
 # Base image
 FROM ubuntu:16.04
 
@@ -25,6 +15,9 @@ LABEL tags="Genomics"
 # Maintainer
 MAINTAINER Mark Ziemann <mark.ziemann@gmail.com>
 
+ENV DIRPATH /home/data/
+WORKDIR $DIRPATH
+
 #numaverage numround numsum
 RUN apt-get clean all && \
     apt-get update && \
@@ -32,7 +25,7 @@ RUN apt-get clean all && \
     apt-get install -y \
     num-utils \
     wget \
-    fastqc \
+    git \
     perl \
     unzip \
     bowtie2 \
@@ -45,7 +38,7 @@ RUN apt-get clean all && \
 ENV VERSION 2.8.2-1
 ADD http://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/${VERSION}/sratoolkit.${VERSION}-ubuntu64.tar.gz /tmp/
 RUN tar zxfv /tmp/sratoolkit.${VERSION}-ubuntu64.tar.gz && \
-    cp -r sratoolkit.${VERSION}-ubuntu64/bin/* /usr/
+    cp -r sratoolkit.${VERSION}-ubuntu64/bin/* /usr/local/bin
 
 ########################################
 # Install parallel-fastq-dump
@@ -55,23 +48,13 @@ RUN pip3 install --upgrade pip
 RUN pip3 install parallel-fastq-dump
 
 ########################################
-# ASCP and the NCBI license WORKING
-########################################
-ADD http://download.asperasoft.com/download/sw/ascp-client/3.5.4/ascp-install-3.5.4.102989-linux-64.sh /tmp/
-# No https, so verify sha1
-RUN test $(sha1sum /tmp/ascp-install-3.5.4.102989-linux-64.sh |cut -f1 -d\ ) = a99a63a85fee418d16000a1a51cc70b489755957 && \
-    sh /tmp/ascp-install-3.5.4.102989-linux-64.sh
-RUN useradd data
-USER data
-ENTRYPOINT ["/usr/local/bin/ascp"]
-
-########################################
 # SKEWER WORKING
 ########################################
 RUN \
-  wget -c https://downloads.sourceforge.net/project/skewer/Binaries/skewer-0.2.2-linux-x86_64 && \
-  chmod +x skewer-0.2.2-linux-x86_64 && \
-  cp skewer-0.2.2-linux-x86_64 /usr/local/bin/skewer
+  wget -O /tmp/skewer-0.2.2-linux-x86_64 "https://downloads.sourceforge.net/project/skewer/Binaries/skewer-0.2.2-linux-x86_64?r=&ts=1504573715&use_mirror=nchc" && \
+  mv /tmp/skewer-0.2.2-linux-x86_64 /tmp/skewer && \
+  chmod +x /tmp/skewer && \
+  cp /tmp/skewer /usr/local/bin/
 ENTRYPOINT ["skewer"]
 
 ########################################
@@ -93,6 +76,16 @@ RUN \
 ENTRYPOINT ["STAR"]
 
 ########################################
+# Fastqc
+########################################
+RUN \
+  wget -O fastqc_v0.11.5.zip "https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.5.zip" && \
+  unzip fastqc_v0.11.5.zip && \
+  cd FastQC && \
+  mv * /usr/local/bin/
+ENTRYPOINT ["fastqc"]
+
+########################################
 # KALLISTO
 ########################################
 RUN \
@@ -103,3 +96,28 @@ RUN \
   cp kallisto /usr/local/bin/kallisto  
 ENTRYPOINT ["kallisto"]
 
+
+########################################
+# Get the dee2 repo
+########################################
+RUN git clone https://github.com/markziemann/dee2.git && \
+  cd dee2 && \
+  mkdir code && \
+  cp volunteer_pipeline.sh code && \
+  cd code
+
+########################################
+# ASCP and the NCBI license WORKING
+########################################
+ADD http://download.asperasoft.com/download/sw/ascp-client/3.5.4/ascp-install-3.5.4.102989-linux-64.sh /tmp/
+## No https, so verify sha1
+RUN test $(sha1sum /tmp/ascp-install-3.5.4.102989-linux-64.sh |cut -f1 -d\ ) = a99a63a85fee418d16000a1a51cc70b489755957 && \
+   sh /tmp/ascp-install-3.5.4.102989-linux-64.sh
+#RUN useradd data
+#USER data
+ENTRYPOINT ["/usr/local/bin/ascp"]
+
+########################################
+# run dee2
+########################################
+RUN bash volunteer_pipeline.sh ecoli
