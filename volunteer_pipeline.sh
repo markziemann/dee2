@@ -260,10 +260,10 @@ if [ ! -f $SRR.sra ] ; then
   PFX1=$(echo $SRR | cut -c-3)
   PFX2=$(echo $SRR | cut -c-6)
   URL=anonftp@ftp.ncbi.nlm.nih.gov:sra/sra-instant/reads/ByRun/sra/${PFX1}/${PFX2}/${SRR}/${SRR}.sra
-  ID=~/.ascp/aspera-license
+  ID=aspera-license
 
-  mkdir ~/.ascp
-  cat << EOF > $ID
+  if [ ! -r $ID ] ; then
+cat << EOF > $ID
 -----BEGIN DSA PRIVATE KEY-----
 MIIBuwIBAAKBgQDkKQHD6m4yIxgjsey6Pny46acZXERsJHy54p/BqXIyYkVOAkEp
 KgvT3qTTNmykWWw4ovOP1+Di1c/2FpYcllcTphkWcS8lA7j012mUEecXavXjPPG0
@@ -277,7 +277,7 @@ zkWfpOvAUc8fkQAhZqv/PE6VhFQ8w03Z8GpqXx7b3NvBR+EfIx368KoCFEyfl0vH
 Ta7g6mGwIMXrdTQQ8fZs
 -----END DSA PRIVATE KEY-----
 EOF
- chmod 700 ~/.ascp
+  fi
 
   ascp -l 500m -O 33001 -T -i $ID $URL . \
   || ( echo $SRR failed ascp download | tee -a $SRR.log ; sleep 5 ; exit)
@@ -781,6 +781,19 @@ MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
 NUM_CPUS=$(nproc)
 CPU_SPEED=$(lscpu | grep 'CPU max MHz:' | awk '{print $4}')
 
+IPHASH=$(curl ipinfo.io/ip | md5sum | awk '{print $1}')
+if [ $IPHASH == "bbcb41eb861fff23d7882dc61725a6d7" ] ; then
+  ACC_URL="192.168.0.99/acc.html"
+  ACC_REQUEST="192.168.0.99/cgi-bin/acc.sh"
+  SFTP_URL="192.168.0.99"
+else
+  ACC_URL="http://mdz-analytics.com/acc.html"
+  ACC_REQUEST="http://mdz-analytics.com/cgi-bin/acc.sh"
+  SFTP_URL="110.22.195.164"
+fi
+
+
+
 if [ ! -z $MY_ORG ] ; then
   ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae' \
   | tr ' ' '\n' | grep -wc "$MY_ORG")
@@ -821,17 +834,6 @@ scerevisiae	1644684' | awk -v M=$MEM 'M>($2*10)' | sort -k2gr | awk '{print $1}'
   <(curl $ACC_URL | grep ORG | cut -d '>' -f2 | tr -d ' .' | tr 'A-Z' 'a-z' | tr '()' ' ' | sort -k 1b,1) \
   <(echo $ORGS | tr ' ' '\n' | sort -k 1b,1) | sort -k2gr | awk 'NR==1{print $1}' )
 
-fi
-
-IPHASH=$(curl ipinfo.io/ip | md5sum | awk '{print $1}')
-if [ $IPHASH == "bbcb41eb861fff23d7882dc61725a6d7" ] ; then
-  ACC_URL="192.168.0.99/acc.html"
-  ACC_REQUEST="192.168.0.99/cgi-bin/acc.sh"
-  SFTP_URL="192.168.0.99"
-else
-  ACC_URL="http://mdz-analytics.com/acc.html"
-  ACC_REQUEST="http://mdz-analytics.com/cgi-bin/acc.sh"
-  SFTP_URL="110.22.195.164"
 fi
 
 myfunc(){
