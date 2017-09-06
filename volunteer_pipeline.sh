@@ -260,10 +260,10 @@ if [ ! -f $SRR.sra ] ; then
   PFX1=$(echo $SRR | cut -c-3)
   PFX2=$(echo $SRR | cut -c-6)
   URL=anonftp@ftp.ncbi.nlm.nih.gov:sra/sra-instant/reads/ByRun/sra/${PFX1}/${PFX2}/${SRR}/${SRR}.sra
-  ID=aspera-license
+  ID=~/.ascp/aspera-license
 
-  if [ ! -r $ID ] ; then
-cat << EOF > $ID
+  mkdir ~/.ascp
+  cat << EOF > $ID
 -----BEGIN DSA PRIVATE KEY-----
 MIIBuwIBAAKBgQDkKQHD6m4yIxgjsey6Pny46acZXERsJHy54p/BqXIyYkVOAkEp
 KgvT3qTTNmykWWw4ovOP1+Di1c/2FpYcllcTphkWcS8lA7j012mUEecXavXjPPG0
@@ -277,7 +277,7 @@ zkWfpOvAUc8fkQAhZqv/PE6VhFQ8w03Z8GpqXx7b3NvBR+EfIx368KoCFEyfl0vH
 Ta7g6mGwIMXrdTQQ8fZs
 -----END DSA PRIVATE KEY-----
 EOF
-  fi
+ chmod 700 ~/.ascp
 
   ascp -l 500m -O 33001 -T -i $ID $URL . \
   || ( echo $SRR failed ascp download | tee -a $SRR.log ; sleep 5 ; exit)
