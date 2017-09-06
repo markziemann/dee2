@@ -262,7 +262,6 @@ if [ ! -f $SRR.sra ] ; then
   URL=anonftp@ftp.ncbi.nlm.nih.gov:sra/sra-instant/reads/ByRun/sra/${PFX1}/${PFX2}/${SRR}/${SRR}.sra
   ID=aspera-license
 
-  if [ ! -r $ID ] ; then
 cat << EOF > $ID
 -----BEGIN DSA PRIVATE KEY-----
 MIIBuwIBAAKBgQDkKQHD6m4yIxgjsey6Pny46acZXERsJHy54p/BqXIyYkVOAkEp
@@ -277,7 +276,6 @@ zkWfpOvAUc8fkQAhZqv/PE6VhFQ8w03Z8GpqXx7b3NvBR+EfIx368KoCFEyfl0vH
 Ta7g6mGwIMXrdTQQ8fZs
 -----END DSA PRIVATE KEY-----
 EOF
-  fi
 
   ascp -l 500m -O 33001 -T -i $ID $URL . \
   || ( echo $SRR failed ascp download | tee -a $SRR.log ; sleep 5 ; exit)
