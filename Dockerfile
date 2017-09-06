@@ -5,7 +5,7 @@ FROM ubuntu:16.04
 LABEl base.image="ubuntu:16.04"
 LABEL version="1"
 LABEL software="Image for DEE2"
-LABEL software.version="08252016"
+LABEL software.version="20170906"
 LABEL description="Image for DEE2"
 LABEL website=""
 LABEL documentation=""
@@ -31,15 +31,14 @@ RUN apt-get clean all && \
     wget \
     git \
     perl \
+    zip \
     unzip \
     python3 \
     python3-pip
 
-
 ########################################
 # BOWTIE2 the apt version is too old and conda not working
 ########################################
-#RUN conda install bowtie2 && conda update bowtie2
 RUN wget -O bowtie2-2.3.2-linux-x86_64.zip "https://downloads.sourceforge.net/project/bowtie-bio/bowtie2/2.3.2/bowtie2-2.3.2-linux-x86_64.zip?r=https%3A%2F%2Fsourceforge.net%2Fprojects%2Fbowtie-bio%2Ffiles%2Fbowtie2%2F2.3.2&ts=1504676040&use_mirror=nchc" && \
   unzip bowtie2-2.3.2-linux-x86_64.zip && \
   cd bowtie2-2.3.2/ && \
@@ -83,7 +82,7 @@ ENTRYPOINT ["minion"]
 # STAR
 ########################################
 RUN \
-  wget -c https://github.com/alexdobin/STAR/blob/master/bin/Linux_x86_64/STAR  && \
+  wget -c https://github.com/alexdobin/STAR/raw/master/bin/Linux_x86_64_static/STAR && \
   chmod +x STAR && \
   cp STAR /usr/local/bin/STAR
 ENTRYPOINT ["STAR"]
@@ -117,9 +116,10 @@ ADD http://download.asperasoft.com/download/sw/ascp-client/3.5.4/ascp-install-3.
 ## No https, so verify sha1
 RUN test $(sha1sum /tmp/ascp-install-3.5.4.102989-linux-64.sh |cut -f1 -d\ ) = a99a63a85fee418d16000a1a51cc70b489755957 && \
    sh /tmp/ascp-install-3.5.4.102989-linux-64.sh
+
 #RUN useradd data
 #USER data
-ENTRYPOINT ["/usr/local/bin/ascp"]
+ENTRYPOINT ["ascp"]
 
 ########################################
 # Get the dee2 repo
@@ -130,10 +130,9 @@ RUN git clone https://github.com/markziemann/dee2.git && \
   cp volunteer_pipeline.sh code && \
   cd code && \
   chmod +x volunteer_pipeline.sh && \
-  ./volunteer_pipeline.sh athaliana
+  ./volunteer_pipeline.sh
 
 ########################################
 # run dee2
 ########################################
 #RUN ["/bin/bash", "-c", "volunteer_pipeline.sh"]
-
