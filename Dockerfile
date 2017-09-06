@@ -18,19 +18,32 @@ MAINTAINER Mark Ziemann <mark.ziemann@gmail.com>
 ENV DIRPATH /home/data/
 WORKDIR $DIRPATH
 
+RUN rm /bin/sh && \
+  ln /bin/bash /bin/sh
+
 #numaverage numround numsum
 RUN apt-get clean all && \
     apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y \
+    curl \
     num-utils \
     wget \
     git \
     perl \
     unzip \
-    bowtie2 \
     python3 \
     python3-pip
+
+
+########################################
+# BOWTIE2 the apt version is too old and conda not working
+########################################
+#RUN conda install bowtie2 && conda update bowtie2
+RUN wget -O bowtie2-2.3.2-linux-x86_64.zip "https://downloads.sourceforge.net/project/bowtie-bio/bowtie2/2.3.2/bowtie2-2.3.2-linux-x86_64.zip?r=https%3A%2F%2Fsourceforge.net%2Fprojects%2Fbowtie-bio%2Ffiles%2Fbowtie2%2F2.3.2&ts=1504676040&use_mirror=nchc" && \
+  unzip bowtie2-2.3.2-linux-x86_64.zip && \
+  cd bowtie2-2.3.2/ && \
+  cp bow* /usr/local/bin
 
 ########################################
 # SRA TOOLKIT WORKING
@@ -98,15 +111,6 @@ ENTRYPOINT ["kallisto"]
 
 
 ########################################
-# Get the dee2 repo
-########################################
-RUN git clone https://github.com/markziemann/dee2.git && \
-  cd dee2 && \
-  mkdir code && \
-  cp volunteer_pipeline.sh code && \
-  cd code
-
-########################################
 # ASCP and the NCBI license WORKING
 ########################################
 ADD http://download.asperasoft.com/download/sw/ascp-client/3.5.4/ascp-install-3.5.4.102989-linux-64.sh /tmp/
@@ -118,6 +122,18 @@ RUN test $(sha1sum /tmp/ascp-install-3.5.4.102989-linux-64.sh |cut -f1 -d\ ) = a
 ENTRYPOINT ["/usr/local/bin/ascp"]
 
 ########################################
+# Get the dee2 repo
+########################################
+RUN git clone https://github.com/markziemann/dee2.git && \
+  cd dee2 && \
+  mkdir code && \
+  cp volunteer_pipeline.sh code && \
+  cd code && \
+  chmod +x volunteer_pipeline.sh && \
+  ./volunteer_pipeline.sh athaliana
+
+########################################
 # run dee2
 ########################################
-RUN bash volunteer_pipeline.sh ecoli
+#RUN ["/bin/bash", "-c", "volunteer_pipeline.sh"]
+
