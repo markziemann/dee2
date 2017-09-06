@@ -260,7 +260,7 @@ if [ ! -f $SRR.sra ] ; then
   PFX1=$(echo $SRR | cut -c-3)
   PFX2=$(echo $SRR | cut -c-6)
   URL=anonftp@ftp.ncbi.nlm.nih.gov:sra/sra-instant/reads/ByRun/sra/${PFX1}/${PFX2}/${SRR}/${SRR}.sra
-  ID=~/.ascp/aspera-license
+  ID=aspera-license
 
   if [ ! -r $ID ] ; then
 cat << EOF > $ID
