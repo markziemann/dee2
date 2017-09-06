@@ -827,7 +827,7 @@ ecoli	1576132
 hsapiens	28968508
 mmusculus	26069664
 rnorvegicus	26913880
-scerevisiae	1644684' | awk -v M=$MEM 'M>($2*M)' | sort -k2gr | awk '{print $1}')
+scerevisiae	1644684' | awk -v M=$MEM -v F=$MEM_FACTOR 'M>($2*F)' | sort -k2gr | awk '{print $1}')
 
   #specify organism if it has not already been specified by user
   MY_ORG=$(join -1 1 -2 1 \
