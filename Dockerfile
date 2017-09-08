@@ -36,7 +36,8 @@ RUN \
     unzip \
     python3 \
     python3-pip \
-    libtbb2
+    libtbb2  \
+    default-jdk
 
 ########################################
 # BOWTIE2 the apt version is too old and conda not working
