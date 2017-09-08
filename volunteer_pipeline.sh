@@ -779,7 +779,7 @@ MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
 NUM_CPUS=$(nproc)
 CPU_SPEED=$(lscpu | grep 'CPU max MHz:' | awk '{print $4}')
 
-IPHASH=$(curl -L ipinfo.io/ip | md5sum | awk '{print $1}')
+IPHASH=$(curl ipinfo.io/ip | md5sum | awk '{print $1}')
 if [ $IPHASH == "bbcb41eb861fff23d7882dc61725a6d7" ] ; then
   ACC_URL="192.168.0.99/acc.html"
   ACC_REQUEST="192.168.0.99/cgi-bin/acc.sh"
@@ -827,17 +827,31 @@ mmusculus	26069664
 rnorvegicus	26913880
 scerevisiae	1644684' | awk -v M=$MEM -v F=$MEM_FACTOR 'M>($2*F)' | sort -k2gr | awk '{print $1}')
 
+  wget -O tmp.html "$ACC_URL"
+
+  if [ $IPHASH != "bbcb41eb861fff23d7882dc61725a6d7" ] ; then
+    wget -O tmp.html $(grep 'frame src=' tmp.html | cut -d '"' -f2)
+  fi
+
   #specify organism if it has not already been specified by user
   MY_ORG=$(join -1 1 -2 1 \
-  <(curl -L "$ACC_URL" | grep ORG | cut -d '>' -f2 | tr -d ' .' | tr 'A-Z' 'a-z' | tr '()' ' ' | sort -k 1b,1) \
+  <(grep ORG tmp.html | cut -d '>' -f2 | tr -d ' .' | tr 'A-Z' 'a-z' | tr '()' ' ' | sort -k 1b,1) \
   <(echo $ORGS | tr ' ' '\n' | sort -k 1b,1) | sort -k2gr | awk 'NR==1{print $1}' )
 
 fi
 
+echo $MY_ORG
+
 myfunc(){
 MY_ORG=$1
 ACC_REQUEST=$2
-ACCESSION=$(curl -L "${ACC_REQUEST}?ORG=${MY_ORG}&Submit"| grep 'ACCESSION=' | cut -d '=' -f2)
+wget -r -O tmp.html "${ACC_REQUEST}?ORG=${MY_ORG}&Submit"
+
+if [ $IPHASH != "bbcb41eb861fff23d7882dc61725a6d7" ] ; then
+  wget -O tmp.html $(grep 'frame src=' tmp.html | cut -d '"' -f2)
+fi
+
+ACCESSION=$(grep 'ACCESSION=' tmp.html| cut -d '=' -f2)
 STAR --genomeLoad LoadAndExit --genomeDir ../ref/$MY_ORG/ensembl/star >/dev/null
 echo $ACCESSION
 }
