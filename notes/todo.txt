@@ -1,0 +1,17 @@
+Dockerfile+image
+ - need to better organise the image directories
+   - sw for downloaded software
+   - commit image and save to dockerhub
+
+
+Pipeline (volunteer)
+ - need to increase testing
+   - make sure indicies have been generated correctly 
+   - find 1 accession number (small data size) per species to check that pipeline is working ok
+
+
+- only write sftp credential if absent
+
+- allow user to focus on 1 or more species of interest
+
+- allow user to get accessions of interest SRR,SRX,SRA,GSE,etc

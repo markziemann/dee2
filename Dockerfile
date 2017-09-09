@@ -36,7 +36,7 @@ RUN \
     unzip \
     python3 \
     python3-pip \
-    libtbb2  \
+    libtbb2 \
     default-jdk
 
 ########################################
@@ -74,7 +74,6 @@ RUN \
   mv skewer-0.2.2-linux-x86_64 skewer && \
   chmod +x skewer && \
   cp skewer /usr/local/bin/
-ENTRYPOINT ["skewer"]
 
 ########################################
 # MINION from kraken toolkit (ebi)
@@ -83,7 +82,6 @@ RUN \
   wget -c "http://wwwdev.ebi.ac.uk/enright-dev/kraken/reaper/binaries/reaper-13-100/linux/minion" && \
   chmod +x  minion && \
   cp minion /usr/local/bin/minion
-ENTRYPOINT ["minion"]
 
 ########################################
 # STAR
@@ -92,7 +90,6 @@ RUN \
   wget -c "https://github.com/alexdobin/STAR/raw/master/bin/Linux_x86_64_static/STAR" && \
   chmod +x STAR && \
   cp STAR /usr/local/bin/STAR
-ENTRYPOINT ["STAR"]
 
 ########################################
 # Fastqc
@@ -103,7 +100,6 @@ RUN \
   cd FastQC && \
   chmod +x fastqc && \
   mv * /usr/local/bin/
-ENTRYPOINT ["fastqc"]
 
 ########################################
 # KALLISTO
@@ -114,7 +110,6 @@ RUN \
   cd kallisto_linux-v0.43.1 && \
   chmod +x kallisto && \
   cp kallisto /usr/local/bin/kallisto  
-ENTRYPOINT ["kallisto"]
 
 
 ########################################
@@ -125,36 +120,19 @@ RUN \
   test $(sha1sum ascp-install-3.5.4.102989-linux-64.sh |cut -f1 -d\ ) = a99a63a85fee418d16000a1a51cc70b489755957 && \
   ( sh ascp-install-3.5.4.102989-linux-64.sh )
 ## No https, so verify sha1
-
-
 #RUN useradd data
 #USER data
-ENTRYPOINT ["ascp"]
-
-########################################
-# Get the dee2 pipeline for volunteers
-########################################
-ADD https://raw.githubusercontent.com/markziemann/dee2/master/volunteer_pipeline.sh /tmp
-RUN \
-  mkdir -p dee/code && \
-  cp /tmp/volunteer_pipeline.sh dee/code && \
-  cd dee/code && \
-  chmod +x volunteer_pipeline.sh && \
-  ./volunteer_pipeline.sh
 
 ########################################
 # Get the dee2 repo
 ########################################
-#RUN git clone https://github.com/markziemann/dee2.git && \
-#  cd dee2 && \
-#  mkdir code && \
-#  cp volunteer_pipeline.sh code && \
-#  cd code && \
-#  chmod +x volunteer_pipeline.sh && \
-#  ./volunteer_pipeline.sh
+RUN git clone https://github.com/markziemann/dee2.git && \
+  cd dee2 && \
+  mkdir code && \
+  cp volunteer_pipeline.sh code && \
+  cd code && \
+  chmod +x volunteer_pipeline.sh \
+  ./volunteer_pipeline.sh
 
-########################################
-# run dee2
-########################################
-#RUN ["/bin/bash", "-c", "volunteer_pipeline.sh"]
+#CMD [ "cd","dee2/code/","&&" "./volunteer_pipeline.sh","ecoli" ]
 
