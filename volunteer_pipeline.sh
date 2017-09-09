@@ -5,7 +5,7 @@
 set -x
 
 MY_ORG=$1
-MEM_FACTOR=2
+MEM_FACTOR=2.5
 
 main(){
 #logging all commands
@@ -174,7 +174,7 @@ BT2_REF=$BT2_DIR/$(basename $CDNA)
 if [ -z $BT2_REF ] || [ ! -r $BT2_REF  ] ; then
   cd $BT2_DIR ; ln $CDNA .
   #creating bowtie2 index
-  bowtie2-build --threads $(nproc) -f $(basename $CDNA) $(basename $CDNA)
+  bowtie2-build --threads $THREADS -f $(basename $CDNA) $(basename $CDNA)
   ENS_REFT_BT2=$BT2_DIR/$(basename $CDNA)
   cd -
 fi
@@ -212,7 +212,7 @@ if [ ! -r $STAR_DIR/SA ] || [ ! -r $STAR_DIR/SAindex ] ; then
   --sjdbGTFfile $CWD/$(basename $GTF) \
   --genomeDir $CWD  \
   --genomeFastaFiles $CWD/$(basename $GDNA) \
-  --runThreadN `nproc`
+  --runThreadN $THREADS
   cd -
 fi
 
@@ -380,7 +380,8 @@ rm ${SRR}*fastq
 if [ $CSPACE == "FALSE" ] ; then
   #$FQDUMP --split-files --defline-qual '+' ${SRR}.sra
   ##try parallelising with fastq-dump
-  parallel-fastq-dump --threads 8 --outdir . --split-files --defline-qual + -s ${SRR}.sra
+
+  parallel-fastq-dump --threads $THREADS --outdir . --split-files --defline-qual + -s ${SRR}.sra
 fi
 
 FILESIZE=$(du -s $FQ1 | cut -f1)
