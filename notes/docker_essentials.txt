@@ -1,0 +1,11 @@
+#essential commands
+docker build dee2 dee2/
+docker run -it -d dee2
+docker run -it -d dee2 bash
+docker exec -it 4ede2bbff7d9 bash
+docker commit 4ede2bbff7d9 username/imagename
+docker push username/imagename
+
+docker stop 4ede2bbff7d9
+docker rm $(docker ps -a -q)
+docker rmi $(docker images -q)
