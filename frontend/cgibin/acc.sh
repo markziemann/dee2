@@ -45,7 +45,10 @@ fi
 DATA=/usr/lib/cgi-bin/acc_data
 TODO=${DATA}/${ORG}.queue.txt
 TODO_NEW=/home/pi/Public/${ORG}.queue.txt
-cp -u $TODO_NEW $TODO
+if [ -r $TODO_NEW ] ; then
+  mv $TODO_NEW $TODO
+fi
+#cp -u $TODO_NEW $TODO
 ALLOCATED=${DATA}/${ORG}.allocated.txt
 ACCESSION=$(tail -n +100 $TODO | head -1)
 TIME=$(date +%s)
@@ -82,13 +85,10 @@ if [ "$DIFF" -gt "86400" ] ; then
   done
 fi
 
-exit
-
 #the below needs to be integrated to automate incorporation of volunteer data
-
-#!/bin/bash
-set -x
-SFTP_INCOMING=/sftp/guestuser/incoming
+if [ ! -r started ] ; then
+  touch started
+  SFTP_INCOMING=/sftp/guestuser/incoming
 validate_zip(){
 ZIP=$1
 #zipinfo $ZIP
@@ -153,3 +153,5 @@ if [ "$(ls -A ${SFTP_INCOMING})" ]; then
   done
 fi
 
+  rm started
+fi
