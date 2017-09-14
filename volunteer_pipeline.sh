@@ -5,7 +5,7 @@
 set -x
 
 MY_ORG=$1
-MEM_FACTOR=2.5
+MEM_FACTOR=2
 
 main(){
 #logging all commands
@@ -21,7 +21,8 @@ SRR=$(basename $SRR_FILE .sra)
 echo $SRR
 ##ORGANISM
 ORG=$2
-
+#whether test run should be done before
+TOTEST=0
 #exec 2>> $SRR.log ; exec >&1
 
 #ENVIRONMENT VARS
@@ -34,26 +35,6 @@ PATH=$PATH:$SW_DIR
 DATA_DIR=$DEE_DIR/data/$ORG
 REF_DIR=$DEE_DIR/ref
 QC_DIR=$DEE_DIR/qc
-
-#echo running $PIPELINE $SRR_FILE $ORG
-#exit
-
-#SOFTWARE VARS
-#VDBVAL=$SW_DIR/vdb-validate
-#FQDUMP=$SW_DIR/fastq-dump
-#ABIDUMP=$SW_DIR/abi-dump
-#SRA_STAT=$SW_DIR/sra-stat
-#PFQDUMP=$SW_DIR/parallel-fastq-dump
-#FASTQC=$SW_DIR/FastQC/fastqc
-#SKEWER=$SW_DIR/skewer
-#MINION=$SW_DIR/kraken/./minion
-#BOWTIE2=$SW_DIR/bowtie2-2.3.1/bowtie2
-#BOWTIE2BUILD=$SW_DIR/bowtie2-2.3.1/bowtie2-build
-#SOLIDTRIMMER=$SW_DIR/solid-trimmer.py
-#STAR=$SW_DIR/STAR
-#SUBJUNC=/data/app/bin/subjunc
-#FEATURECOUNTS=$SW_DIR/featureCounts
-#KALLISTO=$SW_DIR/kallisto
 
 #LIMITS
 DISKLIM=32000000
@@ -70,65 +51,75 @@ MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
 #check if these are directories
 if [ ! -d "$DATA_DIR"  ] ; then
   mkdir -p $DATA_DIR
+  TOTEST=1
 fi
 
 if [ ! -d "$QC_DIR" ] ; then
   mkdir -p $QC_DIR
 fi
 
-#check that all the software is present and working
-#FQDUMP_STATUS=$($FQDUMP -h | grep -xc './fastq-dump : 2.8.2')
-#ABIDUMP_STATUS=$($ABIDUMP -h | grep -xc './abi-dump : 2.8.2')
-#SKEWER_STATUS=$SW_DIR/skewer
-#SOLIDTRIMMER_STATUS=$SW_DIR/solid-trimmer.py
-#STAR_STATUS=$SW_DIR/STAR
-#SUBJUNC_STATUS=/data/app/bin/subjunc
-#FEATURECOUNTS_STATUS=$SW_DIR/featureCounts
-#KALLISTO_STATUS=$SW_DIR/kallisto
-
 #check all the reference sequences exist and create if necessary
 #REFERENCE SEQ AND ANNOTATIONS
 MYREF_DIR=$REF_DIR/$ORG/ensembl/
 if [ ! -d $MYREF_DIR ] ; then
   mkdir -p $MYREF_DIR
+  TOTEST=1
 fi
 
 if [ $ORG == "athaliana" ] ; then
   GTFURL="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.36.gtf.gz"
   GDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna_sm.toplevel.fa.gz"
   CDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/fasta/arabidopsis_thaliana/cdna/Arabidopsis_thaliana.TAIR10.cdna.all.fa.gz"
+  TEST_ACCESSION=ERR1337964
+  TEST_CHECKSUM=02bae9eb401135d49e5b3bc875d826fc
 elif [ $ORG == "celegans" ] ; then
   GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/caenorhabditis_elegans/Caenorhabditis_elegans.WBcel235.90.gtf.gz"
   GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/caenorhabditis_elegans/dna/Caenorhabditis_elegans.WBcel235.dna_sm.toplevel.fa.gz"
   CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/caenorhabditis_elegans/cdna/Caenorhabditis_elegans.WBcel235.cdna.all.fa.gz"
+  TEST_ACCESSION=ERR1562483
+  TEST_CHECKSUM=4121757d0b170b456a6b8c554df09550
 elif [ $ORG == "dmelanogaster" ] ; then
   GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/drosophila_melanogaster/Drosophila_melanogaster.BDGP6.90.gtf.gz"
   GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/drosophila_melanogaster/dna/Drosophila_melanogaster.BDGP6.dna_sm.toplevel.fa.gz"
   CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/drosophila_melanogaster/cdna/Drosophila_melanogaster.BDGP6.cdna.all.fa.gz"
+  TEST_ACCESSION=SRR641382
+  TEST_CHECKSUM=2bc3eae05fdf6cf9e1f4029d2ea4290a
 elif [ $ORG == "drerio" ] ; then
   GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/danio_rerio/Danio_rerio.GRCz10.90.gtf.gz"
   GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/danio_rerio/dna/Danio_rerio.GRCz10.dna_sm.toplevel.fa.gz"
   CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/danio_rerio/cdna/Danio_rerio.GRCz10.cdna.all.fa.gz"
+  TEST_ACCESSION=SRR1523216
+  TEST_CHECKSUM=95ec3c5ca815f18138d9b596e8d819b0
 elif [ $ORG == "ecoli" ] ; then
   GTFURL="ftp://ftp.ensemblgenomes.org/pub/bacteria/release-36/gtf/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655/Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.36.gtf.gz"
   GDNAURL="ftp://ftp.ensemblgenomes.org/pub/bacteria/release-36/fasta/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655/dna/Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.dna_sm.chromosome.Chromosome.fa.gz"
   CDNAURL="ftp://ftp.ensemblgenomes.org/pub/bacteria/release-36/fasta/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655/cdna/Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.cdna.all.fa.gz"
+  TEST_ACCESSION=SRR057750
+  TEST_CHECKSUM=d12af065331cc8cd41ca3758ab5e9fad
 elif [ $ORG == "hsapiens" ] ; then
   GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/homo_sapiens/Homo_sapiens.GRCh38.90.gtf.gz"
   GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa.gz"
   CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz"
+  TEST_ACCESSION=SRR1692142
+  TEST_CHECKSUM=743c96db492c4cc6ac031a3731c096e4
 elif [ $ORG == "mmusculus" ] ; then
   GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/mus_musculus/Mus_musculus.GRCm38.90.gtf.gz"
   GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna_sm.primary_assembly.fa.gz"
   CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/mus_musculus/cdna/Mus_musculus.GRCm38.cdna.all.fa.gz"
+  TEST_ACCESSION=SRR1533761
+  TEST_CHECKSUM=
 elif [ $ORG == "rnorvegicus" ] ; then
   GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/rattus_norvegicus/Rattus_norvegicus.Rnor_6.0.90.gtf.gz"
   GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/rattus_norvegicus/dna/Rattus_norvegicus.Rnor_6.0.dna_sm.toplevel.fa.gz"
   CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/rattus_norvegicus/cdna/Rattus_norvegicus.Rnor_6.0.cdna.all.fa.gz"
+  TEST_ACCESSION=SRR1793792
+  TEST_CHECKSUM=
 elif [ $ORG == "scerevisiae" ] ; then
   GTFURL="ftp://ftp.ensemblgenomes.org/pub/release-36/fungi/gtf/saccharomyces_cerevisiae/Saccharomyces_cerevisiae.R64-1-1.36.gtf.gz"
   GDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-36/fungi/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna_sm.toplevel.fa.gz"
   CDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-36/fungi/fasta/saccharomyces_cerevisiae/cdna/Saccharomyces_cerevisiae.R64-1-1.cdna.all.fa.gz"
+  TEST_ACCESSION=SRR039177
+  TEST_CHECKSUM=
 fi
 
 # download the necessary reference files
@@ -174,8 +165,9 @@ BT2_REF=$BT2_DIR/$(basename $CDNA)
 if [ -z $BT2_REF ] || [ ! -r $BT2_REF  ] ; then
   cd $BT2_DIR ; ln $CDNA .
   #creating bowtie2 index
-  bowtie2-build --threads $THREADS -f $(basename $CDNA) $(basename $CDNA)
+  bowtie2-build --threads $(nproc) -f $(basename $CDNA) $(basename $CDNA)
   ENS_REFT_BT2=$BT2_DIR/$(basename $CDNA)
+  TOTEST=1
   cd -
 fi
 
@@ -195,6 +187,7 @@ if [ -z $KAL_REF ] || [ ! -r $KAL_REF  ] ; then
   kallisto index -i $(basename $CDNA).idx $(basename $CDNA)
   for IDX in *idx ; do grep -c '>' $(basename $CDNA) > $IDX.cnt ; done
   KAL_REF=$KAL_DIR/$(basename $CDNA).idx
+  TOTEST=1
   cd -
 fi
 
@@ -212,8 +205,22 @@ if [ ! -r $STAR_DIR/SA ] || [ ! -r $STAR_DIR/SAindex ] ; then
   --sjdbGTFfile $CWD/$(basename $GTF) \
   --genomeDir $CWD  \
   --genomeFastaFiles $CWD/$(basename $GDNA) \
-  --runThreadN $THREADS
+  --runThreadN `nproc`
+  TOTEST=1
   cd -
+fi
+
+
+##########################################################################
+# Check whether we need a test run first
+##########################################################################
+if [ ! -f $DATA_DIR/test_pass ] ; then
+  TOTEST=1
+fi
+
+if [ $TOTEST -eq 1 ] ; then
+  echo "lets start with a validation of the pipeline"
+  SRR=$TEST_ACCESSION
 fi
 
 ##########################################################################
@@ -234,8 +241,10 @@ ATTEMPTS=$SRR.attempts.txt
 if [ -r $SRR.attempts.txt ] ; then
   NUM_ATTEMPTS=$(wc -l < $ATTEMPTS)
   if [ $NUM_ATTEMPTS -gt "2" ] ; then
-    echo $SRR has already been tried 3 times, skipping
-    exit
+    if [ $TOTEST -ne 1 ] ; then
+      echo $SRR has already been tried 3 times, skipping
+      exit
+    fi
   fi
 fi
 DATE=`date +%Y-%m-%d:%H:%M:%S`
@@ -380,8 +389,7 @@ rm ${SRR}*fastq
 if [ $CSPACE == "FALSE" ] ; then
   #$FQDUMP --split-files --defline-qual '+' ${SRR}.sra
   ##try parallelising with fastq-dump
-
-  parallel-fastq-dump --threads $THREADS --outdir . --split-files --defline-qual + -s ${SRR}.sra
+  parallel-fastq-dump --threads 8 --outdir . --split-files --defline-qual + -s ${SRR}.sra
 fi
 
 FILESIZE=$(du -s $FQ1 | cut -f1)
@@ -710,6 +718,21 @@ KE_NR=$(wc -l < $SRR.ke.tsv)
 SE_CNT=$(cat $GTF.cnt)
 KE_CNT=$(cat $CDNA.cnt)
 
+#if this is a test, then verify checksums
+if [ $TOTEST -eq 1 ] ; then
+  TEST_DATASET_USER_CHECKSUM=$(cat *tsv | md5sum | awk '{print $1}')
+  if [ "$TEST_DATASET_USER_CHECKSUM" == "$TEST_CHECKSUM" ] ; then
+    TEST_RESULT=PASS
+    echo "$SRR test dataset completed processed successfully" | tee -a $SRR.log
+    touch $DATA_DIR/test_pass
+  else
+    TEST_RESULT=FAIL
+    echo "$SRR test dataset did not complete properly. Md5sums do not match those provided!" | tee -a $SRR.log
+    rm $DATA_DIR/test_pass
+    exit 1
+  fi
+fi
+
 if [ $SE_NR -eq $SE_CNT -a $KE_NR -eq $((KE_CNT+1)) ] ; then
 
   #now place header on the file for later
@@ -860,7 +883,7 @@ export -f myfunc
 
 count=1
 #while [ $count -lt 200 ] ; do
-while [ $count -lt 3 ] ; do
+while [ $count -lt 30 ] ; do
   (( count++ ))
   DIR=$(pwd)
   echo "$count"
@@ -905,9 +928,6 @@ EOF
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIsnlOKFedvYBN7GBgwiTOkeCikJty1Yofyus9k03o8AtFiODWjN94wXKVK9CKUXD7psJ7seWpRDd7qlL+Mcm6QTLNsk4RVHgDC5nHFy0jhAfTQAvZ4O9a+UQ4KGXE+DwSvlKM/OJRfDw6/ds0u8UdJDuqU1v+BsqEq/OXouTSfpjOX0L96LDNMqN8Qp9cBnnV+PIPZ+ZIVpWV6r63fO+JloZ+0W04sq0MD3BdeKixisG58R/OLG6NAXTgfO/4SDzXhuPOCRKlmIPJLvfk1TO7Q8Judc2NkDpCLKaKw6SHHQnvDeu+f+CaVgyZ4FrkZlmyed9EG+PSCtAh5+QtLfRH mdz@opti
 EOF
 
-  cat << EOF > ~/.ssh/known_hosts
-|1|5h5pxctsxn+T850muZ60GDheeao=|ik3SSDf4IeEHknR0OlIQga0Foz4= ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBOPMVFaJlE9+FUtZ/vvw20cRJEZ++hAv72eQXlXQlY0H0+bdBUqoWj9EwAJPCAa2HXZOazGplzorhyR1ORZgBz0=
-EOF
     chmod -R 700 ~/.ssh
 
     cd ../data/$MY_ORG
