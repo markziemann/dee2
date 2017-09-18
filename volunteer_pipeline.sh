@@ -21,8 +21,6 @@ SRR=$(basename $SRR_FILE .sra)
 echo $SRR
 ##ORGANISM
 ORG=$2
-#whether test run should be done before
-TOTEST=0
 #exec 2>> $SRR.log ; exec >&1
 
 #ENVIRONMENT VARS
@@ -48,12 +46,6 @@ MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
 ##########################################################################
 # Lets test all the input variables
 ##########################################################################
-#check if these are directories
-if [ ! -d "$DATA_DIR"  ] ; then
-  mkdir -p $DATA_DIR
-  TOTEST=1
-fi
-
 if [ ! -d "$QC_DIR" ] ; then
   mkdir -p $QC_DIR
 fi
@@ -63,63 +55,71 @@ fi
 MYREF_DIR=$REF_DIR/$ORG/ensembl/
 if [ ! -d $MYREF_DIR ] ; then
   mkdir -p $MYREF_DIR
-  TOTEST=1
 fi
 
 if [ $ORG == "athaliana" ] ; then
   GTFURL="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.36.gtf.gz"
   GDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna_sm.toplevel.fa.gz"
   CDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/fasta/arabidopsis_thaliana/cdna/Arabidopsis_thaliana.TAIR10.cdna.all.fa.gz"
-  TEST_ACCESSION=ERR1337964
-  TEST_CHECKSUM=02bae9eb401135d49e5b3bc875d826fc
+  BT2_MD5="b19dc2c188246f6971d1b2386a87299e"
+  KAL_MD5="bd508db5be410d08ae9c13f5b4c05353"
+  STAR_MD5="1cd7aca6533ceed936d99def34e037e6"
 elif [ $ORG == "celegans" ] ; then
   GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/caenorhabditis_elegans/Caenorhabditis_elegans.WBcel235.90.gtf.gz"
   GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/caenorhabditis_elegans/dna/Caenorhabditis_elegans.WBcel235.dna_sm.toplevel.fa.gz"
   CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/caenorhabditis_elegans/cdna/Caenorhabditis_elegans.WBcel235.cdna.all.fa.gz"
-  TEST_ACCESSION=ERR1562483
-  TEST_CHECKSUM=4121757d0b170b456a6b8c554df09550
+  BT2_MD5="53a84e66d63066d0d1aaa98f567f9cb0"
+  KAL_MD5="f33aa6faaf2c51ceec84a4b7e66b9388"
+  STAR_MD5="23091a11423e7c4b0f234e69934a8281"
 elif [ $ORG == "dmelanogaster" ] ; then
   GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/drosophila_melanogaster/Drosophila_melanogaster.BDGP6.90.gtf.gz"
   GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/drosophila_melanogaster/dna/Drosophila_melanogaster.BDGP6.dna_sm.toplevel.fa.gz"
   CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/drosophila_melanogaster/cdna/Drosophila_melanogaster.BDGP6.cdna.all.fa.gz"
-  TEST_ACCESSION=SRR641382
-  TEST_CHECKSUM=2bc3eae05fdf6cf9e1f4029d2ea4290a
+  BT2_MD5="6cc6863a80199f7a76bc950a63cca8a4"
+  KAL_MD5="086b82dfb67d083d321d8604af4dd5a0"
+  STAR_MD5="10808e48408630b2f607a738e37fb2a0"
 elif [ $ORG == "drerio" ] ; then
   GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/danio_rerio/Danio_rerio.GRCz10.90.gtf.gz"
   GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/danio_rerio/dna/Danio_rerio.GRCz10.dna_sm.toplevel.fa.gz"
   CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/danio_rerio/cdna/Danio_rerio.GRCz10.cdna.all.fa.gz"
-  TEST_ACCESSION=SRR1523216
-  TEST_CHECKSUM=95ec3c5ca815f18138d9b596e8d819b0
+  BT2_MD5="8fce1a8287b9f1055825d2557e66f844"
+  KAL_MD5="035e2d47bbbf87c41859a200ee185eb5"
+  STAR_MD5="2763c8b64543e2ed2381469a5f60b6f8"
 elif [ $ORG == "ecoli" ] ; then
   GTFURL="ftp://ftp.ensemblgenomes.org/pub/bacteria/release-36/gtf/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655/Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.36.gtf.gz"
   GDNAURL="ftp://ftp.ensemblgenomes.org/pub/bacteria/release-36/fasta/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655/dna/Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.dna_sm.chromosome.Chromosome.fa.gz"
   CDNAURL="ftp://ftp.ensemblgenomes.org/pub/bacteria/release-36/fasta/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655/cdna/Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.cdna.all.fa.gz"
-  TEST_ACCESSION=SRR057750
-  TEST_CHECKSUM=d12af065331cc8cd41ca3758ab5e9fad
+  BT2_MD5="9fd53f70df3ba54b851713a514ef3412"
+  KAL_MD5="dbc74ab4fa8d55d5f3e88476dc5cc32e"
+  STAR_MD5="49dfb0bef4e1c0e34503dc995b9456e5"
 elif [ $ORG == "hsapiens" ] ; then
   GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/homo_sapiens/Homo_sapiens.GRCh38.90.gtf.gz"
   GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa.gz"
   CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz"
-  TEST_ACCESSION=SRR1692142
-  TEST_CHECKSUM=743c96db492c4cc6ac031a3731c096e4
+  BT2_MD5="e89b4fc019e93b62c2fca8ec59ed56e2"
+  KAL_MD5="3f10ef8e78f2cee6df35d2f679ba1c53"
+  STAR_MD5="e362a230513c0807451be52fca93cb8f"
 elif [ $ORG == "mmusculus" ] ; then
   GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/mus_musculus/Mus_musculus.GRCm38.90.gtf.gz"
   GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna_sm.primary_assembly.fa.gz"
   CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/mus_musculus/cdna/Mus_musculus.GRCm38.cdna.all.fa.gz"
-  TEST_ACCESSION=SRR1533761
-  TEST_CHECKSUM=
+  BT2_MD5="998fb81262af40202fd0fc053e31f5e2"
+  KAL_MD5="6b76f3f4fd724764644128b012808982"
+  STAR_MD5="9bd0c660a2d876750733bb6a02f9b7df"
 elif [ $ORG == "rnorvegicus" ] ; then
   GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/rattus_norvegicus/Rattus_norvegicus.Rnor_6.0.90.gtf.gz"
   GDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/rattus_norvegicus/dna/Rattus_norvegicus.Rnor_6.0.dna_sm.toplevel.fa.gz"
   CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/rattus_norvegicus/cdna/Rattus_norvegicus.Rnor_6.0.cdna.all.fa.gz"
-  TEST_ACCESSION=SRR1793792
-  TEST_CHECKSUM=
+  BT2_MD5="f79c738fccec2a3febb13b2a5f15dc1b"
+  KAL_MD5="6a672fbd88df5c18c5d0622676e8b74c"
+  STAR_MD5="6b34404a61b5de697a51fe5f534370f7"
 elif [ $ORG == "scerevisiae" ] ; then
   GTFURL="ftp://ftp.ensemblgenomes.org/pub/release-36/fungi/gtf/saccharomyces_cerevisiae/Saccharomyces_cerevisiae.R64-1-1.36.gtf.gz"
   GDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-36/fungi/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna_sm.toplevel.fa.gz"
   CDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-36/fungi/fasta/saccharomyces_cerevisiae/cdna/Saccharomyces_cerevisiae.R64-1-1.cdna.all.fa.gz"
-  TEST_ACCESSION=SRR039177
-  TEST_CHECKSUM=
+  BT2_MD5="d484b1bf9e98c0e93c1f7ec37b5d449e"
+  KAL_MD5="eb4dd17423dc9644dbfb6daefb9130d0"
+  STAR_MD5="052b2523d3e0912bb19de6739bd1d6ed"
 fi
 
 # download the necessary reference files
@@ -167,7 +167,12 @@ if [ -z $BT2_REF ] || [ ! -r $BT2_REF  ] ; then
   #creating bowtie2 index
   bowtie2-build --threads $(nproc) -f $(basename $CDNA) $(basename $CDNA)
   ENS_REFT_BT2=$BT2_DIR/$(basename $CDNA)
-  TOTEST=1
+  MY_BT2_MD5=$(md5sum $(ls *bt2 | head -1) | awk '{print $1}')
+  if [ $MY_BT2_MD5 != $BT2_MD5 ] ; then
+    echo "Error in bowtie2 index found. quitting."
+    echo "Solution: Try deleting and reindexing the ref transcriptome."
+    exit 1
+  fi
   cd -
 fi
 
@@ -187,7 +192,12 @@ if [ -z $KAL_REF ] || [ ! -r $KAL_REF  ] ; then
   kallisto index -i $(basename $CDNA).idx $(basename $CDNA)
   for IDX in *idx ; do grep -c '>' $(basename $CDNA) > $IDX.cnt ; done
   KAL_REF=$KAL_DIR/$(basename $CDNA).idx
-  TOTEST=1
+  MY_KAL_MD5=$(md5sum $(ls *idx | head -1) | awk '{print $1}')
+  if [ $MY_KAL_MD5 != $KAL_MD5 ] ; then
+    echo "Error in kallisto index found. quitting."
+    echo "Solution: Try deleting and reindexing the ref transcriptome."
+    exit 1
+  fi
   cd -
 fi
 
@@ -206,21 +216,13 @@ if [ ! -r $STAR_DIR/SA ] || [ ! -r $STAR_DIR/SAindex ] ; then
   --genomeDir $CWD  \
   --genomeFastaFiles $CWD/$(basename $GDNA) \
   --runThreadN `nproc`
-  TOTEST=1
+  MY_STAR_MD5=$(md5sum SAindex | awk '{print $1}')
+  if [ $MY_STAR_MD5 != $STAR_MD5 ] ; then
+    echo "Error in STAR index found. quitting."
+    echo "Solution: Try deleting and reindexing the ref genome."
+    exit 1
+  fi
   cd -
-fi
-
-
-##########################################################################
-# Check whether we need a test run first
-##########################################################################
-if [ ! -f $DATA_DIR/test_pass ] ; then
-  TOTEST=1
-fi
-
-if [ $TOTEST -eq 1 ] ; then
-  echo "lets start with a validation of the pipeline"
-  SRR=$TEST_ACCESSION
 fi
 
 ##########################################################################
@@ -241,10 +243,8 @@ ATTEMPTS=$SRR.attempts.txt
 if [ -r $SRR.attempts.txt ] ; then
   NUM_ATTEMPTS=$(wc -l < $ATTEMPTS)
   if [ $NUM_ATTEMPTS -gt "2" ] ; then
-    if [ $TOTEST -ne 1 ] ; then
-      echo $SRR has already been tried 3 times, skipping
-      exit
-    fi
+    echo $SRR has already been tried 3 times, skipping
+    exit
   fi
 fi
 DATE=`date +%Y-%m-%d:%H:%M:%S`
@@ -785,9 +785,7 @@ cd ..
 export -f main
 
 #TODO
-#-determine parallel jobs
 #-allow specific accessions
-#-working from within container
 
 if [ $(basename $(pwd)) != "code" ] ; then
   mkdir code && cp ../$0 .
@@ -813,8 +811,6 @@ else
   ACC_REQUEST="http://mdz-analytics.com/cgi-bin/acc.sh"
   SFTP_URL="110.22.195.164"
 fi
-
-
 
 if [ ! -z $MY_ORG ] ; then
   ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae' \
@@ -881,6 +877,30 @@ echo $ACCESSION
 }
 export -f myfunc
 
+##################################################
+# Testing the pipeline with ecoli sample
+##################################################
+TESTFILE=test_pass
+if [ ! -r $TESTFILE ] ; then
+  echo Initial pipeline test with E. coli dataset
+  if [ -d ../data/ecoli/SRR057750 ] ; then
+    rm -rf ../data/ecoli/SRR057750
+  fi
+  DIR=$(pwd)
+  main SRR057750 ecoli
+  TEST_CHECKSUM=a739998e33947c0a60edbde92e8f0218
+  pwd
+  TEST_DATASET_USER_CHECKSUM=$(cat SRR057750/SRR057750*tsv | md5sum | awk '{print $1}')
+  if [ "$TEST_DATASET_USER_CHECKSUM" != "$TEST_CHECKSUM" ] ; then
+    echo "Test dataset did not complete properly. Md5sums do not match those provided!"
+    echo "Contact the author for help or flag this issue on the GitHub repo"
+    exit 1
+  fi
+  echo "Test dataset completed successfully"
+  cd $DIR
+  date +"%s" > $TESTFILE
+fi
+
 count=1
 #while [ $count -lt 200 ] ; do
 while [ $count -lt 30 ] ; do
@@ -889,7 +909,6 @@ while [ $count -lt 30 ] ; do
   echo "$count"
   ACCESSION=$(myfunc $MY_ORG $ACC_REQUEST)
   ( main "$ACCESSION" "$MY_ORG") && COMPLETE=1 || COMPLETE=0
-
   if [ "$COMPLETE" -eq "1" ] ; then
 
     mkdir ~/.ssh
