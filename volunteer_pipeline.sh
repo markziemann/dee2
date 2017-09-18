@@ -5,6 +5,7 @@
 set -x
 
 MY_ORG=$1
+MY_ACCESSIONS=$2
 MEM_FACTOR=2
 
 main(){
@@ -16,11 +17,11 @@ shopt -s expand_aliases
 alias exit="rm *fastq *.sra *tsv ; return 1"
 
 #JOB
-SRR_FILE=$1
+SRR_FILE=$2
 SRR=$(basename $SRR_FILE .sra)
 echo $SRR
 ##ORGANISM
-ORG=$2
+ORG=$1
 #exec 2>> $SRR.log ; exec >&1
 
 #ENVIRONMENT VARS
@@ -877,43 +878,10 @@ echo $ACCESSION
 }
 export -f myfunc
 
-##################################################
-# Testing the pipeline with ecoli sample
-##################################################
-TESTFILE=test_pass
-if [ ! -r $TESTFILE ] ; then
-  echo Initial pipeline test with E. coli dataset
-  if [ -d ../data/ecoli/SRR057750 ] ; then
-    rm -rf ../data/ecoli/SRR057750
-  fi
-  DIR=$(pwd)
-  main SRR057750 ecoli
-  TEST_CHECKSUM=a739998e33947c0a60edbde92e8f0218
-  pwd
-  TEST_DATASET_USER_CHECKSUM=$(cat SRR057750/SRR057750*tsv | md5sum | awk '{print $1}')
-  if [ "$TEST_DATASET_USER_CHECKSUM" != "$TEST_CHECKSUM" ] ; then
-    echo "Test dataset did not complete properly. Md5sums do not match those provided!"
-    echo "Contact the author for help or flag this issue on the GitHub repo"
-    exit 1
-  fi
-  echo "Test dataset completed successfully"
-  cd $DIR
-  date +"%s" > $TESTFILE
-fi
+key_setup(){
+mkdir ~/.ssh
 
-count=1
-#while [ $count -lt 200 ] ; do
-while [ $count -lt 30 ] ; do
-  (( count++ ))
-  DIR=$(pwd)
-  echo "$count"
-  ACCESSION=$(myfunc $MY_ORG $ACC_REQUEST)
-  ( main "$ACCESSION" "$MY_ORG") && COMPLETE=1 || COMPLETE=0
-  if [ "$COMPLETE" -eq "1" ] ; then
-
-    mkdir ~/.ssh
-
-    cat << EOF > ~/.ssh/guestuser
+cat << EOF > ~/.ssh/guestuser
 -----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEAyLJ5TihXnb2ATexgYMIkzpHgopCbctWKH8rrPZNN6PALRYjg
 1ozfeMFylSvQilFw+6bCe7HlqUQ3e6pS/jHJukEyzbJOEVR4AwuZxxctI4QH00AL
@@ -943,19 +911,80 @@ Qzab+/WnlQMuslmCLxXXOijq5lEDJLJ0m9hZ0sdC+j13jsTCEOnyj/XJ3VgLKifP
 -----END RSA PRIVATE KEY-----
 EOF
 
-    cat << EOF > ~/.ssh/guestuser.pub
+cat << EOF > ~/.ssh/guestuser.pub
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIsnlOKFedvYBN7GBgwiTOkeCikJty1Yofyus9k03o8AtFiODWjN94wXKVK9CKUXD7psJ7seWpRDd7qlL+Mcm6QTLNsk4RVHgDC5nHFy0jhAfTQAvZ4O9a+UQ4KGXE+DwSvlKM/OJRfDw6/ds0u8UdJDuqU1v+BsqEq/OXouTSfpjOX0L96LDNMqN8Qp9cBnnV+PIPZ+ZIVpWV6r63fO+JloZ+0W04sq0MD3BdeKixisG58R/OLG6NAXTgfO/4SDzXhuPOCRKlmIPJLvfk1TO7Q8Judc2NkDpCLKaKw6SHHQnvDeu+f+CaVgyZ4FrkZlmyed9EG+PSCtAh5+QtLfRH mdz@opti
 EOF
 
-    chmod -R 700 ~/.ssh
+chmod -R 700 ~/.ssh
+}
+export -f key_setup
 
-    cd ../data/$MY_ORG
+##################################################
+# Testing the pipeline with ecoli sample
+##################################################
+TESTFILE=test_pass
+if [ ! -r $TESTFILE ] ; then
+  echo Initial pipeline test with E. coli dataset
+  if [ -d ../data/ecoli/SRR057750 ] ; then
+    rm -rf ../data/ecoli/SRR057750
+  fi
+  DIR=$(pwd)
+  main ecoli SRR057750
+  TEST_CHECKSUM=a739998e33947c0a60edbde92e8f0218
+  pwd
+  TEST_DATASET_USER_CHECKSUM=$(cat SRR057750/SRR057750*tsv | md5sum | awk '{print $1}')
+  if [ "$TEST_DATASET_USER_CHECKSUM" != "$TEST_CHECKSUM" ] ; then
+    echo "Test dataset did not complete properly. Md5sums do not match those provided!"
+    echo "Contact the author for help or flag this issue on the GitHub repo"
+    exit 1
+  fi
+  echo "Test dataset completed successfully"
+  cd $DIR
+  date +"%s" > $TESTFILE
+fi
+
+##################################################
+# Testing whether the user has provided SRR accessions
+##################################################
+if [ $# -eq "2" ] ; then
+  TESTACCESSIONS=$(echo $2 | tr ',' '\n' | cut -c2-3 | grep -vc RR)
+  if [ $TESTACCESSIONS -eq 0 ] ; then
+    for USER_ACCESSION in $(echo $2 | tr ',' ' ') ; do
+      DIR=$(pwd)
+      main $1 $USER_ACCESSION
+      key_setup
+      cd ../data/$MY_ORG
+      zip -r $USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
+      sftp -i ~/.ssh/guestuser guestuser@$SFTP_URL << EOF
+put $USER_ACCESSION.$MY_ORG.zip
+EOF
+      cd $DIR
+    done
+    exit
+  else
+    echo Looks like accession numbers aren\'t in the correct format ie. SRR123456,ERR789456,DRR321654
+    echo Check input parameters and try again.
+    exit
+  fi
+fi
+
+##################################################
+# If no accessions are provided
+#################################################
+count=1
+#while [ $count -lt 200 ] ; do
+while [ $count -lt 30 ] ; do
+  (( count++ ))
+  DIR=$(pwd)
+  echo "$count"
+  ACCESSION=$(myfunc $MY_ORG $ACC_REQUEST)
+  ( main "$MY_ORG" "$ACCESSION" ) && COMPLETE=1 || COMPLETE=0
+  if [ "$COMPLETE" -eq "1" ] ; then
+    key_setup
     zip -r $ACCESSION.$MY_ORG.zip $ACCESSION
     sftp -i ~/.ssh/guestuser guestuser@$SFTP_URL << EOF
 put $ACCESSION.$MY_ORG.zip
 EOF
-
-#rm -rf .ssh
     cd $DIR
   fi
 done
