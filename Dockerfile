@@ -15,7 +15,7 @@ LABEL tags="Genomics"
 # Maintainer
 MAINTAINER Mark Ziemann <mark.ziemann@gmail.com>
 
-ENV DIRPATH /home/data/
+ENV DIRPATH /home
 WORKDIR $DIRPATH
 
 RUN rm /bin/sh && \
@@ -45,7 +45,6 @@ RUN \
 # also prep where the pipeline will run
 ########################################
 RUN mkdir sw
-RUN mkdir dee2
 
 ########################################
 # BOWTIE2 the apt version is too old and conda not working
@@ -139,22 +138,20 @@ RUN \
 #RUN useradd data
 #USER data
 
+
 ########################################
 # Get the dee2 repo
 ########################################
 WORKDIR $DIRPATH
 RUN pwd
 RUN \
-  cd dee2 && \
-  wget "https://raw.githubusercontent.com/markziemann/dee2/master/volunteer_pipeline.sh" &&  \
   mkdir code && \
-  cp volunteer_pipeline.sh code && \
   cd code && \
+  wget "https://raw.githubusercontent.com/markziemann/dee2/master/volunteer_pipeline.sh" &&  \
   chmod +x volunteer_pipeline.sh && \
   bash volunteer_pipeline.sh
 
-#CMD [ "cd","dee2/code/","&&" "./volunteer_pipeline.sh","ecoli" ]
 ########################################
-# run dee2
+# set entrypoint
 ########################################
-#RUN ["/bin/bash", "-c", "volunteer_pipeline.sh"]
+ENTRYPOINT [ "/bin/sh", "-c", "/home/data/dee2/code/volunteer_pipeline.sh" ]
