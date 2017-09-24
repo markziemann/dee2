@@ -1,5 +1,5 @@
 #!/bin/bash
-#sra2mx
+#sra2mx for docker image
 #Copyright Mark Ziemann 2015 to 2017 mark.ziemann@gmail.com
 
 set -x
@@ -25,9 +25,11 @@ ORG=$1
 #exec 2>> $SRR.log ; exec >&1
 
 #ENVIRONMENT VARS
+cd 
 CODE_DIR=$(pwd)
 DEE_DIR=$(dirname $CODE_DIR)
-PIPELINE=$CODE_DIR/$0
+
+PIPELINE=$0
 PIPELINE_MD5=$(md5sum $PIPELINE | cut -d ' ' -f1)
 SW_DIR=$DEE_DIR/sw
 PATH=$PATH:$SW_DIR
@@ -788,12 +790,13 @@ export -f main
 #TODO
 #-allow specific accessions
 
-if [ $(basename $(pwd)) != "code" ] ; then
+cd ~
+if [ ! -d "code" ] ; then
   mkdir code && cp ../$0 .
 fi
 
 echo Dumping star genomes from memory
-for DIR in $(find $(pwd)/../ref/ | grep /ensembl/star$ | sed 's#\/code\/\.\.##' ) ; do
+for DIR in $(find $(~/ref/ | grep /ensembl/star$ | sed 's#\/code\/\.\.##' ) ; do
   echo $DIR ; STAR --genomeLoad Remove --genomeDir $DIR
 done
 
@@ -925,13 +928,12 @@ export -f key_setup
 TESTFILE=test_pass
 if [ ! -r $TESTFILE ] ; then
   echo Initial pipeline test with E. coli dataset
-  if [ -d ../data/ecoli/SRR057750 ] ; then
-    rm -rf ../data/ecoli/SRR057750
+  if [ -d ~/data/ecoli/SRR057750 ] ; then
+    rm -rf ~/data/ecoli/SRR057750
   fi
-  DIR=$(pwd)
   main ecoli SRR057750
   TEST_CHECKSUM=a739998e33947c0a60edbde92e8f0218
-  pwd
+  cd ~/data/ecoli/
   TEST_DATASET_USER_CHECKSUM=$(cat SRR057750/SRR057750*tsv | md5sum | awk '{print $1}')
   if [ "$TEST_DATASET_USER_CHECKSUM" != "$TEST_CHECKSUM" ] ; then
     echo "Test dataset did not complete properly. Md5sums do not match those provided!"
@@ -939,7 +941,7 @@ if [ ! -r $TESTFILE ] ; then
     exit 1
   fi
   echo "Test dataset completed successfully"
-  cd $DIR
+  cd ~
   date +"%s" > $TESTFILE
 fi
 
@@ -953,12 +955,11 @@ if [ $# -eq "2" ] ; then
       DIR=$(pwd)
       main $1 $USER_ACCESSION
       key_setup
-      cd ../data/$MY_ORG
+      cd ~/data/$MY_ORG
       zip -r $USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
       sftp -i ~/.ssh/guestuser guestuser@$SFTP_URL << EOF
 put $USER_ACCESSION.$MY_ORG.zip
 EOF
-      cd $DIR
     done
     exit
   else
@@ -973,18 +974,18 @@ fi
 #################################################
 count=1
 #while [ $count -lt 200 ] ; do
-while [ $count -lt 30 ] ; do
+while [ $count -lt 3 ] ; do
   (( count++ ))
-  DIR=$(pwd)
+  cd ~
   echo "$count"
   ACCESSION=$(myfunc $MY_ORG $ACC_REQUEST)
   ( main "$MY_ORG" "$ACCESSION" ) && COMPLETE=1 || COMPLETE=0
   if [ "$COMPLETE" -eq "1" ] ; then
     key_setup
+    cd ~/data/$MY_ORG
     zip -r $ACCESSION.$MY_ORG.zip $ACCESSION
     sftp -i ~/.ssh/guestuser guestuser@$SFTP_URL << EOF
 put $ACCESSION.$MY_ORG.zip
 EOF
-    cd $DIR
   fi
 done
