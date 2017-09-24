@@ -939,49 +939,50 @@ if [ ! -r $TESTFILE ] ; then
   echo "Test dataset completed successfully"
   cd ~
   date +"%s" > $TESTFILE
-fi
-
+else
+  echo Starting pipeline
 ##################################################
 # Testing whether the user has provided SRR accessions
 ##################################################
-if [ $# -eq "2" ] ; then
-  TESTACCESSIONS=$(echo $2 | tr ',' '\n' | cut -c2-3 | grep -vc RR)
-  if [ $TESTACCESSIONS -eq 0 ] ; then
-    for USER_ACCESSION in $(echo $2 | tr ',' ' ') ; do
-      DIR=$(pwd)
-      main $1 $USER_ACCESSION
-      key_setup
-      cd ~/data/$MY_ORG
-      zip -r $USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
-      sftp -i ~/.ssh/guestuser guestuser@$SFTP_URL << EOF
+  if [ $# -eq "2" ] ; then
+    TESTACCESSIONS=$(echo $2 | tr ',' '\n' | cut -c2-3 | grep -vc RR)
+    if [ $TESTACCESSIONS -eq 0 ] ; then
+      for USER_ACCESSION in $(echo $2 | tr ',' ' ') ; do
+        DIR=$(pwd)
+        main $1 $USER_ACCESSION
+        key_setup
+        cd ~/data/$MY_ORG
+        zip -r $USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
+        sftp -i ~/.ssh/guestuser guestuser@$SFTP_URL << EOF
 put $USER_ACCESSION.$MY_ORG.zip
 EOF
-    done
-    exit
-  else
-    echo Looks like accession numbers aren\'t in the correct format ie. SRR123456,ERR789456,DRR321654
-    echo Check input parameters and try again.
-    exit
+      done
+      exit
+    else
+      echo Looks like accession numbers aren\'t in the correct format ie. SRR123456,ERR789456,DRR321654
+      echo Check input parameters and try again.
+      exit
+    fi
   fi
-fi
 
 ##################################################
 # If no accessions are provided
 #################################################
-count=1
-#while [ $count -lt 200 ] ; do
-while [ $count -lt 3 ] ; do
-  (( count++ ))
-  cd ~
-  echo "$count"
-  ACCESSION=$(myfunc $MY_ORG $ACC_REQUEST)
-  ( main "$MY_ORG" "$ACCESSION" ) && COMPLETE=1 || COMPLETE=0
-  if [ "$COMPLETE" -eq "1" ] ; then
-    key_setup
-    cd ~/data/$MY_ORG
-    zip -r $ACCESSION.$MY_ORG.zip $ACCESSION
-    sftp -i ~/.ssh/guestuser guestuser@$SFTP_URL << EOF
+  count=1
+  #while [ $count -lt 200 ] ; do
+  while [ $count -lt 3 ] ; do
+    (( count++ ))
+    cd ~
+    echo "$count"
+    ACCESSION=$(myfunc $MY_ORG $ACC_REQUEST)
+    ( main "$MY_ORG" "$ACCESSION" ) && COMPLETE=1 || COMPLETE=0
+    if [ "$COMPLETE" -eq "1" ] ; then
+      key_setup
+      cd ~/data/$MY_ORG
+      zip -r $ACCESSION.$MY_ORG.zip $ACCESSION
+      sftp -i ~/.ssh/guestuser guestuser@$SFTP_URL << EOF
 put $ACCESSION.$MY_ORG.zip
 EOF
-  fi
-done
+    fi
+  done
+fi
