@@ -790,12 +790,9 @@ export -f main
 #-allow specific accessions
 
 cd ~
-if [ ! -d "code" ] ; then
-  mkdir code && cp ../$0 .
-fi
 
 echo Dumping star genomes from memory
-for DIR in $(find $(~/ref/ | grep /ensembl/star$ | sed 's#\/code\/\.\.##' ) ; do
+for DIR in $(find ~/ref/ | grep /ensembl/star$ | sed 's#\/code\/\.\.##' ) ; do
   echo $DIR ; STAR --genomeLoad Remove --genomeDir $DIR
 done
 
