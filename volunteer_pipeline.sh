@@ -25,10 +25,9 @@ ORG=$1
 #exec 2>> $SRR.log ; exec >&1
 
 #ENVIRONMENT VARS
-cd 
-CODE_DIR=$(pwd)
-DEE_DIR=$(dirname $CODE_DIR)
-
+cd ~
+DEE_DIR=~
+CODE_DIR=~/code
 PIPELINE=$0
 PIPELINE_MD5=$(md5sum $PIPELINE | cut -d ' ' -f1)
 SW_DIR=$DEE_DIR/sw
