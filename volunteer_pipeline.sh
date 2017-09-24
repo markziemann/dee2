@@ -878,9 +878,9 @@ echo $ACCESSION
 export -f myfunc
 
 key_setup(){
-mkdir ~/.ssh
+mkdir -p /home/.ssh
 
-cat << EOF > ~/.ssh/guestuser
+cat << EOF > /home/.ssh/guestuser
 -----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEAyLJ5TihXnb2ATexgYMIkzpHgopCbctWKH8rrPZNN6PALRYjg
 1ozfeMFylSvQilFw+6bCe7HlqUQ3e6pS/jHJukEyzbJOEVR4AwuZxxctI4QH00AL
@@ -910,11 +910,11 @@ Qzab+/WnlQMuslmCLxXXOijq5lEDJLJ0m9hZ0sdC+j13jsTCEOnyj/XJ3VgLKifP
 -----END RSA PRIVATE KEY-----
 EOF
 
-cat << EOF > ~/.ssh/guestuser.pub
+cat << EOF > /home/.ssh/guestuser.pub
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIsnlOKFedvYBN7GBgwiTOkeCikJty1Yofyus9k03o8AtFiODWjN94wXKVK9CKUXD7psJ7seWpRDd7qlL+Mcm6QTLNsk4RVHgDC5nHFy0jhAfTQAvZ4O9a+UQ4KGXE+DwSvlKM/OJRfDw6/ds0u8UdJDuqU1v+BsqEq/OXouTSfpjOX0L96LDNMqN8Qp9cBnnV+PIPZ+ZIVpWV6r63fO+JloZ+0W04sq0MD3BdeKixisG58R/OLG6NAXTgfO/4SDzXhuPOCRKlmIPJLvfk1TO7Q8Judc2NkDpCLKaKw6SHHQnvDeu+f+CaVgyZ4FrkZlmyed9EG+PSCtAh5+QtLfRH mdz@opti
 EOF
 
-chmod -R 700 ~/.ssh
+chmod -R 700 /home/.ssh
 }
 export -f key_setup
 
@@ -951,9 +951,9 @@ else
         DIR=$(pwd)
         main $1 $USER_ACCESSION
         key_setup
-        cd ~/data/$MY_ORG
+        cd /home/data/$MY_ORG
         zip -r $USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
-        sftp -i ~/.ssh/guestuser guestuser@$SFTP_URL << EOF
+        sftp -i /home/.ssh/guestuser guestuser@$SFTP_URL << EOF
 put $USER_ACCESSION.$MY_ORG.zip
 EOF
       done
@@ -978,9 +978,9 @@ EOF
     ( main "$MY_ORG" "$ACCESSION" ) && COMPLETE=1 || COMPLETE=0
     if [ "$COMPLETE" -eq "1" ] ; then
       key_setup
-      cd ~/data/$MY_ORG
+      cd /home/data/$MY_ORG
       zip -r $ACCESSION.$MY_ORG.zip $ACCESSION
-      sftp -i ~/.ssh/guestuser guestuser@$SFTP_URL << EOF
+      sftp -i /home/.ssh/guestuser guestuser@$SFTP_URL << EOF
 put $ACCESSION.$MY_ORG.zip
 EOF
     fi

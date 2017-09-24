@@ -145,7 +145,7 @@ RUN \
 WORKDIR $DIRPATH
 RUN pwd
 RUN \
-  mkdir code && \
+  mkdir  code && \
   cd code && \
   wget "https://raw.githubusercontent.com/markziemann/dee2/master/volunteer_pipeline.sh" &&  \
   chmod +x volunteer_pipeline.sh && \
@@ -154,4 +154,4 @@ RUN \
 ########################################
 # set entrypoint
 ########################################
-ENTRYPOINT [ "/bin/sh", "-c", "/home/data/dee2/code/volunteer_pipeline.sh" ]
+ENTRYPOINT [ "/bin/sh", "-c", "/home/code/volunteer_pipeline.sh" ]
