@@ -391,7 +391,7 @@ rm ${SRR}*fastq
 if [ $CSPACE == "FALSE" ] ; then
   #$FQDUMP --split-files --defline-qual '+' ${SRR}.sra
   ##try parallelising with fastq-dump
-  parallel-fastq-dump --threads 8 --outdir . --split-files --defline-qual + -s ${SRR}.sra
+  parallel-fastq-dump --threads $(nproc) --outdir . --split-files --defline-qual + -s ${SRR}.sra
 fi
 
 FILESIZE=$(du -s $FQ1 | cut -f1)
