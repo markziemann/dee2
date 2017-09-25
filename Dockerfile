@@ -15,7 +15,7 @@ LABEL tags="Genomics"
 # Maintainer
 MAINTAINER Mark Ziemann <mark.ziemann@gmail.com>
 
-ENV DIRPATH /home
+ENV DIRPATH /root
 WORKDIR $DIRPATH
 
 RUN rm /bin/sh && \
@@ -154,4 +154,4 @@ RUN \
 ########################################
 # set entrypoint
 ########################################
-ENTRYPOINT [ "/bin/sh", "-c", "/home/code/volunteer_pipeline.sh" ]
+ENTRYPOINT [ "/bin/sh", "-c", "/root/code/volunteer_pipeline.sh" ]
