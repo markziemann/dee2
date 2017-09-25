@@ -914,6 +914,10 @@ cat << EOF > /home/.ssh/guestuser.pub
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIsnlOKFedvYBN7GBgwiTOkeCikJty1Yofyus9k03o8AtFiODWjN94wXKVK9CKUXD7psJ7seWpRDd7qlL+Mcm6QTLNsk4RVHgDC5nHFy0jhAfTQAvZ4O9a+UQ4KGXE+DwSvlKM/OJRfDw6/ds0u8UdJDuqU1v+BsqEq/OXouTSfpjOX0L96LDNMqN8Qp9cBnnV+PIPZ+ZIVpWV6r63fO+JloZ+0W04sq0MD3BdeKixisG58R/OLG6NAXTgfO/4SDzXhuPOCRKlmIPJLvfk1TO7Q8Judc2NkDpCLKaKw6SHHQnvDeu+f+CaVgyZ4FrkZlmyed9EG+PSCtAh5+QtLfRH mdz@opti
 EOF
 
+cat << EOF > /home/.ssh/known_hosts
+|1|1Y1KrkwK2ivELyLnIcj+Dw8oRjY=|97kNBKCjczmSZnK1PB27s4uVVWo= ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBOPMVFaJlE9+FUtZ/vvw20cRJEZ++hAv72eQXlXQlY0H0+bdBUqoWj9EwAJPCAa2HXZOazGplzorhyR1ORZgBz0=
+EOF
+
 chmod -R 700 /home/.ssh
 }
 export -f key_setup
