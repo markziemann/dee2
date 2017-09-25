@@ -943,6 +943,12 @@ if [ ! -r $TESTFILE ] ; then
   echo "Test dataset completed successfully"
   cd ~
   date +"%s" > $TESTFILE
+
+  # add host info
+  if [ -z $(ssh-keygen -F $SFTP_URL) ]; then
+    ssh-keyscan -H $SFTP_URL >> ~/.ssh/known_hosts
+  fi
+
 else
   echo Starting pipeline
 ##################################################
