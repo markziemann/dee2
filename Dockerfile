@@ -154,4 +154,5 @@ RUN \
 ########################################
 # set entrypoint
 ########################################
-ENTRYPOINT [ "/bin/sh", "-c", "/root/code/volunteer_pipeline.sh" ]
+ENTRYPOINT [ "/root/code/volunteer_pipeline.sh" ]
+CMD [ "" ]
