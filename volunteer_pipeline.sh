@@ -945,6 +945,7 @@ if [ ! -r $TESTFILE ] ; then
   date +"%s" > $TESTFILE
 
   # add host info
+  mkdir -p ~/.ssh && touch ~/.ssh/known_hosts
   if [ -z $(ssh-keygen -F $SFTP_URL) ]; then
     ssh-keyscan -H $SFTP_URL >> ~/.ssh/known_hosts
   fi
