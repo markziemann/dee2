@@ -679,8 +679,10 @@ echo MeadianReadLen=$MEDIAN_LENGTH 20thPercentileLength=$D20 echo kmer=$KMER | t
 if [ $KMER -lt "31" ] ; then
   KAL_REF=$(echo $KAL_REF | sed "s#fa.idx#fa.k${KMER}.idx#")
   if [ ! -r $KAL_REF ] ; then
+    cd $KAL_DIR
     kallisto index -i $(basename $CDNA).k$KMER.idx -k $KMER $(basename $CDNA)
     for IDX in *idx ; do grep -c '>' $(basename $CDNA) > $IDX.cnt ; done
+    cd -
   fi
 fi
 
