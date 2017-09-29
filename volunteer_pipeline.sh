@@ -726,21 +726,6 @@ KE_NR=$(wc -l < $SRR.ke.tsv)
 SE_CNT=$(cat $GTF.cnt)
 KE_CNT=$(cat $CDNA.cnt)
 
-#if this is a test, then verify checksums
-if [ $TOTEST -eq 1 ] ; then
-  TEST_DATASET_USER_CHECKSUM=$(cat *tsv | md5sum | awk '{print $1}')
-  if [ "$TEST_DATASET_USER_CHECKSUM" == "$TEST_CHECKSUM" ] ; then
-    TEST_RESULT=PASS
-    echo "$SRR test dataset completed processed successfully" | tee -a $SRR.log
-    touch $DATA_DIR/test_pass
-  else
-    TEST_RESULT=FAIL
-    echo "$SRR test dataset did not complete properly. Md5sums do not match those provided!" | tee -a $SRR.log
-    rm $DATA_DIR/test_pass
-    exit1
-  fi
-fi
-
 if [ $SE_NR -eq $SE_CNT -a $KE_NR -eq $((KE_CNT+1)) ] ; then
 
   #now place header on the file for later
