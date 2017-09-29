@@ -14,7 +14,7 @@ set -x
 
 #allow aliasing and define exit
 shopt -s expand_aliases
-alias exit="rm *fastq *.sra *tsv ; exit 1"
+alias exit="rm *fastq *.sra *tsv ; return 1"
 
 #JOB
 SRR_FILE=$2
@@ -173,7 +173,7 @@ if [ -z $BT2_REF ] || [ ! -r $BT2_REF  ] ; then
   if [ $MY_BT2_MD5 != $BT2_MD5 ] ; then
     echo "Error in bowtie2 index found. quitting."
     echo "Solution: Try deleting and reindexing the ref transcriptome."
-    exit 1
+    exit
   fi
   cd -
 fi
@@ -198,7 +198,7 @@ if [ -z $KAL_REF ] || [ ! -r $KAL_REF  ] ; then
   if [ $MY_KAL_MD5 != $KAL_MD5 ] ; then
     echo "Error in kallisto index found. quitting."
     echo "Solution: Try deleting and reindexing the ref transcriptome."
-    exit 1
+    exit
   fi
   cd -
 fi
@@ -222,7 +222,7 @@ if [ ! -r $STAR_DIR/SA ] || [ ! -r $STAR_DIR/SAindex ] ; then
   if [ $MY_STAR_MD5 != $STAR_MD5 ] ; then
     echo "Error in STAR index found. quitting."
     echo "Solution: Try deleting and reindexing the ref genome."
-    exit 1
+    exit
   fi
   cd -
 fi
@@ -258,7 +258,7 @@ echo $PIPELINE $PIPELINE_MD5 $DATE >> $ATTEMPTS
 DISK=$(df . | awk 'END{print$4}')
 if [ $DISK -lt $DISKLIM ] ; then
   echo Error low disk space $DISK available $DISKLIM limit
-  exit 1
+  exit
 fi
 
 ##########################################################################
@@ -340,6 +340,7 @@ elif [ $BASECALL_ENCODING == "Conventional" ] ; then
   echo $SRR is conventional basespace | tee -a $SRR.log
 else
   echo Unable to determine if colorspace or basespace. Quitting. | tee -a $SRR.log
+  exit
 fi
 
 #quality encoding ie Illumina1.9
@@ -733,7 +734,7 @@ if [ $TOTEST -eq 1 ] ; then
     TEST_RESULT=FAIL
     echo "$SRR test dataset did not complete properly. Md5sums do not match those provided!" | tee -a $SRR.log
     rm $DATA_DIR/test_pass
-    exit 1
+    exit
   fi
 fi
 
