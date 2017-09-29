@@ -14,7 +14,7 @@ set -x
 
 #allow aliasing and define exit
 shopt -s expand_aliases
-alias exit="rm *fastq *.sra *tsv ; return 1"
+alias exit="rm *fastq *.sra *tsv ; exit 1"
 
 #JOB
 SRR_FILE=$2
