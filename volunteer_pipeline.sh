@@ -472,7 +472,9 @@ if [ $RDS == "SE" ] ; then
         echo Adapter seq not found in reference. Now shuffling file before clipping | tee -a $SRR.log
         #FQ1=${SRR}-trimmed.fastq this is the current name
         #shuffling the fq file to remove any tile effects
-        paste - - - - < $FQ1 | shuf | tr '\t' '\n' > ${SRR}.fastq
+        paste - - - - < $FQ1 \
+        | sort --parallel=$((($(nproc)+1)/2)) -R --random-source /usr/bin/sort \
+        | tr '\t' '\n' > ${SRR}.fastq
         CLIP_LINE_NUM=$(echo $DENSITY $ADAPTER_THRESHOLD $READ_CNT_AVAIL | awk '{printf "%.0f\n", ($1-$2)/$1*$3*4}' | numround -n 4)
         head -$CLIP_LINE_NUM ${SRR}.fastq | skewer -l 18 -t $THREADS -x $ADAPTER -o $SRR -
         READ_CNT_AVAIL=$(grep 'available; of these:' ${SRR}-trimmed.log | cut -d ' ' -f1)
@@ -512,7 +514,9 @@ elif [ $RDS == "PE" ] ; then
 
       if [ $ADAPTER1_REF_CHECK -eq "0" -a $ADAPTER2_REF_CHECK -eq "0" ] ; then
         echo Adapter seq not found in reference. Now shuffling file before clipping | tee -a $SRR.log
-        paste <(cut -d ' ' -f1 $FQ1) <(cut -d ' ' -f1 $FQ2) | paste - - - - | shuf | awk -F'\t' '{OFS="\n"; print $1,$3,$5,$7 > "R1.fastq"; print $2,$4,$6,$8 > "R2.fastq"}'
+        paste <(cut -d ' ' -f1 $FQ1) <(cut -d ' ' -f1 $FQ2) | paste - - - - \
+        | sort --parallel=$((($(nproc)+1)/2)) -R --random-source /usr/bin/sort \
+        | awk -F'\t' '{OFS="\n"; print $1,$3,$5,$7 > "R1.fastq"; print $2,$4,$6,$8 > "R2.fastq"}'
         mv R1.fastq ${SRR}_1.tmp.fastq ; mv R2.fastq ${SRR}_2.tmp.fastq
         CLIP_LINE_NUM=$(echo $DENSITY $ADAPTER_THRESHOLD $READ_CNT_AVAIL | awk '{printf "%.0f\n", ($1-$2)/$1*$3*4}' | numround -n 4)
         head -$CLIP_LINE_NUM ${SRR}_1.tmp.fastq > ${SRR}_1.fastq &
