@@ -1,3 +1,7 @@
+# Under construction
+Note that this app is still under development and alpha testing. It may not work and may undergo
+major changes in future.
+
 # DEE2
 DEE2 is an intelligent RNA-seq pipeline for distributed computing. It uses docker containers to
 enhance ease of use, portability and reproducibility. DEE2 currently supports analysis of several 
