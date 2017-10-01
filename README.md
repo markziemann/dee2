@@ -46,23 +46,23 @@ Now pull image
 
 `docker pull mziemann/tallyup`
 
-Now run the pipeline there are three options:
-
-*accessions of interest 
+Run the pipeline by specifying organism and SRA run accessions
 
 `docker run -it mziemann/tallyup /root/code/volunteer_pipeline.sh ecoli SRR2637695,SRR2637696,SRR2637697,SRR2637698`
-
-*You have a species of interest
-
-`docker run -it mziemann/tallyup /root/code/volunteer_pipeline.sh celegans`
-
-*Let the app choose the species and accessions
-
-`docker run -it mziemann/tallyup /root/code/volunteer_pipeline.sh`
 
 return the data directory from the container to the host filesystem
 
 `docker cp $(docker ps -alq):/root/data/ .`
+
+
+## Donating compute time
+If you have a species of interest
+
+`docker run -it mziemann/tallyup /root/code/volunteer_pipeline.sh celegans`
+
+Let the app choose the species and accessions - it will be selected based on available memory
+
+`docker run -it mziemann/tallyup /root/code/volunteer_pipeline.sh`
 
 
 Note, if there is insufficient space in /var to work, do follow instructions from the
