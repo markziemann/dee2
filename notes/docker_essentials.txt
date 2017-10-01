@@ -14,3 +14,6 @@ docker rmi $(docker images -q "dangling=true")
 # copy container data to pwd
 docker cp $(docker ps -alq):/root/data/ .
 
+
+# run bash in an entrypoint container 
+docker run -it --entrypoint /bin/bash <image>
