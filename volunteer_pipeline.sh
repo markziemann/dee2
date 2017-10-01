@@ -977,14 +977,18 @@ EOF
     cd ~
     echo "$count"
     ACCESSION=$(myfunc $MY_ORG $ACC_REQUEST)
-    ( main "$MY_ORG" "$ACCESSION" ) && COMPLETE=1 || COMPLETE=0
+    main "$MY_ORG" "$ACCESSION" && COMPLETE=1 || COMPLETE=0
     if [ "$COMPLETE" -eq "1" ] ; then
       key_setup
       cd /root/data/$MY_ORG
       zip -r $ACCESSION.$MY_ORG.zip $ACCESSION
-      sftp -i /root/.ssh/guestuser guestuser@$SFTP_URL << EOF
+      if [ $(du -s $ACCESSION.$MY_ORG.zip) -lt "20000" ] ; then
+        sftp -i /root/.ssh/guestuser guestuser@$SFTP_URL << EOF
 put $ACCESSION.$MY_ORG.zip
 EOF
+      else
+        rm $ACCESSION.$MY_ORG.zip
+      fi
     fi
   done
 fi
