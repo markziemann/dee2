@@ -65,5 +65,6 @@ Let the app choose the species and accessions - it will be selected based on ava
 `docker run -it mziemann/tallyup /root/code/volunteer_pipeline.sh`
 
 
-Note, if there is insufficient space in /var to work, do follow instructions from the
+## Troubleshooting
+If there is insufficient space in /var to work, do follow instructions from the
 [link](https://stackoverflow.com/a/34731550).
