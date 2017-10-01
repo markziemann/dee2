@@ -10,3 +10,7 @@ docker stop 4ede2bbff7d9
 docker rm $(docker ps -a -q)
 docker rmi $(docker images -q)
 docker rmi $(docker images -q "dangling=true")
+
+# copy container data to pwd
+docker cp $(docker ps -alq):/root/data/ .
+
