@@ -17,3 +17,9 @@ docker cp $(docker ps -alq):/root/data/ .
 
 # run bash in an entrypoint container 
 docker run -it --entrypoint /bin/bash <image>
+
+
+docker login
+docker commit db7c579a270 user_name/image_name
+docker push user_name/image_name
+
