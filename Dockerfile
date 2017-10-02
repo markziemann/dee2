@@ -37,7 +37,8 @@ RUN \
     python3 \
     python3-pip \
     libtbb2 \
-    default-jdk
+    default-jdk \
+    unsort
 
 ########################################
 # now downloading a bunch of dependancies
