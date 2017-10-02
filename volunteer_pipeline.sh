@@ -473,7 +473,7 @@ if [ $RDS == "SE" ] ; then
         #FQ1=${SRR}-trimmed.fastq this is the current name
         #shuffling the fq file to remove any tile effects
         paste - - - - < $FQ1 \
-        | sort --parallel=$((($(nproc)+1)/2)) -R --random-source /usr/bin/sort \
+        | unsort --seed 42 \
         | tr '\t' '\n' > ${SRR}.fastq
         CLIP_LINE_NUM=$(echo $DENSITY $ADAPTER_THRESHOLD $READ_CNT_AVAIL | awk '{printf "%.0f\n", ($1-$2)/$1*$3*4}' | numround -n 4)
         head -$CLIP_LINE_NUM ${SRR}.fastq | skewer -l 18 -t $THREADS -x $ADAPTER -o $SRR -
@@ -515,7 +515,7 @@ elif [ $RDS == "PE" ] ; then
       if [ $ADAPTER1_REF_CHECK -eq "0" -a $ADAPTER2_REF_CHECK -eq "0" ] ; then
         echo Adapter seq not found in reference. Now shuffling file before clipping | tee -a $SRR.log
         paste <(cut -d ' ' -f1 $FQ1) <(cut -d ' ' -f1 $FQ2) | paste - - - - \
-        | sort --parallel=$((($(nproc)+1)/2)) -R --random-source /usr/bin/sort \
+        | unsort --seed 42 \
         | awk -F'\t' '{OFS="\n"; print $1,$3,$5,$7 > "R1.fastq"; print $2,$4,$6,$8 > "R2.fastq"}'
         mv R1.fastq ${SRR}_1.tmp.fastq ; mv R2.fastq ${SRR}_2.tmp.fastq
         CLIP_LINE_NUM=$(echo $DENSITY $ADAPTER_THRESHOLD $READ_CNT_AVAIL | awk '{printf "%.0f\n", ($1-$2)/$1*$3*4}' | numround -n 4)
@@ -971,8 +971,8 @@ EOF
 # If no accessions are provided
 #################################################
   count=1
-  #while [ $count -lt 200 ] ; do
-  while [ $count -lt 3 ] ; do
+  #while [ $count -lt 3 ] ; do
+  while true ; do
     (( count++ ))
     cd ~
     echo "$count"
