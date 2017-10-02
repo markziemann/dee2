@@ -982,7 +982,7 @@ EOF
       key_setup
       cd /root/data/$MY_ORG
       zip -r $ACCESSION.$MY_ORG.zip $ACCESSION
-      if [ $(du -s $ACCESSION.$MY_ORG.zip) -lt "20000" ] ; then
+      if [ $(du -s $ACCESSION.$MY_ORG.zip | awk '{print $1}') -lt "20000" ] ; then
         sftp -i /root/.ssh/guestuser guestuser@$SFTP_URL << EOF
 put $ACCESSION.$MY_ORG.zip
 EOF
