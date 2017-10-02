@@ -42,6 +42,7 @@ if [ "$ORG_OK" != "1" ] ; then
   echo '</html>'
   exit 1
 fi
+
 DATA=/usr/lib/cgi-bin/acc_data
 TODO=${DATA}/${ORG}.queue.txt
 TODO_NEW=/home/pi/Public/${ORG}.queue.txt
@@ -63,6 +64,7 @@ echo '<br>'
 echo '</body>'
 echo '</html>'
 
+#FIXTHIS
 TIME=$(date +%s)
 sed "s/$/\t${TIME}/" $ALLOCATED | awk '($3-$2)>86400 {print $1}' >> $TODO
 sort -u -o $TODO $TODO
@@ -86,9 +88,16 @@ if [ "$DIFF" -gt "86400" ] ; then
 fi
 
 #the below needs to be integrated to automate incorporation of volunteer data
+AGE=$(date -r started +%s)
+TIME=$(date +%s)
+if [ $((TIME-AGE)) -gt 300 ] ; then
+  rm started
+fi
+
 if [ ! -r started ] ; then
   touch started
   SFTP_INCOMING=/sftp/guestuser/incoming
+
 validate_zip(){
 ZIP=$1
 #zipinfo $ZIP
@@ -102,8 +111,14 @@ MD5SUM=$(unzip -ql $ZIP | grep RR | cut -d '/' -f2 | sed "s#${SRR}.##" \
 
 # Check the md5sum of the current volunteer pipeline and check it against incoming
 # datasets
-REFERENCE_PIPELINE_MD5SUM=$(scp mdz@Z620:/home/mdz/bfx/dee2/code/volunteer_pipeline.sh  /dev/stdout \
-| md5sum | awk '{print $1}')
+
+if [ -d dee2 ] ; then
+  git pull https://github.com/markziemann/dee2.git
+else
+  git clone https://github.com/markziemann/dee2.git
+fi
+
+REFERENCE_PIPELINE_MD5SUM=$(md5sum dee2/volunteer_pipeline.sh | awk '{print $1}')
 
 PIPELINE_MD5SUM=$(unzip -p $ZIP $SRR/volunteer_pipeline.sh | md5sum | awk '{print $1}')
 
