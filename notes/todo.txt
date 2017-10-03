@@ -1,13 +1,14 @@
 Dockerfile+image
- - need to better organise the image directories
-   - sw for downloaded software
-   - commit image and save to dockerhub
+- Singularity image for HPC
 
 Pipeline (volunteer)
-- allow user to get accessions of interest SRR,SRX,SRA,GSE,etc
+- if R1 or R2 are excluded, then ensure these are not zipped as is the casefor D rerio.
+- more sanitation prior to upload at least check TSVs are present and fastq/sra are gone
 
-Frontend
-- allow more elegant dataset sanitation and transfer to backend
-  - if "started" file is older than x minutes then delete
+Uploads
+- Allow more elegant dataset sanitation and transfer to backend
   - dont allow new uploads to fill the disk
   - if backend server is not available, then don't transfer or delete zip archive
+
+FrontEnd
+- Make zip archives and matrices available
