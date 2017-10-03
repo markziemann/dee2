@@ -3,6 +3,7 @@ Dockerfile+image
 
 Pipeline (volunteer)
 - if R1 or R2 are excluded, then ensure these are not zipped as is the casefor D rerio.
+- if R1 or R2 are too short, then exclude. Dont let skewer omit the read pair.
 - more sanitation prior to upload at least check TSVs are present and fastq/sra are gone
 
 Uploads
