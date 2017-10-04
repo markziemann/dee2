@@ -985,8 +985,8 @@ EOF
 # If no accessions are provided
 #################################################
   count=1
-  #while [ $count -lt 3 ] ; do
-  while true ; do
+  while [ $count -lt 30 ] ; do
+  #while true ; do
     (( count++ ))
     cd ~
     echo "$count"
