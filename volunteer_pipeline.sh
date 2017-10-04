@@ -15,7 +15,6 @@ set -x
 #define bad exit
 exit1(){
 rm *fastq *.sra *tsv
-return 1
 }
 export -f exit1
 
@@ -176,7 +175,7 @@ if [ -z $BT2_REF ] || [ ! -r $BT2_REF  ] ; then
   if [ $MY_BT2_MD5 != $BT2_MD5 ] ; then
     echo "Error in bowtie2 index found. quitting."
     echo "Solution: Try deleting and reindexing the ref transcriptome."
-    exit1
+    exit1 ; return 1
   fi
   cd -
 fi
@@ -201,7 +200,7 @@ if [ -z $KAL_REF ] || [ ! -r $KAL_REF  ] ; then
   if [ $MY_KAL_MD5 != $KAL_MD5 ] ; then
     echo "Error in kallisto index found. quitting."
     echo "Solution: Try deleting and reindexing the ref transcriptome."
-    exit1
+    exit1 ; return 1
   fi
   cd -
 fi
@@ -225,7 +224,7 @@ if [ ! -r $STAR_DIR/SA ] || [ ! -r $STAR_DIR/SAindex ] ; then
   if [ $MY_STAR_MD5 != $STAR_MD5 ] ; then
     echo "Error in STAR index found. quitting."
     echo "Solution: Try deleting and reindexing the ref genome."
-    exit1
+    exit1 ; return 1
   fi
   cd -
 fi
@@ -249,7 +248,7 @@ if [ -r $SRR.attempts.txt ] ; then
   NUM_ATTEMPTS=$(wc -l < $ATTEMPTS)
   if [ $NUM_ATTEMPTS -gt "2" ] ; then
     echo $SRR has already been tried 3 times, skipping
-    exit1
+    exit1 ; return 1
   fi
 fi
 DATE=`date +%Y-%m-%d:%H:%M:%S`
@@ -261,7 +260,7 @@ echo $PIPELINE $PIPELINE_MD5 $DATE >> $ATTEMPTS
 DISK=$(df . | awk 'END{print$4}')
 if [ $DISK -lt $DISKLIM ] ; then
   echo Error low disk space $DISK available $DISKLIM limit
-  exit1
+  exit1 ; return 1
 fi
 
 ##########################################################################
@@ -292,7 +291,7 @@ Ta7g6mGwIMXrdTQQ8fZs
 EOF
   chmod 700 ~/.ascp
   ascp -l 500m -O 33001 -T -i $ID $URL . \
-  || ( echo $SRR failed ascp download | tee -a $SRR.log ; sleep 5 ; exit1)
+  || ( echo $SRR failed ascp download | tee -a $SRR.log ; sleep 5 ; exit1 ; return 1 )
   SRASIZE=$(du ${SRR}.sra)
 fi
 
@@ -306,7 +305,7 @@ if [ $VALIDATE_SRA -eq 4 ] ; then
   echo $SRR.sra file validated | tee -a $SRR.log
 else
   echo $SRR.sra md5sums do not match. Deleting and exiting | tee -a $SRR.log
-  exit1
+  exit1 ; return 1
 fi
 
 ##########################################################################
@@ -324,7 +323,7 @@ elif [ $NUM_FQ -eq "2" ] ; then
   echo $SRR is paired end | tee -a $SRR.log
 else
   echo Unable to determine if paired or single end. Quitting. | tee -a $SRR.log
-  exit1
+  exit1 ; return 1
 fi
 
 FQ1=$(ls  | grep $SRR | grep -m1 fastq$)
@@ -343,7 +342,7 @@ elif [ $BASECALL_ENCODING == "Conventional" ] ; then
   echo $SRR is conventional basespace | tee -a $SRR.log
 else
   echo Unable to determine if colorspace or basespace. Quitting. | tee -a $SRR.log
-  exit1
+  exit1 ; return 1
 fi
 
 #quality encoding ie Illumina1.9
@@ -378,6 +377,23 @@ if [ $RDS == "PE" ] ; then
   FQ2_MIN_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | sort -g | head -1)
   FQ2_MEDIAN_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | numaverage -M)
   FQ2_MAX_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | sort -gr | head -1)
+
+  #now checking read lengths and dropping ones too short
+  if [[ $FQ1_MAX_LEN -lt 20 && $FQ2_MAX_LEN -lt 20 ]] ; then
+    echo Read lengths are too short. Quitting. | tee -a $SRR.log
+    exit1 ; return 1
+  fi
+
+  if [[ $FQ1_MAX_LEN -ge 20 && $FQ2_MAX_LEN -lt 20 ]] ; then
+    rm $FQ2
+    RDS=SE
+  fi
+
+  if [[ $FQ1_MAX_LEN -lt 20 && $FQ2_MAX_LEN -ge 20 ]] ; then
+    rm $FQ1
+    FQ1=$FQ2
+    RDS=SE
+  fi
 fi
 
 ##########################################################################
@@ -385,7 +401,7 @@ echo $SRR if colorspace, then quit
 ##########################################################################
 if [ $CSPACE == "TRUE" ] ; then
   echo Colorspace data is excluded from analysis for now
-  exit1
+  exit1 ; return 1
 fi
 
 ##########################################################################
@@ -393,8 +409,6 @@ echo $SRR Dump the fastq file
 ##########################################################################
 rm ${SRR}*fastq
 if [ $CSPACE == "FALSE" ] ; then
-  #$FQDUMP --split-files --defline-qual '+' ${SRR}.sra
-  ##try parallelising with fastq-dump
   parallel-fastq-dump --threads $(nproc) --outdir . --split-files --defline-qual + -s ${SRR}.sra
 fi
 
@@ -403,7 +417,7 @@ echo $SRR file size $FILESIZE | tee -a $SRR.log
 rm ${SRR}.sra
 
 if [ "$FILESIZE" -eq 0 ] ; then
-  echo $SRR has no reads. Aborting | tee -a $ATTEMPTS ; rm $FQ ; exit1
+  echo $SRR has no reads. Aborting | tee -a $ATTEMPTS ; rm $FQ ; exit1 ; return 1
 fi
 
 echo $SRR completed basic pipeline successfully | tee -a $SRR.log
@@ -426,7 +440,7 @@ fi
 # check to see that the skewer log was created - if not then there is a problem
 if [ ! -f ${SRR}-trimmed.log ] ; then
   echo Skewer failed. Quitting | tee -a $SRR.log
-  exit1
+  exit1 ; return 1
 fi
 
 # get read counts and append skewer log and exit if there are no reads passing QC
@@ -438,7 +452,7 @@ if [ -z "$READ_CNT_AVAIL" ] ; then READ_CNT_AVAIL=0 ; fi
 cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
 if [ $READ_CNT_AVAIL -eq "0" ] ; then
   echo No reads passed QC. Quitting | tee -a $SRR.log
-  exit1
+  exit1 ; return 1
 else
   echo $READ_CNT_AVAIL reads passed initial QC | tee -a $SRR.log
 fi
@@ -544,7 +558,7 @@ FQSIZE=$(du -s $FQ1 | cut -f1)
 #cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
 if [ $FQSIZE -eq "0" ] ; then
   echo No reads passed QC. Quitting | tee -a $SRR.log
-  exit1
+  exit1 ; return 1
 fi
 
 ##########################################################################
@@ -741,7 +755,7 @@ if [ $SE_NR -eq $SE_CNT -a $KE_NR -eq $((KE_CNT+1)) ] ; then
   touch $SRR.finished
 else
   echo "$SRR An error occurred. Count file line numbers don't match the reference." | tee -a $SRR.log
-  exit1
+  exit1 ; return 1
 fi
 
 ## Collect QC information
