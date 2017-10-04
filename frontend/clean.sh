@@ -48,12 +48,13 @@ if [ ! -r started ] ; then
           INVALID=0
           if [ "$REFERENCE_PIPELINE_MD5SUM" != "$PIPELINE_MD5SUM" ] ; then INVALID=$((INVALID+1)) ; fi
           unzip -t $FILE || INVALID=$((INVALID+1))
+          if [ $(du -s $FILE | cut -f1) -gt 6000 ] ; then INVALID=$((INVALID+1)) ; fi
 
           if [ $INVALID -eq "0" ] ; then
             #sudo mv $FILE $DATA
             mkdir $DATA/$ORG
 #            unzip -of /sftp/guestuser/incoming/ERR1158067.scerevisiae.zip -d /home/pi/dee2_data/scerevisiae/
-            unzip -o $FILE -d $DATA/$ORG/$SRR && scp -r $DATA/$ORG/$SRR/$ORG mdz@Z620:~/bfx/dee2/data/ && rm -rf $DATA/$ORG/$SRR
+            unzip -o $FILE -d $DATA/$ORG && scp -r $DATA/$ORG/$SRR mdz@Z620:~/bfx/dee2/data/$ORG && rm -rf $DATA/$ORG/$SRR
           else
             sudo rm $FILE
           fi
