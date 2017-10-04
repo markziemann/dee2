@@ -794,6 +794,7 @@ Kallisto_MappedReads:$PSEUDOMAPPED_CNT
 Kallisto_MapRate:$PSEUDOMAP_RATE
 QC_SUMMARY:${QC_SUMMARY}${REASON}" > $SRR.qc
 
+rm -rf *fastq
 cd ..
 #zip -r $SRR.$ORG.zip $SRR
 }
