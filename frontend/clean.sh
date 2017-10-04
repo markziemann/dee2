@@ -51,6 +51,8 @@ if [ ! -r started ] ; then
 
           if [ $INVALID -eq "0" ] ; then
             sudo mv $FILE $DATA
+            #mkdir $DATA/$ORG
+            # unzip -of $FILE -d $DATA
           else
             sudo rm $FILE
           fi
