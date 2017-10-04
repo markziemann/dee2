@@ -11,6 +11,7 @@ providing tabulated data that can be used in downstream statistical analysis.
 
 Here are some of the key features:
  * Intelligent adapter detection and clipping
+ * Strandedness detection
  * Parallel assignment of reads genes and transcripts with STAR and Kallisto
  * Thorough quality control logs
  * Open source pipeline
