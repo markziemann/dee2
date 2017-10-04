@@ -386,13 +386,16 @@ if [ $RDS == "PE" ] ; then
 
   if [[ $FQ1_MAX_LEN -ge 20 && $FQ2_MAX_LEN -lt 20 ]] ; then
     rm $FQ2
-    FQ1=$(echo $FQ1 | sed 's/_1//')
+    FQ1NEW=$(echo $FQ1 | sed 's/_1//')
+    mv $FQ1 $FQ1NEW
+    FQ1=$FQ1NEW
     RDS=SE
   fi
 
   if [[ $FQ1_MAX_LEN -lt 20 && $FQ2_MAX_LEN -ge 20 ]] ; then
     rm $FQ1
     FQ1=$(echo $FQ2 | sed 's/_2//')
+    mv $FQ2 $FQ1
     RDS=SE
   fi
 fi
