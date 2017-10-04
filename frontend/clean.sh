@@ -5,7 +5,7 @@ set -x #-v
 #*/10 * * * * bash -c "/home/pi/clean.sh"
 #put script in the location "/home/pi/clean.sh"
 
-DATA=/home/pi/dee2_data/
+DATA=/home/pi/dee2_data
 #the below needs to be integrated to automate incorporation of volunteer data
 cd $DATA
 AGE=$(date -r started +%s)
@@ -28,7 +28,7 @@ if [ ! -r started ] ; then
 
   if [ "$(ls -A ${SFTP_INCOMING})" ]; then
 
-    for FILE in ${SFTP_INCOMING}/* ; do
+    for FILE in $(find ${SFTP_INCOMING} ) ; do
 
       if [ "$(echo $FILE | grep -c .zip$)" -ne "1" ] ; then
         echo "now rm $FILE"
@@ -44,15 +44,16 @@ if [ ! -r started ] ; then
           SRR=$(echo $BASE | sed "s/.${ORG}//")
           PIPELINE_MD5SUM=$(unzip -p $FILE $SRR/volunteer_pipeline.sh | md5sum | awk '{print $1}')
 
+          #INVALID=0 means data is valid and good. 1 or higher is bad
           INVALID=0
           if [ "$REFERENCE_PIPELINE_MD5SUM" != "$PIPELINE_MD5SUM" ] ; then INVALID=$((INVALID+1)) ; fi
-
           unzip -t $FILE || INVALID=$((INVALID+1))
 
           if [ $INVALID -eq "0" ] ; then
-            sudo mv $FILE $DATA
-            #mkdir $DATA/$ORG
-            # unzip -of $FILE -d $DATA
+            #sudo mv $FILE $DATA
+            mkdir $DATA/$ORG
+#            unzip -of /sftp/guestuser/incoming/ERR1158067.scerevisiae.zip -d /home/pi/dee2_data/scerevisiae/
+            unzip -o $FILE -d $DATA/$ORG/$SRR && scp -r $DATA/$ORG/$SRR/$ORG mdz@Z620:~/bfx/dee2/data/ && rm -rf $DATA/$ORG/$SRR
           else
             sudo rm $FILE
           fi
