@@ -15,6 +15,14 @@
     padding: 0px 0px 0px 0px;
   }
 
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 15px;
+}
+
   body, html {
     padding: 3px 3px 3px 3px;
 
@@ -199,7 +207,7 @@ form, button, input, select, textarea {
       <div class="page_header floating_element">
         <img src="dna.jpg" height="100" width="100" alt="Ubuntu Logo" class="floating_element"/>
         <span class="floating_element">
-          DEE job list
+          Tallyup
         </span>
       </div>
 <!--      <div class="table_of_contents floating_element">
@@ -225,13 +233,70 @@ form, button, input, select, textarea {
 
         <div class="section_header section_header_red">
           <div id="about"></div>
-          DEE accession
+          Bulk downloads here
         </div>
         <div class="content_section_text">
 
           <p>
-                Get accessions!
+                Under contruction and testing
           </p>
+<table style="width:100%">
+  <tr>
+    <th>Species</th>
+    <th>GeneCounts</th> 
+    <th>TxCounts</th>
+    <th>TxCPMs</th>
+  </tr>
+
+  <tr>
+    <td>A. thaliana</td>
+    <td> <a href="data/athaliana_se.tsv">LINK</a> </td>
+    <td> <a href="data/athaliana_ke_counts.tsv">LINK</a> </td>
+    <td> <a href="data/athaliana_ke_tpm.tsv">LINK</a> </td>
+  </tr>
+    <td>C. elegans</td>
+    <td> <a href="data/celegans_se.tsv">LINK</a> </td>
+    <td> <a href="data/celegans_ke_counts.tsv">LINK</a> </td>
+    <td> <a href="data/celegans_ke_tpm.tsv">LINK</a> </td>
+  </tr>
+    <td>D. melanogaster</td>
+    <td> <a href="data/dmelanogaster_se.tsv">LINK</a> </td>
+    <td> <a href="data/dmelanogaster_ke_counts.tsv">LINK</a> </td>
+    <td> <a href="data/dmelanogaster_ke_tpm.tsv">LINK</a> </td>
+  </tr>
+    <td>D. rerio</td>
+    <td> <a href="data/athaliana_se.tsv">LINK</a> </td>
+    <td> <a href="data/athaliana_ke_counts.tsv">LINK</a> </td>
+    <td> <a href="data/athaliana_ke_tpm.tsv">LINK</a> </td>
+  </tr>
+    <td>E. coli</td>
+    <td> <a href="data/ecoli_se.tsv">LINK</a> </td>
+    <td> <a href="data/ecoli_ke_counts.tsv">LINK</a> </td>
+    <td> <a href="data/ecoli_ke_tpm.tsv">LINK</a> </td>
+  </tr>
+    <td>H. sapiens</td>
+    <td> <a href="data/hsapiens_se.tsv">LINK</a> </td>
+    <td> <a href="data/hsapiens_ke_counts.tsv">LINK</a> </td>
+    <td> <a href="data/hsapiens_ke_tpm.tsv">LINK</a> </td>
+  </tr>
+    <td>M. musculus</td>
+    <td> <a href="data/mmusculus_se.tsv">LINK</a> </td>
+    <td> <a href="data/mmusculus_ke_counts.tsv">LINK</a> </td>
+    <td> <a href="data/mmusculus_ke_tpm.tsv">LINK</a> </td>
+  </tr>
+    <td>R. norvegicus</td>
+    <td> <a href="data/rnorvegicus_se.tsv">LINK</a> </td>
+    <td> <a href="data/rnorvegicus_ke_counts.tsv">LINK</a> </td>
+    <td> <a href="data/rnorvegicus_ke_tpm.tsv">LINK</a> </td>
+  </tr>
+    <td>S. cerevisiae</td>
+    <td> <a href="data/scerevisiae_se.tsv">LINK</a> </td>
+    <td> <a href="data/scerevisiae_ke_counts.tsv">LINK</a> </td>
+    <td> <a href="data/scerevisiae_ke_tpm.tsv">LINK</a> </td>
+  </tr>
+
+</table>
+
           </div>
 
         <div class="section_header">
@@ -245,15 +310,15 @@ Important notes here!
 </p>
 <form action="cgi-bin/acc.sh" method="get" >
 Select a species: <br>
-<input type="radio" name="ORG" value="athaliana"> A. thaliana (17667) <br>
-<input type="radio" name="ORG" value="celegans"> C. elegans (3953) <br>
-<input type="radio" name="ORG" value="dmelanogaster"> D. melanogaster (16457) <br>
-<input type="radio" name="ORG" value="drerio"> D. rerio (16902) <br>
-<input type="radio" name="ORG" value="ecoli"> E. coli (1392) <br>
-<input type="radio" name="ORG" value="hsapiens"> H. sapiens (183317) <br>
-<input type="radio" name="ORG" value="mmusculus"> M. musculus (180784) <br>
-<input type="radio" name="ORG" value="rnorvegicus"> R. norvegicus (7685) <br>
-<input type="radio" name="ORG" value="scerevisiae"> S. cerevisiae (7544) <br>
+<input type="radio" name="ORG" value="athaliana"> A. thaliana (16715) <br>
+<input type="radio" name="ORG" value="celegans"> C. elegans (3924) <br>
+<input type="radio" name="ORG" value="dmelanogaster"> D. melanogaster (15817) <br>
+<input type="radio" name="ORG" value="drerio"> D. rerio (16928) <br>
+<input type="radio" name="ORG" value="ecoli"> E. coli (1269) <br>
+<input type="radio" name="ORG" value="hsapiens"> H. sapiens (169520) <br>
+<input type="radio" name="ORG" value="mmusculus"> M. musculus (167300) <br>
+<input type="radio" name="ORG" value="rnorvegicus"> R. norvegicus (7434) <br>
+<input type="radio" name="ORG" value="scerevisiae"> S. cerevisiae (6662) <br>
 
 <input type="submit" name="sub" value="Submit"></input>
 </form>
