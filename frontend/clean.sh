@@ -65,3 +65,8 @@ if [ ! -r started ] ; then
   fi
   rm started
 fi
+
+#check time if older than 1 week (604800)
+[[ $(( $(date +'%s') - $(stat --format "%Y" /home/pi/dee2_data/mx/*tsv | sort | head -1) )) -gt 120 ]] && \
+ scp mdz@Z620:~/bfx/dee2/mx/* /home/pi/dee2_data/mx || \
+ echo "not time to refresh"
