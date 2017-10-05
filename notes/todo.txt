@@ -2,9 +2,7 @@ Dockerfile+image
 - Singularity image for HPC
 
 Pipeline (volunteer)
-- if R1 or R2 are excluded, then ensure these are not zipped as is the casefor D rerio.
-- if R1 or R2 are too short, then exclude. Dont let skewer omit the read pair.
-- more sanitation prior to upload at least check TSVs are present and fastq/sra are gone
+- check for presence of non-reference bases by sampling 1M reads and clipping 5,10,15,20 bp from 5' end eg ERR048993
 
 Uploads
 - Allow more elegant dataset sanitation and transfer to backend
