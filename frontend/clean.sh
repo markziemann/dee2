@@ -1,9 +1,10 @@
 #!/bin/bash
 set -x #-v
 # sanitise data regularly by cron and move validated data to /home/pi/dee2_data/
-#add the following tocrontab using "crontab -e"
-#*/10 * * * * bash -c "/home/pi/clean.sh"
-#put script in the location "/home/pi/clean.sh"
+#create the file /etc/cron.d/pi and paster in the following
+#MAILTO=pi
+#*/10 * * * * pi bash -c "/home/pi/clean.sh"
+#put this script in the location "/home/pi/clean.sh"
 
 DATA=/home/pi/dee2_data
 #the below needs to be integrated to automate incorporation of volunteer data
@@ -54,7 +55,7 @@ if [ ! -r started ] ; then
             #sudo mv $FILE $DATA
             mkdir $DATA/$ORG
 #            unzip -of /sftp/guestuser/incoming/ERR1158067.scerevisiae.zip -d /home/pi/dee2_data/scerevisiae/
-            unzip -o $FILE -d $DATA/$ORG && scp -r $DATA/$ORG/$SRR mdz@Z620:~/bfx/dee2/data/$ORG && rm -rf $DATA/$ORG/$SRR
+            unzip -o $FILE -d $DATA/$ORG && scp -r $DATA/$ORG/$SRR mdz@Z620:~/bfx/dee2/data/$ORG && sudo rm -rf $DATA/$ORG/$SRR $FILE
           else
             sudo rm $FILE
           fi
