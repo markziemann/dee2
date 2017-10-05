@@ -68,7 +68,7 @@ echo '</html>'
 TIME=$(date +%s)
 sed "s/$/\t${TIME}/" $ALLOCATED | awk '($3-$2)>86400 {print $1}' >> $TODO
 sort -u -o $TODO $TODO
-sed "s/$/\t${TIME}/" $ALLOCATED | awk '($3-$2)<86400' > $ALLOCATED.tmp
+awk '{print $1}' $ALLOCATED | sed "s/$/\t${TIME}/" | awk '($3-$2)<86400' > $ALLOCATED.tmp
 mv $ALLOCATED.tmp $ALLOCATED
 
 #detail joblist length for each organism
