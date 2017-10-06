@@ -68,7 +68,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   setwd(CODEWD)
   queue_name=paste(QUEUEWD,"/",org,".queue.txt",sep="")
   write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
-  SCP_COMMAND=paste("scp ",queue_name ," pi@192.168.0.99:~/Public")
+  SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ",queue_name ," ubuntu@118.138.241.34:~/Public")
   system(SCP_COMMAND)
 
   setwd(DATAWD)
