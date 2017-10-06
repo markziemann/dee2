@@ -815,16 +815,9 @@ MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
 NUM_CPUS=$(nproc)
 CPU_SPEED=$(lscpu | grep 'CPU max MHz:' | awk '{print $4}')
 
-IPHASH=$(curl ipinfo.io/ip | md5sum | awk '{print $1}')
-if [ $IPHASH == "bbcb41eb861fff23d7882dc61725a6d7" ] ; then
-  ACC_URL="192.168.0.99/acc.html"
-  ACC_REQUEST="192.168.0.99/cgi-bin/acc.sh"
-  SFTP_URL="192.168.0.99"
-else
-  ACC_URL="http://mdz-analytics.com/acc.html"
-  ACC_REQUEST="http://mdz-analytics.com/cgi-bin/acc.sh"
-  SFTP_URL="110.22.195.164"
-fi
+ACC_URL="https://vm-118-138-241-34.erc.monash.edu.au/acc.html"
+ACC_REQUEST="https://vm-118-138-241-34.erc.monash.edu.au/cgi-bin/acc.sh"
+SFTP_URL="118-138-241-34"
 
 if [ ! -z $MY_ORG ] ; then
   ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae' \
