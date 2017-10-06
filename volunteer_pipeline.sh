@@ -817,7 +817,7 @@ CPU_SPEED=$(lscpu | grep 'CPU max MHz:' | awk '{print $4}')
 
 ACC_URL="https://vm-118-138-241-34.erc.monash.edu.au/acc.html"
 ACC_REQUEST="https://vm-118-138-241-34.erc.monash.edu.au/cgi-bin/acc.sh"
-SFTP_URL="118-138-241-34"
+SFTP_URL="118.138.241.34"
 
 if [ ! -z $MY_ORG ] ; then
   ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae' \
