@@ -1,12 +1,12 @@
 #!/bin/bash
 set -x #-v
-# sanitise data regularly by cron and move validated data to /home/pi/dee2_data/
-#create the file /etc/cron.d/pi and paster in the following
-#MAILTO=pi
-#*/10 * * * * pi bash -c "/home/pi/clean.sh"
-#put this script in the location "/home/pi/clean.sh"
+# sanitise data regularly by cron and move validated data to /home/user/dee2_data/
+#create the file /etc/cron.d/user and paster in the following
+#MAILTO=user
+#*/10 * * * * user bash -c "/home/user/clean.sh"
+#put this script in the location "/home/user/clean.sh"
 
-DATA=/home/pi/dee2_data
+DATA=/home/ubuntu/dee2_data
 #the below needs to be integrated to automate incorporation of volunteer data
 cd $DATA
 AGE=$(date -r started +%s)
@@ -54,8 +54,7 @@ if [ ! -r started ] ; then
           if [ $INVALID -eq "0" ] ; then
             #sudo mv $FILE $DATA
             mkdir $DATA/$ORG
-#            unzip -of /sftp/guestuser/incoming/ERR1158067.scerevisiae.zip -d /home/pi/dee2_data/scerevisiae/
-            unzip -o $FILE -d $DATA/$ORG && scp -r $DATA/$ORG/$SRR mdz@Z620:~/bfx/dee2/data/$ORG && sudo rm -rf $DATA/$ORG/$SRR $FILE
+            unzip -o $FILE -d $DATA/$ORG && scp -i ~/.ssh/monash/id_rsa -r $DATA/$ORG/$SRR mziemann@118.138.246.227:/scratch/dee2/data/$ORG && sudo rm -rf $DATA/$ORG/$SRR $FILE
           else
             sudo rm $FILE
           fi
@@ -67,6 +66,6 @@ if [ ! -r started ] ; then
 fi
 
 #check time if older than 1 week (604800)
-[[ $(( $(date +'%s') - $(stat --format "%Y" /home/pi/dee2_data/mx/*tsv | sort | head -1) )) -gt 120 ]] && \
- scp mdz@Z620:~/bfx/dee2/mx/* /home/pi/dee2_data/mx || \
+[[ $(( $(date +'%s') - $(stat --format "%Y" /home/ubuntu/dee2_data/mx/*tsv | sort | head -1) )) -gt 120 ]] && \
+ scp -i ~/.ssh/monash/id_rsa mziemann@118.138.246.227:/scratch/mziemann/dee2/mx/* /home/ubuntu/dee2_data/mx || \
  echo "not time to refresh"

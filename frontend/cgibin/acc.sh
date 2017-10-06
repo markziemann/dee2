@@ -45,7 +45,7 @@ fi
 
 DATA=/usr/lib/cgi-bin/acc_data
 TODO=${DATA}/${ORG}.queue.txt
-TODO_NEW=/home/pi/Public/${ORG}.queue.txt
+TODO_NEW=/home/ubuntu/Public/${ORG}.queue.txt
 if [ -r $TODO_NEW ] ; then
   mv $TODO_NEW $TODO
 fi
