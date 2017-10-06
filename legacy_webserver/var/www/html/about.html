@@ -1,0 +1,279 @@
+<!DOCTYPE html PUBLIC>
+<html xml:lang="en" lang="en">
+<link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+<head>
+	<title>The Digital Expression Explorer</title>
+
+	<!-- menu stylesheets -->
+
+	<style type="text/css" media="screen, projection">
+
+	html, body {
+		background:#fff;
+		color:#000;
+		}
+
+	body {
+		height:85%;
+		font:normal normal normal 100% verdana,sans-serif;
+		}
+
+	abbr, acronym {
+		font-style:normal;
+		border:none;
+		}
+
+	#page {
+		position:absolute;
+		left:1em;
+		right:1em;
+		top:4em;
+                width:650px;
+		border:2px dotted #ff1a00;
+		border-width:2px 2 2 2px;
+		padding:0 0 0 1em;
+		margin:0 1em 1em 0;
+		line-height:130%;
+		}
+
+	h1, h2 {
+		font-weight:normal;
+		}
+
+	h1 {
+		font-size:1.4em;
+		margin:1.5em 0 0 0;
+		}
+
+	h2 {
+		font-size:1.1em;
+		margin:1.5em 0 0 -0.83em;
+		border:1px dotted #ff1a00;
+		border-width:2px 0 0 0;
+		padding:1em 0 0 0.83em;
+		}
+
+	p, dl, ol {
+		font-size:0.8em;
+		margin:1em 0 0 0;
+		}
+
+	dl {
+		margin:1em 0 0 0.3em;
+		}
+
+	ol {
+		padding:0;
+		}
+
+	ol li {
+		margin:0 0 1em 2em;
+		padding:0;
+		}
+
+	dt {
+		font-variant:small-caps;
+		font-size:110%;
+		clear:both;
+		}
+
+	dt em {
+		font-variant:normal;
+		font-size:90%;
+		}
+
+	dd {
+		margin:0 0 0 1em;
+		}
+
+	dl ul, dl li {
+		padding:0;
+		list-style-type:none;
+		}
+
+	dl ul {
+		width:100%;
+		float:left;
+		margin:0 0 1em 0;
+		}
+
+	dl li {
+		float:left;
+		margin:0 0.2em 0 0;
+		}
+
+	em, i {
+		color:#333;
+		}
+
+	code {
+		font:normal normal normal 1em "courier new",monospace;
+		color:#333;
+		}
+
+	#skip-links {
+		font-size:70%;
+		margin:1.4em 0 0 0;
+		}
+
+	h2#navigation {
+		position:absolute;
+		top:-100em;
+		}
+
+	.boldtable, .boldtable TD, .boldtable TH
+	{
+	font-family:sans-serif;
+	font-size:7pt;
+	background-color:transparent;
+	}
+
+	</style>
+</head>
+<body>
+
+<div id="page">
+	<h1 id="content">About Digital Expression Explorer</h1>
+
+	<p>
+		The compendium is designed to bring biologists closer to large scale gene expression data sets.
+                We have processed thousands of public RNA-seq data sets from a veriety of organisms with open-source bioinformatics tools and make them freely accessible. We would like to thank the folks at <a href="http://www.ncbi.nlm.nih.gov/sra"> SRA</a> for hosting these raw data sets.
+        </p>
+
+        <h2 id="content">About us</h2>
+        </p>
+
+        <p>
+		The compendium is brought to you by the <a href="http://www.bakeridi.edu.au/research/human_epigenetics"> Epigenetics in Human Health and Disease Laboratory</a>  and <a href="https://www.bakeridi.edu.au/research/computational_biology/">Computational Biology Unit</a> at <a href="https://www.bakeridi.edu.au/">Baker IDI</a>.
+		We value your feedback, so feel free to <a href="/contact.html"> contact us</a> by email.
+
+        </p>
+
+        <h2 id="content">Data processing</h2>
+        </p>
+
+        <p>
+		Our data processing procedure entails:
+        </p>
+
+	<ol>
+		<li> -Download from NCBI SRA</li><br>
+		<li> -Diagnose sequence format</li><br>
+		<li> -Sequence quality trimming</li><br>
+		<li> -Alignment to genome</li><br>
+		<li> -Quanitification of aligned reads</li>
+	</ol>
+
+        <p>
+                A detailed description of our data processing method is available <a href="DEE_RNA-seq_Method.pdf"> here</a>.
+        </p>
+	
+	<h2 id="content">Reference genome information</h2>
+        <p>
+                The compendium relies on reference genome sequence and annotation information provided by <a href="http://ensemblgenomes.org/"> Ensembl Genomes </a>. 
+        </p>
+
+	<table BORDER CLASS="boldtable">
+	  <tr>
+	    <th>Species</th>
+	    <th>Genome Reference Sequence and Annotation</th> 
+	  </tr>
+
+          <tr>
+            <td>Arabidopsis thaliana</td>
+            <td>Arabidopsis_thaliana.TAIR10.25.dna_sm.toplevel.fa <br> Arabidopsis_thaliana.TAIR10.25.gtf</td>
+          </tr>
+
+          <tr>
+            <td>Caenorhabditis elegans</td>
+            <td>Caenorhabditis_elegans.WBcel235.dna_sm.toplevel.fa <br> Caenorhabditis_elegans.WBcel235.78.gtf</td>
+          </tr>
+
+          <tr>
+            <td>Drosophila melanogaster</td>
+            <td>Drosophila_melanogaster.BDGP5.dna_sm.toplevel.fa <br> Drosophila_melanogaster.BDGP5.78.gtf</td>
+          </tr>
+
+          <tr>
+            <td>Danio rerio</td>
+            <td>Danio_rerio.Zv9.dna.toplevel.fa <br> Danio_rerio.Zv9.78.gtf</td>
+          </tr>
+
+          <tr>
+            <td>Escherichia coli</td>
+            <td>Escherichia_coli_str_k_12_substr_dh10b.GCA_000019425.1.25.dna_sm.toplevel.fa <br> Escherichia_coli_str_k_12_substr_dh10b.GCA_000019425.1.25.gtf</td>
+          </tr>
+
+          <tr>
+            <td>Homo sapiens</td>
+            <td>Homo_sapiens.GRCh38.dna.primary_assembly.fa <br> Homo_sapiens.GRCh38.78.gtf</td>
+          </tr>
+
+          <tr>
+            <td>Mus musculus</td>
+            <td>Mus_musculus.GRCm38.dna.primary_assembly.fa <br> Mus_musculus.GRCm38.78.gtf</td>
+          </tr>
+
+          <tr>
+            <td>Rattus norvegicus</td>
+            <td>Rattus_norvegicus.Rnor_5.0.dna.toplevel.fa <br> Rattus_norvegicus.Rnor_5.0.78.gtf</td>
+          </tr>
+
+          <tr>
+            <td>Saccharomyces cerevisiae</td>
+            <td>Saccharomyces_cerevisiae.R64-1-1.25.dna_sm.toplevel.fa <br> Saccharomyces_cerevisiae.R64-1-1.25.gtf</td>
+          </tr>
+
+	</table>
+
+        <h2 id="content">Update schedule</h2>
+        <p>
+               New datasets deposited at SRA will be incorporated into the compendium weekly with the latest upgrade. Upon release of an updated genome build, we intend to update the data for that organism within a year, keeping a previously archived version for bulk download only. For consistency, gene annotation sets will not be updated independent of the genome build.
+        </p>
+
+</div>
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+ul {
+    list-style-type: none;
+    margin: 2ex;
+    padding: 0;
+}
+
+li {
+    display: inline;
+}
+</style>
+</head>
+<body>
+
+<ul>
+  <li><a href="/index.html">Home</a></li>
+  <li><a href="/news.html">News</a></li>
+  <li><a href="/contact.html">Contact</a></li>
+  <li><a href="/about.html">About</a></li>
+  <li><a href="/help.html">Help</a></li>
+  <li><a href="/bulk.html">Bulk Data</a></li>
+</ul>
+<div
+   style="
+      top: 0;
+      left: 450;
+      position: absolute;
+      z-index: 1;
+      visibility: show;">
+<!-- content will go here -->
+        <p>
+<a href="http://www.bakeridi.edu.au/"><IMG SRC="/images/BakerIDILogo.gif" ALT="." WIDTH=172 HEIGHT=48></a>
+        </p>
+</div>
+</body>
+</html>
+
+</html>
