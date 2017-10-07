@@ -54,7 +54,7 @@ if [ ! -r started ] ; then
           if [ $INVALID -eq "0" ] ; then
             #sudo mv $FILE $DATA
             mkdir $DATA/$ORG
-            unzip -o $FILE -d $DATA/$ORG && scp -i ~/.ssh/monash/id_rsa -r $DATA/$ORG/$SRR mziemann@118.138.246.227:/scratch/dee2/data/$ORG && sudo rm -rf $DATA/$ORG/$SRR $FILE
+            unzip -o $FILE -d $DATA/$ORG && scp -i ~/.ssh/monash/id_rsa -r $DATA/$ORG/$SRR mziemann@118.138.246.227:/scratch/mziemann/dee2/data/$ORG && sudo rm -rf $DATA/$ORG/$SRR $FILE
           else
             sudo rm $FILE
           fi
@@ -65,7 +65,8 @@ if [ ! -r started ] ; then
   rm started
 fi
 
-#check time if older than 1 week (604800)
+# refresh matrices
+# check time if older than 1 week (604800) 
 [[ $(( $(date +'%s') - $(stat --format "%Y" /home/ubuntu/dee2_data/mx/*tsv | sort | head -1) )) -gt 120 ]] && \
  scp -i ~/.ssh/monash/id_rsa mziemann@118.138.246.227:/scratch/mziemann/dee2/mx/* /home/ubuntu/dee2_data/mx || \
  echo "not time to refresh"
