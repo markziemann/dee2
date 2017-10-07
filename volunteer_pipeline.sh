@@ -854,10 +854,10 @@ mmusculus	26069664
 rnorvegicus	26913880
 scerevisiae	1644684' | awk -v M=$MEM -v F=$MEM_FACTOR 'M>($2*F)' | sort -k2gr | awk '{print $1}')
 
-  wget -O tmp.html "$ACC_URL"
+  wget --no-check-certificate -O tmp.html "$ACC_URL"
 
   if [ $IPHASH != "bbcb41eb861fff23d7882dc61725a6d7" ] ; then
-    wget -O tmp.html $(grep 'frame src=' tmp.html | cut -d '"' -f2)
+    wget --no-check-certificate -O tmp.html $(grep 'frame src=' tmp.html | cut -d '"' -f2)
   fi
 
   #specify organism if it has not already been specified by user
@@ -872,10 +872,10 @@ echo $MY_ORG
 myfunc(){
 MY_ORG=$1
 ACC_REQUEST=$2
-wget -r -O tmp.html "${ACC_REQUEST}?ORG=${MY_ORG}&Submit"
+wget --no-check-certificate -r -O tmp.html "${ACC_REQUEST}?ORG=${MY_ORG}&Submit"
 
 if [ $IPHASH != "bbcb41eb861fff23d7882dc61725a6d7" ] ; then
-  wget -O tmp.html $(grep 'frame src=' tmp.html | cut -d '"' -f2)
+  wget --no-check-certificate -O tmp.html $(grep 'frame src=' tmp.html | cut -d '"' -f2)
 fi
 
 ACCESSION=$(grep 'ACCESSION=' tmp.html| cut -d '=' -f2)
