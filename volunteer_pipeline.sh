@@ -169,7 +169,7 @@ BT2_REF=$BT2_DIR/$(basename $CDNA)
 if [ -z $BT2_REF ] || [ ! -r $BT2_REF  ] ; then
   cd $BT2_DIR ; ln $CDNA .
   #creating bowtie2 index
-  bowtie2-build --threads $(nproc) -f $(basename $CDNA) $(basename $CDNA)
+  bowtie2-build --quiet --threads $(nproc) -f $(basename $CDNA) $(basename $CDNA)
   ENS_REFT_BT2=$BT2_DIR/$(basename $CDNA)
   MY_BT2_MD5=$(md5sum $(ls *bt2 | head -1) | awk '{print $1}')
   if [ $MY_BT2_MD5 != $BT2_MD5 ] ; then
@@ -695,9 +695,9 @@ if [ $RDS == "SE" ] ; then
   head -10000 $FQ1 > test.fq ; head -1000000 $FQ1 | tail -90000 >> test.fq
   cp test.fq test2.fq
 
-  skewer -ap --cut 4,4 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test.fq-trimmed-pair1.fastq test_clip4.fq
-  skewer -ap --cut 8,8 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test.fq-trimmed-pair1.fastq test_clip8.fq
-  skewer -ap --cut 12,12 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test.fq-trimmed-pair1.fastq test_clip12.fq
+  skewer -m ap --cut 4,4 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test.fq-trimmed-pair1.fastq test_clip4.fq
+  skewer -m ap --cut 8,8 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test.fq-trimmed-pair1.fastq test_clip8.fq
+  skewer -m ap --cut 12,12 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test.fq-trimmed-pair1.fastq test_clip12.fq
 
   rm test.fq-trimmed-pair2.fastq
 
@@ -738,7 +738,7 @@ if [ $RDS == "SE" ] ; then
 
   if [ $CLIP_NUM -gt 0 ] ; then
     cp $FQ1 $FQ1.tmp.fq
-    skewer -ap --cut $CLIP_NUM,$CLP_NUM -l 18 -k inf -t $THREADS $FQ1 $FQ1.tmp.fq && mv ${FQ1}-trimmed-pair1.fastq $FQ1 && rm ${FQ1}-trimmed-pair2.fastq
+    skewer -m ap --cut $CLIP_NUM,$CLIP_NUM -l 18 -k inf -t $THREADS $FQ1 $FQ1.tmp.fq && mv ${FQ1}-trimmed-pair1.fastq $FQ1 && rm ${FQ1}-trimmed-pair2.fastq
   fi
 
   # Full SE alignment
