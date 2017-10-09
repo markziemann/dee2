@@ -700,7 +700,7 @@ if [ $RDS == "SE" ] ; then
   skewer -m ap --cut 8,8 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test.fq-trimmed-pair1.fastq test_clip8.fq
   skewer -m ap --cut 12,12 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test.fq-trimmed-pair1.fastq test_clip12.fq
 
-  ls *fastq *fq
+  wc -l *fastq *fq
 
   rm test.fq-trimmed-pair2.fastq
 
