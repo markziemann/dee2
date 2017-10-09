@@ -607,6 +607,7 @@ if [ $RDS == "PE" ] ; then
   R2_MAP_RATE=$(echo $MAPPED_CNT $R2_RD_CNT | awk '{print $1/$2*100}' | numround)
 
   skewer -m ap --cut 4,4 -l 18 -k inf -t $THREADS test_R1.fq test_R2.fq && mv ${FQ1}-trimmed-pair1.fastq test_R1_clip4.fq && mv ${FQ1}-trimmed-pair2.fastq test_R2_clip4.fq
+  ls *fastq *fq
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1_clip4.fq
@@ -698,6 +699,8 @@ if [ $RDS == "SE" ] ; then
   skewer -m ap --cut 4,4 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test.fq-trimmed-pair1.fastq test_clip4.fq
   skewer -m ap --cut 8,8 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test.fq-trimmed-pair1.fastq test_clip8.fq
   skewer -m ap --cut 12,12 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test.fq-trimmed-pair1.fastq test_clip12.fq
+
+  ls *fastq *fq
 
   rm test.fq-trimmed-pair2.fastq
 
