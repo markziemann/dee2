@@ -696,9 +696,9 @@ if [ $RDS == "SE" ] ; then
   head -10000 $FQ1 > test.fq ; head -1000000 $FQ1 | tail -90000 >> test.fq
   cp test.fq test2.fq
 
-  skewer -m ap --cut 4,4 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test.fq-trimmed-pair1.fastq test_clip4.fq
-  skewer -m ap --cut 8,8 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test.fq-trimmed-pair1.fastq test_clip8.fq
-  skewer -m ap --cut 12,12 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test.fq-trimmed-pair1.fastq test_clip12.fq
+  skewer -m ap --cut 4,4 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip4.fq
+  skewer -m ap --cut 8,8 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip8.fq
+  skewer -m ap --cut 12,12 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip12.fq
 
   wc -l *fastq *fq
 
@@ -730,7 +730,7 @@ if [ $RDS == "SE" ] ; then
   MAPPED_CNT_CLIP12=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP12=$(echo $MAPPED_CNT_CLIP12 $RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
-  rm test.fq test_clip4.fq test_clip8.fq test_clip12.fq ReadsPerGene.out.tab
+  rm test.fq test_clip4.fq test_clip8.fq test_clip12.fq ReadsPerGene.out.tab *untrimmed*
 
   #NOW logic for clipping entire R1 dataset
   CLIP_NUM=$(echo $R1_MAP_RATE:0 $R1_MAP_RATE_CLIP4:4 $R1_MAP_RATE_CLIP8:8 $R1_MAP_RATE_CLIP12:12 \
@@ -740,8 +740,15 @@ if [ $RDS == "SE" ] ; then
   | tr ' ' '\n' | sort -gr | head -1 | cut -d ':' -f1)
 
   if [ $CLIP_NUM -gt 0 ] ; then
+
     cp $FQ1 $FQ1.tmp.fq
-    skewer -m ap --cut $CLIP_NUM,$CLIP_NUM -l 18 -k inf -t $THREADS $FQ1 $FQ1.tmp.fq && mv ${FQ1}-trimmed-pair1.fastq $FQ1 && rm ${FQ1}-trimmed-pair2.fastq
+
+    skewer -m ap --cut $CLIP_NUM,$CLIP_NUM -l 18 -k inf -t $THREADS $FQ1 $FQ1.tmp.fq \
+    && wc -l *fq *fastq \
+    && mv $(basename $FQ1 .fastq)-trimmed-pair1.fastq $FQ1 \
+    && rm $(basename $FQ1 .fastq)-trimmed-pair2.fastq \
+    && rm $FQ1.tmp.fq
+
   fi
 
   # Full SE alignment
