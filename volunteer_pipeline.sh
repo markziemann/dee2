@@ -693,11 +693,63 @@ if [ $RDS == "PE" ] ; then
   fi
 fi
 
+
+
+
+
 ## Now performing full alignment
 if [ $RDS == "SE" ] ; then
   head $FQ1 ; tail $FQ1
+
+  #test 100k reads FQ1 and reads clipped on the 5 prime end to exclude UMIs and barcodes
+  head -10000 $FQ1 > test.fq ; head -1000000 $FQ1 | tail -90000 >> test.fq
+  skewer -c 4 -l 18 -k inf -t $THREADS test.fq && mv test.fq-trimmed.fastq test_clip4.fq
+  skewer -c 8 -l 18 -k inf -t $THREADS test.fq && mv test.fq-trimmed.fastq test_clip8.fq
+  skewer -c 12 -l 18 -k inf -t $THREADS test.fq && mv test.fq-trimmed.fastq test_clip12.fq
+
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test.fq
+
+  RD_CNT=$(sed -n '2~4p' < test.fq | wc -l)
+  MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
+  UNMAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | head -1)
+  R1_MAP_RATE=$(echo $MAPPED_CNT $RD_CNT | awk '{print $1/$2*100}' | numround)
+
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_clip4.fq
+
+  MAPPED_CNT_CLIP4=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
+  R1_MAP_RATE_CLIP4=$(echo $MAPPED_CNT_CLIP4 $RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
+
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_clip8.fq
+
+  MAPPED_CNT_CLIP8=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
+  R1_MAP_RATE_CLIP8=$(echo $MAPPED_CNT_CLIP8 $RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
+
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_clip12.fq
+
+  MAPPED_CNT_CLIP12=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
+  R1_MAP_RATE_CLIP12=$(echo $MAPPED_CNT_CLIP12 $RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
+
+  rm test.fq test_clip4.fq test_clip8.fq test_clip12.fq ReadsPerGene.out.tab
+
+  #NOW logic for clipping entire R1 dataset
+  CLIP_NUM=$(echo $R1_MAP_RATE:0 $R1_MAP_RATE_CLIP4:4 $R1_MAP_RATE_CLIP8:8 $R1_MAP_RATE_CLIP12:12 \
+  | tr ' ' '\n' | sort -gr | head -1 | cut -d ':' -f2)
+
+  R1_MAP_RATE=$(echo $R1_MAP_RATE:0 $R1_MAP_RATE_CLIP4:4 $R1_MAP_RATE_CLIP8:8 $R1_MAP_RATE_CLIP12:12 \
+  | tr ' ' '\n' | sort -gr | head -1 | cut -d ':' -f1)
+
+  if [ $CLIP_NUM -gt 0 ] ; then
+    skewer -c $CLIP_NUM  -l 18 -k inf -t $THREADS $FQ1 && mv ${FQ1}-trimmed-pair1.fastq $FQ1
+  fi
+
+  # Full SE alignment
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=$FQ1
+
 elif [ $RDS == "PE" ] ; then
   head $FQ1 $FQ2 ; tail $FQ1 $FQ2  head $FQ1 $FQ2 ; tail $FQ1 $FQ2
   #proper PE mapping
