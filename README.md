@@ -16,7 +16,7 @@ Here are some of the key features:
  * Parallel assignment of reads to genes and transcripts with STAR and Kallisto
  * Thorough quality control logs
  * Open source pipeline
- * Distributed approach
+ * Distributed approach using docker [link](https://hub.docker.com/r/mziemann/tallyup/)
 
 ## How it works
 Using docker allows reproducible analysis across different environments, which allow work to be 
