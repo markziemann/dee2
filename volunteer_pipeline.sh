@@ -427,6 +427,30 @@ fi
 echo $SRR completed basic pipeline successfully | tee -a $SRR.log
 
 ##########################################################################
+# If user has own data
+##########################################################################
+# then check whether zipped (gzip bzip2) then if unzip if neccessary
+# then run fastqc and save it to the log
+# if R1 and R2 have a different number of reads, then throw error
+# all the above stuff needs to be enclosed in an if statement
+# the '-f' switch to specify own data
+# The following syntax to support multiple paired end fastq files
+# pipeline.sh hsapiens -f sample1_R1.fq.gz,sample2_R1.fq sample1_R2.fq.gz,sample2_R2.fq
+# the function is run like this for SE and PE
+# main -f $FQ_R1
+# main -f $FQ_R1 $FQ_R2
+# The following variables need to be assigned
+#SequenceFormat:$ORIG_RDS
+#QualityEncoding:$QUALITY_ENCODING
+#Read1MinimumLength:$FQ1_MIN_LEN
+#Read1MedianLength:$FQ1_MEDIAN_LEN
+#Read1MaxLength:$FQ1_MAX_LEN
+#Read2MinimumLength:$FQ2_MIN_LEN
+#Read2MedianLength:$FQ2_MEDIAN_LEN
+#Read2MaxLength:$FQ2_MAX_LEN
+#NumReadsTotal:$READ_CNT_TOTAL
+
+##########################################################################
 echo $SRR Quality trimming
 ##########################################################################
 if [ $RDS == "SE" ] ; then
@@ -1097,9 +1121,70 @@ if [ ! -r $TESTFILE ] ; then
 else
   echo Starting pipeline
 ##################################################
+# Testing whether the user has provided own data
+##################################################
+#Putting this bit into a dummy function to
+skip(){
+OWN_DATA=$(echo $@ | grep -wc '\-f')
+#echo own data? $OWN_DATA
+if [ ! -z $OWN_DATA ] ; then
+  echo own data specified
+  NUM_RDS=$(echo $@ | sed 's/\-f/@/' | cut -d '@' -f2 | wc -w)
+
+  if [ $NUM_RDS -eq 2 ] ; then
+    RDS="PE"
+    R1_LIST=$(echo $@ | sed 's/\-f/@/' | cut -d '@' -f2 | awk '{print $1}')
+    R2_LIST=$(echo $@ | sed 's/\-f/@/' | cut -d '@' -f2 | awk '{print $2}')
+    R1_LIST_LEN=$(echo $R1_LIST | sed 's/,/ /g' | wc -w)
+    R2_LIST_LEN=$(echo $R2_LIST | sed 's/,/ /g' | wc -w)
+
+    if [ $R1_LIST_LEN -ne $R2_LIST_LEN ] ; then
+      echo Number of foward and reverse readsets does not match. Quitting.
+    else
+      for DATASET_NUM in $(seq $R1_LIST_LEN) ; do
+        FQ_R1=$(echo $R1_LIST | cut -d ',' -f$DATASET_NUM)
+        FQ_R2=$(echo $R2_LIST | cut -d ',' -f$DATASET_NUM)
+
+        if [ -r $FQ_R1 -a -r $FQ_R2 ] ; then
+          echo "running pipeline.sh -f $FQ_R1 $FQ_R2"
+          main -f $FQ_R1 $FQ_R2
+        else
+          echo Specified fastq file $FQ_R1 or $FQ_R2 do not exist or not readable. Quitting
+        fi
+      done
+    fi
+  fi
+
+  if [ $NUM_RDS -eq 1 ] ; then
+
+    RDS="SE"
+    FQ_LIST=$(echo $@ | sed 's/\-f/@/' | cut -d '@' -f2 | awk '{print $1}')
+    FQ_LIST_LEN=$(echo $FQ_LIST | sed 's/,/ /' | wc -w)
+
+    for DATASET_NUM in $(seq $FQ_LIST_LEN) ; do
+
+      FQ=$(echo $FQ_LIST | cut -d ',' -f$DATASET_NUM)
+
+      if [ -r $FQ ] ; then
+        echo "running pipeline.sh -f $FQ"
+        main -f $FQ
+      else
+        echo Specified fastq file $FQ does not exist or not readable. Quitting
+      fi
+    done
+
+  fi
+
+  if [ -z $RDS ] ; then
+    echo "Syntax Error. Unknown option to '-t'"
+  fi
+fi
+}
+
+##################################################
 # Testing whether the user has provided SRR accessions
 ##################################################
-  if [ $# -eq "2" ] ; then
+  if [ $# -eq "2" ] -a [ -z $OWN_DATA ] ; then
     TESTACCESSIONS=$(echo $2 | tr ',' '\n' | cut -c2-3 | grep -vc RR)
     if [ $TESTACCESSIONS -eq 0 ] ; then
       for USER_ACCESSION in $(echo $2 | tr ',' ' ') ; do
