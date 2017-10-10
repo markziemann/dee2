@@ -614,6 +614,21 @@ if [ $RDS == "PE" ] ; then
   head -10000 $FQ1 > test_R1.fq ; head -1000000 $FQ1 | tail -90000 >> test_R1.fq
   head -10000 $FQ2 > test_R2.fq ; head -1000000 $FQ2 | tail -90000 >> test_R2.fq
 
+#  skewer -m ap --cut 4,4 -l 18 -k inf -t $THREADS test_R1.fq test_R2.fq && mv test_R1-trimmed-pair1.fastq test_R1_clip4.fq && mv test_R1-trimmed-pair2.fastq test_R2_clip4.fq
+#  skewer -m ap --cut 8,8 -l 18 -k inf -t $THREADS test_R1.fq test_R2.fq && mv test_R1-trimmed-pair1.fastq test_R1_clip8.fq && mv test_R1-trimmed-pair2.fastq test_R2_clip8.fq
+#  skewer -m ap --cut 12,12 -l 18 -k inf -t $THREADS test_R1.fq test_R2.fq && mv test_R1-trimmed-pair1.fastq test_R1_clip12.fq && mv test_R1-trimmed-pair2.fastq test_R2_clip12.fq
+#  skewer -m ap --cut 20,20 -l 18 -k inf -t $THREADS test_R1.fq test_R2.fq && mv test_R1-trimmed-pair1.fastq test_R1_clip12.fq && mv test_R1-trimmed-pair2.fastq test_R2_clip12.fq
+
+  fastx_trimmer -f 5 -m 18 -Q 33 -i test_R1.fq > test_R1_clip4.fq &
+  fastx_trimmer -f 5 -m 18 -Q 33 -i test_R2.fq > test_R2_clip4.fq &
+  fastx_trimmer -f 9 -m 18 -Q 33 -i test_R1.fq > test_R1_clip8.fq &
+  fastx_trimmer -f 9 -m 18 -Q 33 -i test_R2.fq > test_R2_clip8.fq &
+  fastx_trimmer -f 13 -m 18 -Q 33 -i test_R1.fq > test_R1_clip12.fq &
+  fastx_trimmer -f 13 -m 18 -Q 33 -i test_R2.fq > test_R2_clip12.fq &
+  fastx_trimmer -f 21 -m 18 -Q 33 -i test_R1.fq > test_R1_clip20.fq &
+  fastx_trimmer -f 21 -m 18 -Q 33 -i test_R2.fq > test_R2_clip20.fq &
+  wait
+
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1.fq
 
@@ -630,8 +645,6 @@ if [ $RDS == "PE" ] ; then
   UNMAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | head -1)
   R2_MAP_RATE=$(echo $MAPPED_CNT $R2_RD_CNT | awk '{print $1/$2*100}' | numround)
 
-  skewer -m ap --cut 4,4 -l 18 -k inf -t $THREADS test_R1.fq test_R2.fq && mv test_R1-trimmed-pair1.fastq test_R1_clip4.fq && mv test_R1-trimmed-pair2.fastq test_R2_clip4.fq
-
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1_clip4.fq
 
@@ -643,8 +656,6 @@ if [ $RDS == "PE" ] ; then
 
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R2_MAP_RATE_CLIP4=$(echo $MAPPED_CNT $R2_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
-
-  skewer -m ap --cut 8,8 -l 18 -k inf -t $THREADS test_R1.fq test_R2.fq && mv test_R1-trimmed-pair1.fastq test_R1_clip8.fq && mv test_R1-trimmed-pair2.fastq test_R2_clip8.fq
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1_clip8.fq
@@ -658,8 +669,6 @@ if [ $RDS == "PE" ] ; then
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R2_MAP_RATE_CLIP8=$(echo $MAPPED_CNT $R2_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
-  skewer -m ap --cut 12,12 -l 18 -k inf -t $THREADS test_R1.fq test_R2.fq && mv test_R1-trimmed-pair1.fastq test_R1_clip12.fq && mv test_R1-trimmed-pair2.fastq test_R2_clip12.fq
-
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1_clip12.fq
 
@@ -671,8 +680,6 @@ if [ $RDS == "PE" ] ; then
 
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R2_MAP_RATE_CLIP12=$(echo $MAPPED_CNT $R2_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
-
-  skewer -m ap --cut 20,20 -l 18 -k inf -t $THREADS test_R1.fq test_R2.fq && mv test_R1-trimmed-pair1.fastq test_R1_clip12.fq && mv test_R1-trimmed-pair2.fastq test_R2_clip12.fq
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1_clip20.fq
@@ -733,10 +740,15 @@ if [ $RDS == "SE" ] ; then
   head -10000 $FQ1 > test.fq ; head -1000000 $FQ1 | tail -90000 >> test.fq
   cp test.fq test2.fq
 
-  skewer -m ap --cut 4,4 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip4.fq
-  skewer -m ap --cut 8,8 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip8.fq
-  skewer -m ap --cut 12,12 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip12.fq
-  skewer -m ap --cut 20,20 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip20.fq
+#  skewer -m ap --cut 4,4 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip4.fq
+#  skewer -m ap --cut 8,8 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip8.fq
+#  skewer -m ap --cut 12,12 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip12.fq
+#  skewer -m ap --cut 20,20 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip20.fq
+  fastx_trimmer -f 5 -m 18 -Q 33 -i test.fq > test_clip4.fq &
+  fastx_trimmer -f 9 -m 18 -Q 33 -i test.fq > test_clip8.fq &
+  fastx_trimmer -f 13 -m 18 -Q 33 -i test.fq > test_clip12.fq &
+  fastx_trimmer -f 21 -m 18 -Q 33 -i test.fq > test_clip20.fq &
+  wait
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test.fq
@@ -770,7 +782,7 @@ if [ $RDS == "SE" ] ; then
   MAPPED_CNT_CLIP20=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP20=$(echo $MAPPED_CNT_CLIP12 $RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
-  rm test.fq test2.fq test_clip4.fq test_clip8.fq test_clip12.fq ReadsPerGene.out.tab *untrimmed* test-trimmed-pair2.fastq *trimmed.log
+  rm test.fq test2.fq test_clip4.fq test_clip8.fq test_clip12.fq test_clip20.fq ReadsPerGene.out.tab *untrimmed* test-trimmed-pair2.fastq *trimmed.log
 
   #NOW logic for clipping entire R1 dataset
   CLIP_NUM=$(echo $R1_MAP_RATE:0 $R1_MAP_RATE_CLIP4:4 $R1_MAP_RATE_CLIP8:8 $R1_MAP_RATE_CLIP12:12 $R1_MAP_RATE_CLIP20:20 \
