@@ -648,19 +648,33 @@ if [ $RDS == "PE" ] ; then
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R2_MAP_RATE_CLIP12=$(echo $MAPPED_CNT $R2_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
-  rm test_R1.fq test_R2.fq test_R1_clip4.fq test_R2_clip4.fq test_R1_clip8.fq test_R2_clip8.fq test_R1_clip12.fq test_R2_clip12.fq ReadsPerGene.out.tab *untrimmed*fastq
+  skewer -m ap --cut 20,20 -l 18 -k inf -t $THREADS test_R1.fq test_R2.fq && mv test_R1-trimmed-pair1.fastq test_R1_clip12.fq && mv test_R1-trimmed-pair2.fastq test_R2_clip12.fq
+
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1_clip20.fq
+
+  MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
+  R1_MAP_RATE_CLIP20=$(echo $MAPPED_CNT $R1_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
+
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R2_clip20.fq
+
+  MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
+  R2_MAP_RATE_CLIP20=$(echo $MAPPED_CNT $R2_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
+
+  rm test_R1.fq test_R2.fq test_R1_clip4.fq test_R2_clip4.fq test_R1_clip8.fq test_R2_clip8.fq test_R1_clip12.fq test_R2_clip12.fq test_R1_clip20.fq test_R2_clip20.fq ReadsPerGene.out.tab *untrimmed*fastq *trimmed.log
 
   #NOW logic for clipping entire R1 and R2 dataset
-  R1_CLIP_NUM=$(echo $R1_MAP_RATE:0 $R1_MAP_RATE_CLIP4:4 $R1_MAP_RATE_CLIP8:8 $R1_MAP_RATE_CLIP12:12 \
+  R1_CLIP_NUM=$(echo $R1_MAP_RATE:0 $R1_MAP_RATE_CLIP4:4 $R1_MAP_RATE_CLIP8:8 $R1_MAP_RATE_CLIP12:12 $R1_MAP_RATE_CLIP20:20\
   | tr ' ' '\n' | sort -gr | head -1 | cut -d ':' -f2)
 
-  R1_MAP_RATE=$(echo $R1_MAP_RATE:0 $R1_MAP_RATE_CLIP4:4 $R1_MAP_RATE_CLIP8:8 $R1_MAP_RATE_CLIP12:12 \
+  R1_MAP_RATE=$(echo $R1_MAP_RATE:0 $R1_MAP_RATE_CLIP4:4 $R1_MAP_RATE_CLIP8:8 $R1_MAP_RATE_CLIP12:12 $R1_MAP_RATE_CLIP20:20 \
   | tr ' ' '\n' | sort -gr | head -1 | cut -d ':' -f1)
 
-  R2_CLIP_NUM=$(echo $R2_MAP_RATE:0 $R2_MAP_RATE_CLIP4:4 $R2_MAP_RATE_CLIP8:8 $R2_MAP_RATE_CLIP12:12 \
+  R2_CLIP_NUM=$(echo $R2_MAP_RATE:0 $R2_MAP_RATE_CLIP4:4 $R2_MAP_RATE_CLIP8:8 $R2_MAP_RATE_CLIP12:12 $R2_MAP_RATE_CLIP20:20 \
   | tr ' ' '\n' | sort -gr | head -1 | cut -d ':' -f2)
 
-  R2_MAP_RATE=$(echo $R2_MAP_RATE:0 $R2_MAP_RATE_CLIP4:4 $R2_MAP_RATE_CLIP8:8 $R2_MAP_RATE_CLIP12:12 \
+  R2_MAP_RATE=$(echo $R2_MAP_RATE:0 $R2_MAP_RATE_CLIP4:4 $R2_MAP_RATE_CLIP8:8 $R2_MAP_RATE_CLIP12:12 $R2_MAP_RATE_CLIP20:20 \
   | tr ' ' '\n' | sort -gr | head -1 | cut -d ':' -f1)
 
   if [[ ( $R1_CLIP_NUM -gt 0 ) || ( $R2_CLIP_NUM -gt 0 ) ]] ; then
@@ -698,6 +712,7 @@ if [ $RDS == "SE" ] ; then
   skewer -m ap --cut 4,4 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip4.fq
   skewer -m ap --cut 8,8 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip8.fq
   skewer -m ap --cut 12,12 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip12.fq
+  skewer -m ap --cut 20,20 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip20.fq
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test.fq
@@ -725,13 +740,19 @@ if [ $RDS == "SE" ] ; then
   MAPPED_CNT_CLIP12=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP12=$(echo $MAPPED_CNT_CLIP12 $RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
-  rm test.fq test2.fq test_clip4.fq test_clip8.fq test_clip12.fq ReadsPerGene.out.tab *untrimmed* test-trimmed-pair2.fastq
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_clip20.fq
+
+  MAPPED_CNT_CLIP20=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
+  R1_MAP_RATE_CLIP20=$(echo $MAPPED_CNT_CLIP12 $RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
+
+  rm test.fq test2.fq test_clip4.fq test_clip8.fq test_clip12.fq ReadsPerGene.out.tab *untrimmed* test-trimmed-pair2.fastq *trimmed.log
 
   #NOW logic for clipping entire R1 dataset
-  CLIP_NUM=$(echo $R1_MAP_RATE:0 $R1_MAP_RATE_CLIP4:4 $R1_MAP_RATE_CLIP8:8 $R1_MAP_RATE_CLIP12:12 \
+  CLIP_NUM=$(echo $R1_MAP_RATE:0 $R1_MAP_RATE_CLIP4:4 $R1_MAP_RATE_CLIP8:8 $R1_MAP_RATE_CLIP12:12 $R1_MAP_RATE_CLIP20:20 \
   | tr ' ' '\n' | sort -gr | head -1 | cut -d ':' -f2)
 
-  R1_MAP_RATE=$(echo $R1_MAP_RATE:0 $R1_MAP_RATE_CLIP4:4 $R1_MAP_RATE_CLIP8:8 $R1_MAP_RATE_CLIP12:12 \
+  R1_MAP_RATE=$(echo $R1_MAP_RATE:0 $R1_MAP_RATE_CLIP4:4 $R1_MAP_RATE_CLIP8:8 $R1_MAP_RATE_CLIP12:12 $R1_MAP_RATE_CLIP20:20 \
   | tr ' ' '\n' | sort -gr | head -1 | cut -d ':' -f1)
 
   if [ $CLIP_NUM -gt 0 ] ; then
