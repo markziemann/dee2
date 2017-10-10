@@ -693,7 +693,7 @@ if [ $RDS == "PE" ] ; then
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R2_MAP_RATE_CLIP20=$(echo $MAPPED_CNT $R2_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
-  rm test_R1.fq test_R2.fq test_R1_clip4.fq test_R2_clip4.fq test_R1_clip8.fq test_R2_clip8.fq test_R1_clip12.fq test_R2_clip12.fq test_R1_clip20.fq test_R2_clip20.fq ReadsPerGene.out.tab *untrimmed*fastq *trimmed.log
+  rm test_R1.fq test_R2.fq test_R1_clip4.fq test_R2_clip4.fq test_R1_clip8.fq test_R2_clip8.fq test_R1_clip12.fq test_R2_clip12.fq test_R1_clip20.fq test_R2_clip20.fq ReadsPerGene.out.tab
 
   #NOW logic for clipping entire R1 and R2 dataset
   R1_CLIP_NUM=$(echo $R1_MAP_RATE:0 $R1_MAP_RATE_CLIP4:4 $R1_MAP_RATE_CLIP8:8 $R1_MAP_RATE_CLIP12:12 $R1_MAP_RATE_CLIP20:20\
@@ -782,7 +782,7 @@ if [ $RDS == "SE" ] ; then
   MAPPED_CNT_CLIP20=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP20=$(echo $MAPPED_CNT_CLIP12 $RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
-  rm test.fq test2.fq test_clip4.fq test_clip8.fq test_clip12.fq test_clip20.fq ReadsPerGene.out.tab *untrimmed* test-trimmed-pair2.fastq *trimmed.log
+  rm test.fq test2.fq test_clip4.fq test_clip8.fq test_clip12.fq test_clip20.fq ReadsPerGene.out.tab
 
   #NOW logic for clipping entire R1 dataset
   CLIP_NUM=$(echo $R1_MAP_RATE:0 $R1_MAP_RATE_CLIP4:4 $R1_MAP_RATE_CLIP8:8 $R1_MAP_RATE_CLIP12:12 $R1_MAP_RATE_CLIP20:20 \
