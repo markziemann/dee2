@@ -713,7 +713,7 @@ if [ $RDS == "PE" ] ; then
 
     if [[ ( $R1_CLIP_NUM -gt 15 ) || ( $R2_CLIP_NUM -gt 15 ) ]] ; then
       ( fastx_trimmer -f $((R1_CLIP_NUM+1)) -m 18 -Q 33 -i $FQ1 > $FQ1.tmp.fq && mv $FQ1.tmp.fq $FQ1 ) &
-      ( fastx_trimmer -f $((R2_CLIP_NUM+1)) -m 18 -Q 33 -i $FQ2 > $FQ2.tmp.fq && mv $FQ2.tmp.fq $FQ2 ) &
+      fastx_trimmer -f $((R2_CLIP_NUM+1)) -m 18 -Q 33 -i $FQ2 > $FQ2.tmp.fq && mv $FQ2.tmp.fq $FQ2
       wait
     else
       skewer -m ap --cut $R1_CLIP_NUM,$R2_CLIP_NUM -l 18 -k inf -t $THREADS $FQ1 $FQ2 && \
