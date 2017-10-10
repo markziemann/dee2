@@ -710,7 +710,16 @@ if [ $RDS == "PE" ] ; then
   | tr ' ' '\n' | sort -gr | head -1 | cut -d ':' -f1)
 
   if [[ ( $R1_CLIP_NUM -gt 0 ) || ( $R2_CLIP_NUM -gt 0 ) ]] ; then
-    skewer -m ap --cut $R1_CLIP_NUM,$R2_CLIP_NUM -l 18 -k inf -t $THREADS $FQ1 $FQ2 && mv $(basename $FQ1 .fastq)-trimmed-pair1.fastq $FQ1 && mv $(basename $FQ1 .fastq)-trimmed-pair2.fastq $FQ2
+
+    if [[ ( $R1_CLIP_NUM -gt 15 ) || ( $R2_CLIP_NUM -gt 15 ) ]]
+      ( fastx_trimmer -f $((R1_CLIP_NUM+1)) -m 18 -Q 33 -i $FQ1 > $FQ1.tmp.fq && mv $FQ1.tmp.fq $FQ1 ) &
+      ( fastx_trimmer -f $((R2_CLIP_NUM+1)) -m 18 -Q 33 -i $FQ2 > $FQ2.tmp.fq && mv $FQ2.tmp.fq $FQ2 ) &
+    else
+      skewer -m ap --cut $R1_CLIP_NUM,$R2_CLIP_NUM -l 18 -k inf -t $THREADS $FQ1 $FQ2 && \
+      mv $(basename $FQ1 .fastq)-trimmed-pair1.fastq $FQ1 && \
+      mv $(basename $FQ1 .fastq)-trimmed-pair2.fastq $FQ2 && \
+      rm *untrimmed*fastq *trimmed.log
+    fi
   fi
 
   R1R2_DIFF=$((R1_MAP_RATE-R2_MAP_RATE))
@@ -792,16 +801,16 @@ if [ $RDS == "SE" ] ; then
   R1_MAP_RATE=$(echo $R1_MAP_RATE:0 $R1_MAP_RATE_CLIP4:4 $R1_MAP_RATE_CLIP8:8 $R1_MAP_RATE_CLIP12:12 $R1_MAP_RATE_CLIP20:20 \
   | tr ' ' '\n' | sort -gr | head -1 | cut -d ':' -f1)
 
-  if [ $CLIP_NUM -gt 0 ] ; then
-
+  if [[ ( $CLIP_NUM -gt 0 ) && ( $CLIP_NUM -lt 20 ) ]] ; then
     cp $FQ1 $FQ1.tmp.fq
-
     skewer -m ap --cut $CLIP_NUM,$CLIP_NUM -l 18 -k inf -t $THREADS $FQ1 $FQ1.tmp.fq \
-    && wc -l *fq *fastq \
     && mv $(basename $FQ1 .fastq)-trimmed-pair1.fastq $FQ1 \
     && rm $(basename $FQ1 .fastq)-trimmed-pair2.fastq \
-    && rm $FQ1.tmp.fq
+    && rm $FQ1.tmp.fq *untrimmed*fastq *trimmed.log
+  fi
 
+  if [ $CLIP_NUM -gt 15 ] ; then
+    fastx_trimmer -f 21 -m 18 -Q 33 -i $FQ1 > $FQ1.tmp.fq && mv $FQ1.tmp.fq $FQ1
   fi
 
   # Full SE alignment
