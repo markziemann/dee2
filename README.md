@@ -11,8 +11,9 @@ providing tabulated data that can be used in downstream statistical analysis.
 
 Here are some of the key features:
  * Intelligent adapter detection and clipping
+ * Intelligent identificaton of non-reference 5' bases (eg UMIs)
  * Strandedness detection
- * Parallel assignment of reads genes and transcripts with STAR and Kallisto
+ * Parallel assignment of reads to genes and transcripts with STAR and Kallisto
  * Thorough quality control logs
  * Open source pipeline
  * Distributed approach
@@ -28,7 +29,7 @@ specify a species, then one is selected based on the memory available.
 
 ## Contributions welcome
 We welcome contributions to code development as well as machine time. If you have idle compute 
-resources and bandwith, consider sheduling DEE2 over the weekend with a cron job.
+resources and bandwith, consider scheduling DEE2 over the weekend with a cron job.
 
 ## Quick start guide
 Install docker
