@@ -417,11 +417,12 @@ if [ $CSPACE == "FALSE" ] ; then
 fi
 
 FILESIZE=$(du -s $FQ1 | cut -f1)
+FILESIZE="${FILESIZE:-0}"
 echo $SRR file size $FILESIZE | tee -a $SRR.log
 rm ${SRR}.sra
 
 if [ "$FILESIZE" -eq 0 ] ; then
-  echo $SRR has no reads. Aborting | tee -a $ATTEMPTS ; rm $FQ ; exit1 ; return 1
+  echo $SRR has no reads. Aborting | tee -a $ATTEMPTS ; rm $FQ1 ; exit1 ; return 1
 fi
 
 echo $SRR completed basic pipeline successfully | tee -a $SRR.log
