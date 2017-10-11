@@ -3,6 +3,8 @@ Dockerfile+image
 
 Pipeline (volunteer)
 - check for presence of non-reference bases (UMIs and barcodes) mapping reads clipped 4,8,12 bp from 5' end eg ERR048993
+- Remove references to IPHASH
+- Allow users to analyze their own fastq files
 - Ensure accession and organism are correct
 
 Uploads
@@ -12,4 +14,3 @@ Uploads
 FrontEnd
 - Make zip archives and matrices available
 
-Allow users to analyze their own fastq files
