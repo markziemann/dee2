@@ -416,6 +416,7 @@ if [ $CSPACE == "FALSE" ] ; then
   parallel-fastq-dump --threads $(nproc) --outdir . --split-files --defline-qual + -s ${SRR}.sra
 fi
 
+ls *fastq
 FILESIZE=$(du -s $FQ1 | cut -f1)
 FILESIZE="${FILESIZE:-0}"
 echo $SRR file size $FILESIZE | tee -a $SRR.log
