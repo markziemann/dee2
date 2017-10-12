@@ -5,7 +5,9 @@
 set -x
 
 MY_ORG=$1
-MY_ACCESSIONS=$2
+if [ $2 != '-t' ] ; then
+  MY_ACCESSIONS=$2
+fi
 MEM_FACTOR=2
 
 main(){
@@ -19,12 +21,13 @@ rm *fastq *.sra *tsv
 export -f exit1
 
 #JOB
-SRR_FILE=$2
-SRR=$(basename $SRR_FILE .sra)
-echo $SRR
-##ORGANISM
 ORG=$1
-#exec 2>> $SRR.log ; exec >&1
+
+if [ $2 != '-t' ] ; then
+  SRR_FILE=$2
+  SRR=$(basename $SRR_FILE .sra)
+  echo $SRR
+fi
 
 #ENVIRONMENT VARS
 cd ~
@@ -48,22 +51,18 @@ DISK=$(df . | awk 'END{print$4}')
 MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
 
 ##########################################################################
+#Initial disk space check
+##########################################################################
+if [ $DISK -lt $DISKLIM ] ; then
+  echo Error low disk space $DISK available $DISKLIM limit
+  exit1 ; return 1
+fi
+
+##########################################################################
 # Lets test all the input variables
 ##########################################################################
 if [ ! -d "$QC_DIR" ] ; then
   mkdir -p $QC_DIR
-fi
-
-# Check that the SRR accession number and organism match
-wget -O tmp.html "https://www.ncbi.nlm.nih.gov/sra/${SRR}"
-ORG2=$(echo $ORG | cut -c2-)
-ORG_OK=$(sed 's/class=/\n/g' tmp.html  | grep 'Organism:' | grep -c $ORG2)
-rm tmp.html
-if [ $ORG_OK -ne 1 ] ; then
-  echo "Annotated species name from NCBI SRA does not match user input! Quitting."
-  return 1
-else
-  echo "User input species and SRA metadata match. OK."
 fi
 
 #check all the reference sequences exist and create if necessary
@@ -246,48 +245,40 @@ fi
 ##########################################################################
 if [ ! -d $DATA_DIR ] ; then mkdir -p $DATA_DIR ; fi
 cd $DATA_DIR
-mkdir $SRR ; cp $PIPELINE $SRR ; cd $SRR
-echo "Starting $PIPELINE $CFG $URL
+
+if [ $2 != '-\t' ] ; then
+  mkdir $SRR ; cp $PIPELINE $SRR ; cd $SRR
+  echo "Starting $PIPELINE $CFG $URL
   current disk space = $DISK
   free memory = $MEM " | tee -a $SRR.log
 
 ##########################################################################
 # Check number of attempts
 ##########################################################################
-ATTEMPTS=$SRR.attempts.txt
+  ATTEMPTS=$SRR.attempts.txt
 
-if [ -r $SRR.attempts.txt ] ; then
-  NUM_ATTEMPTS=$(wc -l < $ATTEMPTS)
-  if [ $NUM_ATTEMPTS -gt "2" ] ; then
-    echo $SRR has already been tried 3 times, skipping
-    exit1 ; return 1
+  if [ -r $SRR.attempts.txt ] ; then
+    NUM_ATTEMPTS=$(wc -l < $ATTEMPTS)
+    if [ $NUM_ATTEMPTS -gt "2" ] ; then
+      echo $SRR has already been tried 3 times, skipping
+      exit1 ; return 1
+    fi
   fi
-fi
-DATE=`date +%Y-%m-%d:%H:%M:%S`
-echo $PIPELINE $PIPELINE_MD5 $DATE >> $ATTEMPTS
+  DATE=`date +%Y-%m-%d:%H:%M:%S`
+  echo $PIPELINE $PIPELINE_MD5 $DATE >> $ATTEMPTS
 
 ##########################################################################
-#Initial disk space check
+  echo $SRR check if SRA file exists and download if neccessary
 ##########################################################################
-DISK=$(df . | awk 'END{print$4}')
-if [ $DISK -lt $DISKLIM ] ; then
-  echo Error low disk space $DISK available $DISKLIM limit
-  exit1 ; return 1
-fi
-
-##########################################################################
-echo $SRR check if SRA file exists and download if neccessary
-#might let R do this to maintain constant transfers
-##########################################################################
-if [ ! -f $SRR.sra ] ; then
-  #build URL
-  BASEURL=ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra
-  PFX1=$(echo $SRR | cut -c-3)
-  PFX2=$(echo $SRR | cut -c-6)
-  URL=anonftp@ftp.ncbi.nlm.nih.gov:sra/sra-instant/reads/ByRun/sra/${PFX1}/${PFX2}/${SRR}/${SRR}.sra
-  ID=~/.ascp/aspera-license
-  mkdir -p ~/.ascp
-cat << EOF > $ID
+  if [ ! -f $SRR.sra ] ; then
+    #build URL
+    BASEURL=ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra
+    PFX1=$(echo $SRR | cut -c-3)
+    PFX2=$(echo $SRR | cut -c-6)
+    URL=anonftp@ftp.ncbi.nlm.nih.gov:sra/sra-instant/reads/ByRun/sra/${PFX1}/${PFX2}/${SRR}/${SRR}.sra
+    ID=~/.ascp/aspera-license
+    mkdir -p ~/.ascp
+    cat << EOF > $ID
 -----BEGIN DSA PRIVATE KEY-----
 MIIBuwIBAAKBgQDkKQHD6m4yIxgjsey6Pny46acZXERsJHy54p/BqXIyYkVOAkEp
 KgvT3qTTNmykWWw4ovOP1+Di1c/2FpYcllcTphkWcS8lA7j012mUEecXavXjPPG0
@@ -301,151 +292,153 @@ zkWfpOvAUc8fkQAhZqv/PE6VhFQ8w03Z8GpqXx7b3NvBR+EfIx368KoCFEyfl0vH
 Ta7g6mGwIMXrdTQQ8fZs
 -----END DSA PRIVATE KEY-----
 EOF
-  chmod 700 ~/.ascp
-  ascp -l 500m -O 33001 -T -i $ID $URL . \
-  || ( echo $SRR failed ascp download | tee -a $SRR.log ; sleep 5 ; exit1 ; return 1 )
-  SRASIZE=$(du ${SRR}.sra)
-fi
+    chmod 700 ~/.ascp
+    ascp -l 500m -O 33001 -T -i $ID $URL . \
+    || ( echo $SRR failed ascp download | tee -a $SRR.log ; sleep 5 ; exit1 ; return 1 )
+    SRASIZE=$(du ${SRR}.sra)
+  fi
 
 ##########################################################################
-echo $SRR Validate the SRA file
+  echo $SRR Validate the SRA file
 ##########################################################################
-echo $SRR SRAfilesize $SRASIZE | tee -a $SRR.log
-md5sum $SRR.sra | tee -a $SRR.log
-VALIDATE_SRA=$(vdb-validate $SRR.sra &> /dev/stdout  | head -4 | awk '{print $NF}' | grep -c ok)
-if [ $VALIDATE_SRA -eq 4 ] ; then
-  echo $SRR.sra file validated | tee -a $SRR.log
-else
-  echo $SRR.sra md5sums do not match. Deleting and exiting | tee -a $SRR.log
-  exit1 ; return 1
-fi
-
-##########################################################################
-echo $SRR diagnose basespace colorspace, single/paired-end and read length
-##########################################################################
-fastq-dump -X 4000 --split-files $SRR.sra
-NUM_FQ=$(ls | grep $SRR | grep -v trimmed.fastq | grep -c fastq$)
-if [ $NUM_FQ -eq "1" ] ; then
-  ORIG_RDS=SE
-  RDS=SE
-  echo $SRR is single end | tee -a $SRR.log
-elif [ $NUM_FQ -eq "2" ] ; then
-  ORIG_RDS=PE
-  RDS=PE
-  echo $SRR is paired end | tee -a $SRR.log
-else
-  echo Unable to determine if paired or single end. Quitting. | tee -a $SRR.log
-  exit1 ; return 1
-fi
-
-FQ1=$(ls  | grep $SRR | grep -m1 fastq$)
-fastqc $FQ1
-FQ1BASE=$(basename $FQ1 .fastq)
-
-#diagnose colorspace or conventional
-BASECALL_ENCODING=$(unzip -p ${FQ1BASE}_fastqc ${FQ1BASE}_fastqc/fastqc_data.txt \
-| grep 'File type' | cut -f2 | awk '{print $1}')
-
-if [ $BASECALL_ENCODING == "Colorspace" ] ; then
-  CSPACE=TRUE
-  echo $SRR is colorspace | tee -a $SRR.log
-elif [ $BASECALL_ENCODING == "Conventional" ] ; then
-  CSPACE=FALSE
-  echo $SRR is conventional basespace | tee -a $SRR.log
-else
-  echo Unable to determine if colorspace or basespace. Quitting. | tee -a $SRR.log
-  exit1 ; return 1
-fi
-
-#quality encoding ie Illumina1.9
-QUALITY_ENCODING=$(grep -wm1 ^Encoding $SRR.log | cut -f2 | tr -d ' ')
-
-#diagnose read length then
-#save entire fastq data to log and delete fastqc zip file and html report
-FQ1_LEN=$(unzip -p ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc/fastqc_data.txt \
-| grep 'Sequence length' | cut -f2)
-echo $SRR read1 length is $FQ1_LEN nt | tee -a $SRR.log
-unzip -p ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc/fastqc_data.txt | tee -a $SRR.log
-rm ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc.html
-
-FQ1_MIN_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | sort -g | head -1)
-FQ1_MEDIAN_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | numaverage -M)
-FQ1_MAX_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | sort -gr | head -1)
-
-FQ2_MIN_LEN=NULL
-FQ2_MEDIAN_LEN=NULL
-FQ2_MAX_LEN=NULL
-
-if [ $RDS == "PE" ] ; then
-  FQ2=$(ls  | grep $SRR | grep fastq$ | sed -n 2p)
-  fastqc $FQ2
-  FQ2BASE=$(basename $FQ2 .fastq)
-  FQ2_LEN=$(unzip -p ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc/fastqc_data.txt \
-  | grep 'Sequence length' | cut -f2)
-  echo $SRR read2 length is $FQ2_LEN nt | tee -a $SRR.log
-  unzip -p ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc/fastqc_data.txt | tee -a $SRR.log
-  rm ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc.html
-
-  FQ2_MIN_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | sort -g | head -1)
-  FQ2_MEDIAN_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | numaverage -M)
-  FQ2_MAX_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | sort -gr | head -1)
-
-  #now checking read lengths and dropping ones too short
-  if [[ $FQ1_MAX_LEN -lt 20 && $FQ2_MAX_LEN -lt 20 ]] ; then
-    echo Read lengths are too short. Quitting. | tee -a $SRR.log
+  echo $SRR SRAfilesize $SRASIZE | tee -a $SRR.log
+  md5sum $SRR.sra | tee -a $SRR.log
+  VALIDATE_SRA=$(vdb-validate $SRR.sra &> /dev/stdout  | head -4 | awk '{print $NF}' | grep -c ok)
+  if [ $VALIDATE_SRA -eq 4 ] ; then
+    echo $SRR.sra file validated | tee -a $SRR.log
+  else
+    echo $SRR.sra md5sums do not match. Deleting and exiting | tee -a $SRR.log
     exit1 ; return 1
   fi
-fi
 
 ##########################################################################
-echo $SRR if colorspace, then quit
+  echo $SRR diagnose basespace colorspace, single/paired-end and read length
 ##########################################################################
-if [ $CSPACE == "TRUE" ] ; then
-  echo Colorspace data is excluded from analysis for now
-  exit1 ; return 1
-fi
-
-##########################################################################
-echo $SRR Dump the fastq file
-##########################################################################
-rm ${SRR}*fastq
-if [ $CSPACE == "FALSE" ] ; then
-  parallel-fastq-dump --threads $(nproc) --outdir . --split-files --defline-qual + -s ${SRR}.sra
-fi
-
-if [ $RDS == "PE" ] ; then
-  if [[ $FQ1_MAX_LEN -ge 20 && $FQ2_MAX_LEN -lt 20 ]] ; then
-    echo Read 2 is too short. Omitting from downstream analysis. | tee -a $SRR.log
-    rm $FQ2
-    FQ1NEW=$(echo $FQ1 | sed 's/_1//')
-    mv $FQ1 $FQ1NEW
-    FQ1=$FQ1NEW
+  fastq-dump -X 4000 --split-files $SRR.sra
+  NUM_FQ=$(ls | grep $SRR | grep -v trimmed.fastq | grep -c fastq$)
+  if [ $NUM_FQ -eq "1" ] ; then
+    ORIG_RDS=SE
     RDS=SE
+    echo $SRR is single end | tee -a $SRR.log
+  elif [ $NUM_FQ -eq "2" ] ; then
+    ORIG_RDS=PE
+    RDS=PE
+    echo $SRR is paired end | tee -a $SRR.log
+  else
+    echo Unable to determine if paired or single end. Quitting. | tee -a $SRR.log
+    exit1 ; return 1
   fi
 
-  if [[ $FQ1_MAX_LEN -lt 20 && $FQ2_MAX_LEN -ge 20 ]] ; then
-    echo Read 1 is too short. Omitting from downstream analysis. | tee -a $SRR.log
-    rm $FQ1
-    FQ1=$(echo $FQ2 | sed 's/_2//')
-    mv $FQ2 $FQ1
-    RDS=SE
+  FQ1=$(ls  | grep $SRR | grep -m1 fastq$)
+  fastqc $FQ1
+  FQ1BASE=$(basename $FQ1 .fastq)
+
+  #diagnose colorspace or conventional
+  BASECALL_ENCODING=$(unzip -p ${FQ1BASE}_fastqc ${FQ1BASE}_fastqc/fastqc_data.txt \
+  | grep 'File type' | cut -f2 | awk '{print $1}')
+
+  if [ $BASECALL_ENCODING == "Colorspace" ] ; then
+    CSPACE=TRUE
+    echo $SRR is colorspace | tee -a $SRR.log
+  elif [ $BASECALL_ENCODING == "Conventional" ] ; then
+    CSPACE=FALSE
+    echo $SRR is conventional basespace | tee -a $SRR.log
+  else
+    echo Unable to determine if colorspace or basespace. Quitting. | tee -a $SRR.log
+    exit1 ; return 1
   fi
-fi
 
-FILESIZE=$(du -s $FQ1 | cut -f1)
-FILESIZE="${FILESIZE:-0}"
-echo $SRR file size $FILESIZE | tee -a $SRR.log
-rm ${SRR}.sra
+  #quality encoding ie Illumina1.9
+  QUALITY_ENCODING=$(grep -wm1 ^Encoding $SRR.log | cut -f2 | tr -d ' ')
 
-if [ "$FILESIZE" -eq 0 ] ; then
-  echo $SRR has no reads. Aborting | tee -a $ATTEMPTS ; rm $FQ1 ; exit1 ; return 1
-fi
+  #diagnose read length then
+  #save entire fastq data to log and delete fastqc zip file and html report
+  FQ1_LEN=$(unzip -p ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc/fastqc_data.txt \
+  | grep 'Sequence length' | cut -f2)
+  echo $SRR read1 length is $FQ1_LEN nt | tee -a $SRR.log
+  unzip -p ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc/fastqc_data.txt | tee -a $SRR.log
+  rm ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc.html
 
-echo $SRR completed basic pipeline successfully | tee -a $SRR.log
+  FQ1_MIN_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | sort -g | head -1)
+  FQ1_MEDIAN_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | numaverage -M)
+  FQ1_MAX_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | sort -gr | head -1)
+
+  FQ2_MIN_LEN=NULL
+  FQ2_MEDIAN_LEN=NULL
+  FQ2_MAX_LEN=NULL
+
+  if [ $RDS == "PE" ] ; then
+    FQ2=$(ls  | grep $SRR | grep fastq$ | sed -n 2p)
+    fastqc $FQ2
+    FQ2BASE=$(basename $FQ2 .fastq)
+    FQ2_LEN=$(unzip -p ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc/fastqc_data.txt \
+    | grep 'Sequence length' | cut -f2)
+    echo $SRR read2 length is $FQ2_LEN nt | tee -a $SRR.log
+    unzip -p ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc/fastqc_data.txt | tee -a $SRR.log
+    rm ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc.html
+
+    FQ2_MIN_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | sort -g | head -1)
+    FQ2_MEDIAN_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | numaverage -M)
+    FQ2_MAX_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | sort -gr | head -1)
+
+    #now checking read lengths and dropping ones too short
+    if [[ $FQ1_MAX_LEN -lt 20 && $FQ2_MAX_LEN -lt 20 ]] ; then
+      echo Read lengths are too short. Quitting. | tee -a $SRR.log
+      exit1 ; return 1
+    fi
+  fi
+
+##########################################################################
+  echo $SRR if colorspace, then quit
+##########################################################################
+  if [ $CSPACE == "TRUE" ] ; then
+    echo Colorspace data is excluded from analysis for now
+    exit1 ; return 1
+  fi
+
+##########################################################################
+  echo $SRR Dump the fastq file
+##########################################################################
+  rm ${SRR}*fastq
+  if [ $CSPACE == "FALSE" ] ; then
+    parallel-fastq-dump --threads $(nproc) --outdir . --split-files --defline-qual + -s ${SRR}.sra
+  fi
+
+  if [ $RDS == "PE" ] ; then
+    if [[ $FQ1_MAX_LEN -ge 20 && $FQ2_MAX_LEN -lt 20 ]] ; then
+      echo Read 2 is too short. Omitting from downstream analysis. | tee -a $SRR.log
+      rm $FQ2
+      FQ1NEW=$(echo $FQ1 | sed 's/_1//')
+      mv $FQ1 $FQ1NEW
+      FQ1=$FQ1NEW
+      RDS=SE
+    fi
+
+    if [[ $FQ1_MAX_LEN -lt 20 && $FQ2_MAX_LEN -ge 20 ]] ; then
+      echo Read 1 is too short. Omitting from downstream analysis. | tee -a $SRR.log
+      rm $FQ1
+      FQ1=$(echo $FQ2 | sed 's/_2//')
+      mv $FQ2 $FQ1
+      RDS=SE
+    fi
+  fi
+
+  FILESIZE=$(du -s $FQ1 | cut -f1)
+  FILESIZE="${FILESIZE:-0}"
+  echo $SRR file size $FILESIZE | tee -a $SRR.log
+  rm ${SRR}.sra
+
+  if [ "$FILESIZE" -eq 0 ] ; then
+    echo $SRR has no reads. Aborting | tee -a $ATTEMPTS ; rm $FQ1 ; exit1 ; return 1
+  fi
+
+  echo $SRR completed basic pipeline successfully | tee -a $SRR.log
 
 ##########################################################################
 # If user has own data
 ##########################################################################
+else
+  echo using user data
 # then check whether zipped (gzip bzip2) then if unzip if neccessary
 # then run fastqc and save it to the log
 # if R1 and R2 have a different number of reads, then throw error
@@ -466,6 +459,8 @@ echo $SRR completed basic pipeline successfully | tee -a $SRR.log
 #Read2MedianLength:$FQ2_MEDIAN_LEN
 #Read2MaxLength:$FQ2_MAX_LEN
 #NumReadsTotal:$READ_CNT_TOTAL
+
+fi
 
 ##########################################################################
 echo $SRR Quality trimming
