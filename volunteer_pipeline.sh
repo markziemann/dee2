@@ -56,7 +56,8 @@ fi
 
 # Check that the SRR accession number and organism match
 wget -O tmp.html "https://www.ncbi.nlm.nih.gov/sra/${SRR}"
-ORG_OK=$(sed 's/class=/\n/g' tmp.html  | grep 'Organism:' | grep -c melanogaster)
+ORG2=$(echo $ORG | cut -c2-)
+ORG_OK=$(sed 's/class=/\n/g' tmp.html  | grep 'Organism:' | grep -c $ORG2)
 rm tmp.html
 if [ $ORG_OK -ne 1 ] ; then
   echo "Annotated species name from NCBI SRA does not match user input! Quitting."
