@@ -54,6 +54,17 @@ if [ ! -d "$QC_DIR" ] ; then
   mkdir -p $QC_DIR
 fi
 
+# Check that the SRR accession number and organism match
+wget -O tmp.html "https://www.ncbi.nlm.nih.gov/sra/${SRR}"
+ORG_OK=$(sed 's/class=/\n/g' tmp.html  | grep 'Organism:' | grep -c melanogaster)
+rm tmp.html
+if [ $ORG_OK -ne 1 ] ; then
+  echo "Annotated species name from NCBI SRA does not match user input! Quitting."
+  return 1
+else
+  echo "User input species and SRA metadata match. OK."
+fi
+
 #check all the reference sequences exist and create if necessary
 #REFERENCE SEQ AND ANNOTATIONS
 MYREF_DIR=$REF_DIR/$ORG/ensembl/
