@@ -383,21 +383,6 @@ if [ $RDS == "PE" ] ; then
     echo Read lengths are too short. Quitting. | tee -a $SRR.log
     exit1 ; return 1
   fi
-
-  if [[ $FQ1_MAX_LEN -ge 20 && $FQ2_MAX_LEN -lt 20 ]] ; then
-    rm $FQ2
-    FQ1NEW=$(echo $FQ1 | sed 's/_1//')
-    mv $FQ1 $FQ1NEW
-    FQ1=$FQ1NEW
-    RDS=SE
-  fi
-
-  if [[ $FQ1_MAX_LEN -lt 20 && $FQ2_MAX_LEN -ge 20 ]] ; then
-    rm $FQ1
-    FQ1=$(echo $FQ2 | sed 's/_2//')
-    mv $FQ2 $FQ1
-    RDS=SE
-  fi
 fi
 
 ##########################################################################
@@ -416,7 +401,25 @@ if [ $CSPACE == "FALSE" ] ; then
   parallel-fastq-dump --threads $(nproc) --outdir . --split-files --defline-qual + -s ${SRR}.sra
 fi
 
-ls *fastq
+if [ $RDS == "PE" ] ; then
+  if [[ $FQ1_MAX_LEN -ge 20 && $FQ2_MAX_LEN -lt 20 ]] ; then
+    echo Read 2 is too short. Omitting from downstream analysis. | tee -a $SRR.log
+    rm $FQ2
+    FQ1NEW=$(echo $FQ1 | sed 's/_1//')
+    mv $FQ1 $FQ1NEW
+    FQ1=$FQ1NEW
+    RDS=SE
+  fi
+
+  if [[ $FQ1_MAX_LEN -lt 20 && $FQ2_MAX_LEN -ge 20 ]] ; then
+    echo Read 1 is too short. Omitting from downstream analysis. | tee -a $SRR.log
+    rm $FQ1
+    FQ1=$(echo $FQ2 | sed 's/_2//')
+    mv $FQ2 $FQ1
+    RDS=SE
+  fi
+fi
+
 FILESIZE=$(du -s $FQ1 | cut -f1)
 FILESIZE="${FILESIZE:-0}"
 echo $SRR file size $FILESIZE | tee -a $SRR.log
