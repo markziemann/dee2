@@ -33,12 +33,16 @@ RUN \
     git \
     perl \
     zip \
+    pigz \
+    pbzip2 \
     unzip \
     python3 \
     python3-pip \
     libtbb2 \
     default-jdk \
-    unsort
+    unsort \
+    fastx-toolkit
+
 
 ########################################
 # now downloading a bunch of dependancies
@@ -145,9 +149,9 @@ RUN \
 ########################################
 WORKDIR $DIRPATH
 RUN pwd
-RUN \
-  mkdir  code && \
-  cd code && \
+RUN  \
+  mkdir code && \
+  cd code  && \
   wget "https://raw.githubusercontent.com/markziemann/dee2/master/volunteer_pipeline.sh" &&  \
   chmod +x volunteer_pipeline.sh && \
   bash volunteer_pipeline.sh
