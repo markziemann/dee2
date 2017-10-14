@@ -533,19 +533,16 @@ if [ $RDS == "SE" ] ; then
 
       if [ $ADAPTER_REF_CHECK -eq "0" ] ; then
         echo Adapter seq not found in reference. Now shuffling file before clipping | tee -a $SRR.log
-        #FQ1=${SRR}-trimmed.fastq this is the current name
-        #shuffling the fq file to remove any tile effects
         paste - - - - < $FQ1 \
         | unsort --seed 42 \
         | tr '\t' '\n' > ${SRR}.fastq
         CLIP_LINE_NUM=$(echo $DENSITY $ADAPTER_THRESHOLD $READ_CNT_AVAIL | awk '{printf "%.0f\n", ($1-$2)/$1*$3*4}' | numround -n 4)
         head -$CLIP_LINE_NUM ${SRR}.fastq | skewer -l 18 -t $THREADS -x $ADAPTER -o $SRR -
-        READ_CNT_AVAIL=$(grep 'available; of these:' ${SRR}-trimmed.log | cut -d ' ' -f1)
-        if [ -z "$READ_CNT_AVAIL" ] ; then READ_CNT_AVAIL=0 ; fi
-        #FQ1 read len min max median
         cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
         CLIP_LINE_NUM1=$((CLIP_LINE_NUM+1))
         tail -n+$CLIP_LINE_NUM1 ${SRR}.fastq >> ${SRR}-trimmed.fastq && rm ${SRR}.fastq
+        READ_CNT_AVAIL=$(sed -n '2~4p' ${SRR}-trimmed.fastq | wc -l)
+        if [ -z "$READ_CNT_AVAIL" ] ; then READ_CNT_AVAIL=0 ; fi
         minion search-adapter -i ${SRR}-trimmed.fastq | tee -a $SRR.log
       else
         echo Potential adapter found in reference sequence. Continuing without clipping. | tee -a $SRR.log
