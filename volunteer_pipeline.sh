@@ -489,7 +489,7 @@ else
 
     ISGZ=$(echo $FQ1 | grep -c .gz$)
     if [ $ISGZ -eq "1" ] ; then
-      gzip -t $FQ1 && GZTEST=OK
+      pigz -t $FQ1 && GZTEST=OK
       if [ $GZTEST != OK ] ; then
         pigz -d $FQ1
         FQ1=$(basename $FQ1 .gz)
@@ -501,7 +501,7 @@ else
 
     ISBZ=$(echo $FQ1 | grep -c .bz2$)
     if [ $ISBZ -eq "1" ] ; then
-      bzip2 -t $FQ1 && BZTEST=OK
+      pbzip2 -t $FQ1 && BZTEST=OK
       if [ $BZTEST != OK ] ; then
         pbzip2 -d $FQ1
         FQ1=$(basename $FQ1 .bz2)
@@ -547,7 +547,7 @@ else
 
     ISGZ=$(echo $FQ1 $FQ2 | tr ' ' '\n' | grep -c .gz$)
     if [ $ISGZ -eq "2" ] ; then
-      gzip -t $FQ1 && gzip -t $FQ2 && GZTEST=OK
+      pigz -t $FQ1 && pigz -t $FQ2 && GZTEST=OK
       if [ $GZTEST != OK ] ; then
         pigz -d $FQ1 $FQ2
         FQ1=$(basename $FQ1 .gz)
@@ -560,7 +560,7 @@ else
 
     ISBZ=$(echo $FQ1 $FQ2 | tr ' ' '\n' | grep -c .bz2$)
     if [ $ISBZ -eq "2" ] ; then
-      gzip -t $FQ1 && gzip -t $FQ2 && BZTEST=OK
+      pbzip2 -t $FQ1 && pbzip2 -t $FQ2 && BZTEST=OK
       if [ $BZTEST != OK ] ; then
         pbzip2 -d $FQ1 $FQ2
         FQ1=$(basename $FQ1 .gz)
