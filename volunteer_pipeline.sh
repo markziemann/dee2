@@ -23,7 +23,7 @@ export -f exit1
 #JOB
 ORG=$1
 
-if [ $2 != '-t' ] ; then
+if [ $2 != '-z' ] ; then
   SRR_FILE=$2
   SRR=$(basename $SRR_FILE .sra)
   echo $SRR
@@ -454,21 +454,209 @@ else
 # if R1 and R2 have a different number of reads, then throw error
 # all the above stuff needs to be enclosed in an if statement
 # the '-f' switch to specify own data
+
 # The following syntax to support multiple paired end fastq files
 # pipeline.sh hsapiens -f sample1_R1.fq.gz,sample2_R1.fq sample1_R2.fq.gz,sample2_R2.fq
 # the function is run like this for SE and PE
 # main -f $FQ_R1
 # main -f $FQ_R1 $FQ_R2
-# The following variables need to be assigned
-#SequenceFormat:$ORIG_RDS
-#QualityEncoding:$QUALITY_ENCODING
-#Read1MinimumLength:$FQ1_MIN_LEN
-#Read1MedianLength:$FQ1_MEDIAN_LEN
-#Read1MaxLength:$FQ1_MAX_LEN
-#Read2MinimumLength:$FQ2_MIN_LEN
-#Read2MedianLength:$FQ2_MEDIAN_LEN
-#Read2MaxLength:$FQ2_MAX_LEN
-#NumReadsTotal:$READ_CNT_TOTAL
+
+##########################################################################
+# OWN data SE
+##########################################################################
+  if [ $# -eq "1" ] ; then
+    echo Error, no fastq file specified. Quitting
+    exit1; return 1
+  elif [ $# -gt "3" ] ; then
+    echo Too many arguments. Check syntax and try again.
+    exit1 ; return1
+  elif [ $# -eq "2" ] ; then
+    echo Processing fastq file $2 in single end mode
+    FQ1=$2
+    SRR=$(basename $FQ1 | cut -d '.' -f1)
+    RDS=SE
+
+    if [ ! -r $FQ1 ] ; then
+      Input file $FQ1 does not exist or is not readable. Quitting.
+      exit1 ; return 1
+    fi
+
+    mkdir $SRR ; cp $PIPELINE $SRR ; cd $SRR
+    mv $FQ1 . ; FQ1=$(basename $FQ1)
+    current disk space = $DISK
+    free memory = $MEM " | tee -a $SRR.log
+
+
+    ISGZ=$(echo $FQ1 | grep -c .gz$)
+    if [ $ISGZ -eq "1" ] ; then
+      gzip -t $FQ1 && GZTEST=OK
+      if [ $GZTEST != OK ] ; then
+        pigz -d $FQ1
+        FQ1=$(basename $FQ1 .gz)
+      else
+        echo Gzip file is corrupted. Quitting
+        exit1 ; return 1
+      fi
+    fi
+
+    ISBZ=$(echo $FQ1 | grep -c .bz2$)
+    if [ $ISBZ -eq "1" ] ; then
+      bzip2 -t $FQ1 && BZTEST=OK
+      if [ $BZTEST != OK ] ; then
+        pbzip2 -d $FQ1
+        FQ1=$(basename $FQ1 .bz2)
+      else
+        echo Bzip2 file is corrupted. Quitting
+        exit1 ; return 1
+      fi
+    fi
+
+    ISFQ=$(echo $FQ1 | grep -c '(.fq$|fastq$)' )
+    if [ $ISFQ -ne "1" ] ; then
+      echo Error. Unknown input file format. Input file extension should match ".fastq" or ".fq". Quitting
+      exit1 ; return 1
+    fi
+
+##########################################################################
+# OWN data PE
+##########################################################################
+  elif [ $# -eq "3" ] ; then
+    echo Processing fastq files $2 and $3 in paired end mode
+    FQ1=$2
+    FQ2=$3
+    SRR=$(basename $FQ1 | cut -d '.' -f1)
+    RDS=PE
+
+    if [ ! -r $FQ1 ] ; then
+      Input file $FQ1 does not exist or is not readable. Quitting.
+      exit1 ; return 1
+    fi
+
+    if [ ! -r $FQ2 ] ; then
+      Input file $FQ2 does not exist or is not readable. Quitting.
+      exit1 ; return 1
+    fi
+
+    mkdir $SRR ; cp $PIPELINE $SRR ; cd $SRR
+    mv $FQ1 $FQ2 .
+    FQ1=$(basename $FQ1)
+    FQ2=$(basename $FQ2)
+
+    current disk space = $DISK
+    free memory = $MEM " | tee -a $SRR.log
+
+    ISGZ=$(echo $FQ1 $FQ2 | tr ' ' '\n' | grep -c .gz$)
+    if [ $ISGZ -eq "2" ] ; then
+      gzip -t $FQ1 && gzip -t $FQ2 && GZTEST=OK
+      if [ $GZTEST != OK ] ; then
+        pigz -d $FQ1 $FQ2
+        FQ1=$(basename $FQ1 .gz)
+        FQ2=$(basename $FQ2 .gz)
+      else
+        echo Gzip file is corrupted. Quitting
+        exit1 ; return 1
+      fi
+    fi
+
+    ISBZ=$(echo $FQ1 $FQ2 | tr ' ' '\n' | grep -c .bz2$)
+    if [ $ISBZ -eq "2" ] ; then
+      gzip -t $FQ1 && gzip -t $FQ2 && BZTEST=OK
+      if [ $BZTEST != OK ] ; then
+        pbzip2 -d $FQ1 $FQ2
+        FQ1=$(basename $FQ1 .gz)
+        FQ2=$(basename $FQ2 .gz)
+      else
+        echo Bzip2 file is corrupted. Quitting
+        exit1 ; return 1
+      fi
+    fi
+
+    ISFQ=$(echo $FQ1 | grep -c '(.fq$|fastq$)' )
+    if [ $ISFQ -ne "2" ] ; then
+      echo Error. Unknown input file format. Input file extension should match ".fastq" or ".fq"$
+      exit1 ; return 1
+    fi
+
+  fi
+
+  fastqc $FQ1
+  FQ1BASE=$(echo $FQ1 | rev | cut -d '.' -f2 | rev)
+  SRR=$FQ1BASE
+
+  #diagnose colorspace or conventional
+  BASECALL_ENCODING=$(unzip -p ${FQ1BASE}_fastqc ${FQ1BASE}_fastqc/fastqc_data.txt \
+  | grep 'File type' | cut -f2 | awk '{print $1}')
+
+  if [ $BASECALL_ENCODING == "Colorspace" ] ; then
+    CSPACE=TRUE
+    echo $FQ1 is colorspace | tee -a $SRR.log
+  elif [ $BASECALL_ENCODING == "Conventional" ] ; then
+    CSPACE=FALSE
+    echo $FQ1 is conventional basespace | tee -a $SRR.log
+  else
+    echo Unable to determine if colorspace or basespace. Quitting. | tee -a $SRR.log
+    exit1 ; return 1
+  fi
+
+  #quality encoding ie Illumina1.9
+  QUALITY_ENCODING=$(unzip -p ${FQ1BASE}_fastqc ${FQ1BASE}_fastqc/fastqc_data.txt \
+  | grep -wm1 ^Encoding | cut -f2 | tr -d ' ')
+
+  #diagnose read length then
+  #save entire fastq data to log and delete fastqc zip file and html report
+  FQ1_LEN=$(unzip -p ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc/fastqc_data.txt \
+  | grep 'Sequence length' | cut -f2)
+  echo $FQ1 read1 length is $FQ1_LEN nt | tee -a $SRR.log
+  unzip -p ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc/fastqc_data.txt | tee -a $SRR.log
+  rm ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc.html
+
+  FQ1_MIN_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | sort -g | head -1)
+  FQ1_MEDIAN_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | numaverage -M)
+  FQ1_MAX_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | sort -gr | head -1)
+
+  FQ2_MIN_LEN=NULL
+  FQ2_MEDIAN_LEN=NULL
+  FQ2_MAX_LEN=NULL
+
+
+  if [ $RDS == "PE" ] ; then
+    fastqc $FQ2
+    FQ2BASE=$(echo $FQ2 | rev | cut -d '.' -f2 | rev)
+    FQ2_LEN=$(unzip -p ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc/fastqc_data.txt \
+    | grep 'Sequence length' | cut -f2)
+    echo $SRR read2 length is $FQ2_LEN nt | tee -a $SRR.log
+    unzip -p ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc/fastqc_data.txt | tee -a $SRR.log
+    rm ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc.html
+
+    FQ2_MIN_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | sort -g | head -1)
+    FQ2_MEDIAN_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | numaverage -M)
+    FQ2_MAX_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | sort -gr | head -1)
+
+    #now checking read lengths and dropping ones too short
+    if [[ $FQ1_MAX_LEN -lt 20 && $FQ2_MAX_LEN -lt 20 ]] ; then
+      echo Read lengths are too short. Quitting. | tee -a $SRR.log
+      exit1 ; return 1
+    fi
+  fi
+
+##########################################################################
+  echo $FQ1 if colorspace, then quit
+##########################################################################
+  if [ $CSPACE == "TRUE" ] ; then
+    echo Colorspace data is excluded from analysis for now
+    exit1 ; return 1
+  fi
+
+##########################################################################
+  echo If read 1 and 2 have different number of tags then exit
+##########################################################################
+  FQ1_NUMRDS=$(sed -n '2~4p' $FQ1 | wc -l)
+  FQ2_NUMRDS=$(sed -n '2~4p' $FQ2 | wc -l)
+
+  if [ $FQ1_NUMRDS -ne $FQ2_NUMRDS ] ; then
+    echo Number of sequence tags in read 1 and read 2 differ. Quitting.
+    exit1 ; return 1
+  fi
 
 fi
 
@@ -1155,7 +1343,7 @@ else
 ##################################################
 # Testing whether the user has provided own data
 ##################################################
-#Putting this bit into a dummy function to
+#Putting this bit into a dummy function for now
 skip(){
 OWN_DATA=$(echo $@ | grep -wc '\-f')
 #echo own data? $OWN_DATA
@@ -1179,7 +1367,7 @@ if [ ! -z $OWN_DATA ] ; then
 
         if [ -r $FQ_R1 -a -r $FQ_R2 ] ; then
           echo "running pipeline.sh -f $FQ_R1 $FQ_R2"
-          main -f $FQ_R1 $FQ_R2
+          main -f /mnt/$FQ_R1 /mnt/$FQ_R2
         else
           echo Specified fastq file $FQ_R1 or $FQ_R2 do not exist or not readable. Quitting
         fi
@@ -1199,7 +1387,7 @@ if [ ! -z $OWN_DATA ] ; then
 
       if [ -r $FQ ] ; then
         echo "running pipeline.sh -f $FQ"
-        main -f $FQ
+        main -f /mnt/$FQ
       else
         echo Specified fastq file $FQ does not exist or not readable. Quitting
       fi
@@ -1208,7 +1396,7 @@ if [ ! -z $OWN_DATA ] ; then
   fi
 
   if [ -z $RDS ] ; then
-    echo "Syntax Error. Unknown option to '-t'"
+    echo "Syntax Error. Unknown option to '-f'"
   fi
 fi
 }
