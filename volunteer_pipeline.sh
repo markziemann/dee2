@@ -255,7 +255,7 @@ fi
 if [ ! -d $DATA_DIR ] ; then mkdir -p $DATA_DIR ; fi
 cd $DATA_DIR
 
-if [ $2 != '-\t' ] ; then
+if [ $2 != '-\f' ] ; then
   mkdir $SRR ; cp $PIPELINE $SRR ; cd $SRR
   echo "Starting $PIPELINE $CFG $URL
   current disk space = $DISK
