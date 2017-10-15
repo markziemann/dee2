@@ -358,7 +358,8 @@ EOF
   fi
 
   #quality encoding ie Illumina1.9
-  QUALITY_ENCODING=$(grep -wm1 ^Encoding $SRR.log | cut -f2 | tr -d ' ')
+  QUALITY_ENCODING=$(unzip -p ${FQ1BASE}_fastqc ${FQ1BASE}_fastqc/fastqc_data.txt \
+  | grep -wm1 ^Encoding | cut -f2 | tr -d ' ')
 
   #diagnose read length then
   #save entire fastq data to log and delete fastqc zip file and html report
@@ -968,8 +969,6 @@ else
 fi
 
 ## Collect QC information
-
-## Output .qc file
 echo "SequenceFormat:$ORIG_RDS
 QualityEncoding:$QUALITY_ENCODING
 Read1MinimumLength:$FQ1_MIN_LEN
