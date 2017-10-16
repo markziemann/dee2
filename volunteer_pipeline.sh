@@ -512,7 +512,7 @@ else
       fi
     fi
 
-    ISFQ=$(echo $FQ1 | grep -c '(.fq$|fastq$)' )
+    ISFQ=$(echo $FQ1 | egrep -c '(.fq$|.fastq$)' )
     if [ $ISFQ -ne "1" ] ; then
       echo Error. Unknown input file format. Input file extension should match ".fastq" or ".fq". Quitting
       exit1 ; return 1
@@ -573,7 +573,7 @@ else
       fi
     fi
 
-    ISFQ=$(echo $FQ1 | grep -c '(.fq$|fastq$)' )
+    ISFQ=$(echo $FQ1 | egrep -c '(.fq$|.fastq$)' )
     if [ $ISFQ -ne "2" ] ; then
       echo Error. Unknown input file format. Input file extension should match ".fastq" or ".fq"$
       exit1 ; return 1
