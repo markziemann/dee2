@@ -5,8 +5,7 @@
 set -x
 
 MY_ORG=$1
-
-if [[ $2 != '\-f' || -z $2 ]] ; then
+if [ $2 != '-f' ] ; then
   MY_ACCESSIONS=$2
 fi
 MEM_FACTOR=2
@@ -260,7 +259,7 @@ if [ $2 != '-f' ] ; then
   mkdir $SRR ; cp $PIPELINE $SRR ; cd $SRR
   echo "Starting $PIPELINE $CFG $URL
   current disk space = $DISK
-  free memory = $MEM | tee -a $SRR.log
+  free memory = $MEM " | tee -a $SRR.log
 
 ##########################################################################
 # Check number of attempts
@@ -465,7 +464,6 @@ else
 ##########################################################################
 # OWN data SE
 ##########################################################################
-  echo $@
   if [ $# -lt "3" ] ; then
     echo Error, not enough arguments specified. Quitting
     exit1; return 1
@@ -1398,6 +1396,8 @@ else
     if [ -z $RDS ] ; then
       echo "Syntax Error. Unknown option to '-f'"
     fi
+
+    exit
   fi
 
 
