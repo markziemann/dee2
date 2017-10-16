@@ -491,7 +491,7 @@ else
     ISGZ=$(echo $FQ1 | grep -c .gz$)
     if [ $ISGZ -eq "1" ] ; then
       pigz -t $FQ1 && GZTEST=OK
-      if [ $GZTEST != OK ] ; then
+      if [ $GZTEST == OK ] ; then
         pigz -d $FQ1
         FQ1=$(basename $FQ1 .gz)
       else
@@ -503,7 +503,7 @@ else
     ISBZ=$(echo $FQ1 | grep -c .bz2$)
     if [ $ISBZ -eq "1" ] ; then
       pbzip2 -t $FQ1 && BZTEST=OK
-      if [ $BZTEST != OK ] ; then
+      if [ $BZTEST == OK ] ; then
         pbzip2 -d $FQ1
         FQ1=$(basename $FQ1 .bz2)
       else
