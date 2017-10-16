@@ -23,7 +23,7 @@ export -f exit1
 #JOB
 ORG=$1
 
-if [ $2 != '-z' ] ; then
+if [ $2 != '-f' ] ; then
   SRR_FILE=$2
   SRR=$(basename $SRR_FILE .sra)
   echo $SRR
@@ -1205,7 +1205,7 @@ done
 MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
 #MEM=$(free | awk 'NR==2{print $4}')
 NUM_CPUS=$(nproc)
-CPU_SPEED=$(lscpu | grep 'CPU max MHz:' | awk '{print $4}')
+CPU_SPEED=$(lscpu | grep MHz | awk '{print $NF}' | sort -k2gr)
 
 ACC_URL="https://vm-118-138-241-34.erc.monash.edu.au/acc.html"
 ACC_REQUEST="https://vm-118-138-241-34.erc.monash.edu.au/cgi-bin/acc.sh"
