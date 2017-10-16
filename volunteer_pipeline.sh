@@ -257,9 +257,9 @@ cd $DATA_DIR
 
 if [ $2 != '-f' ] ; then
   mkdir $SRR ; cp $PIPELINE $SRR ; cd $SRR
-  echo "Starting $PIPELINE $CFG $URL
-  current disk space = $DISK
-  free memory = $MEM " | tee -a $SRR.log
+  echo "Starting $PIPELINE $SRR
+    current disk space = $DISK
+    free memory = $MEM " | tee -a $SRR.log
 
 ##########################################################################
 # Check number of attempts
@@ -482,9 +482,11 @@ else
     fi
 
     mkdir $SRR ; cp $PIPELINE $SRR ; cd $SRR
-    ln -s $FQ1 . ; FQ1=$(basename $FQ1)
-    current disk space = $DISK
-    free memory = $MEM | tee -a $SRR.log
+    cp $FQ1 . ; FQ1=$(basename $FQ1)
+
+    echo "Starting $PIPELINE $SRR
+      current disk space = $DISK
+      free memory = $MEM " | tee -a $SRR.log
 
     ISGZ=$(echo $FQ1 | grep -c .gz$)
     if [ $ISGZ -eq "1" ] ; then
@@ -537,12 +539,13 @@ else
     fi
 
     mkdir $SRR ; cp $PIPELINE $SRR ; cd $SRR
-    ln -s $FQ1 $FQ2 .
+    cp $FQ1 $FQ2 .
     FQ1=$(basename $FQ1)
     FQ2=$(basename $FQ2)
 
-    current disk space = $DISK
-    free memory = $MEM | tee -a $SRR.log
+    echo "Starting $PIPELINE $SRR
+      current disk space = $DISK
+      free memory = $MEM " | tee -a $SRR.log
 
     ISGZ=$(echo $FQ1 $FQ2 | tr ' ' '\n' | grep -c .gz$)
     if [ $ISGZ -eq "2" ] ; then
