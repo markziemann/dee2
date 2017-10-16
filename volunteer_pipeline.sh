@@ -32,7 +32,7 @@ if [ $2 != '-z' ] ; then
   ORG_OK=$(sed 's/class=/\n/g' tmp.html  | grep 'Organism:' | grep -c $ORG2)
   if [ $ORG_OK -ne 1 ] ; then
     echo Annotated species name from NCBI SRA does not match user input! Quitting. | tee -a $SRR.log
-    exit1 ; return 1
+    exit1 ; exit 1
   else
     echo User input species and SRA metadata match. OK.
   fi
@@ -1361,12 +1361,12 @@ else
         echo Number of foward and reverse readsets does not match. Quitting.
       else
         for DATASET_NUM in $(seq $R1_LIST_LEN) ; do
-          FQ_R1=$(echo $R1_LIST | cut -d ',' -f$DATASET_NUM)
-          FQ_R2=$(echo $R2_LIST | cut -d ',' -f$DATASET_NUM)
+          FQ_R1=/mnt/$(echo $R1_LIST | cut -d ',' -f$DATASET_NUM)
+          FQ_R2=/mnt/$(echo $R2_LIST | cut -d ',' -f$DATASET_NUM)
 
           if [ -r $FQ_R1 -a -r $FQ_R2 ] ; then
             echo "running pipeline.sh -f $FQ_R1 $FQ_R2"
-            main -f /mnt/$FQ_R1 /mnt/$FQ_R2
+            main -f $FQ_R1 $FQ_R2
           else
             echo Specified fastq file $FQ_R1 or $FQ_R2 do not exist or not readable. Quitting
           fi
