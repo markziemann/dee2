@@ -464,13 +464,13 @@ else
 ##########################################################################
 # OWN data SE
 ##########################################################################
-  if [ $# -eq "1" ] ; then
-    echo Error, no fastq file specified. Quitting
+  if [ $# -lt "3" ] ; then
+    echo Error, not enough arguments specified. Quitting
     exit1; return 1
-  elif [ $# -gt "3" ] ; then
-    echo Too many arguments. Check syntax and try again.
-    exit1 ; return1
-  elif [ $# -eq "2" ] ; then
+  elif [ $# -gt "4" ] ; then
+    echo Too many arguments. Check syntax and try again. Ensure filenames do not contain spaces. Quitting
+    exit1 ; return 1
+  elif [ $# -eq "3" ] ; then
     echo Processing fastq file $2 in single end mode
     FQ1=$2
     SRR=$(basename $FQ1 | cut -d '.' -f1)
@@ -520,7 +520,7 @@ else
 ##########################################################################
 # OWN data PE
 ##########################################################################
-  elif [ $# -eq "3" ] ; then
+  elif [ $# -eq "4" ] ; then
     echo Processing fastq files $2 and $3 in paired end mode
     FQ1=$2
     FQ2=$3
