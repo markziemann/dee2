@@ -464,6 +464,7 @@ else
 ##########################################################################
 # OWN data SE
 ##########################################################################
+  echo $@
   if [ $# -lt "3" ] ; then
     echo Error, not enough arguments specified. Quitting
     exit1; return 1
