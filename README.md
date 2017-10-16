@@ -3,20 +3,26 @@ Note that this app is still under development and alpha testing. It may not work
 major changes in future.
 
 # DEE2
-DEE2 is an intelligent RNA-seq pipeline for distributed computing. It uses docker containers to
-enhance ease of use, portability and reproducibility. DEE2 currently supports analysis of several 
+The aim of DEE2 is to make all RNA-seq data freely available to everyone. DEE2 consists of three parts:
+* Webserver where end-users can search for and obtain data-sets of interest (frontend)
+* Back-end that collects, filters and organises data provided by contributing worker nodes
+* Pipeline that downloads and processes public RNA-seq data.
+
+The DEE2 pipeline uses docker containers to enhance ease of use, portability and reproducibility. 
+This makes DEE2 attractive for distributed computing. DEE2 currently supports analysis of several 
 major species including A. thaliana , C. elegans, D. melanogaster, D. rerio, E. coli, H. sapiens,
 M. musculus, R. norvegicus and S. cerevisiae. DEE2 will download data from SRA and process it, 
 providing tabulated data that can be used in downstream statistical analysis.
 
 Here are some of the key features:
  * Intelligent adapter detection and clipping
- * Intelligent identificaton of non-reference 5' bases (eg UMIs)
+ * Clipping of non-reference 5' bases (eg UMIs)
  * Strandedness detection
  * Parallel assignment of reads to genes and transcripts with STAR and Kallisto
  * Thorough quality control logs
  * Open source pipeline
  * Distributed approach using docker [link](https://hub.docker.com/r/mziemann/tallyup/)
+ * Ability to process own fastq files
 
 ## How it works
 Using docker allows reproducible analysis across different environments, which allow work to be 
