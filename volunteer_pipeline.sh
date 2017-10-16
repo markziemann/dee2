@@ -1366,7 +1366,7 @@ else
 
           if [ -r $FQ_R1 -a -r $FQ_R2 ] ; then
             echo "running pipeline.sh -f $FQ_R1 $FQ_R2"
-            main -f $FQ_R1 $FQ_R2
+            main $MY_ORG -f $FQ_R1 $FQ_R2
           else
             echo Specified fastq file $FQ_R1 or $FQ_R2 do not exist or not readable. Quitting
           fi
@@ -1382,11 +1382,11 @@ else
 
       for DATASET_NUM in $(seq $FQ_LIST_LEN) ; do
 
-        FQ=$(echo $FQ_LIST | cut -d ',' -f$DATASET_NUM)
+        FQ=/mnt/$(echo $FQ_LIST | cut -d ',' -f$DATASET_NUM)
 
         if [ -r $FQ ] ; then
           echo "running pipeline.sh -f $FQ"
-          main -f /mnt/$FQ
+          main $MY_ORG -f $FQ
         else
           echo Specified fastq file $FQ does not exist or not readable. Quitting
         fi
