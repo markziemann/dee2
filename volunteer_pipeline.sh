@@ -1403,7 +1403,7 @@ else
 ##################################################
 # Testing whether the user has provided SRR accessions
 ##################################################
-  if [ $# -eq "2" ] -a [ -z $OWN_DATA ] ; then
+  if [[ $# -eq "2" && $OWN_DATA -eq "0" ]] ; then
   #if [ $# -eq "2" ] ; then
     TESTACCESSIONS=$(echo $2 | tr ',' '\n' | cut -c2-3 | grep -vc RR)
     if [ $TESTACCESSIONS -eq 0 ] ; then
