@@ -471,8 +471,8 @@ else
     echo Too many arguments. Check syntax and try again. Ensure filenames do not contain spaces. Quitting
     exit1 ; return 1
   elif [ $# -eq "3" ] ; then
-    echo Processing fastq file $2 in single end mode
-    FQ1=$2
+    echo Processing fastq file $3 in single end mode
+    FQ1=$3
     SRR=$(basename $FQ1 | cut -d '.' -f1)
     RDS=SE
 
@@ -485,7 +485,6 @@ else
     mv $FQ1 . ; FQ1=$(basename $FQ1)
     current disk space = $DISK
     free memory = $MEM " | tee -a $SRR.log
-
 
     ISGZ=$(echo $FQ1 | grep -c .gz$)
     if [ $ISGZ -eq "1" ] ; then
@@ -521,9 +520,9 @@ else
 # OWN data PE
 ##########################################################################
   elif [ $# -eq "4" ] ; then
-    echo Processing fastq files $2 and $3 in paired end mode
-    FQ1=$2
-    FQ2=$3
+    echo Processing fastq files $3 and $4 in paired end mode
+    FQ1=$3
+    FQ2=$4
     SRR=$(basename $FQ1 | cut -d '.' -f1)
     RDS=PE
 
