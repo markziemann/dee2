@@ -1344,7 +1344,6 @@ else
 # Testing whether the user has provided own data
 ##################################################
 #Putting this bit into a dummy function for now
-skip(){
 OWN_DATA=$(echo $@ | grep -wc '\-f')
 #echo own data? $OWN_DATA
 if [ ! -z $OWN_DATA ] ; then
@@ -1399,12 +1398,12 @@ if [ ! -z $OWN_DATA ] ; then
     echo "Syntax Error. Unknown option to '-f'"
   fi
 fi
-}
+
 
 ##################################################
 # Testing whether the user has provided SRR accessions
 ##################################################
-#  if [ $# -eq "2" ] -a [ -z $OWN_DATA ] ; then
+  if [ $# -eq "2" ] -a [ -z $OWN_DATA ] ; then
   if [ $# -eq "2" ] ; then
     TESTACCESSIONS=$(echo $2 | tr ',' '\n' | cut -c2-3 | grep -vc RR)
     if [ $TESTACCESSIONS -eq 0 ] ; then
