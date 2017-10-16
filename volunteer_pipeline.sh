@@ -482,7 +482,7 @@ else
     fi
 
     mkdir $SRR ; cp $PIPELINE $SRR ; cd $SRR
-    ln $FQ1 . ; FQ1=$(basename $FQ1)
+    ln -s $FQ1 . ; FQ1=$(basename $FQ1)
     current disk space = $DISK
     free memory = $MEM | tee -a $SRR.log
 
@@ -537,7 +537,7 @@ else
     fi
 
     mkdir $SRR ; cp $PIPELINE $SRR ; cd $SRR
-    ln $FQ1 $FQ2 .
+    ln -s $FQ1 $FQ2 .
     FQ1=$(basename $FQ1)
     FQ2=$(basename $FQ2)
 
