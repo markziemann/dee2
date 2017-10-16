@@ -550,7 +550,7 @@ else
     ISGZ=$(echo $FQ1 $FQ2 | tr ' ' '\n' | grep -c .gz$)
     if [ $ISGZ -eq "2" ] ; then
       pigz -t $FQ1 && pigz -t $FQ2 && GZTEST=OK
-      if [ $GZTEST != OK ] ; then
+      if [ $GZTEST == OK ] ; then
         pigz -d $FQ1 $FQ2
         FQ1=$(basename $FQ1 .gz)
         FQ2=$(basename $FQ2 .gz)
@@ -563,7 +563,7 @@ else
     ISBZ=$(echo $FQ1 $FQ2 | tr ' ' '\n' | grep -c .bz2$)
     if [ $ISBZ -eq "2" ] ; then
       pbzip2 -t $FQ1 && pbzip2 -t $FQ2 && BZTEST=OK
-      if [ $BZTEST != OK ] ; then
+      if [ $BZTEST == OK ] ; then
         pbzip2 -d $FQ1 $FQ2
         FQ1=$(basename $FQ1 .gz)
         FQ2=$(basename $FQ2 .gz)
