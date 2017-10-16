@@ -41,15 +41,17 @@ RUN \
     libtbb2 \
     default-jdk \
     unsort \
-    fastx-toolkit
+    fastx-toolkit \
+    nano
 
 
 ########################################
 # now downloading a bunch of dependancies
-# best to do thin in the /sw directory
+# best to do this in the /sw directory
 # also prep where the pipeline will run
+# /mnt is for users own data
 ########################################
-RUN mkdir sw
+RUN mkdir sw mnt
 
 ########################################
 # BOWTIE2 the apt version is too old and conda not working
@@ -151,8 +153,8 @@ WORKDIR $DIRPATH
 RUN pwd
 RUN  \
   mkdir code && \
-  cd code  && \
-  wget "https://raw.githubusercontent.com/markziemann/dee2/master/volunteer_pipeline.sh" &&  \
+  cd  code && \
+  wget "https://raw.githubusercontent.com/markziemann/dee2/master/volunteer_pipeline.sh" && \
   chmod +x volunteer_pipeline.sh && \
   bash volunteer_pipeline.sh
 
