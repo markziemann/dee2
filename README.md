@@ -46,7 +46,7 @@ Run the pipeline by specifying organism and SRA run accessions
 
 `docker run -it mziemann/tallyup /root/code/volunteer_pipeline.sh ecoli SRR2637695,SRR2637696,SRR2637697,SRR2637698`
 
-You can also process your own fastq files in the current working directory. Gzip and bzip2 compressed files are OK. Data remain private are not transmitted.
+You can also process your own fastq files in the current working directory. Gzip and bzip2 compressed files are OK. Data remain private and are not transmitted.
 
 `docker run -v $(pwd):/mnt -it mziemann/tallyup /root/code/volunteer_pipeline.sh hsapiens -f sample1_R1.fq.gz,sample2_R1.fq sample1_R2.fq.gz,sample2_R2.fq`
 
