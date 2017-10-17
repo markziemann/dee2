@@ -5,10 +5,8 @@
 set -x
 
 MY_ORG=$1
-if [ ! -z $2 ] ; then
-  if [ $2 != '-f' ] ; then
-    MY_ACCESSIONS=$2
-  fi
+if [ $2 != '-f' ] ; then
+  MY_ACCESSIONS=$2
 fi
 MEM_FACTOR=2
 
@@ -641,6 +639,15 @@ else
       echo Read lengths are too short. Quitting. | tee -a $SRR.log
       exit1 ; return 1
     fi
+  fi
+
+##########################################################################
+  echo $FQ1 if colorspace, then quit
+##########################################################################
+  if [ $CSPACE == "TRUE" ] ; then
+    echo Colorspace data is excluded from analysis for now
+    exit1 ; return 1
+  fi
 
 ##########################################################################
   echo If read 1 and 2 have different number of tags then exit
@@ -650,14 +657,6 @@ else
 
   if [ $FQ1_NUMRDS -ne $FQ2_NUMRDS ] ; then
     echo Number of sequence tags in read 1 and read 2 differ. Quitting.
-    exit1 ; return 1
-  fi
-
-##########################################################################
-  echo $FQ1 if colorspace, then quit
-##########################################################################
-  if [ $CSPACE == "TRUE" ] ; then
-    echo Colorspace data is excluded from analysis for now
     exit1 ; return 1
   fi
 
