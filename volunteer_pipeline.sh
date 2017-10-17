@@ -639,6 +639,18 @@ else
       echo Read lengths are too short. Quitting. | tee -a $SRR.log
       exit1 ; return 1
     fi
+
+##########################################################################
+    echo If read 1 and 2 have different number of tags then exit
+##########################################################################
+    FQ1_NUMRDS=$(sed -n '2~4p' $FQ1 | wc -l)
+    FQ2_NUMRDS=$(sed -n '2~4p' $FQ2 | wc -l)
+
+    if [ $FQ1_NUMRDS -ne $FQ2_NUMRDS ] ; then
+      echo Number of sequence tags in read 1 and read 2 differ. Quitting.
+      exit1 ; return 1
+    fi
+
   fi
 
 ##########################################################################
@@ -646,17 +658,6 @@ else
 ##########################################################################
   if [ $CSPACE == "TRUE" ] ; then
     echo Colorspace data is excluded from analysis for now
-    exit1 ; return 1
-  fi
-
-##########################################################################
-  echo If read 1 and 2 have different number of tags then exit
-##########################################################################
-  FQ1_NUMRDS=$(sed -n '2~4p' $FQ1 | wc -l)
-  FQ2_NUMRDS=$(sed -n '2~4p' $FQ2 | wc -l)
-
-  if [ $FQ1_NUMRDS -ne $FQ2_NUMRDS ] ; then
-    echo Number of sequence tags in read 1 and read 2 differ. Quitting.
     exit1 ; return 1
   fi
 
@@ -1348,7 +1349,7 @@ else
   #Putting this bit into a dummy function for now
   OWN_DATA=$(echo $@ | grep -wc '\-f')
   #echo own data? $OWN_DATA
-  if [ ! -z $OWN_DATA ] ; then
+  if [ $OWN_DATA -eq "1" ] ; then
     echo own data specified
     NUM_RDS=$(echo $@ | sed 's/\-f/@/' | cut -d '@' -f2 | wc -w)
 
