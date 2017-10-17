@@ -5,8 +5,10 @@
 set -x
 
 MY_ORG=$1
-if [ $2 != '-f' ] ; then
-  MY_ACCESSIONS=$2
+if [ ! -z $2 ] ; then
+  if [ $2 != '-f' ] ; then
+    MY_ACCESSIONS=$2
+  fi
 fi
 MEM_FACTOR=2
 
