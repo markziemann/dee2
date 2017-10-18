@@ -1097,7 +1097,6 @@ KMER=$((D20-4))
 ADJUST=$(echo $KMER | awk '{print ($1+1)%2}')
 KMER=$((KMER-ADJUST))
 if [ $KMER -lt 19 ] ; then KMER=19 ; fi
-
 echo MeadianReadLen=$MEDIAN_LENGTH 20thPercentileLength=$D20 echo kmer=$KMER | tee -a $SRR.log
 
 if [ $KMER -lt "31" ] ; then
@@ -1108,6 +1107,8 @@ if [ $KMER -lt "31" ] ; then
     for IDX in *idx ; do grep -c '>' $(basename $CDNA) > $IDX.cnt ; done
     cd -
   fi
+else
+  KMER=31
 fi
 
 ##########################################################################
