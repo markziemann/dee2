@@ -1090,12 +1090,13 @@ echo $SRR checking readlengths now for kmer selection
 ##########################################################################
 ## Setting the kallisto kmer correctly is important to getting best accuracy
 ## Here I measure the median length as well as the 20th percentile
-## KMER is set to length at 20th percentile minus 4nt.
+## KMER is set to length at 20th percentile minus 4nt with a lower limit of 19
 MEDIAN_LENGTH=$(sed -n '2~4p' $FQ1 | head -1000000 | awk '{print length}' | sort -n | awk '{all[NR] = $0} END{print all[int(NR*0.50 - 0.5)]}')
 D20=$(sed -n '2~4p' $FQ1 | head -1000000 | awk '{print length}' | sort -n | awk '{all[NR] = $0} END{print all[int(NR*0.20 - 0.5)]}')
 KMER=$((D20-4))
 ADJUST=$(echo $KMER | awk '{print ($1+1)%2}')
 KMER=$((KMER-ADJUST))
+if [ $KMER -lt 19 ] ; then KMER=19 ; fi
 
 echo MeadianReadLen=$MEDIAN_LENGTH 20thPercentileLength=$D20 echo kmer=$KMER | tee -a $SRR.log
 
@@ -1185,6 +1186,7 @@ STAR_AmbiguousReads:$AMBIGUOUS_CNT
 STAR_AssignedReads:$ASSIGNED_CNT
 STAR_UniqMapRate:$UNIQ_MAP_RATE
 STAR_AssignRate:$ASSIGNED_RATE
+Kallisto_Kmer:$KMER
 Kallisto_MappedReads:$PSEUDOMAPPED_CNT
 Kallisto_MapRate:$PSEUDOMAP_RATE
 QC_SUMMARY:${QC_SUMMARY}${REASON}" > $SRR.qc
