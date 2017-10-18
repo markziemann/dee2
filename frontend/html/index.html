@@ -1,0 +1,303 @@
+<!DOCTYPE html PUBLIC>
+<html xml:lang="en" lang="en">
+<link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+<head>
+	<title>Digital Expression Explorer 2</title>
+
+	<!-- menu stylesheets -->
+
+	<style type="text/css" media="screen, projection">
+
+	html, body {
+		background:#fff;
+		color:#000;
+		}
+
+	body {
+		height:85%;
+		font:normal normal normal 100% verdana,sans-serif;
+		}
+
+	abbr, acronym {
+		font-style:normal;
+		border:none;
+		}
+
+	#page {
+		position:absolute;
+		left:1em;
+		right:1em;
+		top:4em;
+		width:650px;
+		border:2px dotted #ff1a00;
+		border-width:2px 2 2 2px;
+		padding:0 0 0 1em;
+		margin:0 1em 1em 0;
+		line-height:130%;
+		}
+
+	h1, h2 {
+		font-weight:normal;
+		}
+
+	h1 {
+		font-size:1.4em;
+		margin:1.5em 0 0 0;
+		}
+
+	h2 {
+		font-size:1.1em;
+		margin:1.5em 0 0 -0.83em;
+		border:1px dotted #ff1a00;
+		border-width:2px 0 0 0;
+		padding:1em 0 0 0.83em;
+		}
+
+	p, dl, ol {
+		font-size:0.8em;
+		margin:1em 0 0 0;
+		}
+
+	dl {
+		margin:1em 0 0 0.3em;
+		}
+
+	ol {
+		padding:0;
+		}
+
+	ol li {
+		margin:0 0 1em 2em;
+		padding:0;
+		}
+
+	dt {
+		font-variant:small-caps;
+		font-size:110%;
+		clear:both;
+		}
+
+	dt em {
+		font-variant:normal;
+		font-size:90%;
+		}
+
+	dd {
+		margin:0 0 0 1em;
+		}
+
+	dl ul, dl li {
+		padding:0;
+		list-style-type:none;
+		}
+
+	dl ul {
+		width:100%;
+		float:left;
+		margin:0 0 1em 0;
+		}
+
+	dl li {
+		float:left;
+		margin:0 0.2em 0 0;
+		}
+
+	em, i {
+		color:#333;
+		}
+
+	code {
+		font:normal normal normal 1em "courier new",monospace;
+		color:#333;
+		}
+
+	#skip-links {
+		font-size:70%;
+		margin:1.4em 0 0 0;
+		}
+
+	h2#navigation {
+		position:absolute;
+		top:-100em;
+		}
+
+	.boldtable, .boldtable TD, .boldtable TH
+	{
+	font-family:sans-serif;
+	font-size:10pt;
+	}
+
+	</style>
+</head>
+<body>
+<div id="page">
+	<h1 id="content">Digital Expression Explorer 2</h1>
+	<p>
+		The Digital Expression Explorer 2 (DEE2) is a repository of digital gene expression profiles mined from public RNA-seq data sets. These data are obtained from 
+		 <a href="http://www.ncbi.nlm.nih.gov/sra">
+			NCBI Short Read Archive.</a>
+	</p>
+
+        <h2 id="content">Users please note</h2>
+
+        <p>
+        This page is under construction and will undergo major changes until the official announcement day.
+        </p>
+
+
+        <h2 id="content">Hosted RNA-seq data</h2>
+        </p>
+
+        <table BORDER CLASS="boldtable">
+          <tr>
+            <th>Species</th>
+            <th>Datasets</th>
+            <th>Updated</th>
+          </tr>
+          <tr>
+            <td>Arabidopsis thaliana</td>
+            <td>14269</td>
+            <td>2016-11-11</td>
+          </tr>
+          <tr>
+            <td>Caenorhabditis elegans</td>
+            <td>4105</td>
+            <td>2016-11-11</td>
+          </tr>
+          <tr>
+            <td>Drosophila melanogaster</td>
+            <td>14124</td>
+            <td>2016-11-11</td>
+          </tr>
+          <tr>
+            <td>Danio rerio</td>
+            <td>13413</td>
+            <td>2016-11-12</td>
+          </tr>
+          <tr>
+            <td>Escherichia coli</td>
+            <td>2135</td>
+            <td>2016-11-12</td>
+          </tr>
+          <tr>
+            <td>Homo sapiens</td>
+            <td>95517</td>
+            <td>2016-11-13</td>
+          </tr>
+          <tr>
+            <td>Mus musculus</td>
+            <td>127082</td>
+            <td>2016-11-15</td>
+          </tr>
+          <tr>
+            <td>Rattus norvegicus</td>
+            <td>6893</td>
+            <td>2016-11-12</td>
+          </tr>
+          <tr>
+            <td>Saccharomyces cerevisiae</td>
+            <td>7055</td>
+            <td>2016-11-12</td>
+          </tr>
+
+        </table>
+
+
+	<h2 id="content">Select an organism of interest</h2>
+
+        <form action="cgi-bin/search.sh" method="get">
+        <input type="radio" name="org" value="athaliana" checked="checked">Arabidopsis thaliana<br>
+        <input type="radio" name="org" value="celegans">Caenorhabditis elegans<br>
+        <input type="radio" name="org" value="dmelanogaster">Drosophila melanogaster<br>
+        <input type="radio" name="org" value="drerio">Danio rerio<br>
+        <input type="radio" name="org" value="ecoli" checked="checked">Escherichia coli<br>
+        <input type="radio" name="org" value="hsapiens">Homo sapiens<br>
+        <input type="radio" name="org" value="mmusculus">Mus musculus<br>
+        <input type="radio" name="org" value="rnorvegicus">Rattus norvegicus<br>
+        <input type="radio" name="org" value="scerevisiae">Saccharomyces cerevisiae<br>
+        <h2 id="content">Search for data sets of interest</h2>
+
+	 <p>
+                <strong>Search accession numbers </strong> Multiple accessions can be separated by 
+		commas. <br> Try GSE44682,SRP038903,SRX704261,SRR1578746 for C. elegans.
+        </p>
+
+	<input type="text" name="accessionsearch"></input><input type="submit" value="Submit" class="tfbutton">
+
+         <p>
+                <strong>Search for keywords</strong> Case-insensitive single word search. <br>
+		Try "pathogen" for E. coli.
+        </p>
+
+        <input type="text" name="keywordsearch"></input><input type="submit" value="Submit" class="tfbutton">
+
+	</form>
+
+         <p>
+        More sophisticated keyword searches can be done at <a href="http://www.ncbi.nlm.nih.gov/geo/"> GEO</a> and <a href="http://www.ncbi.nlm.nih.gov/sra">SRA</a>, to identify studies and accession numbers of interest.
+        </p>
+
+         <p>
+        Keyword searches in mouse and human take up to a minute to complete.
+        </p>
+
+        <h2>Disclaimer</h2>
+         <p>
+                Although all reasonable efforts have been taken to ensure the accuracy and reliability of the data, Baker IDI do not and cannot warrant the performance or results that may be obtained by using this software or data. Baker IDI disclaim all warranties, express or implied, including warranties of performance, merchantability or fitness for any particular purpose.
+        </p>
+
+        <h2>Citation</h2>
+         <p>
+	Ziemann M, Kaspi A, Lazarus R, El-Osta A. Digital Expression Explorer: A user-friendly repository of uniformly processed RNA-seq data. ComBio2015 DOI: 10.13140/RG.2.1.1707.5926
+	<a href="http://www.researchgate.net/publication/282287193_Digital_Expression_Explorer_A_user-friendly_repository_of_uniformly_processed_RNA-seq_data">See our poster</a>
+        </p>
+
+<h2></h2>
+<!-- Start of SimpleHitCounter Code -->
+<div align="center"><a href="http://www.simplehitcounter.com" target="_blank"><img src="http://simplehitcounter.com/hit.php?uid=2308871&f=65280&b=0" border="0" height="18" width="83" alt="web counter"></a><br><a href="http://www.simplehitcounter.com" target="_blank" style="text-decoration:none;">web counter</a></div>
+<!-- End of SimpleHitCounter Code -->
+
+
+</div>
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+ul {
+    list-style-type: none;
+    margin: 2ex;
+    padding: 0;
+}
+
+li {
+    display: inline;
+}
+</style>
+</head>
+<body>
+
+<ul>
+  <li><a href="/index.html">Home</a></li>
+  <li><a href="/news.html">News</a></li>
+  <li><a href="/contact.html">Contact</a></li>
+  <li><a href="/about.html">About</a></li>
+  <li><a href="/help.html">Help</a></li>
+  <li><a href="/bulk.html">Bulk Data</a></li>
+</ul>
+<div
+   style="
+      top: 0;
+      left: 450;
+      position: absolute;
+      z-index: 1;
+      visibility: show;">
+<!-- content will go here -->
+        <p>
+<a href="https://www.monash.edu/"><IMG SRC="/images/monash-logo-mono.svg" ALT="." WIDTH=172 HEIGHT=48></a>
+        </p>
+</div>
+</body>
+</html>
+
+</html>
