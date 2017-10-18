@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-
+setwd("/scratch/mziemann/dee2/code/") 
 
 list.of.packages <- c("SRAdb")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
