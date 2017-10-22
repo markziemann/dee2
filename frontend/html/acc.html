@@ -8,7 +8,7 @@
   -->
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>Tempemon Configuration</title>
+    <title>DEE2 job queue</title>
     <style type="text/css" media="screen">
   * {
     margin: 0px 0px 0px 0px;
@@ -37,7 +37,7 @@ th, td {
     position: relative;
     display: table;
 
-    width: 800px;
+    width: 500px;
 
     margin-bottom: 3px;
     margin-left: auto;
@@ -205,9 +205,9 @@ form, button, input, select, textarea {
   <body>
     <div class="main_page">
       <div class="page_header floating_element">
-        <img src="dna.jpg" height="100" width="100" alt="Ubuntu Logo" class="floating_element"/>
+        <img src="/images/monash-logo-mono.svg" " height="100" width="100" alt="Ubuntu Logo" class="floating_element"/>
         <span class="floating_element">
-          Tallyup
+          DEE Job Queue
         </span>
       </div>
 <!--      <div class="table_of_contents floating_element">
@@ -230,86 +230,16 @@ form, button, input, select, textarea {
 -->
       <div class="content_section floating_element">
 
+<p>
+Visit the DEE2 project homepage <a href="https://github.com/markziemann/dee2/"> here</a>.
+</p>
 
         <div class="section_header section_header_red">
-          <div id="about"></div>
-          Bulk downloads here
-        </div>
-        <div class="content_section_text">
 
-          <p>
-                Under contruction and testing
-          </p>
-<table style="width:100%">
-  <tr>
-    <th>Species</th>
-    <th>GeneCounts</th> 
-    <th>TxCounts</th>
-    <th>TxCPMs</th>
-  </tr>
-
-  <tr>
-    <td>A. thaliana</td>
-    <td> <a href="data/athaliana_se.tsv">LINK</a> </td>
-    <td> <a href="data/athaliana_ke_counts.tsv">LINK</a> </td>
-    <td> <a href="data/athaliana_ke_tpm.tsv">LINK</a> </td>
-  </tr>
-    <td>C. elegans</td>
-    <td> <a href="data/celegans_se.tsv">LINK</a> </td>
-    <td> <a href="data/celegans_ke_counts.tsv">LINK</a> </td>
-    <td> <a href="data/celegans_ke_tpm.tsv">LINK</a> </td>
-  </tr>
-    <td>D. melanogaster</td>
-    <td> <a href="data/dmelanogaster_se.tsv">LINK</a> </td>
-    <td> <a href="data/dmelanogaster_ke_counts.tsv">LINK</a> </td>
-    <td> <a href="data/dmelanogaster_ke_tpm.tsv">LINK</a> </td>
-  </tr>
-    <td>D. rerio</td>
-    <td> <a href="data/athaliana_se.tsv">LINK</a> </td>
-    <td> <a href="data/athaliana_ke_counts.tsv">LINK</a> </td>
-    <td> <a href="data/athaliana_ke_tpm.tsv">LINK</a> </td>
-  </tr>
-    <td>E. coli</td>
-    <td> <a href="data/ecoli_se.tsv">LINK</a> </td>
-    <td> <a href="data/ecoli_ke_counts.tsv">LINK</a> </td>
-    <td> <a href="data/ecoli_ke_tpm.tsv">LINK</a> </td>
-  </tr>
-    <td>H. sapiens</td>
-    <td> <a href="data/hsapiens_se.tsv">LINK</a> </td>
-    <td> <a href="data/hsapiens_ke_counts.tsv">LINK</a> </td>
-    <td> <a href="data/hsapiens_ke_tpm.tsv">LINK</a> </td>
-  </tr>
-    <td>M. musculus</td>
-    <td> <a href="data/mmusculus_se.tsv">LINK</a> </td>
-    <td> <a href="data/mmusculus_ke_counts.tsv">LINK</a> </td>
-    <td> <a href="data/mmusculus_ke_tpm.tsv">LINK</a> </td>
-  </tr>
-    <td>R. norvegicus</td>
-    <td> <a href="data/rnorvegicus_se.tsv">LINK</a> </td>
-    <td> <a href="data/rnorvegicus_ke_counts.tsv">LINK</a> </td>
-    <td> <a href="data/rnorvegicus_ke_tpm.tsv">LINK</a> </td>
-  </tr>
-    <td>S. cerevisiae</td>
-    <td> <a href="data/scerevisiae_se.tsv">LINK</a> </td>
-    <td> <a href="data/scerevisiae_ke_counts.tsv">LINK</a> </td>
-    <td> <a href="data/scerevisiae_ke_tpm.tsv">LINK</a> </td>
-  </tr>
-
-</table>
-
-          </div>
-
-        <div class="section_header">
-          <div id="changes"></div>
-               Select species
-        </div>
-
-<div class="content_section_text">
-<p>
-Important notes here!
-</p>
-<form action="cgi-bin/acc.sh" method="get" >
 Select a species: <br>
+</div>
+<div class="content_section_text">
+<form action="cgi-bin/acc.sh" method="get" >
 <input type="radio" name="ORG" value="athaliana"> A. thaliana (16715) <br>
 <input type="radio" name="ORG" value="celegans"> C. elegans (3924) <br>
 <input type="radio" name="ORG" value="dmelanogaster"> D. melanogaster (15817) <br>
