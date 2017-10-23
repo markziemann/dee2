@@ -3,7 +3,7 @@ library(dplyr)
 library(readr)
 library(jsonlite)
 
-setwd("sradb")
+setwd("../sradb")
 
 sqlfile <- 'SRAmetadb.sqlite'
 sra_con <- dbConnect(SQLite(),sqlfile)
@@ -23,4 +23,16 @@ a<-merge(a,run,by="experiment_accession")
 a %>% 
     toJSON() %>%
     write_lines("test.json")
+
+
+
+q()
+http://joelabrahamsson.com/elasticsearch-101/
+#need to write json to file then use curl to index
+sed 's/{/\n\{\n/g;s/\}/\n\}\n/g;s/","/",\n"/g' test.json  \
+| tr -s ' ' | tr -d '\n' | cut -c2- | rev | cut -c2- | rev | sed 's/},{/}\n{/g' | tr '.' ' ' \
+| while read line ; do
+  echo $line > tmp.json
+  curl -XPUT "http://localhost:9200/dat/dat/1" -d"$(cat tmp.json)"
+done
 
