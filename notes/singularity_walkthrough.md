@@ -1,0 +1,1 @@
+Install singularity like this:
