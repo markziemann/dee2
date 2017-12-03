@@ -1,4 +1,5 @@
-Install singularity like this:
+# Running DEE via singularity
+First, install singularity like this:
 
 ```
 sudo wget -O- http://neuro.debian.net/lists/xenial.us-ca.full | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list
@@ -13,7 +14,7 @@ singularity --version
 
 Great, now change current working directory to somewhere with lots of storage (>100GB).
 
-Now convert docker image to singularity according to this script (link here)
+Now convert docker image to singularity according to this script (link here). Obviously this cant be done on the HPC, so it will need to be done on another PC and then copied over to the HPC. (I'm working on a better way to do this but the solution below works)
 
 ```
 docker run \
