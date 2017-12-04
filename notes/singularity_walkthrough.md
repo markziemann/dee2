@@ -26,8 +26,8 @@ mziemann/tallyup
 ```
 You'll see that there's a new .img file in the current working directory
 
-Now check that the image works. Before we do that, consider whether the home directory needs to be bound (this is the default). Many servers have very limited $HOME data storage, so you may need to bind it using the -H option
+Now check that the image works. Before we do that, consider whether the home directory needs to be bound (this is the default). Many servers have very limited $HOME data storage, so you may need to bind it using the -H option. Similarly the /tmp directory may be very limited and can be bound wuth the -B option
 
 ```
-singularity run -H /scratch/mziemann/:/home/mziemann/ mziemann_tallyup-2017-12-03-95a2303d5deb.img scerevisiae
+singularity run -H /scratch/mziemann/:/home/mziemann/ -B /scratch/mziemann:/tmp/ mziemann_tallyup-2017-12-03-95a2303d5deb.img scerevisiae
 ```
