@@ -20,6 +20,7 @@ set -x
 #define bad exit
 exit1(){
 rm *fastq *.sra *tsv
+return 1
 }
 export -f exit1
 
