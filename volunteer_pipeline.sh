@@ -2,7 +2,10 @@
 #sra2mx for docker image
 #Copyright Mark Ziemann 2015 to 2017 mark.ziemann@gmail.com
 
-set -x
+LASTVAR=$(echo $@ | rev | cut -d ' ' -f1)
+if [ $LASTVAR == "-v" ] ; then
+  set -x
+fi
 
 MY_ORG=$1
 if [ $2 != '-f' ] ; then
