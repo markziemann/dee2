@@ -16,16 +16,16 @@ Here are some of the key features:
  * Parallel assignment of reads to genes and transcripts with STAR and Kallisto
  * Thorough quality control logs
  * Open source pipeline
- * Distributed approach using docker [link](https://hub.docker.com/r/mziemann/tallyup/)
+ * Distributed approach using containers [link](https://hub.docker.com/r/mziemann/tallyup/)
  * Ability to process own fastq files as well as those from SRA
 
 ## How it works
-The DEE2 pipeline uses docker to enhance ease of use, portability and reproducibility. This means the DEE2 pipeline can be run reproducibly across different environments, making it amenable to distributed computing. The user can provide a species and SRA run accession numbers to be processed, and this data will be immediately available to the user when completed. Data is also uploaded to our server by sftp and after sanitation, will be available to other users via the frontend (still under construction). If users don't provide accession numbers, then they will receive accessions from the current queue via html request. If the user doesn't specify a species, then one is selected based on the memory available. 
+The DEE2 pipeline uses containers (Docker and Singularity) to enhance ease of use, portability and reproducibility. This means the DEE2 pipeline can be run reproducibly across different environments, making it amenable to distributed computing. The user can provide a species and SRA run accession numbers to be processed, and this data will be immediately available to the user when completed. Data is also uploaded to our server by sftp and after sanitation, will be available to other users via the frontend (still under construction). If users don't provide accession numbers, then they will receive accessions from the current queue via html request. If the user doesn't specify a species, then one is selected based on the memory available. 
 
 ## Contributions welcome
-We welcome contributions to code development as well as machine time. If you have idle compute resources and bandwith, consider scheduling DEE2 over the weekend with a cron job.
+We welcome contributions to code development and in future compute time.
 
-## Quick start guide
+## Quick start guide for docker users (Singularity users see this guide [link](https://github.com/markziemann/dee2/edit/master/notes/singularity_walkthrough.md))
 Install docker
 
 `sudo apt install docker.io`
