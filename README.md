@@ -25,7 +25,7 @@ The DEE2 pipeline uses containers (Docker and Singularity) to enhance ease of us
 ## Contributions welcome
 We welcome contributions to code development and in future compute time.
 
-## Quick start guide for docker users (Singularity users see this guide [link](https://github.com/markziemann/dee2/edit/master/notes/singularity_walkthrough.md))
+## Quick start guide for docker users (Singularity users see this guide [link](https://github.com/markziemann/dee2/blob/master/notes/singularity_walkthrough.md))
 Install docker
 
 `sudo apt install docker.io`
