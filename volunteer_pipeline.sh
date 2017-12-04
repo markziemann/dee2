@@ -5,6 +5,7 @@
 LASTVAR=$(echo $@ | rev | cut -d ' ' -f1 | rev)
 if [ $LASTVAR == "-v" ] ; then
   set -x
+  VERBOSE=TRUE
 fi
 
 MY_ORG=$1
@@ -15,7 +16,11 @@ MEM_FACTOR=2
 
 main(){
 #logging all commands
-set -x
+LASTVAR=$(echo $@ | rev | cut -d ' ' -f1 | rev)
+VERBOSE=$(echo $LASTVAR | cut -d '=' -f2)
+if [ $VERBOSE == "TRUE" ] ; then
+  set -x
+fi
 
 #define bad exit
 exit1(){
@@ -468,13 +473,13 @@ else
 ##########################################################################
 # OWN data SE
 ##########################################################################
-  if [ $# -lt "3" ] ; then
+  if [ $# -lt "4" ] ; then
     echo Error, not enough arguments specified. Quitting
     exit1; return 1
-  elif [ $# -gt "4" ] ; then
+  elif [ $# -gt "5" ] ; then
     echo Too many arguments. Check syntax and try again. Ensure filenames do not contain spaces. Quitting
     exit1 ; return 1
-  elif [ $# -eq "3" ] ; then
+  elif [ $# -eq "5" ] ; then
     echo Processing fastq file $3 in single end mode
     FQ1=$3
     SRR=$(basename $FQ1 | cut -d '.' -f1)
@@ -525,7 +530,7 @@ else
 ##########################################################################
 # OWN data PE
 ##########################################################################
-  elif [ $# -eq "4" ] ; then
+  elif [ $# -eq "5" ] ; then
     echo Processing fastq files $3 and $4 in paired end mode
     FQ1=$3
     FQ2=$4
@@ -1329,7 +1334,7 @@ if [ ! -r $TESTFILE ] ; then
   if [ -d ~/data/ecoli/SRR057750 ] ; then
     rm -rf ~/data/ecoli/SRR057750
   fi
-  main ecoli SRR057750
+  main ecoli SRR057750 VERBOSE=$VERBOSE
   TEST_CHECKSUM=a739998e33947c0a60edbde92e8f0218
   cd ~/data/ecoli/
   TEST_DATASET_USER_CHECKSUM=$(cat SRR057750/SRR057750*tsv | md5sum | awk '{print $1}')
@@ -1376,7 +1381,7 @@ else
 
           if [ -r $FQ_R1 -a -r $FQ_R2 ] ; then
             echo "running pipeline.sh -f $FQ_R1 $FQ_R2"
-            main $MY_ORG -f $FQ_R1 $FQ_R2
+            main $MY_ORG -f $FQ_R1 $FQ_R2 VERBOSE=$VERBOSE
           else
             echo Specified fastq file $FQ_R1 or $FQ_R2 do not exist or not readable. Quitting
           fi
@@ -1396,7 +1401,7 @@ else
 
         if [ -r $FQ ] ; then
           echo "running pipeline.sh -f $FQ"
-          main $MY_ORG -f $FQ
+          main $MY_ORG -f $FQ VERBOSE=$VERBOSE
         else
           echo Specified fastq file $FQ does not exist or not readable. Quitting
         fi
@@ -1421,7 +1426,7 @@ else
     if [ $TESTACCESSIONS -eq 0 ] ; then
       for USER_ACCESSION in $(echo $2 | tr ',' ' ') ; do
         DIR=$(pwd)
-        main $1 $USER_ACCESSION
+        main $1 $USER_ACCESSION VERBOSE=$VERBOSE
         key_setup
         cd $HOME/data/$MY_ORG
         zip -r $USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
@@ -1447,7 +1452,7 @@ EOF
     cd ~
     echo "$count"
     ACCESSION=$(myfunc $MY_ORG $ACC_REQUEST)
-    main "$MY_ORG" "$ACCESSION" && COMPLETE=1 || COMPLETE=0
+    main "$MY_ORG" "$ACCESSION" VERBOSE=$VERBOSE && COMPLETE=1 || COMPLETE=0
     if [ "$COMPLETE" -eq "1" ] ; then
       key_setup
       cd $HOME/data/$MY_ORG
