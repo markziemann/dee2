@@ -1446,7 +1446,7 @@ EOF
 # If no accessions are provided
 #################################################
   count=1
-  while [ $count -lt 30 ] ; do
+  while [ $count -lt 1000 ] ; do
   #while true ; do
     (( count++ ))
     cd ~
