@@ -64,7 +64,7 @@ DISKLIM=32000000
 DLLIM=1
 ALNLIM=2
 MEMALNLIM=4
-THREADS=$(nproc)
+THREADS=$(grep -c ^processor /proc/cpuinfo)
 DISK=$(df . | awk 'END{print$4}')
 MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
 
@@ -198,7 +198,7 @@ BT2_REF=$BT2_DIR/$(basename $CDNA)
 if [ -z $BT2_REF ] || [ ! -r $BT2_REF  ] ; then
   cd $BT2_DIR ; ln $CDNA .
   #creating bowtie2 index
-  bowtie2-build --quiet --threads $(nproc) -f $(basename $CDNA) $(basename $CDNA)
+  bowtie2-build --quiet --threads $THREADS -f $(basename $CDNA) $(basename $CDNA)
   ENS_REFT_BT2=$BT2_DIR/$(basename $CDNA)
   MY_BT2_MD5=$(md5sum $(ls *bt2 | head -1) | awk '{print $1}')
   if [ $MY_BT2_MD5 != $BT2_MD5 ] ; then
@@ -248,7 +248,7 @@ if [ ! -r $STAR_DIR/SA ] || [ ! -r $STAR_DIR/SAindex ] ; then
   --sjdbGTFfile $CWD/$(basename $GTF) \
   --genomeDir $CWD  \
   --genomeFastaFiles $CWD/$(basename $GDNA) \
-  --runThreadN `nproc`
+  --runThreadN $THREADS
   MY_STAR_MD5=$(md5sum SAindex | awk '{print $1}')
   if [ $MY_STAR_MD5 != $STAR_MD5 ] ; then
     echo "Error in STAR index found. quitting."
@@ -420,7 +420,7 @@ EOF
 ##########################################################################
   rm ${SRR}*fastq
   if [ $CSPACE == "FALSE" ] ; then
-    parallel-fastq-dump --threads $(nproc) --outdir . --split-files --defline-qual + -s ${SRR}.sra
+    parallel-fastq-dump --threads $THREADS --outdir . --split-files --defline-qual + -s ${SRR}.sra
   fi
 
   if [ $RDS == "PE" ] ; then
@@ -1219,7 +1219,7 @@ done
 
 MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
 #MEM=$(free | awk 'NR==2{print $4}')
-NUM_CPUS=$(nproc)
+NUM_CPUS=$(grep -c ^processor /proc/cpuinfo)
 CPU_SPEED=$(lscpu | grep MHz | awk '{print $NF}' | sort -k2gr)
 
 ACC_URL="https://vm-118-138-241-34.erc.monash.edu.au/acc.html"
