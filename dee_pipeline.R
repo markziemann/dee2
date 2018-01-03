@@ -79,13 +79,25 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
 
   print("generate a list of se tsv files to import and merge")
 
-  filterempty<-function(file){CNT=length(readLines(file));if(CNT>0){print(file)}}
+  #beow doesn't work
+  #filterempty<-function(file){CNT=length(readLines(file));if(CNT>0){print(file)}}
 
-  se_list<-list.files(path = ".", pattern = "se.tsv" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
-  se_list<-as.character(mclapply(se_list,filterempty))
+  #this is better
+  se_list<-rownames(subset(file.info(se_list),size!=0))
+
+  #Need to ensure matrix will be square
+  x<-as.matrix(table(factor(as.numeric(lapply(sample(se_list,100),rowcnt)))))
+  expected_len=as.numeric(rownames(tail(x,n=1)))
+
+  rowcnt<-function(file){nrow(read.table(file,fill=T)) }
+  y<-t(as.data.frame(mclapply(se_list,rowcnt)))
+  rownames(y)=as.character(se_list)
+  se_list<-rownames(subset(y,y==expected_len))
   se<-do.call("cbind", lapply(se_list, read.tsv))
   print("se list finished OK")
 
+  #Got up to here - need to tidy up the below code and make sure the datasets omitted here are redone
+  
   ke_list<-list.files(path = ".", pattern = "ke.tsv" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
   ke<-do.call("cbind", lapply(ke_list, read.tsv))
   COLS=paste(grep("_est_counts", names(ke), value = TRUE))
