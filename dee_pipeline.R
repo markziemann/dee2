@@ -14,7 +14,7 @@ library(SRAdb)
 for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae") ) {
 
   #create a list of species full names
-  species_list <- c("'Arabidopsis thaliana'", "'Caenorhabditis elegans'", "'Drosophila melanogaster'", "'Danio rerio'", "'Escherichia coli'", "'Homo sapiens'", "'Mus musculus'", "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
+  species_list<-c("'Arabidopsis thaliana'","'Caenorhabditis elegans'","'Drosophila melanogaster'","'Danio rerio'","'Escherichia coli'","'Homo sapiens'", "'Mus musculus'", "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
   #now annotate the short names 
   names(species_list)<- c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae")
 
@@ -67,9 +67,10 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   runs_todo<-setdiff(runs, runs_done)
   setwd(CODEWD)
   queue_name=paste(QUEUEWD,"/",org,".queue.txt",sep="")
-  write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
-  SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ",queue_name ," ubuntu@118.138.241.34:~/Public")
-  system(SCP_COMMAND)
+#  Moved this part to the end due to a small number of files posessing the wrong number of lines 
+#  write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
+#  SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ",queue_name ," ubuntu@118.138.241.34:~/Public")
+#  system(SCP_COMMAND)
 
   setwd(DATAWD)
 
@@ -78,28 +79,68 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   read.table(file = file, header = header, sep = sep, quote = quote, dec = dec, fill = fill, row.names=1, comment.char = comment.char, ...)}
 
   print("generate a list of se tsv files to import and merge")
+  se_list<-list.files(path = ".", pattern = "se.tsv" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
 
-  #beow doesn't work
-  #filterempty<-function(file){CNT=length(readLines(file));if(CNT>0){print(file)}}
+  rowcnt<-function(file){nrow(read.table(file,fill=T)) }
 
-  #this is better
+  #add the failed datasets to the todo list
+  LEN=length(rownames(subset(file.info(se_list),size==0)))
+  if (LEN!=0){
+  p<-rownames(subset(file.info(se_list),size==0))
+  p<-unlist(strsplit(rownames(p),'/'))
+  p<-p[seq(1,length(p),2)]
+  runs_todo<-unique(union(runs_todo,p))
+  }
+
   se_list<-rownames(subset(file.info(se_list),size!=0))
 
   #Need to ensure matrix will be square
   x<-as.matrix(table(factor(as.numeric(lapply(sample(se_list,100),rowcnt)))))
   expected_len=as.numeric(rownames(tail(x,n=1)))
-
-  rowcnt<-function(file){nrow(read.table(file,fill=T)) }
   y<-t(as.data.frame(mclapply(se_list,rowcnt)))
   rownames(y)=as.character(se_list)
+
+  LEN=length(rownames(subset(y,y!=expected_len)))
+  if (LEN!=0){
+  p<-rownames(subset(y,y!=expected_len))
+  p<-unlist(strsplit(p,'/'))
+  p<-p[seq(1,length(p),2)]
+  runs_todo<-unique(union(runs_todo,p))
+  }
+
   se_list<-rownames(subset(y,y==expected_len))
   se<-do.call("cbind", lapply(se_list, read.tsv))
   print("se list finished OK")
 
-  #Got up to here - need to tidy up the below code and make sure the datasets omitted here are redone
+  #now focus on kallisto data
   
   ke_list<-list.files(path = ".", pattern = "ke.tsv" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
+
+  LEN=length(rownames(subset(file.info(se_list),size==0)))
+  if (LEN!=0){
+  p<-rownames(subset(file.info(ke_list),size==0))
+  p<-unlist(strsplit(rownames(subset(p,p!=expected_len)),'/'))
+  p<-p[seq(1,length(p),2)]
+  runs_todo<-unique(union(runs_todo,p))
+  }
+
+  ke_list<-rownames(subset(file.info(ke_list),size!=0))
+  x<-as.matrix(table(factor(as.numeric(lapply(sample(ke_list,100),rowcnt)))))
+  expected_len=as.numeric(rownames(tail(x,n=1)))
+
+  LEN=length(rownames(subset(y,y!=expected_len)))
+  if (LEN!=0){
+  p<-rownames(subset(y,y!=expected_len))
+  p<-unlist(strsplit(p,'/'))
+  p<-p[seq(1,length(p),2)]
+  runs_todo<-unique(union(runs_todo,p))
+  }
+
+  y<-t(as.data.frame(mclapply(ke_list,rowcnt)))
+  rownames(y)=as.character(ke_list)
+  ke_list<-rownames(subset(y,y==expected_len))
   ke<-do.call("cbind", lapply(ke_list, read.tsv))
+
   COLS=paste(grep("_est_counts", names(ke), value = TRUE))
   ke_counts<-ke[,COLS]
   COLS=NULL
@@ -118,6 +159,12 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   print("writing KE tpm mx")
   OUT=paste(MXDIR,"/",org,"_ke_tpm.tsv",sep="")
   write.table(ke_tpm,file=OUT,sep="\t",quote=F,row.names=T)
+
+#  Moved this part to the end due to a small number of files posessing the wrong number of lines 
+  write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
+  SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ",queue_name ," ubuntu@118.138.241.34:~/Public")
+  system(SCP_COMMAND)
+
 
   setwd(CODEWD)
 
