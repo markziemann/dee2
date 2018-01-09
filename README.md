@@ -95,5 +95,4 @@ Let the app choose the species and accessions - it will be selected based on ava
 `docker run -it mziemann/tallyup`
 
 ## Troubleshooting
-If there is insufficient space in /var to work, do follow instructions from the
-[link](https://stackoverflow.com/a/34731550).
+If you're encountering problems, check the system requirements again. If still stuck, contact me on mark.ziemann{at}gmail.com
