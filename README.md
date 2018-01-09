@@ -77,11 +77,11 @@ Now pull image
 
 Run the pipeline by specifying organism and SRA run accessions
 
-`docker run -it mziemann/tallyup ecoli SRR2637695,SRR2637696,SRR2637697,SRR2637698`
+`docker run mziemann/tallyup ecoli SRR2637695,SRR2637696,SRR2637697,SRR2637698`
 
 You can also process your own fastq files in the current working directory. Gzip and bzip2 compressed files are OK. Data remain private and are not transmitted.
 
-`docker run -v $(pwd):/mnt -it mziemann/tallyup hsapiens -f sample1_R1.fq.gz,sample2_R1.fq sample1_R2.fq.gz,sample2_R2.fq`
+`docker run -v $(pwd):/mnt mziemann/tallyup hsapiens -f sample1_R1.fq.gz,sample2_R1.fq sample1_R2.fq.gz,sample2_R2.fq`
 
 Return the data directory from the container to the host filesystem
 
@@ -90,11 +90,15 @@ Return the data directory from the container to the host filesystem
 ## Donating compute time
 If you have a species of interest
 
-`docker run -it mziemann/tallyup celegans`
+`docker run mziemann/tallyup celegans`
 
 Let the app choose the species and accessions - it will be selected based on available memory
 
-`docker run -it mziemann/tallyup`
+`docker run mziemann/tallyup`
+
+If you want to keep it running even if ssh gets terminated, use 'nohup'
+
+`nohup docker run mziemann/tallyup & tailf nohup.out`
 
 ## Troubleshooting
 If you're encountering problems, check the system requirements again. If still stuck, contact me on mark.ziemann{at}gmail.com
