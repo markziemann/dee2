@@ -42,11 +42,11 @@ If you need to change the default Docker data to another location with >32GB fre
 
 2) Paste in the following to the new file, substituting "/path/to/data/" with the location you'd like to run the image:
 
-`[Service]
+`[Service]`
 
-ExecStart=
+`ExecStart=`
 
-ExecStart=/usr/bin/dockerd -H fd:// --data-root="/path/to/data/"`
+`ExecStart=/usr/bin/dockerd -H fd:// --data-root="/path/to/data/"`
 
 3) Restart the docker service
 
