@@ -29,17 +29,27 @@ We welcome contributions to code development and in future compute time.
 Minimum 8GB RAM available. Use the "free" command
 `free -h`
 Minimum 32GB of data storage available for Docker. Use the "df" command to check the default Docker data location in /var.
+
 `df -h /var`
+
 If you need to change the default Docker data to another location, follow these steps (works for Ubuntu 16.04): 
+
 1) Create a config file for docker data storage
+
 `sudo nano /etc/systemd/system/docker.service.d/docker-storage.conf`
+
 2) Paste in the following to the new file, substituting "/path/to/data/" with the location you'd like to run the image:
+
 `[Service]
 ExecStart=
 ExecStart=/usr/bin/dockerd -H fd:// --data-root="/path/to/data/"`
+
 3) Restart the docker service
+
 `sudo systemctl daemon-reload ; sudo systemctl restart docker`
+
 4) Confirm that the change in location has occurred.
+
 `docker info|grep "Docker Root Dir`
 
 ## Quick start guide for docker users (Singularity users see this guide [link](https://github.com/markziemann/dee2/blob/master/notes/singularity_walkthrough.md))
