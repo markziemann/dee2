@@ -34,7 +34,7 @@ Minimum 32GB of data storage available for Docker. Use the "df" command to check
 
 `df -h /var`
 
-If you need to change the default Docker data to another location, follow these steps (works for Ubuntu 16.04): 
+If you need to change the default Docker data to another location with >32GB free, follow these steps (works for Ubuntu 16.04): 
 
 1) Create a config file for docker data storage
 
@@ -43,7 +43,9 @@ If you need to change the default Docker data to another location, follow these 
 2) Paste in the following to the new file, substituting "/path/to/data/" with the location you'd like to run the image:
 
 `[Service]
+
 ExecStart=
+
 ExecStart=/usr/bin/dockerd -H fd:// --data-root="/path/to/data/"`
 
 3) Restart the docker service
