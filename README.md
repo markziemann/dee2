@@ -26,8 +26,10 @@ The DEE2 pipeline uses containers (Docker and Singularity) to enhance ease of us
 We welcome contributions to code development and in future compute time.
 
 ## Before starting check system requirements
-Minimum 8GB RAM available. Use the "free" command
+Minimum 8GB RAM available. Use the "free" command:
+
 `free -h`
+
 Minimum 32GB of data storage available for Docker. Use the "df" command to check the default Docker data location in /var.
 
 `df -h /var`
