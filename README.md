@@ -26,6 +26,8 @@ The DEE2 pipeline uses containers (Docker and Singularity) to enhance ease of us
 We welcome contributions to code development and in future compute time.
 
 ## Before starting check system requirements
+So far this has only been tested on Ubuntu linux but will probably work for any system capable of running Docker.
+
 Minimum 8GB RAM available. Use the "free" command:
 
 `free -h`
