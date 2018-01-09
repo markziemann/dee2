@@ -100,5 +100,9 @@ If you want to keep it running even if ssh gets terminated, use 'nohup'
 
 `nohup docker run mziemann/tallyup & tailf nohup.out`
 
+If you want to keep one container running contantly, try the 'run-one' utility
+
+`nohup run-one-constantly docker run mziemann/tallyup mmusculus &`
+
 ## Troubleshooting
 If you're encountering problems, check the system requirements again. If still stuck, contact me on mark.ziemann{at}gmail.com
