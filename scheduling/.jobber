@@ -1,0 +1,15 @@
+[jobs]
+- name: DEE pipeline shell
+  cmd: /home/mdz/dee_jobber.sh
+  time: 1 */5 * * * *
+  onError: Continue
+  notifyOnError: false
+  notifyOnFailure: false
+
+- name: DEE pipeline R
+  cmd: /scratch/mziemann/dee/code/dee_pipeline.R
+  time: 0 0 1 * * *
+  onError: Continue
+  notifyOnError: false
+  notifyOnFailure: false
+
