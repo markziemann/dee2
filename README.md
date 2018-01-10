@@ -56,7 +56,7 @@ If you need to change the default Docker data to another location with >32GB fre
 
 4) Confirm that the change in location has occurred.
 
-`docker info|grep "Docker Root Dir`
+`docker info|grep "Docker Root Dir"`
 
 ## Quick start guide for docker users (Singularity users see this guide [link](https://github.com/markziemann/dee2/blob/master/notes/singularity_walkthrough.md))
 Install docker
