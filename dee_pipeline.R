@@ -11,8 +11,8 @@ if(length(new.packages)) {
 
 library(SRAdb)
 
-for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae") ) {
-#org="athaliana"
+##for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae") ) {
+for (org in c("celegans", "dmelanogaster", "drerio", "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae") ) {
   #create a list of species full names
   species_list<-c("'Arabidopsis thaliana'","'Caenorhabditis elegans'","'Drosophila melanogaster'","'Danio rerio'","'Escherichia coli'","'Homo sapiens'", "'Mus musculus'", "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
   #now annotate the short names 
@@ -95,7 +95,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   se_list<-rownames(subset(file.info(se_list),size!=0))
 
   #Need to ensure matrix will be square
-  x<-as.matrix(table(factor(as.numeric(lapply(sample(se_list,100),rowcnt)))))
+  x<-as.matrix(table(factor(as.numeric(lapply(se_list,rowcnt)))))
   expected_len=as.numeric(rownames(tail(x,n=1)))
   y<-t(as.data.frame(mclapply(se_list,rowcnt)))
   rownames(y)=as.character(se_list)
@@ -125,7 +125,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   }
 
   ke_list<-rownames(subset(file.info(ke_list),size!=0))
-  x<-as.matrix(table(factor(as.numeric(lapply(sample(ke_list,100),rowcnt)))))
+  x<-as.matrix(table(factor(as.numeric(lapply(ke_list,rowcnt)))))
   expected_len=as.numeric(rownames(tail(x,n=1)))
 
   LEN=length(rownames(subset(y,y!=expected_len)))
@@ -169,5 +169,6 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   setwd(CODEWD)
 
 }
+
 setwd(MXDIR)
 system("pbzip2 -kf *tsv")
