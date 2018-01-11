@@ -2,7 +2,6 @@
 set -x #-v
 #/usr/lib/cgi-bin
 #QUERY_STRING='ORG=athaliana&sub=Submit'
-
 cleanit(){
 tr '<>&*?/' ' '
 }
@@ -17,7 +16,6 @@ echo '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
 echo '<title>Tempemon</title>'
 echo '</head>'
 echo '<body>'
-
 # check whether ORG is known and quit if not in the list
 ORG=$(echo "$QUERY_STRING" | cleanit | tr ' ' '\n' | grep -m1 ^ORG=  | cut -d '=' -f2)
 
@@ -46,15 +44,22 @@ fi
 DATA=/usr/lib/cgi-bin/acc_data
 TODO=${DATA}/${ORG}.queue.txt
 TODO_NEW=/home/ubuntu/Public/${ORG}.queue.txt
-if [ -r $TODO_NEW ] ; then
-  mv $TODO_NEW $TODO
-fi
-#cp -u $TODO_NEW $TODO
 ALLOCATED=${DATA}/${ORG}.allocated.txt
-ACCESSION=$(tail -n +100 $TODO | head -1)
-TIME=$(date +%s)
-echo $ACCESSION $TIME >> $ALLOCATED
-sed -i "/${ACCESSION}/d" $TODO
+WORKLIST=${DATA}/${ORG}.worklist.txt
+
+if [ ! -r $WORKLIST ] ; then
+  cut -f1 $TODO_NEW | shuf | sed 's/$/\t0/' > $WORKLIST
+fi
+
+#ACCESSION=$(trap - PIPE ; shuf $WORKLIST | sort -k2g | awk 'NR==1 {print $1}' )
+ACCESSION=$(sort -k2n -k1R $WORKLIST | awk 'NR==1 {print $1}' )
+COUNT=$(grep -w $ACCESSION $WORKLIST | cut -f2)
+INCREMENT=$((COUNT+1))
+echo $COUNT $INCREMENT
+sed -i "s/${ACCESSION}\t${COUNT}$/${ACCESSION}\t${INCREMENT}/" $WORKLIST
+if [ $TODO_NEW -nt $WORKLIST ] ; then
+  comm -23 <(cut -f1 $TODO_NEW | sort ) <(cut -f1 $WORKLIST | sort) | sed 's/$/\t0/' >> $WORKLIST
+fi
 
 echo '<br>'
 echo "ACCESSION=$ACCESSION"
@@ -64,20 +69,12 @@ echo '<br>'
 echo '</body>'
 echo '</html>'
 
-#FIXTHIS
-TIME=$(date +%s)
-sed "s/$/\t${TIME}/" $ALLOCATED | awk '($3-$2)>86400 {print $1}' >> $TODO
-sort -u -o $TODO $TODO
-awk '{print $1}' $ALLOCATED | sed "s/$/\t${TIME}/" | awk '($3-$2)<86400' > $ALLOCATED.tmp
-mv $ALLOCATED.tmp $ALLOCATED
-
 #detail joblist length for each organism
 TIME=$(date +%s)
 ACC_HTML=/var/www/html/acc.html
 EDIT_TIME=$(stat --format "%Y" $ACC_HTML)
 DIFF=$((TIME-EDIT_TIME))
-if [ "$DIFF" -gt "86400" ] ; then
-#if [ "$DIFF" -gt "0" ] ; then
+if [ "$DIFF" -gt "600" ] ; then
   touch $ACC_HTML
   ORGLIST="athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae"
   for ORG in $ORGLIST ; do
