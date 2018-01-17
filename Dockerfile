@@ -15,7 +15,7 @@ LABEL tags="Genomics"
 # Maintainer
 MAINTAINER Mark Ziemann <mark.ziemann@gmail.com>
 
-ENV DIRPATH /root
+ENV DIRPATH /dee2
 WORKDIR $DIRPATH
 
 RUN rm /bin/sh && \
@@ -152,14 +152,13 @@ RUN \
 WORKDIR $DIRPATH
 RUN pwd
 RUN  \
-  mkdir code && \
+  mkdir  code  && \
   cd  code && \
-  wget "https://raw.githubusercontent.com/markziemann/dee2/master/volunteer_pipeline.sh" && \
-  chmod +x volunteer_pipeline.sh && \
-  bash volunteer_pipeline.sh
+  wget  "https://raw.githubusercontent.com/markziemann/dee2/master/volunteer_pipeline.sh" && \
+  chmod  +x volunteer_pipeline.sh  && \
+  bash  volunteer_pipeline.sh
 
 ########################################
 # set entrypoint
 ########################################
-ENTRYPOINT [ "/root/code/volunteer_pipeline.sh" ]
-CMD [ "" ]
+ENTRYPOINT [ "/dee2/code/volunteer_pipeline.sh" ]
