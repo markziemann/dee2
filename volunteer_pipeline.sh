@@ -48,9 +48,9 @@ if [ $2 != '-f' ] ; then
 fi
 
 #ENVIRONMENT VARS
-cd ~
-DEE_DIR=~
-CODE_DIR=~/code
+cd /dee2
+DEE_DIR=/dee2
+CODE_DIR=/dee2/code
 PIPELINE=$0
 PIPELINE_MD5=$(md5sum $PIPELINE | cut -d ' ' -f1)
 SW_DIR=$DEE_DIR/sw
@@ -66,7 +66,7 @@ ALNLIM=2
 MEMALNLIM=4
 THREADS=$(grep -c ^processor /proc/cpuinfo)
 DISK=$(df . | awk 'END{print$4}')
-MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
+MEM=$(free | awk '$1 /dee2 /Mem:/  {print $2-$3}')
 
 ##########################################################################
 #Initial disk space check
@@ -294,8 +294,8 @@ if [ $2 != '-f' ] ; then
     PFX1=$(echo $SRR | cut -c-3)
     PFX2=$(echo $SRR | cut -c-6)
     URL=anonftp@ftp.ncbi.nlm.nih.gov:sra/sra-instant/reads/ByRun/sra/${PFX1}/${PFX2}/${SRR}/${SRR}.sra
-    ID=~/.ascp/aspera-license
-    mkdir -p ~/.ascp
+    ID=/dee2/.ascp/aspera-license
+    mkdir -p /dee2/.ascp
     cat << EOF > $ID
 -----BEGIN DSA PRIVATE KEY-----
 MIIBuwIBAAKBgQDkKQHD6m4yIxgjsey6Pny46acZXERsJHy54p/BqXIyYkVOAkEp
@@ -310,7 +310,7 @@ zkWfpOvAUc8fkQAhZqv/PE6VhFQ8w03Z8GpqXx7b3NvBR+EfIx368KoCFEyfl0vH
 Ta7g6mGwIMXrdTQQ8fZs
 -----END DSA PRIVATE KEY-----
 EOF
-    chmod 700 ~/.ascp
+    chmod 700 /dee2/.ascp
     ascp -l 500m -O 33001 -T -i $ID $URL . \
     || ( echo $SRR failed ascp download | tee -a $SRR.log ; sleep 5 ; exit1 ; return 1 )
     SRASIZE=$(du ${SRR}.sra)
@@ -378,9 +378,9 @@ EOF
   unzip -p ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc/fastqc_data.txt | tee -a $SRR.log
   rm ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc.html
 
-  FQ1_MIN_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | sort -g | head -1)
-  FQ1_MEDIAN_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | numaverage -M)
-  FQ1_MAX_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | sort -gr | head -1)
+  FQ1_MIN_LEN=$(sed -n '2/dee24p' $FQ1 | awk '{print length($1)}' | sort -g | head -1)
+  FQ1_MEDIAN_LEN=$(sed -n '2/dee24p' $FQ1 | awk '{print length($1)}' | numaverage -M)
+  FQ1_MAX_LEN=$(sed -n '2/dee24p' $FQ1 | awk '{print length($1)}' | sort -gr | head -1)
 
   FQ2_MIN_LEN=NULL
   FQ2_MEDIAN_LEN=NULL
@@ -396,9 +396,9 @@ EOF
     unzip -p ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc/fastqc_data.txt | tee -a $SRR.log
     rm ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc.html
 
-    FQ2_MIN_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | sort -g | head -1)
-    FQ2_MEDIAN_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | numaverage -M)
-    FQ2_MAX_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | sort -gr | head -1)
+    FQ2_MIN_LEN=$(sed -n '2/dee24p' $FQ2 | awk '{print length($1)}' | sort -g | head -1)
+    FQ2_MEDIAN_LEN=$(sed -n '2/dee24p' $FQ2 | awk '{print length($1)}' | numaverage -M)
+    FQ2_MAX_LEN=$(sed -n '2/dee24p' $FQ2 | awk '{print length($1)}' | sort -gr | head -1)
 
     #now checking read lengths and dropping ones too short
     if [[ $FQ1_MAX_LEN -lt 20 && $FQ2_MAX_LEN -lt 20 ]] ; then
@@ -621,9 +621,9 @@ else
   unzip -p ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc/fastqc_data.txt | tee -a $SRR.log
   rm ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc.html
 
-  FQ1_MIN_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | sort -g | head -1)
-  FQ1_MEDIAN_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | numaverage -M)
-  FQ1_MAX_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | sort -gr | head -1)
+  FQ1_MIN_LEN=$(sed -n '2/dee24p' $FQ1 | awk '{print length($1)}' | sort -g | head -1)
+  FQ1_MEDIAN_LEN=$(sed -n '2/dee24p' $FQ1 | awk '{print length($1)}' | numaverage -M)
+  FQ1_MAX_LEN=$(sed -n '2/dee24p' $FQ1 | awk '{print length($1)}' | sort -gr | head -1)
 
   FQ2_MIN_LEN=NULL
   FQ2_MEDIAN_LEN=NULL
@@ -639,9 +639,9 @@ else
     unzip -p ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc/fastqc_data.txt | tee -a $SRR.log
     rm ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc.html
 
-    FQ2_MIN_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | sort -g | head -1)
-    FQ2_MEDIAN_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | numaverage -M)
-    FQ2_MAX_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | sort -gr | head -1)
+    FQ2_MIN_LEN=$(sed -n '2/dee24p' $FQ2 | awk '{print length($1)}' | sort -g | head -1)
+    FQ2_MEDIAN_LEN=$(sed -n '2/dee24p' $FQ2 | awk '{print length($1)}' | numaverage -M)
+    FQ2_MAX_LEN=$(sed -n '2/dee24p' $FQ2 | awk '{print length($1)}' | sort -gr | head -1)
 
     #now checking read lengths and dropping ones too short
     if [[ $FQ1_MAX_LEN -lt 20 && $FQ2_MAX_LEN -lt 20 ]] ; then
@@ -652,8 +652,8 @@ else
 ##########################################################################
     echo If read 1 and 2 have different number of tags then exit
 ##########################################################################
-    FQ1_NUMRDS=$(sed -n '2~4p' $FQ1 | wc -l)
-    FQ2_NUMRDS=$(sed -n '2~4p' $FQ2 | wc -l)
+    FQ1_NUMRDS=$(sed -n '2/dee24p' $FQ1 | wc -l)
+    FQ2_NUMRDS=$(sed -n '2/dee24p' $FQ2 | wc -l)
 
     if [ $FQ1_NUMRDS -ne $FQ2_NUMRDS ] ; then
       echo Number of sequence tags in read 1 and read 2 differ. Quitting.
@@ -730,7 +730,7 @@ if [ $RDS == "SE" ] ; then
     if [ $DENSITY -gt $ADAPTER_THRESHOLD ] ; then
       echo Potential 3prime adapter identified. Now checking if in reference sequence | tee -a $SRR.log
       # Query to see if adapter sequence present in reference
-      ADAPTER_REF_CHECK=$(bowtie2 -f -x $BT2_REF -S /dev/stdout <(echo $ADAPTER | sed 's/^/>ADAPTER\n/') 2>>$SRR.log | awk '$1!~/^@/ && $2!=4' | wc -l )
+      ADAPTER_REF_CHECK=$(bowtie2 -f -x $BT2_REF -S /dev/stdout <(echo $ADAPTER | sed 's/^/>ADAPTER\n/') 2>>$SRR.log | awk '$1!/dee2/^@/ && $2!=4' | wc -l )
 
       if [ $ADAPTER_REF_CHECK -eq "0" ] ; then
         echo Adapter seq not found in reference. Now shuffling file before clipping | tee -a $SRR.log
@@ -742,7 +742,7 @@ if [ $RDS == "SE" ] ; then
         cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
         CLIP_LINE_NUM1=$((CLIP_LINE_NUM+1))
         tail -n+$CLIP_LINE_NUM1 ${SRR}.fastq >> ${SRR}-trimmed.fastq && rm ${SRR}.fastq
-        READ_CNT_AVAIL=$(sed -n '2~4p' ${SRR}-trimmed.fastq | wc -l)
+        READ_CNT_AVAIL=$(sed -n '2/dee24p' ${SRR}-trimmed.fastq | wc -l)
         if [ -z "$READ_CNT_AVAIL" ] ; then READ_CNT_AVAIL=0 ; fi
         minion search-adapter -i ${SRR}-trimmed.fastq | tee -a $SRR.log
       else
@@ -770,8 +770,8 @@ elif [ $RDS == "PE" ] ; then
     if [ $DENSITY -gt $ADAPTER_THRESHOLD ] ; then
       echo Potential 3prime adapter identified. Now checking if in reference sequence | tee -a $SRR.log
       # Query to see if adapter sequence present in reference
-      ADAPTER1_REF_CHECK=$($BOWTIE2 -f -x $BT2_REF -S /dev/stdout <(echo $ADAPTER1 | sed 's/^/>ADAPTER\n/') 2>>$SRR.log | awk '$1!~/^@/ && $2!=4' | wc -l )
-      ADAPTER2_REF_CHECK=$($BOWTIE2 -f -x $BT2_REF -S /dev/stdout <(echo $ADAPTER2 | sed 's/^/>ADAPTER\n/') 2>>$SRR.log | awk '$1!~/^@/ && $2!=4' | wc -l )
+      ADAPTER1_REF_CHECK=$($BOWTIE2 -f -x $BT2_REF -S /dev/stdout <(echo $ADAPTER1 | sed 's/^/>ADAPTER\n/') 2>>$SRR.log | awk '$1!/dee2/^@/ && $2!=4' | wc -l )
+      ADAPTER2_REF_CHECK=$($BOWTIE2 -f -x $BT2_REF -S /dev/stdout <(echo $ADAPTER2 | sed 's/^/>ADAPTER\n/') 2>>$SRR.log | awk '$1!/dee2/^@/ && $2!=4' | wc -l )
 
       if [ $ADAPTER1_REF_CHECK -eq "0" -a $ADAPTER2_REF_CHECK -eq "0" ] ; then
         echo Adapter seq not found in reference. Now shuffling file before clipping | tee -a $SRR.log
@@ -851,7 +851,7 @@ if [ $RDS == "PE" ] ; then
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1.fq
 
-  R1_RD_CNT=$(sed -n '2~4p' < test_R1.fq | wc -l)
+  R1_RD_CNT=$(sed -n '2/dee24p' < test_R1.fq | wc -l)
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   UNMAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | head -1)
   R1_MAP_RATE=$(echo $MAPPED_CNT $R1_RD_CNT | awk '{print $1/$2*100}' | numround)
@@ -859,7 +859,7 @@ if [ $RDS == "PE" ] ; then
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R2.fq
 
-  R2_RD_CNT=$(sed -n '2~4p' < test_R2.fq | wc -l)
+  R2_RD_CNT=$(sed -n '2/dee24p' < test_R2.fq | wc -l)
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   UNMAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | head -1)
   R2_MAP_RATE=$(echo $MAPPED_CNT $R2_RD_CNT | awk '{print $1/$2*100}' | numround)
@@ -982,7 +982,7 @@ if [ $RDS == "SE" ] ; then
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test.fq
 
-  RD_CNT=$(sed -n '2~4p' < test.fq | wc -l)
+  RD_CNT=$(sed -n '2/dee24p' < test.fq | wc -l)
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   UNMAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | head -1)
   R1_MAP_RATE=$(echo $MAPPED_CNT $RD_CNT | awk '{print $1/$2*100}' | numround)
@@ -1100,8 +1100,8 @@ echo $SRR checking readlengths now for kmer selection
 ## Setting the kallisto kmer correctly is important to getting best accuracy
 ## Here I measure the median length as well as the 20th percentile
 ## KMER is set to length at 20th percentile minus 4nt with a lower limit of 19
-MEDIAN_LENGTH=$(sed -n '2~4p' $FQ1 | head -1000000 | awk '{print length}' | sort -n | awk '{all[NR] = $0} END{print all[int(NR*0.50 - 0.5)]}')
-D20=$(sed -n '2~4p' $FQ1 | head -1000000 | awk '{print length}' | sort -n | awk '{all[NR] = $0} END{print all[int(NR*0.20 - 0.5)]}')
+MEDIAN_LENGTH=$(sed -n '2/dee24p' $FQ1 | head -1000000 | awk '{print length}' | sort -n | awk '{all[NR] = $0} END{print all[int(NR*0.50 - 0.5)]}')
+D20=$(sed -n '2/dee24p' $FQ1 | head -1000000 | awk '{print length}' | sort -n | awk '{all[NR] = $0} END{print all[int(NR*0.20 - 0.5)]}')
 KMER=$((D20-4))
 ADJUST=$(echo $KMER | awk '{print ($1+1)%2}')
 KMER=$((KMER-ADJUST))
@@ -1210,14 +1210,14 @@ export -f main
 #TODO
 #-allow specific accessions
 
-cd ~
+cd /dee2
 
 echo Dumping star genomes from memory
-for DIR in $(find ~/ref/ | grep /ensembl/star$ | sed 's#\/code\/\.\.##' ) ; do
+for DIR in $(find /dee2/ref/ | grep /ensembl/star$ | sed 's#\/code\/\.\.##' ) ; do
   echo $DIR ; STAR --genomeLoad Remove --genomeDir $DIR
 done
 
-MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
+MEM=$(free | awk '$1 /dee2 /Mem:/  {print $2-$3}')
 #MEM=$(free | awk 'NR==2{print $4}')
 NUM_CPUS=$(grep -c ^processor /proc/cpuinfo)
 CPU_SPEED=$(lscpu | grep MHz | awk '{print $NF}' | sort -k2gr)
@@ -1331,12 +1331,12 @@ export -f key_setup
 TESTFILE=test_pass
 if [ ! -r $TESTFILE ] ; then
   echo Initial pipeline test with E. coli dataset
-  if [ -d ~/data/ecoli/SRR057750 ] ; then
-    rm -rf ~/data/ecoli/SRR057750
+  if [ -d /dee2/data/ecoli/SRR057750 ] ; then
+    rm -rf /dee2/data/ecoli/SRR057750
   fi
   main ecoli SRR057750 VERBOSE=$VERBOSE
   TEST_CHECKSUM=a739998e33947c0a60edbde92e8f0218
-  cd ~/data/ecoli/
+  cd /dee2/data/ecoli/
   TEST_DATASET_USER_CHECKSUM=$(cat SRR057750/SRR057750*tsv | md5sum | awk '{print $1}')
   if [ "$TEST_DATASET_USER_CHECKSUM" != "$TEST_CHECKSUM" ] ; then
     echo "Test dataset did not complete properly. Md5sums do not match those provided!"
@@ -1344,13 +1344,13 @@ if [ ! -r $TESTFILE ] ; then
     exit 1
   fi
   echo "Test dataset completed successfully"
-  cd ~
+  cd /dee2
   date +"%s" > $TESTFILE
 
   # add host info
-  mkdir -p ~/.ssh && touch ~/.ssh/known_hosts
+  mkdir -p /dee2/.ssh && touch ~/.ssh/known_hosts
   if [ -z $(ssh-keygen -F $SFTP_URL) ]; then
-    ssh-keyscan -H $SFTP_URL >> ~/.ssh/known_hosts
+    ssh-keyscan -H $SFTP_URL >> /dee2/.ssh/known_hosts
   fi
 
 else
@@ -1449,7 +1449,7 @@ EOF
   while [ $count -lt 1000 ] ; do
   #while true ; do
     (( count++ ))
-    cd ~
+    cd /dee2
     echo "$count"
     ACCESSION=$(myfunc $MY_ORG $ACC_REQUEST)
     main "$MY_ORG" "$ACCESSION" VERBOSE=$VERBOSE && COMPLETE=1 || COMPLETE=0
