@@ -17,6 +17,7 @@ MAINTAINER Mark Ziemann <mark.ziemann@gmail.com>
 
 ENV DIRPATH /dee2
 WORKDIR $DIRPATH
+RUN chmod -R 777 /dee2
 
 RUN rm /bin/sh && \
   ln /bin/bash /bin/sh
@@ -152,11 +153,11 @@ RUN \
 WORKDIR $DIRPATH
 RUN pwd
 RUN  \
-  mkdir  code  && \
-  cd  code && \
-  wget  "https://raw.githubusercontent.com/markziemann/dee2/master/volunteer_pipeline.sh" && \
-  chmod  +x volunteer_pipeline.sh  && \
-  bash  volunteer_pipeline.sh
+  mkdir code && \
+  cd code && \
+  wget "https://raw.githubusercontent.com/markziemann/dee2/master/volunteer_pipeline.sh" && \
+  chmod +x volunteer_pipeline.sh  && \
+  bash volunteer_pipeline.sh
 
 ########################################
 # set entrypoint
