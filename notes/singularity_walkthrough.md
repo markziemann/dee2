@@ -53,5 +53,5 @@ exit
 
 The changes made to the container will be saved. Now check that it works from outside the container
 ```
-singularity run -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-18-adbe9f64b5be.img ecoli SRR057750
+singularity run -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-18-adbe9f64b5be.img ecoli SRR057751
 ```
