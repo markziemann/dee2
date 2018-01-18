@@ -1,10 +1,12 @@
 #essential commands
 docker build dee2 dee2/
-docker run -it -d dee2
 docker run -it -d dee2 bash
-docker exec -it 4ede2bbff7d9 bash
+docker ps -a
 docker commit 4ede2bbff7d9 username/imagename
 docker push username/imagename
+
+#other useful commands
+alias docker-purge='docker rm $(docker ps -aq) ; docker rmi $(docker images -aq)'
 
 docker stop 4ede2bbff7d9
 docker rm $(docker ps -a -q)
@@ -18,8 +20,6 @@ docker cp $(docker ps -alq):/root/data/ .
 # run bash in an entrypoint container 
 docker run -it --entrypoint /bin/bash <image>
 
-
 docker login
 docker commit db7c579a270 user_name/image_name
 docker push user_name/image_name
-
