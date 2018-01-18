@@ -1,8 +1,6 @@
 #!/bin/bash
 #sra2mx for docker image
 #Copyright Mark Ziemann 2015 to 2017 mark.ziemann@gmail.com
-set -x
-HOME=/dee2
 LASTVAR=$(echo $@ | rev | cut -d ' ' -f1 | rev)
 if [ $LASTVAR == "-v" ] ; then
   set -x
@@ -1326,9 +1324,6 @@ cat << EOF > /dee2/.ssh/guestuser.pub
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIsnlOKFedvYBN7GBgwiTOkeCikJty1Yofyus9k03o8AtFiODWjN94wXKVK9CKUXD7psJ7seWpRDd7qlL+Mcm6QTLNsk4RVHgDC5nHFy0jhAfTQAvZ4O9a+UQ4KGXE+DwSvlKM/OJRfDw6/ds0u8UdJDuqU1v+BsqEq/OXouTSfpjOX0L96LDNMqN8Qp9cBnnV+PIPZ+ZIVpWV6r63fO+JloZ+0W04sq0MD3BdeKixisG58R/OLG6NAXTgfO/4SDzXhuPOCRKlmIPJLvfk1TO7Q8Judc2NkDpCLKaKw6SHHQnvDeu+f+CaVgyZ4FrkZlmyed9EG+PSCtAh5+QtLfRH mdz@opti
 EOF
 
-cat << EOF > /dee2/.ssh/known_hosts
-|1|dv3Th5RGD8EZq+6u94xXc4qQiBo=|4ukUhBVAQhP2WQmH0vyMH49Q8hM= ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBPbPOb0mvDZC6xdeBp2NBCdGWL9MA+riag6SmRx8b9O+0TGL5gV19VHG5oz9vUX7qLObe69y4FTA0Au9SQcO/xI=
-EOF
 chmod -R 700 /dee2/.ssh
 }
 export -f key_setup
@@ -1347,7 +1342,7 @@ if [ ! -r $TESTFILE ] ; then
   key_setup $SFTP_URL
   cd /dee2/data/ecoli
   date > date.txt
-  sftp -v -i /dee2/.ssh/guestuser guestuser@$SFTP_URL << EOF && KEYTEST="OK"
+  sftp -v -i /dee2/.ssh/guestuser -o StrictHostKeyChecking=no guestuser@$SFTP_URL << EOF && KEYTEST="OK"
 put date.txt
 EOF
 
