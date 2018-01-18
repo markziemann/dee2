@@ -1285,7 +1285,15 @@ echo $ACCESSION
 export -f myfunc
 
 key_setup(){
+
 mkdir -p /dee2/.ssh
+
+touch /dee2/.ssh/known_hosts
+chmod +w /dee2/.ssh/known_hosts
+
+if [ -z $(ssh-keygen -F $SFTP_URL) ]; then
+    ssh-keyscan -H $SFTP_URL >> /dee2/.ssh/known_hosts
+fi
 
 cat << EOF > /dee2/.ssh/guestuser
 -----BEGIN RSA PRIVATE KEY-----
@@ -1346,12 +1354,6 @@ if [ ! -r $TESTFILE ] ; then
   echo "Test dataset completed successfully"
   cd /dee2
   date +"%s" > $TESTFILE
-
-  # add host info
-  mkdir -p /dee2/.ssh && touch /dee2/.ssh/known_hosts
-  if [ $(ssh-keygen -F $SFTP_URL | wc -l) -eq '0' ]; then
-    ssh-keyscan -H $SFTP_URL >> /dee2/.ssh/known_hosts
-  fi
 
   #test ssh key setup
   key_setup
