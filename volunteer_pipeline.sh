@@ -1289,11 +1289,7 @@ SFTP_URL="118.138.241.34"
 mkdir -p /dee2/.ssh
 
 touch /dee2/.ssh/known_hosts
-chmod +w /dee2/.ssh/known_hosts
-
-if [ -z $(ssh-keygen -F $SFTP_URL ) ]; then
-  ssh-keyscan -H $SFTP_URL -f /dee2/.ssh/known_hosts
-fi
+chmod 777 /dee2/.ssh/known_hosts
 
 cat << EOF > /dee2/.ssh/guestuser
 -----BEGIN RSA PRIVATE KEY-----
@@ -1329,6 +1325,10 @@ cat << EOF > /dee2/.ssh/guestuser.pub
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIsnlOKFedvYBN7GBgwiTOkeCikJty1Yofyus9k03o8AtFiODWjN94wXKVK9CKUXD7psJ7seWpRDd7qlL+Mcm6QTLNsk4RVHgDC5nHFy0jhAfTQAvZ4O9a+UQ4KGXE+DwSvlKM/OJRfDw6/ds0u8UdJDuqU1v+BsqEq/OXouTSfpjOX0L96LDNMqN8Qp9cBnnV+PIPZ+ZIVpWV6r63fO+JloZ+0W04sq0MD3BdeKixisG58R/OLG6NAXTgfO/4SDzXhuPOCRKlmIPJLvfk1TO7Q8Judc2NkDpCLKaKw6SHHQnvDeu+f+CaVgyZ4FrkZlmyed9EG+PSCtAh5+QtLfRH mdz@opti
 EOF
 
+if [ -z $(ssh-keygen -F $SFTP_URL ) ]; then
+  ssh-keyscan -H $SFTP_URL > /dee2/.ssh/known_hosts
+fi
+
 chmod -R 700 /dee2/.ssh
 }
 export -f key_setup
@@ -1342,7 +1342,22 @@ if [ ! -r $TESTFILE ] ; then
   if [ -d /dee2/data/ecoli/SRR057750 ] ; then
     rm -rf /dee2/data/ecoli/SRR057750
   fi
+
+  #test ssh key setup
   key_setup $SFTP_URL
+  cd /dee2/data/ecoli
+  date > date.txt
+  sftp -v -i /dee2/.ssh/guestuser guestuser@$SFTP_URL << EOF && KEYTEST="OK"
+put date.txt
+EOF
+
+  if [ $KEYTEST == "OK" ] ; then
+    echo "SSH keys successfully set up"
+  else
+    echo "SSH keys not set up properly. Quitting now."
+    exit 1
+  fi
+
   main ecoli SRR057750 VERBOSE=$VERBOSE
   TEST_CHECKSUM=a739998e33947c0a60edbde92e8f0218
   cd /dee2/data/ecoli/
@@ -1355,22 +1370,6 @@ if [ ! -r $TESTFILE ] ; then
   echo "Test dataset completed successfully"
   cd /dee2
   date +"%s" > $TESTFILE
-
-  #test ssh key setup
-  cd /dee2/data/ecoli
-  zip -r SRR057750.ecoli.zip SRR057750
-  sftp -v -i /dee2/.ssh/guestuser guestuser@$SFTP_URL << EOF && KEYTEST="OK"
-put SRR057750.ecoli.zip
-EOF
-
-  if [ $KEYTEST == "OK" ] ; then
-    echo "SSH keys successfully set up"
-  else
-    echo "SSH keys not set up properly. Quitting now."
-    exit 1
-  fi
-
-
 
 else
   echo Starting pipeline
@@ -1447,9 +1446,9 @@ else
         DIR=$(pwd)
         main $1 $USER_ACCESSION VERBOSE=$VERBOSE
         #key_setup
-        cd $HOME/data/$MY_ORG
+        cd /dee2/data/$MY_ORG
         zip -r $USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
-        sftp -i $HOME/.ssh/guestuser guestuser@$SFTP_URL << EOF
+        sftp -i /dee2/.ssh/guestuser guestuser@$SFTP_URL << EOF
 put $USER_ACCESSION.$MY_ORG.zip
 EOF
       done
@@ -1474,10 +1473,10 @@ EOF
     main "$MY_ORG" "$ACCESSION" VERBOSE=$VERBOSE && COMPLETE=1 || COMPLETE=0
     if [ "$COMPLETE" -eq "1" ] ; then
       #key_setup
-      cd $HOME/data/$MY_ORG
+      cd /dee2/data/$MY_ORG
       zip -r $ACCESSION.$MY_ORG.zip $ACCESSION
       if [ $(du -s $ACCESSION.$MY_ORG.zip | awk '{print $1}') -lt "20000" ] ; then
-        sftp -i $HOME/.ssh/guestuser guestuser@$SFTP_URL << EOF
+        sftp -i /dee2/.ssh/guestuser guestuser@$SFTP_URL << EOF
 put $ACCESSION.$MY_ORG.zip
 EOF
       else
