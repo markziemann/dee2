@@ -155,10 +155,11 @@ RUN pwd
 RUN  \
   mkdir code && \
   cd code && \
-  wget "https://raw.githubusercontent.com/markziemann/dee2/master/volunteer_pipeline.sh" && \
-  chmod +x volunteer_pipeline.sh  && \
+  wget  "https://raw.githubusercontent.com/markziemann/dee2/master/volunteer_pipeline.sh" && \
+  chmod  +x volunteer_pipeline.sh && \
   bash volunteer_pipeline.sh
 
+RUN chmod -R 777 /dee2
 ########################################
 # set entrypoint
 ########################################
