@@ -1285,15 +1285,14 @@ echo $ACCESSION
 export -f myfunc
 
 key_setup(){
-
+URL=$1
 mkdir -p /dee2/.ssh
 
 touch /dee2/.ssh/known_hosts
 chmod +w /dee2/.ssh/known_hosts
 
-if [ -z $(ssh-keygen -F $SFTP_URL) ]; then
-  ssh -o BatchMode=yes -o StrictHostKeyChecking=no $SFTP_URL
-  ssh-keyscan -H $SFTP_URL >> /dee2/.ssh/known_hosts
+if [ -z $(ssh-keygen -F $URL ) ]; then
+  ssh-keyscan -H $URL >> /dee2/.ssh/known_hosts
 fi
 
 cat << EOF > /dee2/.ssh/guestuser
@@ -1357,7 +1356,7 @@ if [ ! -r $TESTFILE ] ; then
   date +"%s" > $TESTFILE
 
   #test ssh key setup
-  key_setup
+  key_setup $SFTP_URL
   cd /dee2/data/ecoli
   zip -r SRR057750.ecoli.zip SRR057750
   sftp -v -i /dee2/.ssh/guestuser guestuser@$SFTP_URL << EOF && KEYTEST="OK"
