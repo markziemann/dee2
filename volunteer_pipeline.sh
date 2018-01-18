@@ -1357,7 +1357,7 @@ if [ ! -r $TESTFILE ] ; then
   key_setup
   cd /dee2/data/ecoli
   zip -r SRR057750.ecoli.zip SRR057750
-  sftp -i /dee2/.ssh/guestuser guestuser@$SFTP_URL << EOF && KEYTEST="OK"
+  sftp -v -i /dee2/.ssh/guestuser guestuser@$SFTP_URL << EOF && KEYTEST="OK"
 put SRR057750.ecoli.zip
 EOF
 
