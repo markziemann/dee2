@@ -1446,7 +1446,7 @@ else
       for USER_ACCESSION in $(echo $2 | tr ',' ' ') ; do
         DIR=$(pwd)
         main $1 $USER_ACCESSION VERBOSE=$VERBOSE
-        key_setup
+        #key_setup
         cd $HOME/data/$MY_ORG
         zip -r $USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
         sftp -i $HOME/.ssh/guestuser guestuser@$SFTP_URL << EOF
@@ -1473,7 +1473,7 @@ EOF
     ACCESSION=$(myfunc $MY_ORG $ACC_REQUEST)
     main "$MY_ORG" "$ACCESSION" VERBOSE=$VERBOSE && COMPLETE=1 || COMPLETE=0
     if [ "$COMPLETE" -eq "1" ] ; then
-      key_setup
+      #key_setup
       cd $HOME/data/$MY_ORG
       zip -r $ACCESSION.$MY_ORG.zip $ACCESSION
       if [ $(du -s $ACCESSION.$MY_ORG.zip | awk '{print $1}') -lt "20000" ] ; then
