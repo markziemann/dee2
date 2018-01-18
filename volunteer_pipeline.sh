@@ -1292,7 +1292,8 @@ touch /dee2/.ssh/known_hosts
 chmod +w /dee2/.ssh/known_hosts
 
 if [ -z $(ssh-keygen -F $SFTP_URL) ]; then
-    ssh-keyscan -H $SFTP_URL >> /dee2/.ssh/known_hosts
+  ssh -o BatchMode=yes -o StrictHostKeyChecking=no $SFTP_URL
+  ssh-keyscan -H $SFTP_URL >> /dee2/.ssh/known_hosts
 fi
 
 cat << EOF > /dee2/.ssh/guestuser
