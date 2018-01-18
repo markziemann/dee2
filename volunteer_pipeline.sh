@@ -1353,6 +1353,20 @@ if [ ! -r $TESTFILE ] ; then
     ssh-keyscan -H $SFTP_URL >> /dee2/.ssh/known_hosts
   fi
 
+  #test ssh key setup
+  key_setup
+  cd /dee2/data/ecoli
+  zip -r SRR057750.ecoli.zip SRR057750
+  sftp -i /dee2/.ssh/guestuser guestuser@$SFTP_URL << EOF
+put SRR057750.ecoli.zip
+EOF && KEY_SETUP=OK || KEY_SETUP=FAIL
+
+  if [ $KEY_SETUP == OK ] ; then
+    echo "SSH keys successfully set up"
+  else
+    echo "SSH keys not set up properly. Quitting now."
+    exit 1
+  fi
 else
   echo Starting pipeline
 ##################################################
