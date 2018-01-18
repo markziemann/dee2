@@ -48,9 +48,9 @@ if [ $2 != '-f' ] ; then
 fi
 
 #ENVIRONMENT VARS
-cd ~
-DEE_DIR=~
-CODE_DIR=~/code
+DEE_DIR=/dee2
+cd $DEE_DIR
+CODE_DIR=$DEE_DIR/code
 PIPELINE=$0
 PIPELINE_MD5=$(md5sum $PIPELINE | cut -d ' ' -f1)
 SW_DIR=$DEE_DIR/sw
@@ -294,8 +294,8 @@ if [ $2 != '-f' ] ; then
     PFX1=$(echo $SRR | cut -c-3)
     PFX2=$(echo $SRR | cut -c-6)
     URL=anonftp@ftp.ncbi.nlm.nih.gov:sra/sra-instant/reads/ByRun/sra/${PFX1}/${PFX2}/${SRR}/${SRR}.sra
-    ID=~/.ascp/aspera-license
-    mkdir -p ~/.ascp
+    ID=$DEE_DIR/.ascp/aspera-license
+    mkdir -p $DEE_DIR/.ascp
     cat << EOF > $ID
 -----BEGIN DSA PRIVATE KEY-----
 MIIBuwIBAAKBgQDkKQHD6m4yIxgjsey6Pny46acZXERsJHy54p/BqXIyYkVOAkEp
@@ -310,7 +310,7 @@ zkWfpOvAUc8fkQAhZqv/PE6VhFQ8w03Z8GpqXx7b3NvBR+EfIx368KoCFEyfl0vH
 Ta7g6mGwIMXrdTQQ8fZs
 -----END DSA PRIVATE KEY-----
 EOF
-    chmod 700 ~/.ascp
+    chmod 700 $DEE_DIR/.ascp
     ascp -l 500m -O 33001 -T -i $ID $URL . \
     || ( echo $SRR failed ascp download | tee -a $SRR.log ; sleep 5 ; exit1 ; return 1 )
     SRASIZE=$(du ${SRR}.sra)
@@ -1210,10 +1210,10 @@ export -f main
 #TODO
 #-allow specific accessions
 
-cd ~
+cd /dee2
 
 echo Dumping star genomes from memory
-for DIR in $(find ~/ref/ | grep /ensembl/star$ | sed 's#\/code\/\.\.##' ) ; do
+for DIR in $(find /dee2/ref/ | grep /ensembl/star$ | sed 's#\/code\/\.\.##' ) ; do
   echo $DIR ; STAR --genomeLoad Remove --genomeDir $DIR
 done
 
@@ -1285,9 +1285,9 @@ echo $ACCESSION
 export -f myfunc
 
 key_setup(){
-mkdir -p $HOME/.ssh
+mkdir -p /dee2/.ssh
 
-cat << EOF > $HOME/.ssh/guestuser
+cat << EOF > /dee2/.ssh/guestuser
 -----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEAyLJ5TihXnb2ATexgYMIkzpHgopCbctWKH8rrPZNN6PALRYjg
 1ozfeMFylSvQilFw+6bCe7HlqUQ3e6pS/jHJukEyzbJOEVR4AwuZxxctI4QH00AL
@@ -1317,11 +1317,11 @@ Qzab+/WnlQMuslmCLxXXOijq5lEDJLJ0m9hZ0sdC+j13jsTCEOnyj/XJ3VgLKifP
 -----END RSA PRIVATE KEY-----
 EOF
 
-cat << EOF > $HOME/.ssh/guestuser.pub
+cat << EOF > /dee2/.ssh/guestuser.pub
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIsnlOKFedvYBN7GBgwiTOkeCikJty1Yofyus9k03o8AtFiODWjN94wXKVK9CKUXD7psJ7seWpRDd7qlL+Mcm6QTLNsk4RVHgDC5nHFy0jhAfTQAvZ4O9a+UQ4KGXE+DwSvlKM/OJRfDw6/ds0u8UdJDuqU1v+BsqEq/OXouTSfpjOX0L96LDNMqN8Qp9cBnnV+PIPZ+ZIVpWV6r63fO+JloZ+0W04sq0MD3BdeKixisG58R/OLG6NAXTgfO/4SDzXhuPOCRKlmIPJLvfk1TO7Q8Judc2NkDpCLKaKw6SHHQnvDeu+f+CaVgyZ4FrkZlmyed9EG+PSCtAh5+QtLfRH mdz@opti
 EOF
 
-chmod -R 700 $HOME/.ssh
+chmod -R 700 /dee2/.ssh
 }
 export -f key_setup
 
@@ -1331,12 +1331,12 @@ export -f key_setup
 TESTFILE=test_pass
 if [ ! -r $TESTFILE ] ; then
   echo Initial pipeline test with E. coli dataset
-  if [ -d ~/data/ecoli/SRR057750 ] ; then
-    rm -rf ~/data/ecoli/SRR057750
+  if [ -d /dee2/data/ecoli/SRR057750 ] ; then
+    rm -rf /dee2/data/ecoli/SRR057750
   fi
   main ecoli SRR057750 VERBOSE=$VERBOSE
   TEST_CHECKSUM=a739998e33947c0a60edbde92e8f0218
-  cd ~/data/ecoli/
+  cd /dee2/data/ecoli/
   TEST_DATASET_USER_CHECKSUM=$(cat SRR057750/SRR057750*tsv | md5sum | awk '{print $1}')
   if [ "$TEST_DATASET_USER_CHECKSUM" != "$TEST_CHECKSUM" ] ; then
     echo "Test dataset did not complete properly. Md5sums do not match those provided!"
@@ -1344,14 +1344,31 @@ if [ ! -r $TESTFILE ] ; then
     exit 1
   fi
   echo "Test dataset completed successfully"
-  cd ~
+  cd /dee2
   date +"%s" > $TESTFILE
 
   # add host info
-  mkdir -p ~/.ssh && touch ~/.ssh/known_hosts
-  if [ -z $(ssh-keygen -F $SFTP_URL) ]; then
-    ssh-keyscan -H $SFTP_URL >> ~/.ssh/known_hosts
+  mkdir -p /dee2/.ssh && touch /dee2/.ssh/known_hosts
+  if [ $(ssh-keygen -F $SFTP_URL | wc -l) -eq '0' ]; then
+    ssh-keyscan -H $SFTP_URL >> /dee2/.ssh/known_hosts
   fi
+
+  #test ssh key setup
+  key_setup
+  cd /dee2/data/ecoli
+  zip -r SRR057750.ecoli.zip SRR057750
+  sftp -i /dee2/.ssh/guestuser guestuser@$SFTP_URL << EOF && KEYTEST="OK"
+put SRR057750.ecoli.zip
+EOF
+
+  if [ $KEYTEST == "OK" ] ; then
+    echo "SSH keys successfully set up"
+  else
+    echo "SSH keys not set up properly. Quitting now."
+    exit 1
+  fi
+
+
 
 else
   echo Starting pipeline
@@ -1449,7 +1466,7 @@ EOF
   while [ $count -lt 1000 ] ; do
   #while true ; do
     (( count++ ))
-    cd ~
+    cd /dee2
     echo "$count"
     ACCESSION=$(myfunc $MY_ORG $ACC_REQUEST)
     main "$MY_ORG" "$ACCESSION" VERBOSE=$VERBOSE && COMPLETE=1 || COMPLETE=0
