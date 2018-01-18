@@ -1328,7 +1328,7 @@ export -f key_setup
 ##################################################
 # Testing the pipeline with ecoli sample
 ##################################################
-TESTFILE=test_pass
+TESTFILE=/dee2/test_pass
 if [ ! -r $TESTFILE ] ; then
   echo Initial pipeline test with E. coli dataset
   if [ -d /dee2/data/ecoli/SRR057750 ] ; then
@@ -1361,7 +1361,7 @@ if [ ! -r $TESTFILE ] ; then
 put SRR057750.ecoli.zip
 EOF && KEY_SETUP=OK || KEY_SETUP=FAIL
 
-  if [ $KEY_SETUP == OK ] ; then
+  if [ $KEY_SETUP == "OK" ] ; then
     echo "SSH keys successfully set up"
   else
     echo "SSH keys not set up properly. Quitting now."
