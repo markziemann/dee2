@@ -294,8 +294,10 @@ if [ $2 != '-f' ] ; then
     PFX2=$(echo $SRR | cut -c-6)
     URL=anonftp@ftp.ncbi.nlm.nih.gov:sra/sra-instant/reads/ByRun/sra/${PFX1}/${PFX2}/${SRR}/${SRR}.sra
     ID=$DEE_DIR/.ascp/aspera-license
-    mkdir -p $DEE_DIR/.ascp
-    cat << EOF > $ID
+
+    if [ ! -d $DEE_DIR/.ascp ] ; then
+      mkdir -p $DEE_DIR/.ascp
+      cat << EOF > $ID
 -----BEGIN DSA PRIVATE KEY-----
 MIIBuwIBAAKBgQDkKQHD6m4yIxgjsey6Pny46acZXERsJHy54p/BqXIyYkVOAkEp
 KgvT3qTTNmykWWw4ovOP1+Di1c/2FpYcllcTphkWcS8lA7j012mUEecXavXjPPG0
@@ -309,7 +311,8 @@ zkWfpOvAUc8fkQAhZqv/PE6VhFQ8w03Z8GpqXx7b3NvBR+EfIx368KoCFEyfl0vH
 Ta7g6mGwIMXrdTQQ8fZs
 -----END DSA PRIVATE KEY-----
 EOF
-    chmod 700 $DEE_DIR/.ascp
+      chmod 700 $DEE_DIR/.ascp
+    fi
     ascp -l 500m -O 33001 -T -i $ID $URL . \
     || ( echo $SRR failed ascp download | tee -a $SRR.log ; sleep 5 ; exit1 ; return 1 )
     SRASIZE=$(du ${SRR}.sra)
