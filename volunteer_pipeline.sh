@@ -1,6 +1,7 @@
 #!/bin/bash
 #sra2mx for docker image
 #Copyright Mark Ziemann 2015 to 2017 mark.ziemann@gmail.com
+set -x
 HOME=/dee2
 LASTVAR=$(echo $@ | rev | cut -d ' ' -f1 | rev)
 if [ $LASTVAR == "-v" ] ; then
