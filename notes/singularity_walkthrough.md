@@ -1,5 +1,10 @@
-# Running DEE via singularity
-First, install singularity like this:
+# Running DEE2 via singularity
+TODO
+
+# Creating a DEE2 singularity image from a docker image
+The strategy is to convert a working docker image and then make some modifications to make it suitable for non-root user on HPC.
+
+Now need a box with root priviledges install singularity:
 
 ```
 sudo wget -O- http://neuro.debian.net/lists/xenial.us-ca.full | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list
@@ -7,7 +12,7 @@ sudo apt-key adv --recv-keys --keyserver hkp://pool.sks-keyservers.net:80 0xA5D3
 sudo apt-get update
 sudo apt-get install -y singularity-container
 ```
-then check that it work
+then check that singularity works
 ```
 singularity --version
 ```
@@ -26,8 +31,27 @@ mziemann/tallyup
 ```
 You'll see that there's a new .img file in the current working directory
 
-Now check that the image works. Before we do that, consider whether the home directory needs to be bound (this is the default). Many servers have very limited $HOME data storage, so you may need to bind it using the -H option. Similarly the /tmp directory may be very limited and can be bound wuth the -B option
+Now time to make some modifications as singularity is designed to be run by non-root user as compared to docker.
 
 ```
-singularity run -H /scratch/mziemann/:/home/mziemann/ -B /scratch/mziemann:/tmp/ mziemann_tallyup-2017-12-03-95a2303d5deb.img scerevisiae
+mkdir tmp
+sudo singularity shell -w -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-18-adbe9f64b5be.img
+```
+
+Once inside the container, check disk space folder and shift /dee2 to path with storage, then check that it works, then exit
+
+```
+df -h
+mv /dee2 /tmp
+ln -s /tmp/dee2 /
+cd /dee2
+chmod -R 777 *
+chmod 700 /dee2/.ssh/guestuser
+bash /dee2/code/volunteer_pipeline.sh ecoli SRR057750
+exit
+```
+
+The changes made to the container will be saved. Now check that it works from outside the container
+```
+singularity run -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-18-adbe9f64b5be.img ecoli SRR057750
 ```
