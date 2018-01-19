@@ -44,17 +44,17 @@ Once inside the container, check disk space folder and shift /dee2 to path with 
 df -h
 mv /dee2 /tmp
 ln -s /tmp/dee2 /
-cd /dee2
+cd /dee
 chmod -R 777 *
-chmod 700 /dee2/.ssh/guestuser
-bash /dee2/code/volunteer_pipeline.sh ecoli SRR057750
-rm -rm /dee2/.ssh /dee2/test_pass /dee2/data/ecoli/SRR057750
+rm test_pass
+rm -rf /dee2/data/ecoli/SRR057750
 exit
 ```
 
 The changes made to the container will be saved. Now check that it works from outside the container
 ```
-singularity run -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-18-xxx.img
+sudo chown mziemann mziemann_tallyup-2018-01-19-c76488ce3d2d.img
+singularity run -w -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-19-c76488ce3d2d.img
 ```
 
 You're now free to run the image, so long as the /tmp directory exists in the present working directory. Here are three examples.
