@@ -29,9 +29,7 @@ docker run \
 singularityware/docker2singularity \
 mziemann/tallyup
 ```
-You'll see that there's a new .img file in the current working directory
-
-Now time to make some modifications as singularity is designed to be run by non-root user as compared to docker.
+You'll see that there's a new .img file in the current working directory. Now need to make some modifications as singularity is designed to be run by non-root user as compared to docker.
 
 ```
 mkdir tmp
@@ -51,16 +49,69 @@ rm -rf /dee2/data/ecoli/SRR057750
 exit
 ```
 
-The changes made to the container will be saved. Now check that it works from outside the container
+The changes made to the container will be saved. Now check that it works from outside the container. 
 ```
-sudo chown mziemann mziemann_tallyup-2018-01-19-c76488ce3d2d.img
-singularity run -w -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-19-c76488ce3d2d.img
+sudo chown mziemann mziemann_tallyup-2018-01-18-xxx.img
+singularity run -w -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-18-xxx.img
+```
+Copy the image and tmp folder to the HPC (without root access) and test it as above.
+
+## Running DEE2 via singularity
+(Under construction)
+Download the current image from here(link).
+
+unpack the image
+```
+tar xf dee2_sing.tar.gz
 ```
 
-You're now free to run the image, so long as the /tmp directory exists in the present working directory. Here are three examples.
+Run the test in writable mode, ensuring the /tmp directory exists in the present working directory. This will write new ssh keys and confirm the pipeline is working as expected.
+```
+singularity run -w -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-18-xxx.img
+```
+
+You're now free to run the image. Here are three examples to try in a normal shell.
 ```
 singularity run -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-18-xxx.img ecoli SRR057751
 singularity run -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-18-xxx.img celegans
 singularity run -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-18-xxx.img
+nohup run-one-constantly singularity run -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-18-xxx.img
+nohup bash -c 'while true ; do singularity run -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-18-xxx.img ; done'
+```
 
+Now try to schedule jobs. Below is an example sbatch file. Modify memory requirements and target organism as needed.
+```
+#!/bin/bash
+# NOTE: To activate a SLURM option, remove the whitespace between the '#' and 'SBATCH'
+
+# To give your job a name, replace "MyJob" with an appropriate name
+#SBATCH --job-name=dee2
+
+# To set a project account for credit charging, 
+
+# Request CPU resource for a serial job
+#SBATCH --ntasks=1
+#SBATCH --ntasks-per-node=12
+#SBATCH --cpus-per-task=1
+
+# Memory usage (MB)
+# SBATCH --mem-per-cpu=1000
+
+# Set your minimum acceptable walltime, format: day-hours:minutes:seconds
+#SBATCH --time=0-10:00:00
+
+#SBATCH --partition=m3a
+#SBATCH --reservation=epigenetics
+
+# Set the file for output (stdout)
+#SBATCH --output=MyJob-%j.out
+
+# Set the file for error log (stderr)
+#SBATCH --error=MyJob-%j.err
+
+
+module load singularity/2.3.1
+cd /path/to/working/image/
+>sbatch.log
+nohup bash -c 'while true ; do singularity run -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-18-xxx.img >sbatch.log 2>&1 ; done'
 ```
