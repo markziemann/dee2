@@ -1,7 +1,7 @@
-# Running DEE2 via singularity
-TODO
+# Singularity guide
+This guide consists of two parts: (i) creating the image and (ii) running the image on HPC with slurm based scheduling.
 
-# Creating a DEE2 singularity image from a docker image
+## Creating a DEE2 singularity image from a docker image
 The strategy is to convert a working docker image and then make some modifications to make it suitable for non-root user on HPC.
 
 Now need a box with root priviledges install singularity:
