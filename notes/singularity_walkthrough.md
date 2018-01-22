@@ -58,12 +58,13 @@ Copy the image and tmp folder to the HPC (without root access) and test it as ab
 
 ## Running DEE2 via singularity
 (Under construction)
-Download the current image from here(link).
+Download the current image from [here](https://vm-118-138-241-34.erc.monash.edu.au/images/current_singularity_img.tar.gz).
 
-unpack the image
+unpack the image.
 ```
-tar xf dee2_sing.tar.gz
+tar xf current_singularity_img.tar.gz
 ```
+You will see an img file and tmp folder, these must remain in the same working directory.
 
 Run the test in writable mode, ensuring the /tmp directory exists in the present working directory. This will write new ssh keys and confirm the pipeline is working as expected.
 ```
@@ -79,7 +80,7 @@ nohup run-one-constantly singularity run -B $(pwd)/tmp:/tmp mziemann_tallyup-201
 nohup bash -c 'while true ; do singularity run -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-18-xxx.img ; done'
 ```
 
-Now try to schedule jobs. Below is an example sbatch file. Modify memory requirements and target organism as needed.
+Now try to schedule jobs. Below is an example sbatch file that works for me. Modify memory requirements and target organism as needed.
 ```
 #!/bin/bash
 # NOTE: To activate a SLURM option, remove the whitespace between the '#' and 'SBATCH'
