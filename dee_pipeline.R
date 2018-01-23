@@ -10,7 +10,9 @@ if(length(new.packages)) {
 }
 
 library(SRAdb)
+library(parallel)
 
+#for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae") ) {
 for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae") ) {
   #create a list of species full names
   species_list<-c("'Arabidopsis thaliana'","'Caenorhabditis elegans'","'Drosophila melanogaster'","'Danio rerio'","'Escherichia coli'","'Homo sapiens'", "'Mus musculus'", "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
@@ -39,7 +41,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   #calculate difference between
   dif<-now-ct
   #define 4week in seconds
-  wk<-60*60*24*7*4*12
+  wk<-60*60*24*7*1
   #Test if ctime older than a week, redownload if neccessary
   if (dif>wk) {print("sqlfile too old - getting a new one now..") ; unlink(sqlfile) ; sqlfile <<- getSRAdbFile() } else {print("sqlfile still OK!")}
 
@@ -94,7 +96,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   se_list<-rownames(subset(file.info(se_list),size!=0))
 
   #Need to ensure matrix will be square
-  x<-as.matrix(table(factor(as.numeric(lapply(se_list,rowcnt)))))
+  x<-as.matrix(table(factor(as.numeric(mclapply(se_list,rowcnt)))))
   expected_len=as.numeric(rownames(tail(x,n=1)))
   y<-t(as.data.frame(mclapply(se_list,rowcnt)))
   rownames(y)=as.character(se_list)
@@ -108,7 +110,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   }
 
   se_list<-rownames(subset(y,y==expected_len))
-  se<-do.call("cbind", lapply(se_list, read.tsv))
+  se<-do.call("cbind", mclapply(se_list, read.tsv))
   print("se list finished OK")
 
   #now focus on kallisto data
@@ -124,7 +126,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   }
 
   ke_list<-rownames(subset(file.info(ke_list),size!=0))
-  x<-as.matrix(table(factor(as.numeric(lapply(ke_list,rowcnt)))))
+  x<-as.matrix(table(factor(as.numeric(mclapply(ke_list,rowcnt)))))
   expected_len=as.numeric(rownames(tail(x,n=1)))
 
   LEN=length(rownames(subset(y,y!=expected_len)))
@@ -138,7 +140,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   y<-t(as.data.frame(mclapply(ke_list,rowcnt)))
   rownames(y)=as.character(ke_list)
   ke_list<-rownames(subset(y,y==expected_len))
-  ke<-do.call("cbind", lapply(ke_list, read.tsv))
+  ke<-do.call("cbind", mclapply(ke_list, read.tsv))
 
   COLS=paste(grep("_est_counts", names(ke), value = TRUE))
   ke_counts<-ke[,COLS]
@@ -161,7 +163,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
 
 #  Moved this part to the end due to a small number of files posessing the wrong number of lines 
   write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
-  SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ",queue_name ," ubuntu@118.138.241.34:~/Public")
+  SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ",queue_name ," ubuntu@118.138.240.228:~/Public")
   system(SCP_COMMAND)
 
 

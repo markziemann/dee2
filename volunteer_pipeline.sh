@@ -1224,9 +1224,9 @@ MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
 NUM_CPUS=$(grep -c ^processor /proc/cpuinfo)
 CPU_SPEED=$(lscpu | grep MHz | awk '{print $NF}' | sort -k2gr)
 
-ACC_URL="https://vm-118-138-241-34.erc.monash.edu.au/acc.html"
-ACC_REQUEST="https://vm-118-138-241-34.erc.monash.edu.au/cgi-bin/acc.sh"
-SFTP_URL="118.138.241.34"
+ACC_URL="https://vm-118-138-240-228.erc.monash.edu.au/acc.html"
+ACC_REQUEST="https://vm-118-138-240-228.erc.monash.edu.au/cgi-bin/acc.sh"
+SFTP_URL="118.138.240.228"
 
 if [ ! -z $MY_ORG ] ; then
   ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae' \
@@ -1287,7 +1287,7 @@ echo $ACCESSION
 export -f myfunc
 
 key_setup(){
-SFTP_URL="118.138.241.34"
+SFTP_URL="118.138.240.228"
 mkdir -p /dee2/.ssh
 
 touch /dee2/.ssh/known_hosts
