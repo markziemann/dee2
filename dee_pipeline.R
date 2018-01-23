@@ -12,7 +12,6 @@ if(length(new.packages)) {
 library(SRAdb)
 library(parallel)
 
-#for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae") ) {
 for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae") ) {
   #create a list of species full names
   species_list<-c("'Arabidopsis thaliana'","'Caenorhabditis elegans'","'Drosophila melanogaster'","'Danio rerio'","'Escherichia coli'","'Homo sapiens'", "'Mus musculus'", "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
@@ -96,9 +95,9 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   se_list<-rownames(subset(file.info(se_list),size!=0))
 
   #Need to ensure matrix will be square
-  x<-as.matrix(table(factor(as.numeric(mclapply(se_list,rowcnt)))))
+  x<-as.matrix(table(factor(as.numeric(mclapply(se_list,rowcnt,mc.cores = 8 )))))
   expected_len=as.numeric(rownames(tail(x,n=1)))
-  y<-t(as.data.frame(mclapply(se_list,rowcnt)))
+  y<-t(as.data.frame(mclapply(se_list,rowcnt,mc.cores = 8 )))
   rownames(y)=as.character(se_list)
 
   LEN=length(rownames(subset(y,y!=expected_len)))
@@ -110,7 +109,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   }
 
   se_list<-rownames(subset(y,y==expected_len))
-  se<-do.call("cbind", mclapply(se_list, read.tsv))
+  se<-do.call("cbind", mclapply(se_list, read.tsv,8 ))
   print("se list finished OK")
 
   #now focus on kallisto data
@@ -126,7 +125,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   }
 
   ke_list<-rownames(subset(file.info(ke_list),size!=0))
-  x<-as.matrix(table(factor(as.numeric(mclapply(ke_list,rowcnt)))))
+  x<-as.matrix(table(factor(as.numeric(mclapply(ke_list,rowcnt,mc.cores = 8)))))
   expected_len=as.numeric(rownames(tail(x,n=1)))
 
   LEN=length(rownames(subset(y,y!=expected_len)))
@@ -137,10 +136,10 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   runs_todo<-unique(union(runs_todo,p))
   }
 
-  y<-t(as.data.frame(mclapply(ke_list,rowcnt)))
+  y<-t(as.data.frame(mclapply(ke_list,rowcnt,mc.cores = 8 )))
   rownames(y)=as.character(ke_list)
   ke_list<-rownames(subset(y,y==expected_len))
-  ke<-do.call("cbind", mclapply(ke_list, read.tsv))
+  ke<-do.call("cbind", mclapply(ke_list, read.tsv,mc.cores = 8))
 
   COLS=paste(grep("_est_counts", names(ke), value = TRUE))
   ke_counts<-ke[,COLS]
