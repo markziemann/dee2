@@ -42,7 +42,7 @@ Once inside the container, check disk space folder and shift /dee2 to path with 
 df -h
 mv /dee2 /tmp
 ln -s /tmp/dee2 /
-cd /dee
+cd /dee2
 chmod -R 777 *
 rm test_pass
 rm -rf /dee2/data/ecoli/SRR057750
