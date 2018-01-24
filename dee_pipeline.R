@@ -95,9 +95,9 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   se_list<-rownames(subset(file.info(se_list),size!=0))
 
   #Need to ensure matrix will be square
-  x<-as.matrix(table(factor(as.numeric(mclapply(se_list,rowcnt,mc.cores = 8 )))))
+  x<-as.matrix(table(factor(as.numeric(mclapply(se_list,rowcnt,mc.cores = 4 )))))
   expected_len=as.numeric(rownames(tail(x,n=1)))
-  y<-t(as.data.frame(mclapply(se_list,rowcnt,mc.cores = 8 )))
+  y<-t(as.data.frame(mclapply(se_list,rowcnt,mc.cores = 4 )))
   rownames(y)=as.character(se_list)
 
   LEN=length(rownames(subset(y,y!=expected_len)))
@@ -109,7 +109,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   }
 
   se_list<-rownames(subset(y,y==expected_len))
-  se<-do.call("cbind", mclapply(se_list, read.tsv,8 ))
+  se<-do.call("cbind", mclapply(se_list, read.tsv,4 ))
   print("se list finished OK")
 
   #now focus on kallisto data
@@ -125,7 +125,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   }
 
   ke_list<-rownames(subset(file.info(ke_list),size!=0))
-  x<-as.matrix(table(factor(as.numeric(mclapply(ke_list,rowcnt,mc.cores = 8)))))
+  x<-as.matrix(table(factor(as.numeric(mclapply(ke_list,rowcnt,mc.cores = 4)))))
   expected_len=as.numeric(rownames(tail(x,n=1)))
 
   LEN=length(rownames(subset(y,y!=expected_len)))
@@ -136,10 +136,10 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   runs_todo<-unique(union(runs_todo,p))
   }
 
-  y<-t(as.data.frame(mclapply(ke_list,rowcnt,mc.cores = 8 )))
+  y<-t(as.data.frame(mclapply(ke_list,rowcnt,mc.cores = 4 )))
   rownames(y)=as.character(ke_list)
   ke_list<-rownames(subset(y,y==expected_len))
-  ke<-do.call("cbind", mclapply(ke_list, read.tsv,mc.cores = 8))
+  ke<-do.call("cbind", mclapply(ke_list, read.tsv,mc.cores = 4))
 
   COLS=paste(grep("_est_counts", names(ke), value = TRUE))
   ke_counts<-ke[,COLS]
@@ -148,6 +148,55 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   ke_tpm<-ke[,COLS]
   print("ke list finished OK")
 
+  #QC data
+  #create the qc matrix
+  system("for I in `find . | grep qc$` ; do grep ':' $I > tmp ; mv tmp $I ; done")
+  print("generate a list of qc files to import and merge")
+  qc_list<-list.files(path = ".", pattern = ".qc" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
+
+  #redefine read.colon.tsv
+  read.colon.tsv<-function(file, header = FALSE, sep = ":", quote = "\"", dec = ".", fill = TRUE, comment.char = "", ...){
+  read.table(file = file, sep = sep, quote = quote, dec = dec, fill = fill, row.names=1, comment.char = comment.char, ...)}
+
+  rowcnt<-function(file){nrow(read.table(file,fill=T)) }
+
+  #add the failed datasets to the todo list
+  LEN=length(rownames(subset(file.info(qc_list),size==0)))
+  if (LEN!=0){
+  p<-rownames(subset(file.info(qc_list),size==0))
+  p<-unlist(strsplit(rownames(p),'/'))
+  p<-p[seq(1,length(p),2)]
+  runs_todo<-unique(union(runs_todo,p))
+  }
+
+  qc_list<-rownames(subset(file.info(qc_list),size!=0))
+
+  #Need to ensure matrix will be square
+  x<-as.matrix(table(factor(as.numeric(mclapply(qc_list,rowcnt,mc.cores = 4 )))))
+  expected_len=as.numeric(rownames(tail(x,n=1)))
+  y<-t(as.data.frame(mclapply(qc_list,rowcnt,mc.cores = 4 )))
+  rownames(y)=as.character(qc_list)
+
+  LEN=length(rownames(subset(y,y!=expected_len)))
+  if (LEN!=0){
+  p<-rownames(subset(y,y!=expected_len))
+  p<-unlist(strsplit(p,'/'))
+  p<-p[seq(1,length(p),2)]
+  runs_todo<-unique(union(runs_todo,p))
+  }
+
+  qc_list<-rownames(subset(y,y==expected_len))
+  qc<-do.call("cbind", mclapply(qc_list, read.colon.tsv,4 ))
+  colnames(qc)<-sapply(strsplit(sub("./","",qc_list), "/"), head, 1)
+  print("qc list finished OK")
+
+
+  #collect the logs
+
+
+
+
+  ##Writing files
   print("writing SE mx")
   OUT=paste(MXDIR,"/",org,"_se.tsv",sep="")
   write.table(se,file=OUT,sep="\t",quote=F,row.names=T)
@@ -160,11 +209,16 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   OUT=paste(MXDIR,"/",org,"_ke_tpm.tsv",sep="")
   write.table(ke_tpm,file=OUT,sep="\t",quote=F,row.names=T)
 
-#  Moved this part to the end due to a small number of files posessing the wrong number of lines 
+  print("writing QC mx")
+  OUT=paste(MXDIR,"/",org,"_qc.tsv",sep="")
+  write.table(qc,file=OUT,sep="\t",quote=F,row.names=T)
+
+
+
+  #Moved this part to the end due to a small number of files posessing the wrong number of lines 
   write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
   SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ",queue_name ," ubuntu@118.138.240.228:~/Public")
   system(SCP_COMMAND)
-
 
   setwd(CODEWD)
 
