@@ -1,23 +1,15 @@
 #!/usr/bin/env Rscript
 setwd("/scratch/mziemann/dee2/code/") 
 
-list.of.packages <- c("SRAdb")
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-
-if(length(new.packages)) {
-  #install.packages(new.packages)
-  source("https://bioconductor.org/biocLite.R") ; biocLite("SRAdb")
-}
-
 library(SRAdb)
 library(parallel)
 
 for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae") ) {
+#org="athaliana"
   #create a list of species full names
   species_list<-c("'Arabidopsis thaliana'","'Caenorhabditis elegans'","'Drosophila melanogaster'","'Danio rerio'","'Escherichia coli'","'Homo sapiens'", "'Mus musculus'", "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
   #now annotate the short names 
   names(species_list)<- c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae")
-
   species_name<-species_list[[org]]
 
   ###Set some directories
@@ -27,12 +19,14 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   MXDIR=normalizePath("../mx/")
   QUEUEWD=normalizePath("../queue/")
 
-  setwd(SRADBWD)
+########################
+# Get info from sradb
+########################
 
+  setwd(SRADBWD)
   sqlfile <- 'SRAmetadb.sqlite'
   #sqlfile<-paste(SRADBWD,"/SRAmetadb.sqlite",sep="")
   if(!file.exists('SRAmetadb.sqlite')) sqlfile <<- getSRAdbFile()
-
   #creation time
   ct<-as.numeric(file.info('SRAmetadb.sqlite')$ctime)
   #current time
@@ -60,17 +54,15 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   accessions<-sraConvert(accessions$experiment_accession,sra_con = sra_con)
   runs<-accessions$run
 
-  ###### Here need to determine which datasets already processed
+########################
+# Now determine which datasets have already been processed and completed
+########################
   setwd(DATAWD)
   finished_files<-list.files(path = ".", pattern = "finished" , full.names = FALSE, recursive = TRUE, no.. = FALSE)
   runs_done<-basename(as.character(strsplit(finished_files,".finished")))
   runs_todo<-setdiff(runs, runs_done)
   setwd(CODEWD)
   queue_name=paste(QUEUEWD,"/",org,".queue.txt",sep="")
-#  Moved this part to the end due to a small number of files posessing the wrong number of lines 
-#  write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
-#  SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ",queue_name ," ubuntu@118.138.241.34:~/Public")
-#  system(SCP_COMMAND)
 
   setwd(DATAWD)
 
@@ -95,9 +87,9 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   se_list<-rownames(subset(file.info(se_list),size!=0))
 
   #Need to ensure matrix will be square
-  x<-as.matrix(table(factor(as.numeric(mclapply(se_list,rowcnt,mc.cores = 4 )))))
+  x<-as.matrix(table(factor(as.numeric(mclapply(se_list,rowcnt, mc.cores = detectCores() )))))
   expected_len=as.numeric(rownames(tail(x,n=1)))
-  y<-t(as.data.frame(mclapply(se_list,rowcnt,mc.cores = 4 )))
+  y<-t(as.data.frame(mclapply(se_list,rowcnt, mc.cores = detectCores()  )))
   rownames(y)=as.character(se_list)
 
   LEN=length(rownames(subset(y,y!=expected_len)))
@@ -108,8 +100,16 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   runs_todo<-unique(union(runs_todo,p))
   }
 
-  se_list<-rownames(subset(y,y==expected_len))
-  se<-do.call("cbind", mclapply(se_list, read.tsv,4 ))
+  se_list<-rownames(subset(y,y=!expected_len))
+  se_name=paste(org,"_se_list.txt",sep="")
+  write.table(se_list,file=se_name,quote=F,row.names=F,header=F)
+
+############################
+#  Matrix generation is simply too memory hungry and slow not doing for now
+#  se<-do.call("cbind", mclapply(se_list, read.tsv,2 ))
+#  se<-do.call("cbind", lapply(se_list, read.tsv ))
+#############################
+
   print("se list finished OK")
 
   #now focus on kallisto data
@@ -125,8 +125,11 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   }
 
   ke_list<-rownames(subset(file.info(ke_list),size!=0))
-  x<-as.matrix(table(factor(as.numeric(mclapply(ke_list,rowcnt,mc.cores = 4)))))
+  x<-as.matrix(table(factor(as.numeric(mclapply(ke_list,rowcnt , mc.cores = detectCores() )))))
   expected_len=as.numeric(rownames(tail(x,n=1)))
+
+  y<-t(as.data.frame(mclapply(ke_list,rowcnt, mc.cores = detectCores()  )))
+  rownames(y)=as.character(ke_list)
 
   LEN=length(rownames(subset(y,y!=expected_len)))
   if (LEN!=0){
@@ -136,16 +139,24 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   runs_todo<-unique(union(runs_todo,p))
   }
 
-  y<-t(as.data.frame(mclapply(ke_list,rowcnt,mc.cores = 4 )))
+  y<-t(as.data.frame(mclapply(ke_list,rowcnt , mc.cores = detectCores() )))
+
   rownames(y)=as.character(ke_list)
   ke_list<-rownames(subset(y,y==expected_len))
-  ke<-do.call("cbind", mclapply(ke_list, read.tsv,mc.cores = 4))
+  ke_name=paste(org,"_ke_list.txt",sep="")
+  write.table(ke_list,file=ke_name,quote=F,row.names=F,header=F)
 
-  COLS=paste(grep("_est_counts", names(ke), value = TRUE))
-  ke_counts<-ke[,COLS]
-  COLS=NULL
-  COLS=paste(grep("_tpm", names(ke), value = TRUE))
-  ke_tpm<-ke[,COLS]
+############################
+#  Matrix generation is simply too memory hungry and slow not doing for now
+#  ke<-do.call("cbind", mclapply(ke_list, read.tsv,mc.cores = 2 ))
+#  ke<-do.call("cbind", lapply(ke_list, read.tsv))
+############################
+#  COLS=paste(grep("_est_counts", names(ke), value = TRUE))
+#  ke_counts<-ke[,COLS]
+#  COLS=NULL
+#  COLS=paste(grep("_tpm", names(ke), value = TRUE))
+#  ke_tpm<-ke[,COLS]
+############################
   print("ke list finished OK")
 
   #QC data
@@ -172,9 +183,9 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   qc_list<-rownames(subset(file.info(qc_list),size!=0))
 
   #Need to ensure matrix will be square
-  x<-as.matrix(table(factor(as.numeric(mclapply(qc_list,rowcnt,mc.cores = 4 )))))
+  x<-as.matrix(table(factor(as.numeric(mclapply(qc_list,rowcnt, mc.cores = detectCores()  )))))
   expected_len=as.numeric(rownames(tail(x,n=1)))
-  y<-t(as.data.frame(mclapply(qc_list,rowcnt,mc.cores = 4 )))
+  y<-t(as.data.frame(mclapply(qc_list,rowcnt, mc.cores = detectCores()  )))
   rownames(y)=as.character(qc_list)
 
   LEN=length(rownames(subset(y,y!=expected_len)))
@@ -186,34 +197,28 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   }
 
   qc_list<-rownames(subset(y,y==expected_len))
-  qc<-do.call("cbind", mclapply(qc_list, read.colon.tsv,4 ))
+  qc<-do.call("cbind", mclapply(qc_list, read.colon.tsv, , mc.cores = detectCores()  ))
   colnames(qc)<-sapply(strsplit(sub("./","",qc_list), "/"), head, 1)
   print("qc list finished OK")
 
-
   #collect the logs
 
-
-
-
   ##Writing files
-  print("writing SE mx")
-  OUT=paste(MXDIR,"/",org,"_se.tsv",sep="")
-  write.table(se,file=OUT,sep="\t",quote=F,row.names=T)
+#  print("writing SE mx")
+#  OUT=paste(MXDIR,"/",org,"_se.tsv",sep="")
+#  write.table(se,file=OUT,sep="\t",quote=F,row.names=T)
 
-  print("writing KE counts mx")
-  OUT=paste(MXDIR,"/",org,"_ke_counts.tsv",sep="")
-  write.table(ke_counts,file=OUT,sep="\t",quote=F,row.names=T)
+#  print("writing KE counts mx")
+#  OUT=paste(MXDIR,"/",org,"_ke_counts.tsv",sep="")
+#  write.table(ke_counts,file=OUT,sep="\t",quote=F,row.names=T)
 
-  print("writing KE tpm mx")
-  OUT=paste(MXDIR,"/",org,"_ke_tpm.tsv",sep="")
-  write.table(ke_tpm,file=OUT,sep="\t",quote=F,row.names=T)
+#  print("writing KE tpm mx")
+#  OUT=paste(MXDIR,"/",org,"_ke_tpm.tsv",sep="")
+#  write.table(ke_tpm,file=OUT,sep="\t",quote=F,row.names=T)
 
-  print("writing QC mx")
-  OUT=paste(MXDIR,"/",org,"_qc.tsv",sep="")
-  write.table(qc,file=OUT,sep="\t",quote=F,row.names=T)
-
-
+#  print("writing QC mx")
+#  OUT=paste(MXDIR,"/",org,"_qc.tsv",sep="")
+#  write.table(qc,file=OUT,sep="\t",quote=F,row.names=T)
 
   #Moved this part to the end due to a small number of files posessing the wrong number of lines 
   write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
@@ -225,4 +230,4 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
 }
 
 setwd(MXDIR)
-system("pbzip2 -kf *tsv")
+#system("pbzip2 -kf *tsv")
