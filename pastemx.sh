@@ -6,11 +6,12 @@ CODE_DIR=$(pwd)
 PROJ_DIR=$(echo $CODE_DIR | rev | cut -d '/' -f2- | rev )
 DATA_DIR=$PROJ_DIR/data/$ORG/
 MX_DIR=$PROJ_DIR/mx/
-SE_MX=$MX_DIR/${ORG}_se.mx
+SE_MX=$MX_DIR/${ORG}_se.tsv
 
 #use list output by R to generate matrix
 
 SE_LIST=$DATA_DIR/${ORG}_se_list.txt
+grep -v x $SE_LIST > $SE_LIST.tmp ; mv $SE_LIST.tmp $SE_LIST
 SE_GENES=$DATA_DIR/${ORG}_se_genes.txt
 
 #divide the list into sets of 1000
@@ -36,7 +37,7 @@ parallel paste1 ::: *split
 #  | sed 1d >> $SPLIT.tsv
 #done
 
-echo GeneID | sed 's/$/\t/' > $SE_GENES
+echo GeneID > $SE_GENES
 cut -f1 $(head -1 $SE_LIST ) | sed 1d >> $SE_GENES
 
 #bring it all together
