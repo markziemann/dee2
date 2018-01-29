@@ -2,7 +2,7 @@
 Here I provide a guide for users that want to use the pipeline to analyse public SRA/GEO data or their own fastq files. This is under construction and will undergo major changes.
 
 ## Google cloud
-Open a paid Google Cloud account and at the dashboard, click the menu button on the top left of screen and click "Compute Engine". You might have to wait a few minutes. Click "Create an instance template" and follow the process to specify the the image characteristics suitable for mamalian sized genomes:
+Open a paid Google Cloud account - as a news users receive a free credit of $300. At the dashboard, click the menu button on the top left of screen and click "Compute Engine". You might have to wait a few minutes. Click "Create an instance template" and follow the process to specify the the image characteristics suitable for mamalian sized genomes:
 * 16+ vCPUs
 * 60 GB memory
 * OS:Default Debian is OK or Ubuntu 16.04
