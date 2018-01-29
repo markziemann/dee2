@@ -170,7 +170,7 @@ parallel paste1 ::: *split
 #done
 
 echo QC_metric > $QC_GENES
-cut -f1 $(head -1 $QC_LIST ) | sed 1d >> $QC_GENES
+cut -d ':' -f1 $(head -1 $QC_LIST ) | sed 1d >> $QC_GENES
 
 #bring it all together
 ls *split*.tsv
