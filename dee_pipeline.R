@@ -5,7 +5,7 @@ library(SRAdb)
 library(parallel)
 
 for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae") ) {
-#org="athaliana"
+#org="celegans"
   #create a list of species full names
   species_list<-c("'Arabidopsis thaliana'","'Caenorhabditis elegans'","'Drosophila melanogaster'","'Danio rerio'","'Escherichia coli'","'Homo sapiens'", "'Mus musculus'", "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
   #now annotate the short names 
@@ -71,7 +71,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   read.table(file = file, header = header, sep = sep, quote = quote, dec = dec, fill = fill, row.names=1, comment.char = comment.char, ...)}
 
   print("generate a list of se tsv files to import and merge")
-  se_list<-list.files(path = ".", pattern = "se.tsv" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
+  se_list<-list.files(path = ".", pattern = "\\.se.tsv$" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
 
   rowcnt<-function(file){nrow(read.table(file,fill=T)) }
 
@@ -102,19 +102,17 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
 
   se_list<-rownames(subset(y,y=!expected_len))
   se_name=paste(org,"_se_list.txt",sep="")
-  write.table(se_list,file=se_name,quote=F,row.names=F,header=F)
+  write.table(se_list,file=se_name,quote=F,row.names=F)
 
 ############################
 #  Matrix generation is simply too memory hungry and slow not doing for now
-#  se<-do.call("cbind", mclapply(se_list, read.tsv,2 ))
-#  se<-do.call("cbind", lapply(se_list, read.tsv ))
 #############################
 
   print("se list finished OK")
 
   #now focus on kallisto data
   
-  ke_list<-list.files(path = ".", pattern = "ke.tsv" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
+  ke_list<-list.files(path = ".", pattern = "\\.ke.tsv$" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
 
   LEN=length(rownames(subset(file.info(se_list),size==0)))
   if (LEN!=0){
@@ -144,18 +142,10 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   rownames(y)=as.character(ke_list)
   ke_list<-rownames(subset(y,y==expected_len))
   ke_name=paste(org,"_ke_list.txt",sep="")
-  write.table(ke_list,file=ke_name,quote=F,row.names=F,header=F)
+  write.table(ke_list,file=ke_name,quote=F,row.names=F)
 
 ############################
 #  Matrix generation is simply too memory hungry and slow not doing for now
-#  ke<-do.call("cbind", mclapply(ke_list, read.tsv,mc.cores = 2 ))
-#  ke<-do.call("cbind", lapply(ke_list, read.tsv))
-############################
-#  COLS=paste(grep("_est_counts", names(ke), value = TRUE))
-#  ke_counts<-ke[,COLS]
-#  COLS=NULL
-#  COLS=paste(grep("_tpm", names(ke), value = TRUE))
-#  ke_tpm<-ke[,COLS]
 ############################
   print("ke list finished OK")
 
@@ -163,11 +153,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   #create the qc matrix
   system("for I in `find . | grep qc$` ; do grep ':' $I > tmp ; mv tmp $I ; done")
   print("generate a list of qc files to import and merge")
-  qc_list<-list.files(path = ".", pattern = ".qc" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
-
-  #redefine read.colon.tsv
-  read.colon.tsv<-function(file, header = FALSE, sep = ":", quote = "\"", dec = ".", fill = TRUE, comment.char = "", ...){
-  read.table(file = file, sep = sep, quote = quote, dec = dec, fill = fill, row.names=1, comment.char = comment.char, ...)}
+  qc_list<-list.files(path = ".", pattern = "\\.qc$" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
 
   rowcnt<-function(file){nrow(read.table(file,fill=T)) }
 
@@ -175,8 +161,8 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   LEN=length(rownames(subset(file.info(qc_list),size==0)))
   if (LEN!=0){
   p<-rownames(subset(file.info(qc_list),size==0))
-  p<-unlist(strsplit(rownames(p),'/'))
-  p<-p[seq(1,length(p),2)]
+  p<-strsplit(p,'/')
+  p<-sapply(p, "[[", 2)
   runs_todo<-unique(union(runs_todo,p))
   }
 
@@ -197,28 +183,8 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   }
 
   qc_list<-rownames(subset(y,y==expected_len))
-  qc<-do.call("cbind", mclapply(qc_list, read.colon.tsv, , mc.cores = detectCores()  ))
-  colnames(qc)<-sapply(strsplit(sub("./","",qc_list), "/"), head, 1)
-  print("qc list finished OK")
-
-  #collect the logs
-
-  ##Writing files
-#  print("writing SE mx")
-#  OUT=paste(MXDIR,"/",org,"_se.tsv",sep="")
-#  write.table(se,file=OUT,sep="\t",quote=F,row.names=T)
-
-#  print("writing KE counts mx")
-#  OUT=paste(MXDIR,"/",org,"_ke_counts.tsv",sep="")
-#  write.table(ke_counts,file=OUT,sep="\t",quote=F,row.names=T)
-
-#  print("writing KE tpm mx")
-#  OUT=paste(MXDIR,"/",org,"_ke_tpm.tsv",sep="")
-#  write.table(ke_tpm,file=OUT,sep="\t",quote=F,row.names=T)
-
-#  print("writing QC mx")
-#  OUT=paste(MXDIR,"/",org,"_qc.tsv",sep="")
-#  write.table(qc,file=OUT,sep="\t",quote=F,row.names=T)
+  qc_name=paste(org,"_qc_list.txt",sep="")
+  write.table(qc_list,file=qc_name,quote=F,row.names=F)
 
   #Moved this part to the end due to a small number of files posessing the wrong number of lines 
   write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
@@ -229,5 +195,4 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
 
 }
 
-setwd(MXDIR)
-#system("pbzip2 -kf *tsv")
+system("./pastemx.sh")
