@@ -186,6 +186,7 @@ pbzip2 -kf $QC_MX
 
 #SCP
 scp -i ~/.ssh/cloud/cloud2.key $SE_MX.bz2 $KE_MX.bz2 $KE_TPM.bz2 $QC_MX.bz2 ubuntu@118.138.240.228:/mnt/dee2_data/mx/
+cd $CODE_DIR
 }
 
 export -f mxagg
