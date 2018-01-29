@@ -169,13 +169,13 @@ parallel paste1 ::: *split
 #  | sed 1d >> $SPLIT.tsv
 #done
 
-echo GeneID > $QC_GENES
+echo QC_metric > $QC_GENES
 cut -f1 $(head -1 $QC_LIST ) | sed 1d >> $QC_GENES
 
 #bring it all together
 ls *split*.tsv
 
-paste $QC_GENES *split*.tsv > $SE_MX
+paste $QC_GENES *split*.tsv > $QC_MX
 head $QC_MX | cut -f-5
 
 #tidy up temporary files
