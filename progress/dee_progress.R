@@ -1,0 +1,20 @@
+library(ggplot2)
+x<-read.table("dee_progress.txt")
+colnames(x)=c("species","date","num_datasets")
+attach(x)
+png("/home/username/dee_progress.png",width=650,height=480)
+ggplot(x, aes(x = date, y = num_datasets, group = species, colour = species)) + geom_line() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+dev.off()
+
+library(parallel)
+rowcnt<-function(file){nrow(read.table(file,fill=T)) }
+l<-list.files(path = "/scratch/username/dee2/queue", pattern="*txt",full.names =T)
+y<-t(as.data.frame(mclapply(l,rowcnt, mc.cores = detectCores()  )))
+ll<-list.files(path = "/scratch/username/dee2/queue", pattern="*txt",full.names =F)
+rownames(y)=sub(".queue.txt","",as.character(ll))
+png(filename = "/home/username/dee_queue.png",width=600,height=480)
+par(las=2) ; par(mai=c(2,1,1,1))
+bb<-barplot(y,beside=T,names.arg=rownames(y),ylim=c(0,250000),main="Number of datasets in queue")
+text(bb,as.numeric(y)+5000,labels=as.numeric(y),cex=0.9)
+dev.off()
+
