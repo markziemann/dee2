@@ -7,8 +7,8 @@
 # To set a project account for credit charging, 
 
 # Request CPU resource for a serial job
-#SBATCH --ntasks=2
-#SBATCH --ntasks-per-node=2
+#SBATCH --ntasks=1
+#SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=12
 
 # Memory usage (MB)
@@ -26,7 +26,7 @@
 # Set the file for error log (stderr)
 #SBATCH --error=/projects/bd17/mziemann/dee2/MyJob-%j.err
 
-module add singularity/2.4.2
+set -x
 
 clear_shared_mem(){
 for SHMEM_ID in $(ipcs | awk '$5>1000 && $3~/mziemann/ {print $2}') ; do
@@ -36,6 +36,8 @@ done
 export -f clear_shared_mem
 
 clear_shared_mem
+
+module add singularity/2.4.2
 
 cd /scratch/bd17/mziemann/singularity/working
 touch a
