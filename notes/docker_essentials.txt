@@ -1,9 +1,11 @@
-#essential commands
-docker build dee2 dee2/
+# essential commands
+
+# Build
+docker build -t dee2 .
 docker run -it -d dee2 bash
 docker ps -a
-docker commit 4ede2bbff7d9 username/imagename
-docker push username/imagename
+docker commit container_name mziemann/tallyup
+docker push mziemann/tallyup
 
 #other useful commands
 alias docker-purge='docker rm $(docker ps -aq) ; docker rmi $(docker images -aq)'
@@ -12,14 +14,10 @@ docker stop 4ede2bbff7d9
 docker rm $(docker ps -a -q)
 docker rmi $(docker images -q)
 docker rmi $(docker images -q "dangling=true")
+docker system prune
 
 # copy container data to pwd
 docker cp $(docker ps -alq):/root/data/ .
 
-
 # run bash in an entrypoint container 
 docker run -it --entrypoint /bin/bash <image>
-
-docker login
-docker commit db7c579a270 user_name/image_name
-docker push user_name/image_name
