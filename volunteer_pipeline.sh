@@ -1,24 +1,46 @@
 #!/bin/bash
 #sra2mx for docker image
 #Copyright Mark Ziemann 2015 to 2017 mark.ziemann@gmail.com
+
+#Fix locale issue
+export LANGUAGE=C
+export LC_ALL=C
+export LANG=C
+export LC_TYPE=C
+
+NUMVARS=$#
+
+shopt -s expand_aliases
+
+#handling verbosity setting
 LASTVAR=$(echo $@ | rev | cut -d ' ' -f1 | rev)
-if [ $LASTVAR == "-v" ] ; then
+if [ $LASTVAR == "-V" ] ; then
   set -x
   VERBOSE=TRUE
+  NUMVARS=$#
+  NUMVARS=$((NUMVARS-1))
+else
+  alias wget='wget -q'
+  alias curl='curl -s'
 fi
 
 MY_ORG=$1
-if [ $2 != '-f' ] ; then
-  MY_ACCESSIONS=$2
+if [ $NUMVARS -gt 1 ] ; then
+  if [ $2 != '-f' ] ; then
+    MY_ACCESSIONS=$2
+  fi
 fi
 MEM_FACTOR=2
 
 main(){
 #logging all commands
+NUMVARS=$#
 LASTVAR=$(echo $@ | rev | cut -d ' ' -f1 | rev)
 VERBOSE=$(echo $LASTVAR | cut -d '=' -f2)
-if [ $VERBOSE == "TRUE" ] ; then
-  set -x
+if [ ! -z $VERBOSE ] ; then
+  if [ $VERBOSE == "TRUE" ] ; then
+    set -x
+  fi
 fi
 
 #define bad exit
@@ -35,9 +57,10 @@ if [ $2 != '-f' ] ; then
   SRR_FILE=$2
   SRR=$(basename $SRR_FILE .sra)
   echo $SRR
-  wget -O tmp.html "https://www.ncbi.nlm.nih.gov/sra/${SRR}"
+  wget -O $SRR.html "https://www.ncbi.nlm.nih.gov/sra/${SRR}"
   ORG2=$(echo $ORG | cut -c2-)
-  ORG_OK=$(sed 's/class=/\n/g' tmp.html  | grep 'Organism:' | grep -c $ORG2)
+  ORG_OK=$(sed 's/class=/\n/g' $SRR.html  | grep 'Organism:' | grep -c $ORG2)
+  rm $SRR.html
   if [ $ORG_OK -ne 1 ] ; then
     echo Annotated species name from NCBI SRA does not match user input! Quitting. | tee -a $SRR.log
     exit1 ; exit 1
@@ -350,6 +373,7 @@ EOF
   fi
 
   FQ1=$(ls  | grep $SRR | grep -m1 fastq$)
+  echo ; echo Starting FastQC analysis of $FQ1
   fastqc $FQ1
   FQ1BASE=$(basename $FQ1 .fastq)
 
@@ -377,7 +401,7 @@ EOF
   FQ1_LEN=$(unzip -p ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc/fastqc_data.txt \
   | grep 'Sequence length' | cut -f2)
   echo $SRR read1 length is $FQ1_LEN nt | tee -a $SRR.log
-  unzip -p ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc/fastqc_data.txt | tee -a $SRR.log
+  unzip -p ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc/fastqc_data.txt >> $SRR.log
   rm ${FQ1BASE}_fastqc.zip ${FQ1BASE}_fastqc.html
 
   FQ1_MIN_LEN=$(sed -n '2~4p' $FQ1 | awk '{print length($1)}' | sort -g | head -1)
@@ -390,12 +414,13 @@ EOF
 
   if [ $RDS == "PE" ] ; then
     FQ2=$(ls  | grep $SRR | grep fastq$ | sed -n 2p)
+    echo ; echo Starting FastQC analysis of $FQ2
     fastqc $FQ2
     FQ2BASE=$(basename $FQ2 .fastq)
     FQ2_LEN=$(unzip -p ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc/fastqc_data.txt \
     | grep 'Sequence length' | cut -f2)
     echo $SRR read2 length is $FQ2_LEN nt | tee -a $SRR.log
-    unzip -p ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc/fastqc_data.txt | tee -a $SRR.log
+    unzip -p ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc/fastqc_data.txt >> $SRR.log
     rm ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc.html
 
     FQ2_MIN_LEN=$(sed -n '2~4p' $FQ2 | awk '{print length($1)}' | sort -g | head -1)
@@ -410,7 +435,7 @@ EOF
   fi
 
 ##########################################################################
-  echo $SRR if colorspace, then quit
+#  If colorspace then quit
 ##########################################################################
   if [ $CSPACE == "TRUE" ] ; then
     echo Colorspace data is excluded from analysis for now
@@ -422,7 +447,7 @@ EOF
 ##########################################################################
   rm ${SRR}*fastq
   if [ $CSPACE == "FALSE" ] ; then
-    parallel-fastq-dump --threads $THREADS --outdir . --split-files --defline-qual + -s ${SRR}.sra
+    parallel-fastq-dump --threads $THREADS --outdir . --split-files --defline-qual + -s ${SRR}.sra >> $SRR.log 2>&1
   fi
 
   if [ $RDS == "PE" ] ; then
@@ -475,13 +500,13 @@ else
 ##########################################################################
 # OWN data SE
 ##########################################################################
-  if [ $# -lt "4" ] ; then
+  if [ $NUMVARS -lt "4" ] ; then
     echo Error, not enough arguments specified. Quitting
     exit1; return 1
-  elif [ $# -gt "5" ] ; then
+  elif [ $NUMVARS -gt "5" ] ; then
     echo Too many arguments. Check syntax and try again. Ensure filenames do not contain spaces. Quitting
     exit1 ; return 1
-  elif [ $# -eq "5" ] ; then
+  elif [ $NUMVARS -eq "4" ] ; then
     echo Processing fastq file $3 in single end mode
     FQ1=$3
     SRR=$(basename $FQ1 | cut -d '.' -f1)
@@ -532,7 +557,7 @@ else
 ##########################################################################
 # OWN data PE
 ##########################################################################
-  elif [ $# -eq "5" ] ; then
+  elif [ $NUMVARS -eq "5" ] ; then
     echo Processing fastq files $3 and $4 in paired end mode
     FQ1=$3
     FQ2=$4
@@ -829,7 +854,8 @@ echo $SRR Starting mapping phase
 
 if [ $RDS == "PE" ] ; then
   echo $SRR testing PE reads STAR mapping to Ensembl genome | tee -a $SRR.log
-  head $FQ1 $FQ2 ; tail $FQ1 $FQ2
+  head $FQ1 $FQ2
+  tail $FQ1 $FQ2
 
   #test 100k FQ1 and FQ2 reads clipped on the 5 prime end to exclude UMIs and barcodes
   head -10000 $FQ1 > test_R1.fq ; head -1000000 $FQ1 | tail -90000 >> test_R1.fq
@@ -851,7 +877,7 @@ if [ $RDS == "PE" ] ; then
   wait
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1.fq
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1.fq >/dev/null 2>&1
 
   R1_RD_CNT=$(sed -n '2~4p' < test_R1.fq | wc -l)
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
@@ -859,7 +885,7 @@ if [ $RDS == "PE" ] ; then
   R1_MAP_RATE=$(echo $MAPPED_CNT $R1_RD_CNT | awk '{print $1/$2*100}' | numround)
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R2.fq
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R2.fq  >/dev/null 2>&1
 
   R2_RD_CNT=$(sed -n '2~4p' < test_R2.fq | wc -l)
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
@@ -867,49 +893,49 @@ if [ $RDS == "PE" ] ; then
   R2_MAP_RATE=$(echo $MAPPED_CNT $R2_RD_CNT | awk '{print $1/$2*100}' | numround)
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1_clip4.fq
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1_clip4.fq  >/dev/null 2>&1
 
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP4=$(echo $MAPPED_CNT $R1_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R2_clip4.fq
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R2_clip4.fq  >/dev/null 2>&1
 
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R2_MAP_RATE_CLIP4=$(echo $MAPPED_CNT $R2_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1_clip8.fq
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1_clip8.fq  >/dev/null 2>&1
 
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP8=$(echo $MAPPED_CNT $R1_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R2_clip8.fq
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R2_clip8.fq  >/dev/null 2>&1
 
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R2_MAP_RATE_CLIP8=$(echo $MAPPED_CNT $R2_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1_clip12.fq
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1_clip12.fq  >/dev/null 2>&1
 
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP12=$(echo $MAPPED_CNT $R1_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R2_clip12.fq
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R2_clip12.fq  >/dev/null 2>&1
 
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R2_MAP_RATE_CLIP12=$(echo $MAPPED_CNT $R2_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1_clip20.fq
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1_clip20.fq  >/dev/null 2>&1
 
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP20=$(echo $MAPPED_CNT $R1_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R2_clip20.fq
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R2_clip20.fq  >/dev/null 2>&1
 
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R2_MAP_RATE_CLIP20=$(echo $MAPPED_CNT $R2_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
@@ -965,10 +991,12 @@ fi
 
 ## Now performing full alignment
 if [ $RDS == "SE" ] ; then
-  head $FQ1 ; tail $FQ1
+  head $FQ1
+  tail $FQ1
 
   #test 100k reads FQ1 and reads clipped on the 5 prime end to exclude UMIs and barcodes
-  head -10000 $FQ1 > test.fq ; head -1000000 $FQ1 | tail -90000 >> test.fq
+  head -10000 $FQ1 > test.fq
+  head -1000000 $FQ1 | tail -90000 >> test.fq
   cp test.fq test2.fq
 
 #  skewer -m ap --cut 4,4 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip4.fq
@@ -982,7 +1010,7 @@ if [ $RDS == "SE" ] ; then
   wait
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test.fq
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test.fq  >/dev/null 2>&1
 
   RD_CNT=$(sed -n '2~4p' < test.fq | wc -l)
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
@@ -990,25 +1018,25 @@ if [ $RDS == "SE" ] ; then
   R1_MAP_RATE=$(echo $MAPPED_CNT $RD_CNT | awk '{print $1/$2*100}' | numround)
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_clip4.fq
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_clip4.fq  >/dev/null 2>&1
 
   MAPPED_CNT_CLIP4=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP4=$(echo $MAPPED_CNT_CLIP4 $RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_clip8.fq
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_clip8.fq  >/dev/null 2>&1
 
   MAPPED_CNT_CLIP8=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP8=$(echo $MAPPED_CNT_CLIP8 $RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_clip12.fq
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_clip12.fq  >/dev/null 2>&1
 
   MAPPED_CNT_CLIP12=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP12=$(echo $MAPPED_CNT_CLIP12 $RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
-  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_clip20.fq
+  --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_clip20.fq  >/dev/null 2>&1
 
   MAPPED_CNT_CLIP20=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP20=$(echo $MAPPED_CNT_CLIP12 $RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
@@ -1039,7 +1067,7 @@ if [ $RDS == "SE" ] ; then
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=$FQ1
 
 elif [ $RDS == "PE" ] ; then
-  head $FQ1 $FQ2 ; tail $FQ1 $FQ2  head $FQ1 $FQ2 ; tail $FQ1 $FQ2
+  head $FQ1 $FQ2 ; tail $FQ1 $FQ2
   #proper PE mapping
   STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=$FQ1 $FQ2
@@ -1214,9 +1242,9 @@ export -f main
 
 cd /dee2
 
-echo Dumping star genomes from memory
+#echo Dumping star genomes from memory
 for DIR in $(find /dee2/ref/ | grep /ensembl/star$ | sed 's#\/code\/\.\.##' ) ; do
-  echo $DIR ; STAR --genomeLoad Remove --genomeDir $DIR
+  STAR --genomeLoad Remove --genomeDir $DIR >/dev/null 2>&1
 done
 
 MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
@@ -1224,9 +1252,12 @@ MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
 NUM_CPUS=$(grep -c ^processor /proc/cpuinfo)
 CPU_SPEED=$(lscpu | grep MHz | awk '{print $NF}' | sort -k2gr)
 
-ACC_URL="https://vm-118-138-240-228.erc.monash.edu.au/acc.html"
-ACC_REQUEST="https://vm-118-138-240-228.erc.monash.edu.au/cgi-bin/acc.sh"
-SFTP_URL="118.138.240.228"
+ACC_URL="http://dee2.io/acc.html"
+ACC_REQUEST="http://dee2.io/cgi-bin/acc.sh"
+TMPHTML=/tmp/tmp.$RANDOM.html
+wget --no-check-certificate -r -O $TMPHTML "dee2.io/ip"
+SFTP_URL=$(curl -k $(grep 'frame src=' $TMPHTML | cut -d '"' -f2))
+rm $TMPHTML
 
 if [ ! -z $MY_ORG ] ; then
   ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae' \
@@ -1263,33 +1294,38 @@ mmusculus	26069664
 rnorvegicus	26913880
 scerevisiae	1644684' | awk -v M=$MEM -v F=$MEM_FACTOR 'M>($2*F)' | sort -k2gr | awk '{print $1}')
 
-  wget --no-check-certificate -O tmp.html "$ACC_URL"
-  wget --no-check-certificate -O tmp.html $(grep 'frame src=' tmp.html | cut -d '"' -f2)
+  TMPHTML=/tmp/tmp.$RANDOM.html
+  wget --no-check-certificate -O $TMPHTML "$ACC_URL"
+  wget --no-check-certificate -O $TMPHTML $(grep 'frame src=' $TMPHTML | cut -d '"' -f2)
 
   #specify organism if it has not already been specified by user
   MY_ORG=$(join -1 1 -2 1 \
-  <(grep ORG tmp.html | cut -d '>' -f2 | tr -d ' .' | tr 'A-Z' 'a-z' | tr '()' ' ' | sort -k 1b,1) \
+  <(grep ORG $TMPHTML | cut -d '>' -f2 | tr -d ' .' | tr 'A-Z' 'a-z' | tr '()' ' ' | sort -k 1b,1) \
   <(echo $ORGS | tr ' ' '\n' | sort -k 1b,1) | sort -k2gr | awk 'NR==1{print $1}' )
-
+  rm $TMPHTML
 fi
 
-echo $MY_ORG
+#echo $MY_ORG
 
 myfunc(){
 MY_ORG=$1
 ACC_REQUEST=$2
-wget --no-check-certificate -r -O tmp.html "${ACC_REQUEST}?ORG=${MY_ORG}&Submit"
-wget --no-check-certificate -O tmp.html $(grep 'frame src=' tmp.html | cut -d '"' -f2)
-ACCESSION=$(grep 'ACCESSION=' tmp.html| cut -d '=' -f2)
-STAR --genomeLoad LoadAndExit --genomeDir ../ref/$MY_ORG/ensembl/star >/dev/null
+TMPHTML=/tmp/tmp.$RANDOM.html
+wget --no-check-certificate -r -O $TMPHTML "${ACC_REQUEST}?ORG=${MY_ORG}&Submit"
+wget --no-check-certificate -O $TMPHTML $(grep 'frame src=' $TMPHTML | cut -d '"' -f2)
+ACCESSION=$(grep 'ACCESSION=' $TMPHTML | cut -d '=' -f2)
+STAR --genomeLoad LoadAndExit --genomeDir ../ref/$MY_ORG/ensembl/star >/dev/null  2>&1
 echo $ACCESSION
+rm $TMPHTML
 }
 export -f myfunc
 
 key_setup(){
-SFTP_URL="118.138.240.228"
+TMPHTML=/tmp/tmp.$RANDOM.html
+wget --no-check-certificate -r -O $TMPHTML "dee2.io/ip"
+SFTP_URL=$(curl -k $(grep 'frame src=' $TMPHTML | cut -d '"' -f2))
 mkdir -p /dee2/.ssh
-
+rm $TMPHTML
 touch /dee2/.ssh/known_hosts
 chmod 777 /dee2/.ssh/known_hosts
 
@@ -1356,6 +1392,7 @@ EOF
     exit 1
   fi
 
+  #TEST SRA DATASET
   main ecoli SRR057750 VERBOSE=$VERBOSE
   TEST_CHECKSUM=a739998e33947c0a60edbde92e8f0218
   cd /dee2/data/ecoli/
@@ -1365,12 +1402,27 @@ EOF
     echo "Contact the author for help or flag this issue on the GitHub repo"
     exit 1
   fi
-  echo "Test dataset completed successfully"
+  echo "Test SRA dataset completed successfully"
+
+  #TEST OWN PE FQ DATASET
+  wget -O /dee2/mnt/SRR5985593_1.fastq.gz "https://github.com/markziemann/dee2/blob/master/misc/example_data/SRR5985593_1.fastq.gz?raw=true"
+  wget -O /dee2/mnt/SRR5985593_2.fastq.gz "https://github.com/markziemann/dee2/blob/master/misc/example_data/SRR5985593_2.fastq.gz?raw=true"
+  main ecoli -f /dee2/mnt/SRR5985593_1.fastq.gz /dee2/mnt/SRR5985593_2.fastq.gz VERBOSE=$VERBOSE
+
+  TEST_CHECKSUM=68db313456ae8065ff8d0553bd95325f
+  TEST_DATASET_USER_CHECKSUM=$(cat SRR5985593_1/SRR5985593_1*tsv | md5sum | awk '{print $1}')
+  if [ "$TEST_DATASET_USER_CHECKSUM" != "$TEST_CHECKSUM" ] ; then
+    echo "Test dataset did not complete properly. Md5sums do not match those provided!"
+    echo "Contact the author for help or flag this issue on the GitHub repo"
+    exit 1
+  fi
+  echo "Test own dataset completed successfully"
+
   cd /dee2
   date +"%s" > $TESTFILE
 
 else
-  echo Starting pipeline
+  echo
 ##################################################
 # Testing whether the user has provided own data
 ##################################################
@@ -1378,8 +1430,8 @@ else
   OWN_DATA=$(echo $@ | grep -wc '\-f')
   #echo own data? $OWN_DATA
   if [ $OWN_DATA -eq "1" ] ; then
-    echo own data specified
-    NUM_RDS=$(echo $@ | sed 's/\-f/@/' | cut -d '@' -f2 | wc -w)
+    echo Starting pipeline with own data specified
+    NUM_RDS=$(echo $@ | sed 's/\-f/@/' | cut -d '@' -f2 | sed 's/\-V/@/' | cut -d '@' -f1 | wc -w)
 
     if [ $NUM_RDS -eq 2 ] ; then
       RDS="PE"
@@ -1392,11 +1444,11 @@ else
         echo Number of foward and reverse readsets does not match. Quitting.
       else
         for DATASET_NUM in $(seq $R1_LIST_LEN) ; do
-          FQ_R1=/mnt/$(echo $R1_LIST | cut -d ',' -f$DATASET_NUM)
-          FQ_R2=/mnt/$(echo $R2_LIST | cut -d ',' -f$DATASET_NUM)
+          FQ_R1=/dee2/mnt/$(echo $R1_LIST | cut -d ',' -f$DATASET_NUM)
+          FQ_R2=/dee2/mnt/$(echo $R2_LIST | cut -d ',' -f$DATASET_NUM)
 
           if [ -r $FQ_R1 -a -r $FQ_R2 ] ; then
-            echo "running pipeline.sh -f $FQ_R1 $FQ_R2"
+            echo "running pipeline.sh $MY_ORG -f $FQ_R1 $FQ_R2"
             main $MY_ORG -f $FQ_R1 $FQ_R2 VERBOSE=$VERBOSE
           else
             echo Specified fastq file $FQ_R1 or $FQ_R2 do not exist or not readable. Quitting
@@ -1413,10 +1465,10 @@ else
 
       for DATASET_NUM in $(seq $FQ_LIST_LEN) ; do
 
-        FQ=/mnt/$(echo $FQ_LIST | cut -d ',' -f$DATASET_NUM)
+        FQ=/dee2/mnt/$(echo $FQ_LIST | cut -d ',' -f$DATASET_NUM)
 
         if [ -r $FQ ] ; then
-          echo "running pipeline.sh -f $FQ"
+          echo "running pipeline.sh $MY_ORG -f $FQ"
           main $MY_ORG -f $FQ VERBOSE=$VERBOSE
         else
           echo Specified fastq file $FQ does not exist or not readable. Quitting
@@ -1436,12 +1488,12 @@ else
 ##################################################
 # Testing whether the user has provided SRR accessions
 ##################################################
-  if [[ $# -eq "2" && $OWN_DATA -eq "0" ]] ; then
-  #if [ $# -eq "2" ] ; then
+  if [[ $NUMVARS -eq "2" && $OWN_DATA -eq "0" ]] ; then
     TESTACCESSIONS=$(echo $2 | tr ',' '\n' | cut -c2-3 | grep -vc RR)
     if [ $TESTACCESSIONS -eq 0 ] ; then
       for USER_ACCESSION in $(echo $2 | tr ',' ' ') ; do
         DIR=$(pwd)
+        echo Starting pipeline with species $1 and accession $USER_ACCESSION
         main $1 $USER_ACCESSION VERBOSE=$VERBOSE
         #key_setup
         cd /dee2/data/$MY_ORG
@@ -1461,13 +1513,14 @@ EOF
 ##################################################
 # If no accessions are provided
 #################################################
-  count=1
+  count=0
   while [ $count -lt 1000 ] ; do
   #while true ; do
     (( count++ ))
     cd /dee2
-    echo "$count"
+    echo Run "$count" of 1000
     ACCESSION=$(myfunc $MY_ORG $ACC_REQUEST)
+    echo Starting pipeline with species $MY_ORG and accession $ACCESSION
     main "$MY_ORG" "$ACCESSION" VERBOSE=$VERBOSE && COMPLETE=1 || COMPLETE=0
     if [ "$COMPLETE" -eq "1" ] ; then
       #key_setup
