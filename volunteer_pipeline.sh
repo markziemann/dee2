@@ -87,7 +87,7 @@ DLLIM=1
 ALNLIM=2
 MEMALNLIM=4
 THREADS=$(grep -c ^processor /proc/cpuinfo)
-DISK=$(df /dee2/ | awk 'END{print$4}')
+DISK=$(df . | awk 'END{print$4}')
 MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
 
 ##########################################################################
