@@ -1,287 +1,256 @@
-<!DOCTYPE html PUBLIC>
+<!DOCTYPE html>
+
 <html xml:lang="en" lang="en">
 <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Digital Expression Explorer 2
+</title>
+<style type="text/css">
 
-	
-	<title>Digital Expression Explorer 2</title>
+ body{
+  -webkit-text-size-adjust:none;
+  margin: 20px auto;
+  max-width:720px;
+  line-height:1.6;
+  font:normal normal normal 100% verdana,sans-serif;
+  font-size:22px;
+  color:#3a3a3a;
+  padding:0 10px
+ }
 
-	<!-- menu stylesheets -->
+ h1,h2,h3{
+  line-height:1.2;
+  color:#406fef ;
+ }
 
-	<style type="text/css" media="screen, projection">
+ aside,p,ul{
+  color:#3a3a3a;
+ }
 
-	html, body {
-		background:#fff;
-                color: #3a3a3a;
-		}
+ table,th,tr,td{
+   line-height:1.2;
+   font-family:sans-serif;
+   font-size:15px;
+   background-color:transparent;
+   padding: 2px;
+  }
 
-	body {
-		height:85%;
-		font:normal normal normal 100% verdana,sans-serif;
-		}
-
-	abbr, acronym {
-		font-style:normal;
-		border:none;
-		}
-
-	#page {
-		position:absolute;
-		left:1em;
-		right:1em;
-		top:4em;
-                width:650px;
-		border:2px dotted #406fef;
-		border-width:2px 2 2 2px;
-		padding:0 0 0 1em;
-		margin:0 1em 1em 0;
-		line-height:130%;
-		}
-
-
-       h1, h2 {
-                font-weight:bold;
-                color:  #406fef ;
-
-                }
-
-        h1 {
-                font-size:1.4em;
-                margin:1.5em 0 0 0;
-                }
-
-        h2 {
-                font-size:1.1em;
-                margin:1.5em 0 0 -0.83em;
-                Xborder:1px dotted #406fef;
-                border-width:2px 0 0 0;
-                padding:1em 0 0 0.83em;
-                }
-
-        p, dl, ol {
-                font-size:0.9em;
-                margin:1em 0 0 0;
-                }
-
-
-
-	dl {
-		margin:1em 0 0 0.3em;
-		}
-
-	ol {
-		padding:0;
-		}
-
-	ol li {
-		margin:0 0 1em 2em;
-		padding:0;
-		}
-
-	dt {
-		font-variant:small-caps;
-		font-size:110%;
-		clear:both;
-		}
-
-	dt em {
-		font-variant:normal;
-		font-size:90%;
-		}
-
-	dd {
-		margin:0 0 0 1em;
-		}
-
-	dl ul, dl li {
-		padding:0;
-		list-style-type:none;
-		}
-
-	dl ul {
-		width:100%;
-		float:left;
-		margin:0 0 1em 0;
-		}
-
-	dl li {
-		float:left;
-		margin:0 0.2em 0 0;
-		}
-
-	em, i {
-		color:#333;
-		}
-
-	code {
-		font:normal normal normal 1em "courier new",monospace;
-		color:#333;
-		}
-
-	#skip-links {
-		font-size:70%;
-		margin:1.4em 0 0 0;
-		}
-
-	h2#navigation {
-		position:absolute;
-		top:-100em;
-		}
-
-	.boldtable, .boldtable TD, .boldtable TH
-	{
-	font-family:sans-serif;
-	font-size:0.8em;
-	background-color:transparent;
-	}
-
-	</style>
-</head>
-<body>
-
-<div id="page">
-	<h1 id="content">About Digital Expression Explorer</h1>
-
-	<p>
-		The compendium is designed to bring biologists closer to large scale gene expression data sets.
-                We have processed thousands of public RNA-seq data sets from a veriety of organisms with open-source bioinformatics tools and make them freely accessible. We would like to thank the folks at <a href="http://www.ncbi.nlm.nih.gov/sra"> SRA</a> for hosting these raw data sets.
-        </p>
-
-        <h2 id="content">About us</h2>
-        </p>
-
-        <p>
-		The compendium is brought to you by the <a href="https://www.monash.edu/medicine/ccs/diabetes/research/el-osta-group" target="_blank"> Epigenetics in Human Health and Disease Laboratory</a>  with support from  <a href="https://www.monash.edu/researchinfrastructure/eresearch" target="_blank">Monash eResearch Centre</a>.
-		We value your feedback, so feel free to <a href="/contact.html"> contact us</a> by email or raise an issue on our <a href="https://github.com/markziemann/dee2/" target="_blank">  GitHub Repo</a>.
-
-        </p>
-
-        <h2 id="content">Data processing</h2>
-        </p>
-
-        <p>
-		Our data processing procedure entails:
-        </p>
-
-	<ol>
-		<li> -Download from NCBI SRA</li><br>
-		<li> -Diagnose sequence format</li><br>
-		<li> -Sequence quality trimming and adapter clipping</li><br>
-		<li> -Alignment to genome and transcriptome</li><br>
-		<li> -Assignment of reads to genes and transcripts</li>
-	</ol>
-
-        <p>
-                More information regarding the data processing method is available at the  <a href="https://github.com/markziemann/dee2" target="_blank"> GitHub repo</a>.
-        </p>
-	
-	<h2 id="content">Reference genome information</h2>
-        <p>
-                The compendium relies on reference genome sequence and annotation information provided by <a href="http://ensemblgenomes.org/" target="_blank" > Ensembl Genomes </a>. 
-        </p>
-
-	<table BORDER CLASS="boldtable">
-	  <tr>
-	    <th>Species</th>
-	    <th>Genome Reference Sequence and Annotation</th> 
-	  </tr>
-
-          <tr>
-            <td>Arabidopsis thaliana</td>
-            <td>Arabidopsis_thaliana.TAIR10.dna_sm.toplevel.fa.gz <br> Ensembl release 36</td>
-          </tr>
-
-          <tr>
-            <td>Caenorhabditis elegans</td>
-            <td>Caenorhabditis_elegans.WBcel235.dna_sm.toplevel.fa.gz <br> Ensembl release 90</td>
-          </tr>
-
-          <tr>
-            <td>Drosophila melanogaster</td>
-            <td>Drosophila_melanogaster.BDGP6.dna_sm.toplevel.fa.gz <br> Ensembl release 90</td>
-          </tr>
-
-          <tr>
-            <td>Danio rerio</td>
-            <td>Danio_rerio.GRCz10.dna_sm.toplevel.fa.gz <br> Ensembl release 90</td>
-          </tr>
-
-          <tr>
-            <td>Escherichia coli</td>
-            <td>Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.dna_sm.chromosome.Chromosome.fa.gz <br> Ensembl release 36</td>
-          </tr>
-
-          <tr>
-            <td>Homo sapiens</td>
-            <td>Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa.gz <br> Ensembl release 90 </td>
-          </tr>
-
-          <tr>
-            <td>Mus musculus</td>
-            <td>Mus_musculus.GRCm38.dna_sm.primary_assembly.fa.gz <br> Ensembl release 90 </td>
-          </tr>
-
-          <tr>
-            <td>Rattus norvegicus</td>
-            <td>Rattus_norvegicus.Rnor_6.0.dna_sm.toplevel.fa.gz <br> Ensembl release 90 </td>
-          </tr>
-
-          <tr>
-            <td>Saccharomyces cerevisiae</td>
-            <td>Saccharomyces_cerevisiae.R64-1-1.dna_sm.toplevel.fa.gz <br> Ensembl release 36 </td>
-          </tr>
-
-	</table>
-
-        <h2 id="content">Update schedule</h2>
-        <p>
-               New datasets deposited to SRA will be incorporated into the compendium fortnightly. Upon release of an updated genome build, we intend to update the data for that organism within a year, keeping a previously archived version for bulk download only. Gene annotation sets will not be updated independent of the genome build.
-        </p>
-
-</div>
-
-
-
-
-<!DOCTYPE html>
-<html>
-<head>
-<style>
 ul {
     list-style-type: none;
-    margin: 2ex;
+    margin: 0ex;
     padding: 0;
 }
 
 li {
     display: inline;
 }
-</style>
+
+.button {
+    background-color: #999999;
+    color: white;
+    padding: 7px 12px;
+    text-decoration: none;
+#    font-size: 1.8vmax;
+    cursor: pointer;
+}
+
+ input{
+  font-size:2vmax;
+ }
+
+/* The container */
+.container {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 22px;
+    color:#3a3a3a;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Hide the browser's default radio button */
+.container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Create a custom radio button */
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: #eee;
+    border-radius: 50%;
+}
+
+/* On mouse-over, add a grey background color */
+.container:hover input ~ .checkmark {
+    background-color: #ccc;
+}
+
+/* When the radio button is checked, add a blue background */
+.container input:checked ~ .checkmark {
+    background-color: #406fef;
+}
+
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+/* Show the indicator (dot/circle) when checked */
+.container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+/* Style the indicator (dot/circle) */
+.container .checkmark:after {
+ 	top: 9px;
+	left: 9px;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: white;
+}
+
+	</style>
 </head>
 <body>
 
 <ul>
-  <li><a href="/index.html">Home</a></li>
-  <li><a href="/about.html">About</a></li>
-  <li><a href="/help.html">Help</a></li>
-  <li><a href="/news.html">News</a></li>
-  <li><a href="/contact.html">Contact</a></li>
-  <li><a href="/bulk.html">Bulk Data</a></li>
-
+<a href="/index.html" class="button">HOME</a>
+<a href="/about.html" class="button">ABOUT</a>
+<a href="/help.html" class="button">HELP</a>
+<a href="/bulk.html" class="button">BULK DATA</a>
 </ul>
-<div
-   style="
-      top: 0;
-      left: 450;
-      position: absolute;
-      z-index: 1;
-      visibility: show;">
-<!-- content will go here -->
-        <p>
-<a href="https://www.monash.edu/"><IMG SRC="/images/monash-logo-mono.svg" ALT="." WIDTH=100 HEIGHT=28></a>
-        </p>
-</div>
-</body>
-</html>
 
+
+<header>
+<h1 id="content">About Digital Expression Explorer</h1>
+
+<p>The compendium is designed to bring biologists closer to large scale gene expression data sets.
+We have processed thousands of public RNA-seq data sets from a veriety of organisms with open-source bioinformatics tools and make them freely accessible. We would like to thank the folks at <a href="http://www.ncbi.nlm.nih.gov/sra"> SRA</a> for hosting these raw data sets.
+</p>
+
+<hr>
+<h2 id="content">About us</h2>
+
+<p>The compendium is brought to you by the <a href="https://www.monash.edu/medicine/ccs/diabetes/research/el-osta-group" target="_blank">
+Epigenetics in Human Health and Disease Laboratory</a>  with support from  
+<a href="https://www.monash.edu/researchinfrastructure/eresearch" target="_blank">
+Monash eResearch Centre</a>
+.We value your feedback, so feel free to contact us by email (mark.ziemann[at]monash.edu) or raise an 
+issue on our <a href="https://github.com/markziemann/dee2/" target="_blank">  GitHub Repo</a>.
+</p>
+
+<hr>
+<h2 id="content">Latest News</h2>
+
+<p>1st March 2018 - Hope you like the new mobile friendly webpage
+</p>
+
+<p>1st January 2018 - DEE2 data pipeline is finalised and processing is underway. For more information, see the recent <a href="http://genomespot.blogspot.com.au/2018/01/update-on-dee2-project-for-jan-2018.html" target="_blank"> blog post</a>.
+</p>
+
+<p>18th October 2017 - As of a month ago, the original DEE site has been down and we've been working towards DEE version 2, which will
+be hosted by Monash Uni. This app is still under construction, but stay tuned for the official release at the end 
+of 2017.</p>
+
+<p>15th December 2016 - Our lab is moving to Monash Central Clinical School. Stay tuned for a revamped DEE in 2017 with new data and features. This URL could go dead anytime next year so please finalise your work.
+</p>
+
+<p>13th August 2016 - Looking for Illumina bodymap2 count data? Try searching ERP000546 for human.
+</p>
+
+<a href="/news.html">More news</a>
+
+<hr>
+<h2 id="content">Data processing</h2>
+
+<p>Our data processing procedure entails:
+</p>
+
+<ol>
+<li> -Download from NCBI SRA</li><br>
+<li> -Diagnose sequence format</li><br>
+<li> -Sequence quality trimming and adapter clipping</li><br>
+<li> -Alignment to genome and transcriptome</li><br>
+<li> -Assignment of reads to genes and transcripts</li>
+</ol>
+
+<p>More information regarding the data processing method is available at the  <a href="https://github.com/markziemann/dee2" target="_blank"> GitHub repo</a>.
+</p>
+	
+<h2 id="content">Reference genome information</h2>
+
+<p>The compendium relies on reference genome sequence and annotation information provided by 
+<a href="http://ensemblgenomes.org/" target="_blank" > Ensembl Genomes </a>. 
+</p>
+
+<table widt=85% BORDER="1" CLASS="boldtable">
+  <tr>
+   <td><strong>Species</strong></th>
+   <td><strong>Genome Reference Sequence and Annotation</strong></th> 
+  </tr>
+  <tr>
+   <td>Arabidopsis thaliana</td>
+   <td>Arabidopsis_thaliana.TAIR10.dna_sm.toplevel.fa.gz <br> Ensembl release 36</td>
+  </tr>
+  <tr>
+   <td>Caenorhabditis elegans</td>
+   <td>Caenorhabditis_elegans.WBcel235.dna_sm.toplevel.fa.gz <br> Ensembl release 90</td>
+  </tr>
+  <tr>
+   <td>Drosophila melanogaster</td>
+   <td>Drosophila_melanogaster.BDGP6.dna_sm.toplevel.fa.gz <br> Ensembl release 90</td>
+  </tr>
+  <tr>
+   <td>Danio rerio</td>
+   <td>Danio_rerio.GRCz10.dna_sm.toplevel.fa.gz <br> Ensembl release 90</td>
+  </tr>
+  <tr>
+   <td>Escherichia coli</td>
+   <td>Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.dna_sm.chromosome.Chromosome.fa.gz <br> Ensembl release 36</td>
+  </tr>
+  <tr>
+   <td>Homo sapiens</td>
+   <td>Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa.gz <br> Ensembl release 90 </td>
+  </tr>
+  <tr>
+   <td>Mus musculus</td>
+   <td>Mus_musculus.GRCm38.dna_sm.primary_assembly.fa.gz <br> Ensembl release 90 </td>
+  </tr>
+  <tr>
+   <td>Rattus norvegicus</td>
+   <td>Rattus_norvegicus.Rnor_6.0.dna_sm.toplevel.fa.gz <br> Ensembl release 90 </td>
+  </tr>
+  <tr>
+   <td>Saccharomyces cerevisiae</td>
+   <td>Saccharomyces_cerevisiae.R64-1-1.dna_sm.toplevel.fa.gz <br> Ensembl release 36 </td>
+  </tr>
+</table>
+
+<h2 id="content">Update schedule</h2>
+
+<p>New datasets deposited to SRA will be incorporated into the compendium fortnightly. Upon release
+of an updated genome build, we intend to update the data for that organism within a year, keeping a
+previously archived version for bulk download only. Gene annotation sets will not be updated
+independent of the genome build.
+</p>
+
+</div>
+
+</body>
 </html>

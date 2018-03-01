@@ -1,137 +1,150 @@
-<!DOCTYPE html PUBLIC>
+<!DOCTYPE html>
+
 <html xml:lang="en" lang="en">
 <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
 <head>
-	<title>Digital Expression Explorer 2</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Digital Expression Explorer 2
+</title>
+<style type="text/css">
 
-	<!-- menu stylesheets -->
+ body{
+  -webkit-text-size-adjust:none;
+  margin: 20px auto;
+  max-width:720px;
+  line-height:1.6;
+  font:normal normal normal 100% verdana,sans-serif;
+  font-size:22px;
+  color:#3a3a3a;
+  padding:0 10px
+ }
 
-	<style type="text/css" media="screen, projection">
+ h1,h2,h3{
+  line-height:1.2;
+  color:#406fef ;
+ }
 
-	html, body {
-		background:#fff;
-                color: #3a3a3a;
-		}
+ aside,p,ul{
+  color:#3a3a3a;
+ }
 
-	body {
-		height:85%;
-		font:normal normal normal 100% verdana,sans-serif;
-		}
+ table,th,tr,td{
+   line-height:1.2;
+   font-family:sans-serif;
+   font-size:20px;
+   background-color:transparent;
+   padding: 2px;
+  }
 
-	abbr, acronym {
-		font-style:normal;
-		border:none;
-		}
+ul {
+    list-style-type: none;
+    margin: 0ex;
+    padding: 0;
+}
 
-	#page {
-		position:absolute;
-		left:1em;
-		right:1em;
-		top:4em;
-                width:650px;
-		border:2px dotted #406fef;
-		border-width:2px 2 2 2px;
-		padding:0 0 0 1em;
-		margin:0 1em 1em 0;
-		line-height:130%;
-		}
+li {
+    display: inline;
+}
 
-        h1, h2 {
-                font-weight:bold;
-                color:  #406fef ;
+.button {
+    background-color: #999999;
+    color: white;
+    padding: 7px 12px;
+    text-decoration: none;
+#    font-size: 1.8vmax;
+    cursor: pointer;
+}
 
-                }
+ input{
+  font-size:2vmax;
+ }
 
-        h1 {
-                font-size:1.4em;
-                margin:1.5em 0 0 0;
-                }
+/* The container */
+.container {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 22px;
+    color:#3a3a3a;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
 
-        h2 {
-                font-size:1.1em;
-                margin:1.5em 0 0 -0.83em;
-                border:1px dotted #406fef;
-                border-width:2px 0 0 0;
-                padding:1em 0 0 0.83em;
-                }
+/* Hide the browser's default radio button */
+.container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
 
-        p, dl, ol {
-                font-size:0.9em;
-                margin:1em 0 0 0;
-                }
+/* Create a custom radio button */
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: #eee;
+    border-radius: 50%;
+}
 
-	dl {
-		margin:1em 0 0 0.3em;
-		}
+/* On mouse-over, add a grey background color */
+.container:hover input ~ .checkmark {
+    background-color: #ccc;
+}
 
-	ol {
-		padding:0;
-		}
+/* When the radio button is checked, add a blue background */
+.container input:checked ~ .checkmark {
+    background-color: #406fef;
+}
 
-	ol li {
-		margin:0 0 1em 2em;
-		padding:0;
-		}
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
 
-	dt {
-		font-variant:small-caps;
-		font-size:110%;
-		clear:both;
-		}
+/* Show the indicator (dot/circle) when checked */
+.container input:checked ~ .checkmark:after {
+    display: block;
+}
 
-	dt em {
-		font-variant:normal;
-		font-size:90%;
-		}
+/* Style the indicator (dot/circle) */
+.container .checkmark:after {
+ 	top: 9px;
+	left: 9px;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: white;
+}
 
-	dd {
-		margin:0 0 0 1em;
-		}
-
-	dl ul, dl li {
-		padding:0;
-		list-style-type:none;
-		}
-
-	dl ul {
-		width:100%;
-		float:left;
-		margin:0 0 1em 0;
-		}
-
-	dl li {
-		float:left;
-		margin:0 0.2em 0 0;
-		}
-
-	em, i {
-		color:#333;
-		}
-
-	code {
-		font:normal normal normal 1em "courier new",monospace;
-		color:#333;
-		}
-
-	#skip-links {
-		font-size:70%;
-		margin:1.4em 0 0 0;
-		}
-
-	h2#navigation {
-		position:absolute;
-		top:-100em;
-		}
-
-	</style>
+</style>
 </head>
+
 <body>
+
+<ul>
+<a href="/index.html" class="button">HOME</a>
+<a href="/about.html" class="button">ABOUT</a>
+<a href="/help.html" class="button">HELP</a>
+<a href="/bulk.html" class="button">BULK DATA</a>
+</ul>
 
 <div id="page">
 	<h1 id="content">News@DEE2</h1>
 
         <h2 id="content">Recent updates</h2>
 
+  <p>
+    1st March 2018 - Hope you like the new mobile friendly webpage
+  </p>   
        <p>
 		31st January 2018 - DEE2 data pipeline is finalised and processing is underway. For more information, see the recent <a href="http://genomespot.blogspot.com.au/2018/01/update-on-dee2-project-for-jan-2018.html" target="_blank"> blog post</a>.
        </p>
@@ -221,47 +234,7 @@ Enhanced QC data are already available for E coli, C elegans and A thaliana, but
 
 </div>
 
-
-
-
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-ul {
-    list-style-type: none;
-    margin: 2ex;
-    padding: 0;
-}
-
-li {
-    display: inline;
-}
-</style>
-</head>
-<body>
-
-<ul>
-  <li><a href="/index.html">Home</a></li>
-  <li><a href="/about.html">About</a></li>
-  <li><a href="/help.html">Help</a></li>
-  <li><a href="/news.html">News</a></li>
-  <li><a href="/contact.html">Contact</a></li>
-  <li><a href="/bulk.html">Bulk Data</a></li>
-</ul>
-<div
-   style="
-      top: 0;
-      left: 450;
-      position: absolute;
-      z-index: 1;
-      visibility: show;">
-<!-- content will go here -->
-        <p>
-<a href="https://www.monash.edu/"><IMG SRC="/images/monash-logo-mono.svg" ALT="." WIDTH=100 HEIGHT=28></a>
-        </p>
-</div>
 </body>
 </html>
 
-</html>
+
