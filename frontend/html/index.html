@@ -54,11 +54,22 @@ li {
     text-decoration: none;
 #    font-size: 1.8vmax;
     cursor: pointer;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
 }
 
- input{
-  font-size:2vmax;
+.button:hover {
+    background-color: #406fef; /* blue */
+    color: white;
+}
+
+ input,text,tfbutton{
+  font-size:3vmax;
+  #font-size:400%;
+
  }
+
+
 
 /* The container */
 .container {
@@ -251,8 +262,8 @@ Currently search is disabled; preliminary data is only available from the bulk d
   <span class="checkmark"></span>
 </label>
 
-<h3 id="content">Search for data sets of interest
-</h3>
+<h2 id="content">Search for data sets of interest
+</h2>
 
 <strong>Search accession numbers </strong> Multiple accessions can be separated by
 commas. Try GSE44682,SRX704261,SRR1578746 for <em>C. elegans</em>.
