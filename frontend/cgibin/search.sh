@@ -1,4 +1,48 @@
 #!/bin/bash
+echo "Content-type: text/html"
+echo ''
+echo '<!DOCTYPE html>
+
+<html xml:lang="en" lang="en">
+<link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Digital Expression Explorer 2
+</title>
+<style type="text/css">
+ body{
+  -webkit-text-size-adjust:none;
+  margin: 0;
+  max-width:720px;
+  line-height:1.6;
+  font:normal normal normal 100% verdana,sans-serif;
+  font-size:22px;
+  color:#3a3a3a;
+  padding:0 10px
+ }
+ h1,h2,h3{
+  line-height:1.2;
+  color:#406fef ;
+ }
+ aside,p,ul{
+  color:#3a3a3a;
+ }
+ table,th,tr,td{
+   line-height:1.2;
+   font-family:sans-serif;
+   font-size:20px;
+   background-color:transparent;
+   padding: 2px;
+  }
+</style>
+</head>
+
+<body>
+'
+
+
+
 
 #save some awk functions for tabulation
 tbl(){
@@ -29,9 +73,6 @@ awk ' {OFS="\t";FS="\t"} BEGIN { print "<table border="1"><tr><th> SRA run acces
 }
 export -f tbl3
 
-echo "Content-type: text/html"
-echo ''
-#echo 'Welcome to The RNA Expression Compendium'
 
 #DIR=/var/www/metadata
 DIR=/var/www/html/metadata/
@@ -151,3 +192,5 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
   rm -f $TMP
 fi
 rm -f $TMP
+echo '</body>
+</html>'
