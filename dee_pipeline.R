@@ -4,12 +4,14 @@ setwd("/scratch/mziemann/dee2/code/")
 library(SRAdb)
 library(parallel)
 
+#org="ecoli"
 for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae") ) {
-#org="celegans"
   #create a list of species full names
-  species_list<-c("'Arabidopsis thaliana'","'Caenorhabditis elegans'","'Drosophila melanogaster'","'Danio rerio'","'Escherichia coli'","'Homo sapiens'", "'Mus musculus'", "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
+  species_list<-c("'Arabidopsis thaliana'","'Caenorhabditis elegans'","'Drosophila melanogaster'","'Danio rerio'",
+  "'Escherichia coli'","'Homo sapiens'", "'Mus musculus'", "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
   #now annotate the short names 
-  names(species_list)<- c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae")
+  names(species_list)<- c("athaliana", "celegans", "dmelanogaster", "drerio",
+  "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae")
   species_name<-species_list[[org]]
 
   ###Set some directories
@@ -35,8 +37,15 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   dif<-now-ct
   #define 4week in seconds
   wk<-60*60*24*7*1
+
   #Test if ctime older than a week, redownload if neccessary
-  if (dif>wk) {print("sqlfile too old - getting a new one now..") ; unlink(sqlfile) ; sqlfile <<- getSRAdbFile() } else {print("sqlfile still OK!")}
+  if (dif>wk) {
+    print("sqlfile too old - getting a new one now..")
+    unlink(sqlfile)
+    sqlfile <<- getSRAdbFile()
+  } else {
+    print("sqlfile still OK!")
+  }
 
   #connect to DB
   sra_con <- dbConnect(SQLite(),sqlfile)
@@ -186,13 +195,128 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   qc_name=paste(org,"_qc_list.txt",sep="")
   write.table(qc_list,file=qc_name,quote=F,row.names=F)
 
+  #redefine read.colon.tsv
+  read.colon.tsv<-function(file, header = FALSE, sep = ":", quote = "\"", dec = ".", fill = TRUE, comment.char = "", ...){
+  read.table(file = file, sep = sep, quote = quote, dec = dec, fill = fill, row.names=1, comment.char = comment.char, ...)}
+
+  #bringing in some QC data
+  qc<-do.call("cbind", mclapply(qc_list, read.colon.tsv,4 ))
+  colnames(qc)<-sapply(strsplit(sub("./","",qc_list), "/"), head, 1)
+  print("qc list finished OK")
+
+  #need to do some logic to pass fail data based on QC info and fill in the field
+  #for col in numcols do blah blah
+  #if then if then
+  #qc$COL[29]=PASS
+  #qc$COL[29]=FAIL:FASTQ_LENGTH
+
   #Moved this part to the end due to a small number of files posessing the wrong number of lines 
   write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
   SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ",queue_name ," ubuntu@118.138.240.228:~/Public")
   system(SCP_COMMAND)
 
   setwd(CODEWD)
+ 
+  PASTE_MX_CMD=paste("./pastemx.sh",org)
+  system(PASTE_MX_CMD)
+
+  #new section to obatin and update webserver metadata for completed runs
+  #start with accession information
+  runs_done<-setdiff(runs_done,runs_todo)
+  accessions_done<-accessions[which(accessions$run %in% runs_done),]
+  write.table(accessions_done,file=paste(SRADBWD,"/",org,"_accessions.tsv",sep=""),quote=F,row.names=F)
+
+  #now the metadata   experiment submission     study    sample        run
+  x<-paste("('",paste(accessions_done$sample,collapse="','"),"')",sep="")
+  sql_statement<-paste("select * FROM sample WHERE sample_accession IN ",x)
+  sample_metadata<-dbGetQuery(sra_con, sql_statement)
+
+  x<-paste("('",paste(accessions_done$run,collapse="','"),"')",sep="")
+  sql_statement<-paste("select * FROM run WHERE run_accession IN ",x)
+  run_metadata<-dbGetQuery(sra_con, sql_statement)
+
+  x<-paste("('",paste(accessions_done$experiment,collapse="','"),"')",sep="")
+  sql_statement<-paste("select * FROM experiment WHERE experiment_accession IN ",x)
+  experiment_metadata<-dbGetQuery(sra_con, sql_statement)
+
+  x<-paste("('",paste(accessions_done$submission,collapse="','"),"')",sep="")
+  sql_statement<-paste("select * FROM submission WHERE submission_accession IN ",x)
+  submission_metadata<-dbGetQuery(sra_con, sql_statement)
+
+  x<-paste("('",paste(accessions_done$study,collapse="','"),"')",sep="")
+  sql_statement<-paste("select * FROM study WHERE study_accession IN ",x)
+  study_metadata<-dbGetQuery(sra_con, sql_statement)
+
+  #now merging this data together to make a big metadata table
+  x<-merge(run_metadata,experiment_metadata,by='experiment_accession')
+  x<-x[,-grep(".y$",colnames(x))]
+  colnames(x)<-gsub(".x$","",colnames(x))
+
+  x<-merge(x,sample_metadata,by='sample_accession')
+  x<-x[,-grep(".y$",colnames(x))]
+  colnames(x)<-gsub(".x$","",colnames(x))
+
+  x<-merge(x,submission_metadata,by='submission_accession')
+  x<-x[,-grep(".y$",colnames(x))] 
+  colnames(x)<-gsub(".x$","",colnames(x))
+
+  x<-merge(x,study_metadata,by='study_accession')
+  x<-x[,-grep(".y$",colnames(x))]
+  colnames(x)<-gsub(".x$","",colnames(x))
+
+  #collect QC info - this is temporary and logic will be incorporated in future
+  x$QC_summary="PASS"
+
+  #Need to rearrange columns
+  GSE<-function(i) {res=grepl("GEO:",i) ; if (res == FALSE) { j="NA" } else { j<-gsub("GEO: ","",i) ; j} }
+  x$GSE_accession<-as.vector(sapply(x[,66],GSE))
+  GSM<-function(i) {res=grepl("GEO Accession:",i) ; if (res == FALSE) { j="NA" } else { j<-gsub("GEO Accession: ","",i) ; j} }
+  x$GSM_accession<-as.vector(sapply(x[,53],GSM))
+
+  #extract out the important accessions in order
+  x2<-as.data.frame(cbind(x$run_accession,x$QC_summary,x$experiment_accession,x$sample_accession,
+  x$study_accession,x$submission_accession, x$GSE_accession, x$GSM_accession))
+
+  colnames(x2)<-c("SRR_accession","QC_summary","SRX_accession","SRS_accession",
+  "SRP_accession","SRA_accession","GSE_accession","GSM_accession")
+
+  #now remove the moved cols from x
+  x<-x[, !(colnames(x) %in% c("run_accession", "QC_summary","experiment_accession","sample_accession",
+  "study_accession","submission_accession","GSE_accession","GSM_accession"))]
+
+  x<-cbind(x2,x)
+  
+  #save as mysql
+  connection <- dbConnect(SQLite())
+  dbWriteTable(connection, value = x, name = "ecoli", append = TRUE )
+
+  write.table(x,file=paste(SRADBWD,"/",org,"_metadata.tsv",sep=""),quote=F,sep="\t",row.names=F)
+
+  #upload 
+  SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ", paste(SRADBWD,"/",org,"_metadata.tsv",sep="") ," ubuntu@118.138.240.228:/mnt/dee2_data/metadata")
+  system(SCP_COMMAND)
+
+  #I will try to optimise the original text search before storing a db
+
+#dplyr not working
+#library(dplyr)
+#connection <- DBI::dbConnect(RSQLite::SQLite(), path = ":memory:")
+#copy_to(connection, value = x, name = "ecoli", append = TRUE )
+
+#  connection <- dbConnect(SQLite())
+#  dbWriteTable(connection, value = x, name = "ecoli", append = TRUE )
+#save in dbplyr format
+#https://rviews.rstudio.com/2017/10/18/database-queries-with-r/
 
 }
 
-system("./pastemx.sh")
+
+
+
+
+
+
+
+
+
+
