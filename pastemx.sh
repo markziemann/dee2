@@ -191,7 +191,9 @@ cd $CODE_DIR
 
 export -f mxagg
 
-for ORG in athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae ; do
-  mxagg $ORG
-done
+#for ORG in athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae ; do
+#  mxagg $ORG
+#done
 
+ORG=$1
+mxagg $ORG
