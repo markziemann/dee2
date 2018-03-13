@@ -86,3 +86,5 @@ cp $LOGS $LOGDIR
 
 cd $USRDIR
 zip -r - GeneCountMatrix.tsv QC_Matrix.tsv TxCountMatrix.tsv logs
+find $USRDIR -type d -mmin +60 -maxdepth 1 -exec rm -r {} \;
+
