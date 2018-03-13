@@ -26,13 +26,18 @@ QC_LIST=$DATA_DIR/${ORG}_qc_list.txt
 QC_GENES=$DATA_DIR/${ORG}_qc_genes.txt
 
 ###################################################
-# Begin with STAR counts (se)
+# start with extracting single column data from se qc and ke files
 ###################################################
 grep -v x $SE_LIST > $SE_LIST.tmp ; mv $SE_LIST.tmp $SE_LIST
 
-#divide the list into sets of 1000
 cd $DATA_DIR
 
+#list of folders and files
+LIST=$DATA_DIR/list.txt
+if [ ! -r $LIST ] ; then ls > $LIST ; fi
+if [ "$LIST_TIME" -gt 86400 ] ; then ls > $LIST ; fi
+
+#single column of star gene counts
 tsv1(){
 TSV=$1
 OUT=$(echo $TSV | sed 's/.se.tsv/_gene.cnt/')
@@ -41,7 +46,55 @@ if [ ! -r $OUT ] ; then
 fi
 }
 export -f tsv1
-find . | grep se.tsv | parallel tsv {}
+find . | grep se.tsv | parallel tsv1 {}
+
+#rownames genes
+echo "GeneID" > rownames_gene.txt
+ACC1=$(ls | grep -m1 RR)
+cut -f1 $ACC1/$ACC1.se.tsv | sed 1d >> rownames_gene.txt
+
+#single column of qc data
+tsv2(){
+TSV=$1
+OUT=${TSV}l
+PFX=$(basename $TSV .qc)
+if [ ! -r $OUT ] ; then
+  echo $PFX > $OUT
+  awk -F: '{print $NF}' $TSV >> $OUT
+fi
+}
+export -f tsv2
+find . | grep .qc$ | parallel tsv2 {}
+
+#rownames qc
+echo "SeqMetric" > rownames_qc.txt
+ACC1=$(ls | grep -m1 RR)
+cut -d ':' -f1 $ACC1/$ACC1.qc >> rownames_qc.txt
+
+#single column of kallisto tx counts
+tsv3(){
+TSV=$1
+OUT=$(echo $TSV | sed 's/.ke.tsv/_tx.cnt/')
+PFX=$(basename $TSV .se.tsv)
+if [ ! -r $OUT ] ; then
+  echo $PFX > $OUT
+  awk '{print $4}' $TSV | sed 1d >> $OUT
+fi
+}
+export -f tsv3
+find . | grep ke.tsv | parallel tsv3 {}
+
+#rownames transcripts
+echo "TxID" > rownames_tx.txt
+ACC1=$(ls | grep -m1 RR)
+cut -f1 $ACC1/$ACC1.ke.tsv | sed 1d >> rownames_tx.txt
+
+#################################################
+# Now paste STAR gene count matrix
+################################################
+grep -v x $SE_LIST > $SE_LIST.tmp ; mv $SE_LIST.tmp $SE_LIST
+
+#divide the list into sets of 1000
 
 rm *split
 split -l 500 --additional-suffix=split $SE_LIST
