@@ -75,7 +75,7 @@ cut -d ':' -f1 $ACC1/$ACC1.qc >> rownames_qc.txt
 tsv3(){
 TSV=$1
 OUT=$(echo $TSV | sed 's/.ke.tsv/_tx.cnt/')
-PFX=$(basename $TSV .se.tsv)
+PFX=$(basename $TSV .ke.tsv)
 if [ ! -r $OUT ] ; then
   echo $PFX > $OUT
   awk '{print $4}' $TSV | sed 1d >> $OUT

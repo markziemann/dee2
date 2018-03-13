@@ -55,7 +55,7 @@ QS2=`echo $QS | tr ' ' '\n' | cut -d '_' -f1 | sort - $LIST | uniq -d | tr '\n' 
 GENECOUNTS=$(echo $QS2 | tr ' ' '\n' | awk '{print $1"/"$1"_gene.cnt"}' | tr '\n' ' ' | sed 's/$/\n/')
 #echo GENECOUNTS $GENECOUNTS
 ROWNAMES_GENE=rownames_gene.txt
-paste $ROWNAMES_GENE $GENECOUNTS > $USRDIR/GeneCountMatrix.xls
+paste $ROWNAMES_GENE $GENECOUNTS > $USRDIR/GeneCountMatrix.tsv
 #head $USRDIR/GeneCountMatrix.xls
 
 #################################################
@@ -64,7 +64,7 @@ paste $ROWNAMES_GENE $GENECOUNTS > $USRDIR/GeneCountMatrix.xls
 QCS=$(echo $QS2 | tr ' ' '\n' | awk '{print $1"/"$1".qcl"}' | tr '\n' ' ' | sed 's/$/\n/')
 #echo QCS $QCS
 ROWNAMES_QC=rownames_qc.txt
-paste $ROWNAMES_QC $QCS > $USRDIR/QC_Matrix.xls
+paste $ROWNAMES_QC $QCS > $USRDIR/QC_Matrix.tsv
 #head $USRDIR/QC_Matrix.xls
 
 #################################################
@@ -73,7 +73,7 @@ paste $ROWNAMES_QC $QCS > $USRDIR/QC_Matrix.xls
 TXCOUNTS=$(echo $QS2 | tr ' ' '\n' | awk '{print $1"/"$1"_tx.cnt"}' | tr '\n' ' ' | sed 's/$/\n/')
 #echo TXCOUNTS $TXCOUNTS
 ROWNAMES_TX=rownames_tx.txt
-paste $ROWNAMES_TX $TXCOUNTS > $USRDIR/TxCountMatrix.xls
+paste $ROWNAMES_TX $TXCOUNTS > $USRDIR/TxCountMatrix.tsv
 #head $USRDIR/TxCountMatrix.xls
 
 #################################################
@@ -85,4 +85,4 @@ cp $LOGS $LOGDIR
 #head $LOGDIR/*
 
 cd $USRDIR
-zip -r - GeneCountMatrix.xls QC_Matrix.xls TxCountMatrix.xls logs
+zip -r - GeneCountMatrix.tsv QC_Matrix.tsv TxCountMatrix.tsv logs
