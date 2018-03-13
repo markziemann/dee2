@@ -106,7 +106,7 @@ fi
 
 if [ -n "$ACC" -a -z "$KEY" ] ; then
   echo "<script type=\"text/javascript\"> function toggle(source) { checkboxes = document.getElementsByName('x'); for(var i=0, n=checkboxes.length;i<n;i++) { checkboxes[i].checked = source.checked; } } </script>"
-  echo '<form action="extract.sh" method="get">'
+  echo '<form action="request.sh" method="get">'
   echo '<input type="hidden" name="org" value="ORG">' | sed "s/ORG/${ORG}/"
 
   Q=`echo $ACC | sed 's/\%2C/\|/g' | sed 's/^/\(/' | sed 's/$/\)/'`
@@ -147,7 +147,7 @@ fi
 
 if [ -n "$KEY" -a -z "$ACC" ] ; then
   echo "<script type=\"text/javascript\"> function toggle(source) { checkboxes = document.getElementsByName('x'); for(var i=0, n=checkboxes.length;i<n;i++) { checkboxes[i].checked = source.checked; } } </script>"
-  echo '<form action="extract.sh" method="get">'
+  echo '<form action="request.sh" method="get">'
   echo '<input type="hidden" name="org" value="ORG">' | sed "s/ORG/${ORG}/"
 
   Q=`echo $KEY | tr '+' ' '`
@@ -194,3 +194,4 @@ fi
 rm -f $TMP
 echo '</body>
 </html>'
+
