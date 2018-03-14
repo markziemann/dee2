@@ -2,7 +2,6 @@
 echo "Content-type: text/html"
 echo ''
 echo '<!DOCTYPE html>
-
 <html xml:lang="en" lang="en">
 <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
 <head>
@@ -35,9 +34,13 @@ echo '<!DOCTYPE html>
    background-color:transparent;
    padding: 2px;
   }
+
+
+input[type=checkbox] {
+    zoom: 1.5;
+}
 </style>
 </head>
-
 <body>
 '
 
