@@ -11,11 +11,12 @@ DATE=strsplit(as.character(file.info(FILES[1])[,4])," ",fixed=T)[[1]][1]
 HEADER=paste("Hosted datasets",DATE)
 colnames(z)=HEADER
 z<-z[order(rownames(z),decreasing=T ), ,drop=F]
-par(las=2) ; par(mai=c(1,1.5,1,0.5))
-MAX=max(as.numeric(z[,1]))+10000
-bb<-barplot(as.numeric(z[,1]),names.arg=rownames(z),xlim=c(0,MAX),beside=T,main=HEADER,horiz=T , las=1)
+par(las=2) ; par(mai=c(1,2.5,1,0.5))
+MAX=max(as.numeric(z[,1]))+20000
+options(scipen=10000)
+bb<-barplot(as.numeric(z[,1]),names.arg=rownames(z),xlim=c(0,MAX),beside=T,main=HEADER,horiz=T , las=1, cex.axis=1.5, cex.names=1.5,cex.main=1.4)
 #barplot(z,beside=T,names.arg=rownames(z),ylim=c(0,250000),main=HEADER)
-text(as.numeric(z[,1])+5000,bb,labels=z[,1],cex=0.9)
+text(as.numeric(z[,1])+10000,bb,labels=z[,1],cex=1.4)	
 dev.off()
 
 
