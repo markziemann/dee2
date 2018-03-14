@@ -154,22 +154,30 @@ li {
 </p>
 
 <ol>
- <li>A) Firstly confirm that the species/accession number combination is correct. Then check whether the sequence data is available from the SRA ftp site. Check that the study raw data is released and not under embargo. If the dataset has been added >1 month ago, then contact us and we'll have it added to DEE2.</li>
+ <li>A) Firstly confirm that the species/accession number combination is correct. Then check whether the sequence data is 
+available from the SRA ftp site. Check that the study raw data is released and not under embargo. If the dataset has been 
+added recently, then you have a few options. You can run the docker or singularity image on your own server or on the cloud. 
+The instructions to do this are in the github README.md <a href="https://github.com/markziemann/dee2" target="_blank" >here</a>.
+Alternatively contact us and we'll have it added.</li>
 </ol>
-
+<hr>
 <p>Q) How do I open zip compressed files?
 </p>
 
 <ol>
- <li>A) Winzip can uncompress .zip files and is available <a href="http://www.sfsu.edu/ftp/win/utils/winzip80.exe" target="_blank"> here</a> for free. Decompression tools are also available from the Apple and Android app store for mobile devices.</li>
+ <li>A) Winzip can uncompress .zip files and is available <a href="http://www.sfsu.edu/ftp/win/utils/winzip80.exe" target="_blank"> 
+here</a> for free. Decompression tools are also available from the Apple and Android app store for mobile devices.</li>
 </ol>
+<hr>
 
 <p>Q) What tools are recommended for analyzing RNA-seq count data?
 </p>
 
 <ol>
- <li>A) There are many options, but we recommend <a href="http://degust.erc.monash.edu/" target="_blank"> Degust</a> for new users.</li>
+ <li>A) There are many options, but we recommend <a href="http://degust.erc.monash.edu/" target="_blank"> Degust</a> 
+for new users.</li>
 </ol>
+<hr>
 
 <p>Q) How do I load the data into R?
 </p>
@@ -178,27 +186,33 @@ li {
  <li>A) We have written an R function that interfaces with the webpage and loads data into R. For more
 information, read the documentation <a href="AccessDEEfromR.pdf">here</a> </li> and in txt format <a href="AccessDEEfromR.txt">here</a> </li>.
 </ol>
+<hr>
 
 <p>Q) Can I load the data directly into my Galaxy history?
 </p>
 
 <ol>
- <li>A) DEE data can be uploaded manually into Galaxy; direct integration is in development.</li>
+ <li>A) DEE data can be uploaded manually into Galaxy; we will be investigating direct integration in future.</li>
 </ol>
+<hr>
 
 <p>Q) My DEE data contains multiple technical replicates, how can I aggregate the counts?
 </p>
 
 <ol>
- <li>A) Counts can be aggregated in R (recommended) as outlined in our <a href="AccessDEEfromR.pdf">guide</a>. Alternatives include <a href='http://stackoverflow.com/questions/10464055/use-awk-to-calculate-sum-for-multiple-columns'> awk </a> or even spreadsheet software (ie. Excel).
+ <li>A) Counts can be aggregated in R (recommended) as outlined in our <a href="AccessDEEfromR.pdf">guide</a>. Alternatives 
+include <a href='http://stackoverflow.com/questions/10464055/use-awk-to-calculate-sum-for-multiple-columns'> awk </a> or even 
+spreadsheet software (ie. Excel). If using Excel or other spreadsheet software, please be wary of its default behaviour that converts
+gene names and accession numbers to dates and scientific numbers.
 </ol>
+<hr>
 
 <h2 id="content">See our YouTube clip</h2>
 
 <p>
  <iframe width="640" height="360" src="https://www.youtube.com/embed/qlWVAHrM4NE" frameborder="0" allowfullscreen></iframe>
 </p>
-
+<hr>
 <h2 id="content">Get more help</h2>
 
 <p>Contact us by email (mark.ziemann[at]monash.edu).
