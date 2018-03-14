@@ -18,7 +18,7 @@ echo '<!DOCTYPE html>
   font:normal normal normal 100% verdana,sans-serif;
   font-size:22px;
   color:#3a3a3a;
-  padding:0 10px
+  padding:10px 10px
  }
  h1,h2,h3{
   line-height:1.2;
@@ -97,13 +97,13 @@ MDCUT=$DIR/${ORG}_metadata.tsv.cut
 
 if [ -z "$ACC" -a -z "$KEY" ] ; then
   echo 'No search terms provided.'
-  echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"></FORM>'
+  echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
   exit
 fi
 
 if [ -n "$ACC" -a -n "$KEY" ] ; then
   echo 'Please enter an accession number OR keyword, not both.'
-  echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"></FORM>'
+  echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
   exit
 fi
 
@@ -111,6 +111,7 @@ if [ -n "$ACC" -a -z "$KEY" ] ; then
   echo "<script type=\"text/javascript\"> function toggle(source) { checkboxes = document.getElementsByName('x'); for(var i=0, n=checkboxes.length;i<n;i++) { checkboxes[i].checked = source.checked; } } </script>"
   echo '<form action="request.sh" method="get">'
   echo '<input type="hidden" name="org" value="ORG">' | sed "s/ORG/${ORG}/"
+  echo Use the checkboxes to select data sets of interest.
 
   Q=`echo $ACC | sed 's/\%2C/\|/g' | sed 's/^/\(/' | sed 's/$/\)/'`
 
@@ -129,22 +130,23 @@ if [ -n "$ACC" -a -z "$KEY" ] ; then
   if [ $CNT -gt 3000 ]; then
     echo Too many results found \(${CNT}\). The webserver is limited to 500 datasets per search. \
     Try a stricter accession number search, or consider a bulk data download.
-    echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"></FORM>'
+    echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
     exit
   fi
 
   if [ $CNT -gt 500 ] ; then
     echo Too many results found \(${CNT}\). The webserver is limited to 500 datasets per search. \
     Try a stricter accession number search, or consider a bulk data download.
-    echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"></FORM>'
+    echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
     #display all results
     cut -f-8 $MD | egrep -w "$Q" | sort -k1 | tbl1
     exit
   fi
 
   cut -f-8 $MD | egrep -w "$Q" | sort -k1 | tbl
-  echo '<input type="submit" value="Get Counts" class="tfbutton">'
-  echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"></FORM>'
+  echo '<input type="submit" value="Get Counts" class="tfbutton" style="font-size : 22px;" >'
+  echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
+  echo Please hit the submit button just once. Retrieval time is about 1 dataset per second.
   exit
 fi
 
@@ -152,6 +154,8 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
   echo "<script type=\"text/javascript\"> function toggle(source) { checkboxes = document.getElementsByName('x'); for(var i=0, n=checkboxes.length;i<n;i++) { checkboxes[i].checked = source.checked; } } </script>"
   echo '<form action="request.sh" method="get">'
   echo '<input type="hidden" name="org" value="ORG">' | sed "s/ORG/${ORG}/"
+  echo Use the checkboxes to select data sets of interest.
+
 
   Q=`echo $KEY | tr '+' ' '`
   #echo $Q
@@ -161,14 +165,14 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
 
   if [ $CNT -eq 0 ]; then
     echo No results found
-    echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"></FORM>'
+    echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size:22px;" ></FORM>'
     exit
   fi
 
   if [ $CNT -gt 3000 ]; then
     echo Too many results found \(${CNT}\). The webserver is limited to 500 datasets per search. \
     Try a stricter keyword or accession number search, or consider a bulk data download.
-    echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"></FORM>'
+    echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size:22px;" ></FORM>'
     exit
   fi
 
@@ -190,8 +194,9 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
   | paste - $TMP | cut -f-9 \
   | tr -d ' ' | awk '{FS="\t";OFS="\t"} {print $2,$1,$3,$4,$5,$6,$7,$8,$9}' \
   | sort -k1 | tbl2
-  echo '<input type="submit" value="Get Counts" class="tfbutton">'
-  echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"></FORM>'
+  echo '<input type="submit" value="Get Counts" class="tfbutton" style="font-size:22px;" >'
+  echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"  style="font-size : 22px;"  ></FORM>'
+  echo Please hit the submit button just once. Retrieval time is about 1 dataset per second.
   rm -f $TMP
 fi
 rm -f $TMP
