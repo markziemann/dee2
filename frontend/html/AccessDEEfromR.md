@@ -37,7 +37,8 @@ Here is an example of usage for a small number of E. coli datasets that are
 loaded into a 'mytable' and the zip archive is saved in the current working
 directory as "DEE_count_data.zip".
 
-`> x<-getDEE2("celegans",c("SRR029423","SRR029424"))
+```
+> x<-getDEE2("celegans",c("SRR029423","SRR029424"))
 trying URL 'http://dee2.io/cgi-bin/request.sh?'
 Content type 'text/html; charset=utf-8' length 488 bytes
 ==================================================
@@ -45,11 +46,12 @@ downloaded 488 bytes
 
 trying URL 'http://118.138.240.228/cgi-bin/request.sh?org=celegans&x=SRR029423&x=SRR029424'
 downloaded 342 KB
-`
+```
 
 If all works, then "x" is a list containing 3 data frames (GeneCounts,TxCounts,QcMx).
 
-`> head(x$GeneCounts)
+```
+> head(x$GeneCounts)
                SRR029423 SRR029424
 WBGene00197333         0         0
 WBGene00198386         0         0
@@ -75,13 +77,14 @@ Read1MinimumLength                 36                 36
 Read1MedianLength                  36                 36
 Read1MaxLength                     36                 36
 Read2MinimumLength               NULL               NULL
-`
+```
 
 Another example this time starting with a list of SRR accession numbers in a 
 plain text file and not saving the zip archive. This approach works well with 
 SRAdb integration.
 
-`> SRRlist<-read.table("SRRlist.txt")
+```
+> SRRlist<-read.table("SRRlist.txt")
 > SRRlist
           V1
 1 SRR3581689
@@ -123,12 +126,13 @@ Read1MinimumLength                 50                 50
 Read1MedianLength                  50                 50
 Read1MaxLength                     50                 50
 Read2MinimumLength                 50                 50
-`
+```
 
 For convenience, we provide stand alone functions to load each of the data tables 
 from previously downloaded zip files.
 
-`> myGeneCounts<-loadGeneCounts("DEE_count_data.zip")
+```
+> myGeneCounts<-loadGeneCounts("DEE_count_data.zip")
 > myTxCounts<-loadTxCounts("DEE_count_data.zip")
 > myQcMx<-loadQcMx("DEE_count_data.zip")
 > head(mytable3)
@@ -139,13 +143,14 @@ ECDH10B_0003     thrB         1758         2918
 ECDH10B_0004     thrC         3082         4188
 ECDH10B_0005     yaaX           95          268
 ECDH10B_0006     yaaA          169          734
-`
+```
 
 In case you need to aggregate datasets that are technical replicates, read this
 thread (http://stackoverflow.com/questions/26046776/sum-two-columns-in-r). Here
 is an example:
 
-`> head(mytable)
+```
+> head(mytable)
              SRR922260v1 SRR922261v1
 ECDH10B_0001         470         452
 ECDH10B_0002        6046        8138
@@ -162,7 +167,7 @@ ECDH10B_0003        1758        2918                    4676
 ECDH10B_0004        3082        4188                    7270
 ECDH10B_0005          95         268                     363
 ECDH10B_0006         169         734                     903
-`
+```
 
 ## Report bugs, issues and suggestions at the github page
 https://github.com/markziemann/dee2
