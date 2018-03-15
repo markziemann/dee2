@@ -1,6 +1,3 @@
-# Under construction
-Note that this app is still under development and alpha testing. It may not work and may undergo major changes in future.
-
 # DEE2
 The aim of DEE2 is to make all RNA-seq data freely available to everyone. DEE2 consists of three parts:
 * Webserver where end-users can search for and obtain data-sets of interest (frontend)
@@ -23,10 +20,10 @@ Here are some of the key features:
 The DEE2 pipeline uses containers (Docker and Singularity) to enhance ease of use, portability and reproducibility. This means the DEE2 pipeline can be run reproducibly across different environments, making it amenable to distributed computing. The user can provide a species and SRA run accession numbers to be processed, and this data will be immediately available to the user when completed. Data is also uploaded to our server by sftp and after sanitation, will be available to other users via the frontend (still under construction). If users don't provide accession numbers, then they will receive accessions from the current queue via html request. If the user doesn't specify a species, then one is selected based on the memory available. 
 
 ## Contributions welcome
-We welcome contributions to code development and in future compute time.
+We welcome feedback, bug reports, and contributions to code development. Compute time is also very welcome.
 
 ## Before starting check system requirements
-So far this has only been tested on Ubuntu linux but will probably work for any system capable of running Docker.
+So far this has only been tested on linux but will probably work for any system capable of running Docker.
 
 Minimum 8GB RAM available. Use the "free" command:
 
