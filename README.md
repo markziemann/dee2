@@ -6,8 +6,10 @@ The aim of DEE2 is to make all RNA-seq data freely available to everyone. DEE2 c
 
 DEE2 currently supports analysis of several major species including A. thaliana , C. elegans, D. melanogaster, D. rerio, E. coli, H. sapiens, M. musculus, R. norvegicus and S. cerevisiae. The DEE2 pipeline downloads data from SRA and processes it, providing tabulated data that can be used in downstream statistical analysis.
 
-The processed data is available at http://dee2.io but keep in mind that processing is not yet complete.
+## How can I access the processed data?
+The processed data is available at http://dee2.io but keep in mind that processing is not yet complete. 
 
+## Pipeline key features
 Here are some of the key features:
  * Intelligent adapter detection and clipping
  * Clipping of non-reference 5' bases (eg UMIs)
@@ -18,14 +20,12 @@ Here are some of the key features:
  * Distributed approach using containers [link](https://hub.docker.com/r/mziemann/tallyup/)
  * Ability to process own fastq files as well as those from SRA
 
+# Want to learn more?
 ## How it works
 The DEE2 pipeline uses containers (Docker and Singularity) to enhance ease of use, portability and reproducibility. This means the DEE2 pipeline can be run reproducibly across different environments, making it amenable to distributed computing. The user can provide a species and SRA run accession numbers to be processed, and this data will be immediately available to the user when completed. Data is also uploaded to our server by sftp and after sanitation, will be available to other users via the frontend (still under construction). If users don't provide accession numbers, then they will receive accessions from the current queue via html request. If the user doesn't specify a species, then one is selected based on the memory available. 
 
-## Contributions welcome
-We welcome feedback, bug reports, and contributions to code development. Compute time is also very welcome.
-
 ## Before starting check system requirements
-So far this has only been tested on linux but will probably work for any system capable of running Docker.
+So far this has only been tested on linux but will probably work for any system with sufficient resources capable of running Docker.
 
 Minimum 8GB RAM available. Use the "free" command:
 
@@ -102,6 +102,9 @@ If you want to keep it running even if ssh gets terminated, use 'nohup'
 If you want to keep one container running contantly, try the 'run-one' utility
 
 `nohup run-one-constantly docker run mziemann/tallyup mmusculus &`
+
+## Contributions welcome
+We welcome feedback, bug reports, and contributions to code development. Compute time is also very welcome.
 
 ## Troubleshooting
 If you're encountering problems, check the system requirements again. If still stuck, contact me on mark.ziemann{at}gmail.com
