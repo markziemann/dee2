@@ -21,15 +21,15 @@ and deleted immediately after use.
 
 The options for organism currently are:
 
-athaliana
-celegans
-dmelanogaster
-drerio
-ecoli
-hsapiens
-mmusculus
-rnorvegicus
-scerevisiae
+* athaliana
+* celegans
+* dmelanogaster
+* drerio
+* ecoli
+* hsapiens
+* mmusculus
+* rnorvegicus
+* scerevisiae
 
 The SRR numbers need to exactly match those in SRA.
 
