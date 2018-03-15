@@ -1,10 +1,12 @@
 # DEE2
 The aim of DEE2 is to make all RNA-seq data freely available to everyone. DEE2 consists of three parts:
-* Webserver where end-users can search for and obtain data-sets of interest (frontend)
+* Webserver where end-users can search for and obtain data-sets of interest 
 * Back-end that collects, filters and organises data provided by contributing worker nodes
 * Pipeline that can download and process SRA data as well as your own fastq files.
 
 DEE2 currently supports analysis of several major species including A. thaliana , C. elegans, D. melanogaster, D. rerio, E. coli, H. sapiens, M. musculus, R. norvegicus and S. cerevisiae. The DEE2 pipeline downloads data from SRA and processes it, providing tabulated data that can be used in downstream statistical analysis.
+
+The processed data is available at http://dee2.io but keep in mind that processing is not yet complete.
 
 Here are some of the key features:
  * Intelligent adapter detection and clipping
