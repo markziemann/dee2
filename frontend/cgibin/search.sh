@@ -97,12 +97,14 @@ MDCUT=$DIR/${ORG}_metadata.tsv.cut
 
 if [ -z "$ACC" -a -z "$KEY" ] ; then
   echo 'No search terms provided.'
+  echo "<br>"
   echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
   exit
 fi
 
 if [ -n "$ACC" -a -n "$KEY" ] ; then
   echo 'Please enter an accession number OR keyword, not both.'
+  echo "<br>"
   echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
   exit
 fi
@@ -111,7 +113,6 @@ if [ -n "$ACC" -a -z "$KEY" ] ; then
   echo "<script type=\"text/javascript\"> function toggle(source) { checkboxes = document.getElementsByName('x'); for(var i=0, n=checkboxes.length;i<n;i++) { checkboxes[i].checked = source.checked; } } </script>"
   echo '<form action="request.sh" method="get">'
   echo '<input type="hidden" name="org" value="ORG">' | sed "s/ORG/${ORG}/"
-  echo Use the checkboxes to select data sets of interest.
 
   Q=`echo $ACC | sed 's/\%2C/\|/g' | sed 's/^/\(/' | sed 's/$/\)/'`
 
@@ -123,6 +124,7 @@ if [ -n "$ACC" -a -z "$KEY" ] ; then
 
   if [ $CNT -eq 0 ] ; then
     echo No results found
+    echo "<br>"
     echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"></FORM>'
     exit
   fi
@@ -130,6 +132,7 @@ if [ -n "$ACC" -a -z "$KEY" ] ; then
   if [ $CNT -gt 3000 ]; then
     echo Too many results found \(${CNT}\). The webserver is limited to 500 datasets per search. \
     Try a stricter accession number search, or consider a bulk data download.
+    echo "<br>"
     echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
     exit
   fi
@@ -137,6 +140,7 @@ if [ -n "$ACC" -a -z "$KEY" ] ; then
   if [ $CNT -gt 500 ] ; then
     echo Too many results found \(${CNT}\). The webserver is limited to 500 datasets per search. \
     Try a stricter accession number search, or consider a bulk data download.
+    echo "<br>"
     echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
     #display all results
     cut -f-8 $MD | egrep -w "$Q" | sort -k1 | tbl1
@@ -154,7 +158,6 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
   echo "<script type=\"text/javascript\"> function toggle(source) { checkboxes = document.getElementsByName('x'); for(var i=0, n=checkboxes.length;i<n;i++) { checkboxes[i].checked = source.checked; } } </script>"
   echo '<form action="request.sh" method="get">'
   echo '<input type="hidden" name="org" value="ORG">' | sed "s/ORG/${ORG}/"
-  echo Use the checkboxes to select data sets of interest.
 
 
   Q=`echo $KEY | tr '+' ' '`
@@ -165,6 +168,7 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
 
   if [ $CNT -eq 0 ]; then
     echo No results found
+    echo "<br>"
     echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size:22px;" ></FORM>'
     exit
   fi
@@ -172,6 +176,7 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
   if [ $CNT -gt 3000 ]; then
     echo Too many results found \(${CNT}\). The webserver is limited to 500 datasets per search. \
     Try a stricter keyword or accession number search, or consider a bulk data download.
+    echo "<br>"
     echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size:22px;" ></FORM>'
     exit
   fi
@@ -181,6 +186,7 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
   if [ $CNT -gt 500 ]; then
     echo Too many results found \(${CNT}\). The webserver is limited to 500 datasets per search. \
     Try a stricter keyword or accession number search, or consider a bulk data download.
+    echo "<br>"
     echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"></FORM>'
     #display all results
     sed "s/${Q}/x@x/I" $TMP | egrep -o ".{0,30}x@x.{0,30}" | sed "s/x@x/${Q}/" | tr '\t ' '_' \
@@ -190,6 +196,7 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
     exit
   fi
 
+  echo Use the checkboxes to select data sets of interest.
   sed "s/${Q}/x@x/I" $TMP | egrep -o ".{0,30}x@x.{0,30}" | sed "s/x@x/${Q}/" | tr '\t ' '_' \
   | paste - $TMP | cut -f-9 \
   | tr -d ' ' | awk '{FS="\t";OFS="\t"} {print $2,$1,$3,$4,$5,$6,$7,$8,$9}' \
