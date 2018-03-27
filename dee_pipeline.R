@@ -7,7 +7,7 @@ library(data.table)
 
 #org="ecoli"
 for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae") ) {
-#for (org in c("hsapiens") ) {
+#for (org in c("ecoli") ) {
   #create a list of species full names
   species_list<-c("'Arabidopsis thaliana'","'Caenorhabditis elegans'","'Drosophila melanogaster'","'Danio rerio'",
   "'Escherichia coli'","'Homo sapiens'", "'Mus musculus'", "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
@@ -313,12 +313,38 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
 }
 
 
+#now tabulate the completed and outstanding datasets
+rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
 
+png("dee_datasets.png",width=580,height=580)
 
+FILES1<-list.files(pattern="*queue.txt$",path="/scratch/mziemann/dee2/queue/",full.names=T)
+x<-as.data.frame(sapply(FILES1,rowcnt2),stringsAsFactors=FALSE)
+rownames(x)=c("A. thaliana","C. elegans","D. melanogaster","D. rerio","E. coli","H. sapiens","M. musculus","R. norvegicus","S. cerevisiae")
+colnames(x)="queued"
 
+FILES2<-list.files(pattern="*accessions.tsv$",path="/scratch/mziemann/dee2/sradb/",full.names=T)
+y<-as.data.frame(sapply(FILES2,rowcnt2),stringsAsFactors=FALSE)
+rownames(y)=c("A. thaliana","C. elegans","D. melanogaster","D. rerio","E. coli","H. sapiens","M. musculus","R. norvegicus","S. cerevisiae")
+colnames(y)="completed"
 
+z<-merge(x,y,by=0)
+rownames(z)=z$Row.names
+z$Row.names=NULL
 
+DATE=strsplit(as.character(file.info(FILES2[1])[,4])," ",fixed=T)[[1]][1]
+HEADER=paste("Updated",DATE)
+#colnames(z)=HEADER
+z<-z[order(rownames(z),decreasing=T ), ,drop=F]
+par(las=2) ; par(mai=c(1,2.5,1,0.5))
+MAX=max(as.numeric(z[,1]))+30000
 
+bb<-barplot( rbind( as.numeric(z$queued) , as.numeric(z$completed) ) ,
+ names.arg=rownames(z) ,xlim=c(0,MAX),beside=T, main=HEADER, col=c("darkblue","red") ,
+ horiz=T , las=1, cex.axis=1.3, cex.names=1.4,cex.main=1.4 )
 
+legend("topright", colnames(z), fill=c("darkblue","red") , cex=1.2)
 
-
+text( cbind(as.numeric(z[,1])+20000 ,as.numeric(z[,2])+20000 )  ,t(bb),labels=c(z[,1],z[,2]) ,cex=1.2)
+dev.off()
+system("scp -i ~/.ssh/cloud/cloud2.key dee_datasets.png ubuntu@118.138.240.228:/mnt/dee2_data/mx")
