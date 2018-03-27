@@ -3,9 +3,11 @@ setwd("/scratch/mziemann/dee2/code/")
 
 library(SRAdb)
 library(parallel)
+library(data.table)
 
 #org="ecoli"
 for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae") ) {
+#for (org in c("hsapiens") ) {
   #create a list of species full names
   species_list<-c("'Arabidopsis thaliana'","'Caenorhabditis elegans'","'Drosophila melanogaster'","'Danio rerio'",
   "'Escherichia coli'","'Homo sapiens'", "'Mus musculus'", "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
@@ -35,7 +37,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   now<-as.numeric(Sys.time())
   #calculate difference between
   dif<-now-ct
-  #define 4week in seconds
+  #define 1 week in seconds
   wk<-60*60*24*7*1
 
   #Test if ctime older than a week, redownload if neccessary
@@ -82,7 +84,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   print("generate a list of se tsv files to import and merge")
   se_list<-list.files(path = ".", pattern = "\\.se.tsv$" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
 
-  rowcnt<-function(file){nrow(read.table(file,fill=T)) }
+  rowcnt<-function(file){nrow(fread(file,fill=T)) }
 
   #add the failed datasets to the todo list
   LEN=length(rownames(subset(file.info(se_list),size==0)))
@@ -96,9 +98,9 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   se_list<-rownames(subset(file.info(se_list),size!=0))
 
   #Need to ensure matrix will be square
-  x<-as.matrix(table(factor(as.numeric(mclapply(se_list,rowcnt, mc.cores = detectCores() )))))
+  x<-as.matrix(table(factor(as.numeric(mclapply(se_list,rowcnt, mc.cores = ceiling(detectCores()/2) )))))
   expected_len=as.numeric(rownames(tail(x,n=1)))
-  y<-t(as.data.frame(mclapply(se_list,rowcnt, mc.cores = detectCores()  )))
+  y<-t(as.data.frame(mclapply(se_list,rowcnt, mc.cores = ceiling(detectCores()/2)  )))
   rownames(y)=as.character(se_list)
 
   LEN=length(rownames(subset(y,y!=expected_len)))
@@ -132,10 +134,10 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   }
 
   ke_list<-rownames(subset(file.info(ke_list),size!=0))
-  x<-as.matrix(table(factor(as.numeric(mclapply(ke_list,rowcnt , mc.cores = detectCores() )))))
+  x<-as.matrix(table(factor(as.numeric(mclapply(ke_list,rowcnt , mc.cores = ceiling(detectCores()/2) )))))
   expected_len=as.numeric(rownames(tail(x,n=1)))
 
-  y<-t(as.data.frame(mclapply(ke_list,rowcnt, mc.cores = detectCores()  )))
+  y<-t(as.data.frame(mclapply(ke_list,rowcnt, mc.cores = ceiling(detectCores()/2)  )))
   rownames(y)=as.character(ke_list)
 
   LEN=length(rownames(subset(y,y!=expected_len)))
@@ -146,7 +148,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   runs_todo<-unique(union(runs_todo,p))
   }
 
-  y<-t(as.data.frame(mclapply(ke_list,rowcnt , mc.cores = detectCores() )))
+  y<-t(as.data.frame(mclapply(ke_list,rowcnt , mc.cores = ceiling(detectCores()/2) )))
 
   rownames(y)=as.character(ke_list)
   ke_list<-rownames(subset(y,y==expected_len))
@@ -164,7 +166,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   print("generate a list of qc files to import and merge")
   qc_list<-list.files(path = ".", pattern = "\\.qc$" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
 
-  rowcnt<-function(file){nrow(read.table(file,fill=T)) }
+  rowcnt<-function(file){nrow(fread(file,fill=T)) }
 
   #add the failed datasets to the todo list
   LEN=length(rownames(subset(file.info(qc_list),size==0)))
@@ -178,9 +180,9 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   qc_list<-rownames(subset(file.info(qc_list),size!=0))
 
   #Need to ensure matrix will be square
-  x<-as.matrix(table(factor(as.numeric(mclapply(qc_list,rowcnt, mc.cores = detectCores()  )))))
+  x<-as.matrix(table(factor(as.numeric(mclapply(qc_list,rowcnt, mc.cores = ceiling(detectCores()/2)  )))))
   expected_len=as.numeric(rownames(tail(x,n=1)))
-  y<-t(as.data.frame(mclapply(qc_list,rowcnt, mc.cores = detectCores()  )))
+  y<-t(as.data.frame(mclapply(qc_list,rowcnt, mc.cores = ceiling(detectCores()/2)  )))
   rownames(y)=as.character(qc_list)
 
   LEN=length(rownames(subset(y,y!=expected_len)))
@@ -200,7 +202,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   read.table(file = file, sep = sep, quote = quote, dec = dec, fill = fill, row.names=1, comment.char = comment.char, ...)}
 
   #bringing in some QC data
-  qc<-do.call("cbind", mclapply(qc_list, read.colon.tsv,4 ))
+  qc<-do.call("cbind", mclapply(qc_list, read.colon.tsv,mc.cores = ceiling(detectCores()/2) ))
   colnames(qc)<-sapply(strsplit(sub("./","",qc_list), "/"), head, 1)
   print("qc list finished OK")
 

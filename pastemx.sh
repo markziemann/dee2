@@ -35,6 +35,7 @@ cd $DATA_DIR
 #list of folders and files
 LIST=$DATA_DIR/list.txt
 if [ ! -r $LIST ] ; then ls > $LIST ; fi
+LIST_TIME=$(expr $(date '+%s') - $(stat -c%Y  $LIST) )
 if [ "$LIST_TIME" -gt 86400 ] ; then ls > $LIST ; fi
 
 #single column of star gene counts
