@@ -47,7 +47,7 @@ if [ ! -r $OUT ] ; then
 fi
 }
 export -f tsv1
-find . | grep se.tsv | parallel tsv1 {}
+find . | grep se.tsv | parallel -j16 tsv1 {}
 
 #rownames genes
 echo "GeneID" > rownames_gene.txt
@@ -65,7 +65,7 @@ if [ ! -r $OUT ] ; then
 fi
 }
 export -f tsv2
-find . | grep .qc$ | parallel tsv2 {}
+find . | grep .qc$ | parallel -j16 tsv2 {}
 
 #rownames qc
 echo "SeqMetric" > rownames_qc.txt
@@ -83,7 +83,7 @@ if [ ! -r $OUT ] ; then
 fi
 }
 export -f tsv3
-find . | grep ke.tsv | parallel tsv3 {}
+find . | grep ke.tsv | parallel -j16 tsv3 {}
 
 #rownames transcripts
 echo "TxID" > rownames_tx.txt
@@ -108,7 +108,7 @@ paste1(){
   | sed 1d >> $SPLIT.tsv
 }
 export -f paste1
-parallel paste1 ::: *split
+parallel -j16 paste1 ::: *split
 
 echo GeneID > $SE_GENES
 cut -f1 $(head -1 $SE_LIST ) | sed 1d >> $SE_GENES
@@ -140,7 +140,7 @@ paste2(){
   | sed 1d >> $SPLIT.tsv
 }
 export -f paste2
-parallel paste2 ::: *split
+parallel -j16 paste2 ::: *split
 
 echo TranscriptID > $KE_GENES
 cut -f1 $(head -1 $KE_LIST ) | sed 1d >> $KE_GENES
@@ -173,7 +173,7 @@ paste3(){
   | sed 1d >> $SPLIT.tsv
 }
 export -f paste3
-parallel paste3 ::: *split
+parallel -j16 paste3 ::: *split
 
 echo TranscriptID > $KE_GENES
 cut -f1 $(head -1 $KE_LIST ) | sed 1d >> $KE_GENES
@@ -207,7 +207,7 @@ paste4(){
   | sed 1d >> $SPLIT.tsv
 }
 export -f paste4
-parallel paste4 ::: *split
+parallel -j16 paste4 ::: *split
 
 echo QC_metric > $QC_GENES
 cut -d ':' -f1 $(head -1 $QC_LIST ) | sed 1d >> $QC_GENES
