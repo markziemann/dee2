@@ -36,7 +36,7 @@ getDEE2<-function(species, SRRvec, outfile=NULL ,
   baseURL="http://dee2.io/cgi-bin/request.sh?"){
   TMP="/tmp/tmp.html"
   download.file(baseURL,destfile=TMP)
-  a<-readChar("tmp.html", file.info(TMP)$size)
+  a<-readChar("/tmp/tmp.html", file.info(TMP)$size)
   a<-unlist(strsplit(a," "))
   a<-a[grep("http",a)][2]
   a<-strsplit(a,"/")[[1]][3]
