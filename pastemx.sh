@@ -120,7 +120,7 @@ head $SE_MX | cut -f-5
 rm $SE_GENES *split *split.tsv
 
 #zip the mx
-pbzip2 -kf $SE_MX
+pbzip2 -f $SE_MX
 
 ###################################################
 # Now kallisto counts (ke)
@@ -153,7 +153,7 @@ head $KE_MX | cut -f-5
 rm $KE_GENES *split *split.tsv
 
 #zip the mx
-pbzip2 -kf $KE_MX
+pbzip2 -f $KE_MX
 
 ###################################################
 # Now kallisto tpm (ke)
@@ -186,7 +186,7 @@ head $KE_TPM | cut -f-5
 rm $KE_GENES *split *split.tsv
 
 #zip the mx
-pbzip2 -kf $KE_TPM
+pbzip2 -f $KE_TPM
 
 ###################################################
 # Now qc metrics
@@ -219,7 +219,7 @@ head $QC_MX | cut -f-5
 rm $QC_GENES *split *split.tsv
 
 #zip the mx
-pbzip2 -kf $QC_MX
+pbzip2 -f $QC_MX
 
 #SCP
 scp -i ~/.ssh/cloud/cloud2.key $SE_MX.bz2 $KE_MX.bz2 $KE_TPM.bz2 $QC_MX.bz2 ubuntu@118.138.240.228:/mnt/dee2_data/mx/
