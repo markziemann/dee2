@@ -5,9 +5,10 @@ library(SRAdb)
 library(parallel)
 library(data.table)
 
+CORES=ceiling(detectCores()/2)
 #org="ecoli"
-for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae") ) {
-#for (org in c("ecoli") ) {
+#for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
+for (org in c("ecoli") ) {
   #create a list of species full names
   species_list<-c("'Arabidopsis thaliana'","'Caenorhabditis elegans'","'Drosophila melanogaster'","'Danio rerio'",
   "'Escherichia coli'","'Homo sapiens'", "'Mus musculus'", "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
@@ -84,7 +85,8 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   print("generate a list of se tsv files to import and merge")
   se_list<-list.files(path = ".", pattern = "\\.se.tsv$" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
 
-  rowcnt<-function(file){nrow(fread(file,fill=T)) }
+  #rowcnt<-function(file){nrow(fread(file,fill=T)) }
+  rowcnt<-function(file){nrow(read.table(file,fill=T)) }
 
   #add the failed datasets to the todo list
   LEN=length(rownames(subset(file.info(se_list),size==0)))
@@ -98,9 +100,9 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   se_list<-rownames(subset(file.info(se_list),size!=0))
 
   #Need to ensure matrix will be square
-  x<-as.matrix(table(factor(as.numeric(mclapply(se_list,rowcnt, mc.cores = ceiling(detectCores()/2) )))))
+  x<-as.matrix(table(factor(as.numeric(mclapply(se_list,rowcnt, mc.cores = CORES )))))
   expected_len=as.numeric(rownames(tail(x,n=1)))
-  y<-t(as.data.frame(mclapply(se_list,rowcnt, mc.cores = ceiling(detectCores()/2)  )))
+  y<-t(as.data.frame(mclapply(se_list,rowcnt, mc.cores = CORES  )))
   rownames(y)=as.character(se_list)
 
   LEN=length(rownames(subset(y,y!=expected_len)))
@@ -134,10 +136,10 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   }
 
   ke_list<-rownames(subset(file.info(ke_list),size!=0))
-  x<-as.matrix(table(factor(as.numeric(mclapply(ke_list,rowcnt , mc.cores = ceiling(detectCores()/2) )))))
+  x<-as.matrix(table(factor(as.numeric(mclapply(ke_list,rowcnt , mc.cores = CORES )))))
   expected_len=as.numeric(rownames(tail(x,n=1)))
 
-  y<-t(as.data.frame(mclapply(ke_list,rowcnt, mc.cores = ceiling(detectCores()/2)  )))
+  y<-t(as.data.frame(mclapply(ke_list,rowcnt, mc.cores = CORES  )))
   rownames(y)=as.character(ke_list)
 
   LEN=length(rownames(subset(y,y!=expected_len)))
@@ -148,7 +150,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   runs_todo<-unique(union(runs_todo,p))
   }
 
-  y<-t(as.data.frame(mclapply(ke_list,rowcnt , mc.cores = ceiling(detectCores()/2) )))
+  y<-t(as.data.frame(mclapply(ke_list,rowcnt , mc.cores = CORES )))
 
   rownames(y)=as.character(ke_list)
   ke_list<-rownames(subset(y,y==expected_len))
@@ -166,7 +168,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   print("generate a list of qc files to import and merge")
   qc_list<-list.files(path = ".", pattern = "\\.qc$" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
 
-  rowcnt<-function(file){nrow(fread(file,fill=T)) }
+ # rowcnt<-function(file){nrow(fread(file,fill=T)) }
 
   #add the failed datasets to the todo list
   LEN=length(rownames(subset(file.info(qc_list),size==0)))
@@ -180,9 +182,9 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   qc_list<-rownames(subset(file.info(qc_list),size!=0))
 
   #Need to ensure matrix will be square
-  x<-as.matrix(table(factor(as.numeric(mclapply(qc_list,rowcnt, mc.cores = ceiling(detectCores()/2)  )))))
+  x<-as.matrix(table(factor(as.numeric(mclapply(qc_list,rowcnt, mc.cores = CORES  )))))
   expected_len=as.numeric(rownames(tail(x,n=1)))
-  y<-t(as.data.frame(mclapply(qc_list,rowcnt, mc.cores = ceiling(detectCores()/2)  )))
+  y<-t(as.data.frame(mclapply(qc_list,rowcnt, mc.cores = CORES  )))
   rownames(y)=as.character(qc_list)
 
   LEN=length(rownames(subset(y,y!=expected_len)))
@@ -202,7 +204,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   read.table(file = file, sep = sep, quote = quote, dec = dec, fill = fill, row.names=1, comment.char = comment.char, ...)}
 
   #bringing in some QC data
-  qc<-do.call("cbind", mclapply(qc_list, read.colon.tsv,mc.cores = ceiling(detectCores()/2) ))
+  qc<-do.call("cbind", mclapply(qc_list, read.colon.tsv,mc.cores = CORES ))
   colnames(qc)<-sapply(strsplit(sub("./","",qc_list), "/"), head, 1)
   print("qc list finished OK")
 
@@ -225,7 +227,13 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   #new section to obatin and update webserver metadata for completed runs
   #start with accession information
   runs_done<-setdiff(runs_done,runs_todo)
+
+#TODO: runs done become write only
+
+#TODO: runs done .finished files renamed to .validated
+
   accessions_done<-accessions[which(accessions$run %in% runs_done),]
+
   write.table(accessions_done,file=paste(SRADBWD,"/",org,"_accessions.tsv",sep=""),quote=F,row.names=F)
 
   #now the metadata   experiment submission     study    sample        run
@@ -290,7 +298,7 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
   
   #save as mysql
   connection <- dbConnect(SQLite())
-  dbWriteTable(connection, value = x, name = "ecoli", append = TRUE )
+  dbWriteTable(connection, value = x, name = org, append = TRUE )
 
   write.table(x,file=paste(SRADBWD,"/",org,"_metadata.tsv",sep=""),quote=F,sep="\t",row.names=F)
 
@@ -310,41 +318,41 @@ for (org in c("athaliana", "celegans", "dmelanogaster", "drerio", "ecoli", "hsap
 #save in dbplyr format
 #https://rviews.rstudio.com/2017/10/18/database-queries-with-r/
 
-}
-
 
 #now tabulate the completed and outstanding datasets
-rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
+  rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
 
-png("dee_datasets.png",width=580,height=580)
+  png("dee_datasets.png",width=580,height=580)
 
-FILES1<-list.files(pattern="*queue.txt$",path="/scratch/mziemann/dee2/queue/",full.names=T)
-x<-as.data.frame(sapply(FILES1,rowcnt2),stringsAsFactors=FALSE)
-rownames(x)=c("A. thaliana","C. elegans","D. melanogaster","D. rerio","E. coli","H. sapiens","M. musculus","R. norvegicus","S. cerevisiae")
-colnames(x)="queued"
+  FILES1<-list.files(pattern="*queue.txt$",path="/scratch/mziemann/dee2/queue/",full.names=T)
+  x<-as.data.frame(sapply(FILES1,rowcnt2),stringsAsFactors=FALSE)
+  rownames(x)=c("A. thaliana","C. elegans","D. melanogaster","D. rerio","E. coli","H. sapiens","M. musculus","R. norvegicus","S. cerevisiae")
+  colnames(x)="queued"
 
-FILES2<-list.files(pattern="*accessions.tsv$",path="/scratch/mziemann/dee2/sradb/",full.names=T)
-y<-as.data.frame(sapply(FILES2,rowcnt2),stringsAsFactors=FALSE)
-rownames(y)=c("A. thaliana","C. elegans","D. melanogaster","D. rerio","E. coli","H. sapiens","M. musculus","R. norvegicus","S. cerevisiae")
-colnames(y)="completed"
+  FILES2<-list.files(pattern="*accessions.tsv$",path="/scratch/mziemann/dee2/sradb/",full.names=T)
+  y<-as.data.frame(sapply(FILES2,rowcnt2),stringsAsFactors=FALSE)
+  rownames(y)=c("A. thaliana","C. elegans","D. melanogaster","D. rerio","E. coli","H. sapiens","M. musculus","R. norvegicus","S. cerevisiae")
+  colnames(y)="completed"
 
-z<-merge(x,y,by=0)
-rownames(z)=z$Row.names
-z$Row.names=NULL
+  z<-merge(x,y,by=0)
+  rownames(z)=z$Row.names
+  z$Row.names=NULL
 
-DATE=strsplit(as.character(file.info(FILES2[1])[,4])," ",fixed=T)[[1]][1]
-HEADER=paste("Updated",DATE)
-#colnames(z)=HEADER
-z<-z[order(rownames(z),decreasing=T ), ,drop=F]
-par(las=2) ; par(mai=c(1,2.5,1,0.5))
-MAX=max(as.numeric(z[,1]))+30000
+  DATE=strsplit(as.character(file.info(FILES2[1])[,4])," ",fixed=T)[[1]][1]
+  HEADER=paste("Updated",DATE)
+  #colnames(z)=HEADER
+  z<-z[order(rownames(z),decreasing=T ), ,drop=F]
+  par(las=2) ; par(mai=c(1,2.5,1,0.5))
+  MAX=max(as.numeric(z[,1]))+30000
 
-bb<-barplot( rbind( as.numeric(z$queued) , as.numeric(z$completed) ) ,
- names.arg=rownames(z) ,xlim=c(0,MAX),beside=T, main=HEADER, col=c("darkblue","red") ,
- horiz=T , las=1, cex.axis=1.3, cex.names=1.4,cex.main=1.4 )
+  bb<-barplot( rbind( as.numeric(z$queued) , as.numeric(z$completed) ) ,
+   names.arg=rownames(z) ,xlim=c(0,MAX),beside=T, main=HEADER, col=c("darkblue","red") ,
+   horiz=T , las=1, cex.axis=1.3, cex.names=1.4,cex.main=1.4 )
 
-legend("topright", colnames(z), fill=c("darkblue","red") , cex=1.2)
+  legend("topright", colnames(z), fill=c("darkblue","red") , cex=1.2)
 
-text( cbind(as.numeric(z[,1])+20000 ,as.numeric(z[,2])+20000 )  ,t(bb),labels=c(z[,1],z[,2]) ,cex=1.2)
-dev.off()
-system("scp -i ~/.ssh/cloud/cloud2.key dee_datasets.png ubuntu@118.138.240.228:/mnt/dee2_data/mx")
+  text( cbind(as.numeric(z[,1])+20000 ,as.numeric(z[,2])+20000 )  ,t(bb),labels=c(z[,1],z[,2]) ,cex=1.2)
+  dev.off()
+  system("scp -i ~/.ssh/cloud/cloud2.key dee_datasets.png ubuntu@118.138.240.228:/mnt/dee2_data/mx")
+
+}
