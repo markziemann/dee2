@@ -7,8 +7,8 @@ library(data.table)
 
 CORES=ceiling(detectCores()/2)
 #org="ecoli"
-#for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
-for (org in c("rnorvegicus") ) {
+for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
+#org="rnorvegicus"
   #create a list of species full names
   species_list<-c("'Arabidopsis thaliana'","'Caenorhabditis elegans'","'Drosophila melanogaster'","'Danio rerio'",
   "'Escherichia coli'","'Homo sapiens'", "'Mus musculus'", "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
@@ -72,7 +72,8 @@ for (org in c("rnorvegicus") ) {
   setwd(DATAWD)
   finished_files<-list.files(path = ".", pattern = "finished" , full.names = FALSE, recursive = TRUE, no.. = FALSE)
 
-  if ( length(finished_files) > 0 ) {
+  if ( length(finished_files) == 0 ) { q() }
+
    runs_done<-basename(as.character(strsplit(finished_files,".finished")))
    runs_todo<-setdiff(runs, runs_done)
    setwd(CODEWD)
@@ -236,48 +237,66 @@ for (org in c("rnorvegicus") ) {
    ke=NULL
    qc=NULL
 
-   for (run in runs_done) {
-    SE=paste("/scratch/mziemann/dee2/data/",org,"/",run,"/",run,".se.tsv",sep="")
-    KE=paste("/scratch/mziemann/dee2/data/",org,"/",run,"/",run,".ke.tsv",sep="")
-    QC=paste("/scratch/mziemann/dee2/data/",org,"/",run,"/",run,".qc",sep="")
-    FIN=paste("/scratch/mziemann/dee2/data/",org,"/",run,"/",run,".finished",sep="")
-    VAL=paste("/scratch/mziemann/dee2/data/",org,"/",run,"/",run,".validated",sep="")
-    DIR=paste("/scratch/mziemann/dee2/data/",org,"/",run,sep="")
-
-    y<-read.table(SE)
-    y$run=strsplit(SE,"/")[[1]][7]
+   se_func<-function(file){
+    y<-read.table(file)
+    y$run=strsplit(file,"/")[[1]][7]
     y$gene=rownames(y)
     rownames(y)=NULL
     colnames(y)=c("count","run","gene")
     y2<-y[,c(2,3,1)]
-    se<-rbind(y2,se,stringsAsFactors=F)
+    return(y2)
+  }
 
-    y<-read.table(KE,header=T)
-    y$run=strsplit(KE,"/")[[1]][7]
+  message("rbinding new se data")
+  se<-mclapply(paste("/scratch/mziemann/dee2/data/",org,"/",runs_done,"/",runs_done,".se.tsv",sep=""),se_func, mc.cores = CORES)
+  se<-rbindlist(se)
+
+  message("appending new se data to db")
+  con <- dbConnect(RSQLite::SQLite(), dbname = paste(org,"_se",sep="") )
+  dbWriteTable(con, paste(org,"_se",sep="") , se, append = TRUE)
+
+  message("rbinding new ke data")
+  ke_func<-function(file){
+    y<-read.table(file,header=T)
+    y$run=strsplit(file,"/")[[1]][7]
     y2<-y[,c(6,1,4)]
     colnames(y2)=c("run","gene","count")
-    ke<-rbind(y2,ke,stringsAsFactors=F)
+    return(y2)
+  }
 
-    y<-read.colon.tsv(QC)
-    y$run=strsplit(QC,"/")[[1]][7]
+  ke<-mclapply(paste("/scratch/mziemann/dee2/data/",org,"/",runs_done,"/",runs_done,".ke.tsv",sep=""),ke_func, mc.cores = CORES)
+  ke<-rbindlist(ke)
+
+  message("appending new ke data to db")
+  con <- dbConnect(RSQLite::SQLite(), dbname = paste(org,"_ke",sep="") )
+  dbWriteTable(con, paste(org,"_ke",sep="") , ke, append = TRUE)
+
+  message("rbinding new qc data")
+  qc_func<-function(file){
+    y<-read.colon.tsv(file)
+    y$run=strsplit(file,"/")[[1]][7]
     y$metric=rownames(y)
     rownames(y)=NULL
     y2<-y[,c(2,1,3)]
     colnames(y2)=c("run","metric","count")
-    qc<-rbind(y2,qc,stringsAsFactors=F)
+    return(y2)
+  }
+
+  qc<-mclapply(paste("/scratch/mziemann/dee2/data/",org,"/",runs_done,"/",runs_done,".qc",sep=""),qc_func, mc.cores = CORES)
+  qc<-rbindlist(qc)
+
+  message("appending new qc data to db")
+  con <- dbConnect(RSQLite::SQLite(), dbname = paste(org,"_qc",sep="") )
+  dbWriteTable(con, paste(org,"_qc",sep="") , qc, append = TRUE)
+
+  for (run in runs_done) {
+    FIN=paste("/scratch/mziemann/dee2/data/",org,"/",run,"/",run,".finished",sep="")
+    VAL=paste("/scratch/mziemann/dee2/data/",org,"/",run,"/",run,".validated",sep="")
+    DIR=paste("/scratch/mziemann/dee2/data/",org,"/",run,sep="")
 
     file.rename(FIN,VAL)
     system(paste("chmod 0544 ",DIR) )
    }
-
-   con <- dbConnect(RSQLite::SQLite(), dbname = paste(org,"_se",sep="") )
-   dbWriteTable(con, paste(org,"_se",sep="") , se, append = TRUE)
-
-   con <- dbConnect(RSQLite::SQLite(), dbname = paste(org,"_ke",sep="") )
-   dbWriteTable(con, paste(org,"_ke",sep="") , ke, append = TRUE)
-
-   con <- dbConnect(RSQLite::SQLite(), dbname = paste(org,"_qc",sep="") )
-   dbWriteTable(con, paste(org,"_qc",sep="") , qc, append = TRUE)
 
    accessions_done<-accessions[which(accessions$run %in% runs_done),]
  
@@ -352,8 +371,6 @@ for (org in c("rnorvegicus") ) {
    #upload 
    SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ", paste(SRADBWD,"/",org,"_metadata.tsv",sep="") ," ubuntu@118.138.240.228:/mnt/dee2_data/metadata")
    system(SCP_COMMAND)
-
-  }
 
   rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
 
