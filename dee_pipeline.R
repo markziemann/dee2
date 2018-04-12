@@ -6,9 +6,8 @@ library(parallel)
 library(data.table)
 
 CORES=ceiling(detectCores()/2)
-#org="ecoli"
 for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
-#org="rnorvegicus"
+#org="ecoli"
   #create a list of species full names
   species_list<-c("'Arabidopsis thaliana'","'Caenorhabditis elegans'","'Drosophila melanogaster'","'Danio rerio'",
   "'Escherichia coli'","'Homo sapiens'", "'Mus musculus'", "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
@@ -72,7 +71,7 @@ for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans"
   setwd(DATAWD)
   finished_files<-list.files(path = ".", pattern = "finished" , full.names = FALSE, recursive = TRUE, no.. = FALSE)
 
-  if ( length(finished_files) == 0 ) { q() }
+  if ( length(finished_files) > 0 ) { 
 
    runs_done<-basename(as.character(strsplit(finished_files,".finished")))
    runs_todo<-setdiff(runs, runs_done)
@@ -224,12 +223,14 @@ for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans"
 
    setwd(CODEWD)
  
-   PASTE_MX_CMD=paste("./pastemx.sh",org)
-   system(PASTE_MX_CMD)
+   #PASTE_MX_CMD=paste("./pastemx.sh",org)
+   #system(PASTE_MX_CMD)
 
    #new section to obatin and update webserver metadata for completed runs
    #start with accession information
    runs_done<-setdiff(runs_done,runs_todo)
+
+  if (length(runs_done)>0) {
 
    #TODO: runs done .finished files renamed to .validated
    #TODO: runs done become write only
@@ -248,12 +249,22 @@ for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans"
   }
 
   message("rbinding new se data")
-  se<-mclapply(paste("/scratch/mziemann/dee2/data/",org,"/",runs_done,"/",runs_done,".se.tsv",sep=""),se_func, mc.cores = CORES)
-  se<-rbindlist(se)
+  se.new<-mclapply(paste("/scratch/mziemann/dee2/data/",org,"/",runs_done,"/",runs_done,".se.tsv",sep=""),se_func, mc.cores = CORES)
+  se.new<-rbindlist(se.new)
 
-  message("appending new se data to db")
-  con <- dbConnect(RSQLite::SQLite(), dbname = paste(org,"_se",sep="") )
-  dbWriteTable(con, paste(org,"_se",sep="") , se, append = TRUE)
+  se_name=paste("/scratch/mziemann/dee2/mx/",org,"_se.tsv",sep="")
+  if(file.exists(se_name)) {
+   se<-read.table(se_name,row.names=F)
+   se<-rbind(se,se.new)
+  } else {
+   se<-se.new
+  }
+  write.table(se,file=se_name,quote=F,row.names=F)
+  system(paste("pbzip2 -fk " ,se_name))
+
+#  message("appending new se data to db")
+#  con <- dbConnect(RSQLite::SQLite(), dbname = paste(org,"_se",sep="") )
+#  dbWriteTable(con, paste(org,"_se",sep="") , se, append = TRUE)
 
   message("rbinding new ke data")
   ke_func<-function(file){
@@ -264,12 +275,22 @@ for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans"
     return(y2)
   }
 
-  ke<-mclapply(paste("/scratch/mziemann/dee2/data/",org,"/",runs_done,"/",runs_done,".ke.tsv",sep=""),ke_func, mc.cores = CORES)
-  ke<-rbindlist(ke)
+  ke.new<-mclapply(paste("/scratch/mziemann/dee2/data/",org,"/",runs_done,"/",runs_done,".ke.tsv",sep=""),ke_func, mc.cores = CORES)
+  ke.new<-rbindlist(ke.new)
 
-  message("appending new ke data to db")
-  con <- dbConnect(RSQLite::SQLite(), dbname = paste(org,"_ke",sep="") )
-  dbWriteTable(con, paste(org,"_ke",sep="") , ke, append = TRUE)
+  ke_name=paste("/scratch/mziemann/dee2/mx/",org,"_ke.tsv",sep="")
+  if(file.exists(ke_name)) {
+   ke<-read.table(ke_name,row.names=F)
+   ke<-rbind(ke,ke.new)
+  } else {
+   ke<-ke.new
+  }
+  write.table(ke,file=ke_name,quote=F,row.names=F)
+  system(paste("pbzip2 -fk " ,ke_name))
+
+#  message("appending new ke data to db")
+#  con <- dbConnect(RSQLite::SQLite(), dbname = paste(org,"_ke",sep="") )
+#  dbWriteTable(con, paste(org,"_ke",sep="") , ke, append = TRUE)
 
   message("rbinding new qc data")
   qc_func<-function(file){
@@ -282,12 +303,22 @@ for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans"
     return(y2)
   }
 
-  qc<-mclapply(paste("/scratch/mziemann/dee2/data/",org,"/",runs_done,"/",runs_done,".qc",sep=""),qc_func, mc.cores = CORES)
-  qc<-rbindlist(qc)
+  qc.new<-mclapply(paste("/scratch/mziemann/dee2/data/",org,"/",runs_done,"/",runs_done,".qc",sep=""),qc_func, mc.cores = CORES)
+  qc.new<-rbindlist(qc.new)
 
-  message("appending new qc data to db")
-  con <- dbConnect(RSQLite::SQLite(), dbname = paste(org,"_qc",sep="") )
-  dbWriteTable(con, paste(org,"_qc",sep="") , qc, append = TRUE)
+  qc_name=paste("/scratch/mziemann/dee2/mx/",org,"_qc.tsv",sep="")
+  if(file.exists(qc_name)) {
+   qc<-read.table(qc_name,row.names=F)
+   qc<-rbind(qc,qc.new)
+  } else {
+   qc<-qc.new
+  }
+  write.table(qc,file=qc_name,quote=F,row.names=F)
+  system(paste("pbzip2 -fk " ,qc_name))
+
+#  message("appending new qc data to db")
+#  con <- dbConnect(RSQLite::SQLite(), dbname = paste(org,"_qc",sep="") )
+#  dbWriteTable(con, paste(org,"_qc",sep="") , qc, append = TRUE)
 
   for (run in runs_done) {
     FIN=paste("/scratch/mziemann/dee2/data/",org,"/",run,"/",run,".finished",sep="")
@@ -371,6 +402,9 @@ for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans"
    #upload 
    SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ", paste(SRADBWD,"/",org,"_metadata.tsv",sep="") ," ubuntu@118.138.240.228:/mnt/dee2_data/metadata")
    system(SCP_COMMAND)
+
+  }
+  }
 
   rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
 
