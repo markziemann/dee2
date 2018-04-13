@@ -117,7 +117,7 @@ for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans"
 
    se_list<-rownames(subset(y,y=!expected_len))
    se_name=paste(org,"_se_list.txt",sep="")
-   write.table(se_list,file=se_name,quote=F,row.names=F)
+   write.table(se_list,file=se_name,quote=F)
  
 ############################
 #  Matrix generation is simply too memory hungry and slow not doing for now
@@ -157,7 +157,7 @@ for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans"
    rownames(y)=as.character(ke_list)
    ke_list<-rownames(subset(y,y==expected_len))
    ke_name=paste(org,"_ke_list.txt",sep="")
-   write.table(ke_list,file=ke_name,quote=F,row.names=F)
+   write.table(ke_list,file=ke_name,quote=F)
 
 ############################
 #  Matrix generation is simply too memory hungry and slow not doing for now
@@ -166,7 +166,7 @@ for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans"
 
    #QC data
    #create the qc matrix
-   system("for I in `find . | grep qc$` ; do grep ':' $I > tmp ; mv tmp $I ; done")
+   system("for I in `find . | grep qc$` ; do grep ':' $I > tmp ; mv tmp $I ; done 2>/dev/null ")
    print("generate a list of qc files to import and merge")
    qc_list<-list.files(path = ".", pattern = "\\.qc$" , full.names = TRUE , recursive = TRUE, no.. = FALSE)
 
@@ -199,7 +199,7 @@ for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans"
 
    qc_list<-rownames(subset(y,y==expected_len))
    qc_name=paste(org,"_qc_list.txt",sep="")
-   write.table(qc_list,file=qc_name,quote=F,row.names=F)
+   write.table(qc_list,file=qc_name,quote=F)
 
    #redefine read.colon.tsv
    read.colon.tsv<-function(file, header = FALSE, sep = ":", quote = "\"", dec = ".", fill = TRUE, comment.char = "", ...){
@@ -230,7 +230,7 @@ for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans"
    #start with accession information
    runs_done<-setdiff(runs_done,runs_todo)
 
-  if (length(runs_done)>0) {
+ if (length(runs_done)>0) {
 
    #TODO: runs done .finished files renamed to .validated
    #TODO: runs done become write only
@@ -254,12 +254,12 @@ for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans"
 
   se_name=paste("/scratch/mziemann/dee2/mx/",org,"_se.tsv",sep="")
   if(file.exists(se_name)) {
-   se<-read.table(se_name,row.names=F)
+   se<-read.table(se_name,header=T)
    se<-rbind(se,se.new)
   } else {
    se<-se.new
   }
-  write.table(se,file=se_name,quote=F,row.names=F)
+  write.table(unique(se),file=se_name,quote=F,row.names=F)
   system(paste("pbzip2 -fk " ,se_name))
 
 #  message("appending new se data to db")
@@ -280,12 +280,12 @@ for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans"
 
   ke_name=paste("/scratch/mziemann/dee2/mx/",org,"_ke.tsv",sep="")
   if(file.exists(ke_name)) {
-   ke<-read.table(ke_name,row.names=F)
+   ke<-read.table(ke_name,header=T)
    ke<-rbind(ke,ke.new)
   } else {
    ke<-ke.new
   }
-  write.table(ke,file=ke_name,quote=F,row.names=F)
+  write.table(unique(ke),file=ke_name,quote=F,row.names=F)
   system(paste("pbzip2 -fk " ,ke_name))
 
 #  message("appending new ke data to db")
@@ -308,12 +308,12 @@ for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans"
 
   qc_name=paste("/scratch/mziemann/dee2/mx/",org,"_qc.tsv",sep="")
   if(file.exists(qc_name)) {
-   qc<-read.table(qc_name,row.names=F)
-   qc<-rbind(qc,qc.new)
+   qc<-read.table(qc_name,header=T,fill=T)
+   qc<-rbind(qc,qc.new,fill=T)
   } else {
    qc<-qc.new
   }
-  write.table(qc,file=qc_name,quote=F,row.names=F)
+  write.table(unique(qc),file=qc_name,quote=F,row.names=F)
   system(paste("pbzip2 -fk " ,qc_name))
 
 #  message("appending new qc data to db")
