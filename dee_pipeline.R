@@ -406,6 +406,8 @@ for (org in c("ecoli" , "scerevisiae" ,  "rnorvegicus" , "athaliana", "celegans"
   }
   }
 
+  setwd("/scratch/mziemann/dee2/code/")
+
   rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
 
   png("dee_datasets.png",width=580,height=580)
