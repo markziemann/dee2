@@ -74,7 +74,7 @@ awk -v n=$NROW '$1==n' $QCLIST \
 echo "Run aggregation"
 ##################
 
-cat $SELIST $KELIST $QCLIST | sort | uniq -c | awk '$1==3 {print $2}' > $FINLIST
+cat $SELIST $KELIST $QCLIST | sort | uniq -c | awk '$1==3 {print $2}' > $VALLIST
 
 ####
 echo "se agg"
@@ -85,8 +85,8 @@ awk '{print $NF}' $ACC/$ACC.se.tsv > $ACC/${ACC}_gene.cnt
 sed 1d $ACC/$ACC.se.tsv | sed "s/^/${ACC}\t/"
 }
 export -f se_agg
-parallel -j$CORES se_agg :::: $FINLIST >> $SEMX
-sort -u $SEMX > $SEMX.tmp && mv $SEMX.tmp $SEMX
+parallel -j$CORES se_agg :::: $VALLIST >> $SEMX
+sort -u -T . $SEMX > $SEMX.tmp && mv $SEMX.tmp $SEMX
 pbzip2 -fk -p$CORES $SEMX
 
 ####
@@ -98,8 +98,8 @@ awk '{print $4}' $ACC/$ACC.se.tsv | sed 's/_est_counts//'> $ACC/${ACC}_tx.cnt
 sed 1d $ACC/$ACC.ke.tsv | cut -f1,4 | sed "s/^/${ACC}\t/"
 }
 export -f ke_agg
-parallel -j$CORES ke_agg :::: $FINLIST >> $KEMX
-sort -u $KEMX > $KEMX.tmp && mv $KEMX.tmp $KEMX
+parallel -j$CORES ke_agg :::: $VALLIST >> $KEMX
+sort -u -T . $KEMX > $KEMX.tmp && mv $KEMX.tmp $KEMX
 pbzip2 -fk -p$CORES $KEMX
 
 ####
@@ -111,8 +111,8 @@ cut -d ':' -f2 $ACC/$ACC.qc > $ACC/$ACC.qcl
 sed 's/:/\t/' $ACC/$ACC.qc | sed "s/^/${ACC}\t/"
 }
 export -f qc_agg
-parallel -j$CORES qc_agg :::: $FINLIST >> $QCMX
-sort -u $QCMX > $QCMX.tmp && mv $QCMX.tmp $QCMX
+parallel -j$CORES qc_agg :::: $VALLIST >> $QCMX
+sort -u -T . $QCMX > $QCMX.tmp && mv $QCMX.tmp $QCMX
 pbzip2 -fk -p$CORES $QCMX
 
 ####
@@ -124,9 +124,9 @@ rename -f 's/.finished/.validated/' $DIRPATH/*.finished
 chmod 0544 $DIRPATH
 }
 export -f fin_agg
-parallel -j$CORES fin_agg :::: $FINLIST
+parallel -j$CORES fin_agg :::: $VALLIST
 
-cat $FINLIST >> $VALLIST
+comm -23 <(sort $FINLIST) <(sort $VALLIST) > $QUEUELIST
 
 
 
