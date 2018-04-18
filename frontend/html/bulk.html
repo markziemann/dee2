@@ -145,77 +145,17 @@ li {
 <div id="page">
 <h1 id="content">Bulk data@DEE2</h1>
 
-<p>Data processsing is still underway so some datasets may be missing.
-<p>
-
-<hr>
-<p>Choose from the organisms below. The matrices are compressed with bzip2.
+<p>Bulk data are now available via our <a href="https://datbase.org/mziemann/mziemann">Dat</a>. 
 </p>
-
-<table style="width:100%">
-  <tr>
-    <td><strong>Species</strong></td>
-    <td><strong>GeneCounts</strong></td> 
-    <td><strong>TxCounts</strong></td>
-    <td><strong>QC metrics<strong></td>
-  </tr>
-
-  <tr>
-    <td><em>A. thaliana</em></td>
-    <td> <a href="data/athaliana_se.tsv.bz2">LINK</a> </td>
-    <td> <a href="data/athaliana_ke_counts.tsv.bz2">LINK</a> </td>
-    <td> <a href="data/athaliana_qc.tsv.bz2">LINK</a> </td>
-  </tr>
-    <td><em>C. elegans</em></td>
-    <td> <a href="data/celegans_se.tsv.bz2">LINK</a> </td>
-    <td> <a href="data/celegans_ke_counts.tsv.bz2">LINK</a> </td>
-    <td> <a href="data/celegans_qc.tsv.bz2">LINK</a> </td>
-  </tr>
-    <td><em>D. melanogaster</em></td>
-    <td> <a href="data/dmelanogaster_se.tsv.bz2">LINK</a> </td>
-    <td> <a href="data/dmelanogaster_ke_counts.tsv.bz2">LINK</a> </td>
-    <td> <a href="data/dmelanogaster_qc.tsv.bz2">LINK</a> </td>
-  </tr>
-    <td><em>D. rerio<em></td>
-    <td> <a href="data/athaliana_se.tsv.bz2">LINK</a> </td>
-    <td> <a href="data/athaliana_ke_counts.tsv.bz2">LINK</a> </td>
-    <td> <a href="data/athaliana_qc.tsv.bz2">LINK</a> </td>
-  </tr>
-    <td><em>E. coli</em></td>
-    <td> <a href="data/ecoli_se.tsv.bz2">LINK</a> </td>
-    <td> <a href="data/ecoli_ke_counts.tsv.bz2">LINK</a> </td>
-    <td> <a href="data/ecoli_qc.tsv.bz2">LINK</a> </td>
-  </tr>
-    <td><em>H. sapiens</em></td>
-    <td> <a href="data/hsapiens_se.tsv.bz2">LINK</a> </td>
-    <td> <a href="data/hsapiens_ke_counts.tsv.bz2">LINK</a> </td>
-    <td> <a href="data/hsapiens_qc.tsv.bz2">LINK</a> </td>
-  </tr>
-    <td><em>M. musculus</em></td>
-    <td> <a href="data/mmusculus_se.tsv.bz2">LINK</a> </td>
-    <td> <a href="data/mmusculus_ke_counts.tsv.bz2">LINK</a> </td>
-    <td> <a href="data/mmusculus_qc.tsv.bz2">LINK</a> </td>
-  </tr>
-    <td><em>R. norvegicus</em></td>
-    <td> <a href="data/rnorvegicus_se.tsv.bz2">LINK</a> </td>
-    <td> <a href="data/rnorvegicus_ke_counts.tsv.bz2">LINK</a> </td>
-    <td> <a href="data/rnorvegicus_qc.tsv.bz2">LINK</a> </td>
-  </tr>
-    <td><em>S. cerevisiae<em></td>
-    <td> <a href="data/scerevisiae_se.tsv.bz2">LINK</a> </td>
-    <td> <a href="data/scerevisiae_ke_counts.tsv.bz2">LINK</a> </td>
-    <td> <a href="data/scerevisiae_qc.tsv.bz2">LINK</a> </td>
-
-  </tr>
-
-</table>
-
+<p>The data are in 'long format' tables with the columns: 'dataset', 'gene', 'count'. 
+Long tables are prefered for loading into databases as compared to wide matrix format.
+STAR counts have the prefix 'se.tsv.bz2' while kallisto estimated counts have the 'ke.tsv.bz2' prefix.
+</p>
+<p>QC metrics are also available in long table format with the columns 'dataset','QC metric type', 'QC metric result'.
+</p>
 <hr>
-        <h2 id="content">Singularity image for DEE2</h1>
-        <p>
-                Want to use DEE2 image on HPC? Download the singularity image <a href="/images/current_singularity_img.tar.gz">here</a>.
-
-        </p>
-
+<p>Data processsing is still underway so some datasets may be missing. Contact us if you would like specific data added,
+or alternatively spin up your own docker according to the <a href="https://github.com/markziemann/dee2">guide</a>.
+<p>
 
 </div>
