@@ -16,17 +16,13 @@ QCMX=$MXDIR/${ORG}_qc.tsv
 
 cd $DIR
 
-
-#undo
-#chmod +w * ; rename 's/.validated/.finished/' `find . | grep val`
-
 ##################
 # Run some checks
 ##################
 #remove directories without finished or validated files
 for i in $DIR/*RR* ; do
   CNT=$(ls $i | egrep -c '(finished|validated)')
-  if [ $CNT -lt 1 ] ; then rm $i ; fi
+  if [ $CNT -lt 1 ] ; then rm -fr $i ; fi
 done
 
 ####
@@ -77,6 +73,19 @@ echo "Run aggregation"
 cat $SELIST $KELIST $QCLIST | sort | uniq -c | awk '$1==3 {print $2}' > $VALLIST
 
 ####
+echo "validate"
+####
+fin_agg(){
+DIRPATH=$1
+chmod +w $DIRPATH
+rename -f 's/.finished/.validated/' $DIRPATH/*.finished
+}
+export -f fin_agg
+parallel -j$CORES fin_agg :::: $VALLIST
+
+find $DIR | grep validated | rev | cut -d '/' -f1 | rev | cut -d '.' -f1 | sort -u > $VALLIST
+
+####
 echo "se agg"
 ####
 se_agg(){
@@ -85,9 +94,7 @@ awk '{print $NF}' $ACC/$ACC.se.tsv > $ACC/${ACC}_gene.cnt
 sed 1d $ACC/$ACC.se.tsv | sed "s/^/${ACC}\t/"
 }
 export -f se_agg
-parallel -j$CORES se_agg :::: $VALLIST >> $SEMX
-sort -u -T . $SEMX > $SEMX.tmp && mv $SEMX.tmp $SEMX
-pbzip2 -fk -p$CORES $SEMX
+parallel -j$CORES se_agg :::: $VALLIST | pbzip2 -c -j$CORES > $SEMX.bz2
 
 ####
 echo "ke_agg"
@@ -98,9 +105,7 @@ awk '{print $4}' $ACC/$ACC.se.tsv | sed 's/_est_counts//'> $ACC/${ACC}_tx.cnt
 sed 1d $ACC/$ACC.ke.tsv | cut -f1,4 | sed "s/^/${ACC}\t/"
 }
 export -f ke_agg
-parallel -j$CORES ke_agg :::: $VALLIST >> $KEMX
-sort -u -T . $KEMX > $KEMX.tmp && mv $KEMX.tmp $KEMX
-pbzip2 -fk -p$CORES $KEMX
+parallel -j$CORES ke_agg :::: $VALLIST | pbzip2 -c -j$CORES > $KEMX.bz2
 
 ####
 echo "qc agg"
@@ -111,16 +116,10 @@ cut -d ':' -f2 $ACC/$ACC.qc > $ACC/$ACC.qcl
 sed 's/:/\t/' $ACC/$ACC.qc | sed "s/^/${ACC}\t/"
 }
 export -f qc_agg
-parallel -j$CORES qc_agg :::: $VALLIST >> $QCMX
-sort -u -T . $QCMX > $QCMX.tmp && mv $QCMX.tmp $QCMX
-pbzip2 -fk -p$CORES $QCMX
+parallel -j$CORES qc_agg :::: $VALLIST | pbzip2 -c -j$CORES > $QCMX.bz2
 
-####
-echo "cleaning up"
-####
 fin_agg(){
 DIRPATH=$1
-rename -f 's/.finished/.validated/' $DIRPATH/*.finished
 chmod 0544 $DIRPATH
 }
 export -f fin_agg
@@ -128,22 +127,6 @@ parallel -j$CORES fin_agg :::: $VALLIST
 
 comm -23 <(sort $FINLIST) <(sort $VALLIST) > $QUEUELIST
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+killall -9 dat
+dat share $MXDIR &
 
