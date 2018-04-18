@@ -67,6 +67,6 @@ fi
 
 # refresh matrices
 # check time if older than 1 week (604800)
-[[ $(( $(date +'%s') - $(stat --format "%Y" /mnt/dee2_data/mx/*.bz2 | sort | head -1) )) -gt 120 ]] && \
- scp -i ~/.ssh/monash/id_rsa mziemann@118.138.246.227:/scratch/mziemann/dee2/mx/*bz2 /mnt/dee2_data/mx || \
- echo "not time to refresh"
+#[[ $(( $(date +'%s') - $(stat --format "%Y" /mnt/dee2_data/mx/*.bz2 | sort | head -1) )) -gt 86400 ]] && \
+# scp -i ~/.ssh/monash/id_rsa mziemann@118.138.246.227:/scratch/mziemann/dee2/mx/*bz2 /mnt/dee2_data/mx || \
+# echo "not time to refresh"
