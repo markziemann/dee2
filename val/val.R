@@ -119,7 +119,7 @@ geo_res<-dge[order(dge$PValue),]
 
 dee_geo_res<-merge(dee_res,geo_res,by="Row.names")
 
-#contrast wise correlation
+C#contrast wise correlation
 dee_geo_res$dee_metric=dee_geo_res$logFC.x/-log10(dee_geo_res$PValue.x)
 dee_geo_res$geo_metric=dee_geo_res$logFC.y/-log10(dee_geo_res$PValue.y)
 cel_cor=cor(dee_geo_res$dee_metric,dee_geo_res$geo_metric,method="s")
@@ -128,12 +128,148 @@ cel_cor=cor(dee_geo_res$dee_metric,dee_geo_res$geo_metric,method="s")
 colnames(x$GeneCounts)=gsub("$","_dee",colnames(x$GeneCounts))
 colnames(b)=gsub("$","_geo",colnames(b))
 d<-merge(x$GeneCounts,b,by=0)
-SRR834594=cor(d[,2:12])[1,7]
-SRR834595=cor(d[,2:12])[2,8]
-SRR834596=cor(d[,2:12])[3,9]
-SRR834600=cor(d[,2:12])[4,10]
-SRR834601=cor(d[,2:12])[5,11]
-SRR834602=cor(d[,2:12])[6,12]
+SRR834594=cor(d[,2:13])[1,7]
+SRR834595=cor(d[,2:13])[2,8]
+SRR834596=cor(d[,2:13])[3,9]
+SRR834600=cor(d[,2:13])[4,10]
+SRR834601=cor(d[,2:13])[5,11]
+SRR834602=cor(d[,2:13])[6,12]
 
-cel_res=c(cel_cor,SRR834594,SSRR834595,SRR834596,SRR834600,SRR834601,SRR834602)
+cel_res=c(cel_cor,SRR834594,SRR834595,SRR834596,SRR834600,SRR834601,SRR834602)
+
+################
+#D. melanogaster GSE43180 ctrl=c(“SRR641382”,”SRR641383”), trt=(“SRR641384”,”SRR641385”)
+################
+
+x<-getDEE2("dmelanogaster",c("SRR641382","SRR641383","SRR641384","SRR641385"))
+x$GeneCounts<-x$GeneCounts[which(rowMeans(x$GeneCounts)>10),]
+group<-c(1,1,2,2)
+y <- DGEList(counts=x$GeneCounts, group=group)
+y <- calcNormFactors(y)
+y <- estimateDisp(y,robust=TRUE,prior.df=1)
+fit <- glmFit(y)
+lrt <- glmLRT(fit)
+dge<-as.data.frame(topTags(lrt,n=1000000))
+dge$dispersion<-lrt$dispersion
+dge<-merge(dge,lrt$fitted.values,by='row.names')
+rownames(dge)=dge$Row.names
+dge$Row.names=NULL
+dge<-merge(dge,y$counts,by='row.names')
+dee_res<-dge[order(dge$PValue),]
+
+system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1057nnn/GSM1057982/suppl/GSM1057982_1906.counts.txt.gz | gunzip > SRR641382.tsv")
+SRR641382<-read.table("SRR641382.tsv",header=F)
+system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1057nnn/GSM1057983/suppl/GSM1057983_1907.counts.txt.gz | gunzip > SRR641383.tsv")
+SRR641383<-read.table("SRR641383.tsv",header=F)
+system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1057nnn/GSM1057984/suppl/GSM1057984_1904.counts.txt.gz | gunzip > SRR641384.tsv")
+SRR641384<-read.table("SRR641384.tsv",header=F)
+system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1057nnn/GSM1057985/suppl/GSM1057985_1905.counts.txt.gz | gunzip > SRR641385.tsv")
+SRR641385<-read.table("SRR641385.tsv",header=F)
+
+b<-cbind(SRR641382[,2],SRR641383[,2],SRR641384[,2],SRR641384[,2])
+rownames(b)=SRR641382[,1]
+colnames(b)=c("SRR641382","SRR641383","SRR641384","SRR641385")
+b<-b[which(rowMeans(b)>10),]
+group<-c(1,1,2,2)
+y <- DGEList(counts=b, group=group)
+y <- calcNormFactors(y)
+y <- estimateDisp(y,robust=TRUE,prior.df=1)
+fit <- glmFit(y)
+lrt <- glmLRT(fit)
+dge<-as.data.frame(topTags(lrt,n=1000000))
+dge$dispersion<-lrt$dispersion
+dge<-merge(dge,lrt$fitted.values,by='row.names')
+rownames(dge)=dge$Row.names
+dge$Row.names=NULL
+dge<-merge(dge,y$counts,by='row.names')
+geo_res<-dge[order(dge$PValue),]
+
+dee_geo_res<-merge(dee_res,geo_res,by="Row.names")
+
+#contrast wise correlation
+dee_geo_res$dee_metric=dee_geo_res$logFC.x/-log10(dee_geo_res$PValue.x)
+dee_geo_res$geo_metric=dee_geo_res$logFC.y/-log10(dee_geo_res$PValue.y)
+dme_cor=cor(dee_geo_res$dee_metric,dee_geo_res$geo_metric,method="s")
+
+#sample wise correlation
+colnames(x$GeneCounts)=gsub("$","_dee",colnames(x$GeneCounts))
+colnames(b)=gsub("$","_geo",colnames(b))
+d<-merge(x$GeneCounts,b,by=0)
+SRR641382=cor(d[,2:9],method="s")[1,5]
+SRR641383=cor(d[,2:9],method="s")[2,6]
+SRR641384=cor(d[,2:9],method="s")[3,7]
+SRR641385=cor(d[,2:9],method="s")[4,8]
+
+dme_res=c(dme_cor,SRR641382,SRR641383,SRR641384,SRR641385)
+
+##########
+# D. rerio GSE59683 ctrl=c(“SRR1523211”,”SRR1523212”,”SRR1523213”), trt=c(“SRR1523214”,”SRR1523215”,”SRR1523216”)
+##########
+x<-getDEE2("drerio",c("SRR1523211","SRR1523212","SRR1523213","SRR1523214","SRR1523215","SRR1523216"))
+x$GeneCounts<-x$GeneCounts[which(rowMeans(x$GeneCounts)>10),]
+group<-c(1,1,1,2,2,2)
+y <- DGEList(counts=x$GeneCounts, group=group)
+y <- calcNormFactors(y)
+y <- estimateDisp(y,robust=TRUE,prior.df=1)
+fit <- glmFit(y)
+lrt <- glmLRT(fit)
+dge<-as.data.frame(topTags(lrt,n=1000000))
+dge$dispersion<-lrt$dispersion
+dge<-merge(dge,lrt$fitted.values,by='row.names')
+rownames(dge)=dge$Row.names
+dge$Row.names=NULL
+dge<-merge(dge,y$counts,by='row.names')
+dee_res<-dge[order(dge$PValue),]
+
+system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1442nnn/GSM1442819/suppl/GSM1442819_1.txt.gz | gunzip | cut -f3- > SRR1523211.tsv")
+SRR1523211<-read.table("SRR1523211.tsv",header=T)
+system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1442nnn/GSM1442820/suppl/GSM1442820_2.txt.gz | gunzip | cut -f3- > SRR1523212.tsv")
+SRR1523212<-read.table("SRR1523212.tsv",header=T)
+system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1442nnn/GSM1442821/suppl/GSM1442821_3.txt.gz | gunzip | cut -f3- > SRR1523213.tsv")
+SRR1523213<-read.table("SRR1523213.tsv",header=T)
+system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1442nnn/GSM1442822/suppl/GSM1442822_4.txt.gz | gunzip | cut -f3- > SRR1523214.tsv")
+SRR1523214<-read.table("SRR1523214.tsv",header=T)
+system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1442nnn/GSM1442823/suppl/GSM1442823_5.txt.gz | gunzip | cut -f3- > SRR1523215.tsv")
+SRR1523215<-read.table("SRR1523215.tsv",header=T)
+system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1442nnn/GSM1442824/suppl/GSM1442824_6.txt.gz | gunzip | cut -f3- > SRR1523216.tsv")
+SRR1523216<-read.table("SRR1523216.tsv",header=T)
+
+b<-cbind(SRR1523211[,2],SRR1523212[,2],SRR1523213[,2],SRR1523214[,2],SRR1523215[,2],SRR1523216[,2])
+rownames(b)=SRR1523211[,1]
+colnames(b)=c("SRR1523211","SRR1523212","SRR1523213","SRR1523214","SRR1523215","SRR1523216")
+b<-b[which(rowMeans(b)>10),]
+group<-c(1,1,1,2,2,2)
+y <- DGEList(counts=b, group=group)
+y <- calcNormFactors(y)
+y <- estimateDisp(y,robust=TRUE,prior.df=1)
+fit <- glmFit(y)
+lrt <- glmLRT(fit)
+dge<-as.data.frame(topTags(lrt,n=1000000))
+dge$dispersion<-lrt$dispersion
+dge<-merge(dge,lrt$fitted.values,by='row.names')
+rownames(dge)=dge$Row.names
+dge$Row.names=NULL
+dge<-merge(dge,y$counts,by='row.names')
+geo_res<-dge[order(dge$PValue),]
+
+dee_geo_res<-merge(dee_res,geo_res,by="Row.names")
+
+#contrast wise correlation
+dee_geo_res$dee_metric=dee_geo_res$logFC.x/-log10(dee_geo_res$PValue.x)
+dee_geo_res$geo_metric=dee_geo_res$logFC.y/-log10(dee_geo_res$PValue.y)
+dre_cor=cor(dee_geo_res$dee_metric,dee_geo_res$geo_metric,method="s")
+
+#sample wise correlation
+colnames(x$GeneCounts)=gsub("$","_dee",colnames(x$GeneCounts))
+colnames(b)=gsub("$","_geo",colnames(b))
+d<-merge(x$GeneCounts,b,by=0)
+SRR1523211=cor(d[,2:13])[1,7]
+SRR1523212=cor(d[,2:13])[2,8]
+SRR1523213=cor(d[,2:13])[3,9]
+SRR1523214=cor(d[,2:13])[4,10]
+SRR1523215=cor(d[,2:13])[5,11]
+SRR1523216=cor(d[,2:13])[6,12]
+
+dre_res=c(dre_cor,SRR1523211,SRR1523212,SRR1523213,SRR1523214,SRR1523215,SRR1523216)
+
 
