@@ -119,7 +119,7 @@ geo_res<-dge[order(dge$PValue),]
 
 dee_geo_res<-merge(dee_res,geo_res,by="Row.names")
 
-C#contrast wise correlation
+#contrast wise correlation
 dee_geo_res$dee_metric=dee_geo_res$logFC.x/-log10(dee_geo_res$PValue.x)
 dee_geo_res$geo_metric=dee_geo_res$logFC.y/-log10(dee_geo_res$PValue.y)
 cel_cor=cor(dee_geo_res$dee_metric,dee_geo_res$geo_metric,method="s")
@@ -271,5 +271,106 @@ SRR1523215=cor(d[,2:13])[5,11]
 SRR1523216=cor(d[,2:13])[6,12]
 
 dre_res=c(dre_cor,SRR1523211,SRR1523212,SRR1523213,SRR1523214,SRR1523215,SRR1523216)
+
+###########
+# E. coli GSE48829 ctrl=c(“SRR933983”,”SRR933984”,”SRR933985”), trt=c(“SRR933989”,”SRR933990”,”SRR933991”)
+###########
+#x<-getDEE2("ecoli",c("SRR3379590","SRR3379591","SRR3379592","SRR3379593","SRR3379594","SRR3379595","SRR3379596","SRR3379597","SRR3379598"))
+x<-getDEE2("ecoli",c("SRR933983","SRR933984","SRR933985","SRR933989","SRR933990","SRR933991"))
+
+x$GeneCounts<-x$GeneCounts[which(rowMeans(x$GeneCounts)>10),]
+group<-c(1,1,1,2,2,2)
+y <- DGEList(counts=x$GeneCounts, group=group)
+y <- calcNormFactors(y)
+y <- estimateDisp(y,robust=TRUE,prior.df=1)
+fit <- glmFit(y)
+lrt <- glmLRT(fit)
+dge<-as.data.frame(topTags(lrt,n=1000000))
+dge$dispersion<-lrt$dispersion
+dge<-merge(dge,lrt$fitted.values,by='row.names')
+rownames(dge)=dge$Row.names
+dge$Row.names=NULL
+dge<-merge(dge,y$counts,by='row.names')
+dee_res<-dge[order(dge$PValue),]
+
+
+
+
+
+
+
+
+
+
+
+
+###########
+# H. sapiens
+###########
+# DEE2
+x<-getDEE2("hsapiens",c("SRR1692137","SRR1692138","SRR1692139","SRR1692140","SRR1692141","SRR1692142"))
+
+x$GeneCounts<-x$GeneCounts[which(rowMeans(x$GeneCounts)>10),]
+group<-c(1,1,1,2,2,2)
+y <- DGEList(counts=x$GeneCounts, group=group)
+y <- calcNormFactors(y)
+y <- estimateDisp(y,robust=TRUE,prior.df=1)
+fit <- glmFit(y)
+lrt <- glmLRT(fit)
+dge<-as.data.frame(topTags(lrt,n=1000000))
+dge$dispersion<-lrt$dispersion
+dge<-merge(dge,lrt$fitted.values,by='row.names')
+rownames(dge)=dge$Row.names
+dge$Row.names=NULL
+dge<-merge(dge,y$counts,by='row.names')
+dee_res<-dge[order(dge$PValue),]
+
+#GEO
+system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE63nnn/GSE63776/suppl/GSE63776_PANC1_counts.txt.gz | gunzip | sed 's/\\r/\\n/g' | egrep -v '(2-Mar|1-Mar)'> GSE63776.tsv")
+GSE63776<-read.table("GSE63776.tsv",header=T)
+colnames(GSE63776)=c("SRR1692137","SRR1692138","SRR1692139","SRR1692140","SRR1692141","SRR1692142")
+
+system("curl ftp://ftp.ensembl.org/pub/release-90/gtf/homo_sapiens/Homo_sapiens.GRCh38.90.gtf.gz | gunzip | grep -w gene | cut -d '\"' -f2,6 | tr '\"' '\t' > hsapiens_genenames.tsv")
+hsapiens_genenames<-read.table("hsapiens_genenames.tsv")
+b<-merge(hsapiens_genenames,GSE63776,by.x="V2",by.y=0)
+rownames(b)=b$V1
+b$V1=NULL
+b$V2=NULL
+
+b<-b[which(rowMeans(b)>10),]
+group<-c(1,1,1,2,2,2)
+y <- DGEList(counts=b, group=group)
+y <- calcNormFactors(y)
+y <- estimateDisp(y,robust=TRUE,prior.df=1)
+fit <- glmFit(y)
+lrt <- glmLRT(fit)
+dge<-as.data.frame(topTags(lrt,n=1000000))
+dge$dispersion<-lrt$dispersion
+dge<-merge(dge,lrt$fitted.values,by='row.names')
+rownames(dge)=dge$Row.names
+dge$Row.names=NULL
+dge<-merge(dge,y$counts,by='row.names')
+geo_res<-dge[order(dge$PValue),]
+
+dee_geo_res<-merge(dee_res,geo_res,by="Row.names")
+
+#contrast wise correlation
+dee_geo_res$dee_metric=dee_geo_res$logFC.x/-log10(dee_geo_res$PValue.x)
+dee_geo_res$geo_metric=dee_geo_res$logFC.y/-log10(dee_geo_res$PValue.y)
+hsa_cor=cor(dee_geo_res$dee_metric,dee_geo_res$geo_metric,method="s")
+
+#sample wise correlation
+colnames(x$GeneCounts)=gsub("$","_dee",colnames(x$GeneCounts))
+colnames(b)=gsub("$","_geo",colnames(b))
+d<-merge(x$GeneCounts,b,by=0)
+SRR1692137=cor(d[,2:13])[1,7]
+SRR1692138=cor(d[,2:13])[2,8]
+SRR1692139=cor(d[,2:13])[3,9]
+SRR1692140=cor(d[,2:13])[4,10]
+SRR1692141=cor(d[,2:13])[5,11]
+SRR1692142=cor(d[,2:13])[6,12]
+
+hsa_res=c(hsa_cor,SRR1692137,SRR1692138,SRR1692139,SRR1692140,SRR1692141,SRR1692142)
+
 
 
