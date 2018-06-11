@@ -128,5 +128,7 @@ parallel -j$CORES fin_agg :::: $VALLIST
 comm -23 <(sort $FINLIST) <(sort $VALLIST) > $QUEUELIST
 
 killall -9 dat
-dat share $MXDIR &
+#dat share $MXDIR &
+cd $MXDIR
+for BZ2 in *bz2 ; do rclone copy $BZ2 drive:Public/DEE ; done
 
