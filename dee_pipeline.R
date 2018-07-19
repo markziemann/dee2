@@ -6,7 +6,7 @@ library(parallel)
 library(data.table)
 
 CORES=ceiling(detectCores()/2)
-for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
+for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" , "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
 #org="ecoli"
   #create a list of species full names
   species_list<-c("'Arabidopsis thaliana'","'Caenorhabditis elegans'","'Drosophila melanogaster'","'Danio rerio'",
@@ -182,15 +182,15 @@ for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" 
   rownames(z)=z$Row.names
   z$Row.names=NULL
 
-  DATE=strsplit(as.character(file.info(FILES2[1])[,4])," ",fixed=T)[[1]][1]
+  DATE=strsplit(as.character(file.info(FILES2[6])[,4])," ",fixed=T)[[1]][1]
   HEADER=paste("Updated",DATE)
   #colnames(z)=HEADER
   z<-z[order(rownames(z),decreasing=T ), ,drop=F]
   par(las=2) ; par(mai=c(1,2.5,1,0.5))
-  MAX=max(as.numeric(z[,1]))+30000
+  MAX=max(as.numeric(z[,1]))+80000
 
   bb<-barplot( rbind( as.numeric(z$queued) , as.numeric(z$completed) ) ,
-   names.arg=rownames(z) ,xlim=c(0,MAX),beside=T, main=HEADER, col=c("darkblue","red") ,
+   names.arg=rownames(z) ,xlim=c(0,MAX+50000),beside=T, main=HEADER, col=c("darkblue","red") ,
    horiz=T , las=1, cex.axis=1.3, cex.names=1.4,cex.main=1.4 )
 
   legend("topright", colnames(z), fill=c("darkblue","red") , cex=1.2)

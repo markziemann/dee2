@@ -30,7 +30,7 @@ LOGDIR=$USRDIR/logs
 mkdir -p $LOGDIR
 ORG=`echo $QUERY_STRING | cut -d '&' -f1 | cut -d '=' -f2 | tr 'A-Z' 'a-z'`
 DATA_DIR=/scratch/mziemann/dee2/data/${ORG}/
-LIST=$DATA_DIR/list.txt
+LIST=$DATA_DIR/${ORG}_val_list.txt
 
 cd $DATA_DIR
 
