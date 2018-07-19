@@ -190,7 +190,7 @@ for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" 
   MAX=max(as.numeric(z[,1]))+80000
 
   bb<-barplot( rbind( as.numeric(z$queued) , as.numeric(z$completed) ) ,
-   names.arg=rownames(z) ,xlim=c(0,MAX),beside=T, main=HEADER, col=c("darkblue","red") ,
+   names.arg=rownames(z) ,xlim=c(0,MAX+50000),beside=T, main=HEADER, col=c("darkblue","red") ,
    horiz=T , las=1, cex.axis=1.3, cex.names=1.4,cex.main=1.4 )
 
   legend("topright", colnames(z), fill=c("darkblue","red") , cex=1.2)
