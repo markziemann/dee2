@@ -77,7 +77,7 @@ echo "validate"
 ####
 fin_agg(){
 DIRPATH=$1
-chmod +w $DIRPATH
+chmod -R +w $DIRPATH
 rename -f 's/.finished/.validated/' $DIRPATH/*.finished
 }
 export -f fin_agg
@@ -90,6 +90,7 @@ echo "se agg"
 ####
 se_agg(){
 ACC=$1
+chmod +w -R $ACC
 awk '{print $NF}' $ACC/$ACC.se.tsv > $ACC/${ACC}_gene.cnt
 sed 1d $ACC/$ACC.se.tsv | sed "s/^/${ACC}\t/"
 }
@@ -127,8 +128,7 @@ parallel -j$CORES fin_agg :::: $VALLIST
 
 comm -23 <(sort $FINLIST) <(sort $VALLIST) > $QUEUELIST
 
-killall -9 dat
 #dat share $MXDIR &
 cd $MXDIR
-for BZ2 in *bz2 ; do rclone copy $BZ2 drive:Public/DEE ; done
+#for BZ2 in *bz2 ; do rclone copy $BZ2 drive:Public/DEE ; done
 
