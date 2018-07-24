@@ -31,6 +31,29 @@ echo "set up list of files to be checked and added to the repo"
 find $DIR | grep finished | rev | cut -d '/' -f1 |rev | cut -d '.' -f1 > $FINLIST
 
 ####
+echo "remove directories that are incomplete and add the accession number to the queue"
+###
+for SRR in $(cat $FINLIST ) ; do
+  chmod -R +w $DIR/$SRR
+  SE_TSV=$DIR/$SRR/$SRR.se.tsv
+  KE_TSV=$DIR/$SRR/$SRR.ke.tsv
+  QC_TSV=$DIR/$SRR/$SRR.qc.tsv
+
+  if [ ! -e  "$SE_TSV" ] || [ ! -e  "$KE_TSV" ] || [ ! -e  "$QC_TSV" ] ; then
+    rm -rf $DIR/$SRR
+    echo $SRR
+  fi
+done >> $QUEUELIST
+
+#remove duplicate entries
+sort -u -o $QUEUELIST $QUEUELIST
+
+####
+echo "update list of files to be checked and added to the repo"
+###
+find $DIR | grep finished | rev | cut -d '/' -f1 |rev | cut -d '.' -f1 > $FINLIST
+
+####
 echo "SE checks"
 ####
 parallel -j$CORES wc -l {}/{}.se.tsv  :::: $FINLIST > $SELIST
@@ -129,6 +152,6 @@ parallel -j$CORES fin_agg :::: $VALLIST
 comm -23 <(sort $FINLIST) <(sort $VALLIST) > $QUEUELIST
 
 #dat share $MXDIR &
-cd $MXDIR
+#cd $MXDIR
 #for BZ2 in *bz2 ; do rclone copy $BZ2 drive:Public/DEE ; done
 
