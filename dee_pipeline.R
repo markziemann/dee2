@@ -1,20 +1,22 @@
 #!/usr/bin/env Rscript
 setwd("/scratch/mziemann/dee2/code/") 
 
-library(SRAdb)
+#library(SRAdb)
 library(parallel)
 library(data.table)
+library(SRAdbV2)
 
 CORES=ceiling(detectCores()/2)
-for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" , "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
-#org="ecoli"
-  #create a list of species full names
-  species_list<-c("'Arabidopsis thaliana'","'Caenorhabditis elegans'","'Drosophila melanogaster'","'Danio rerio'",
-  "'Escherichia coli'","'Homo sapiens'", "'Mus musculus'", "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
-  #now annotate the short names 
+for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
+
+  #create a list of NCBI taxa full names
+  species_list<-c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
+ 
+ #now annotate the short names 
   names(species_list)<- c("athaliana", "celegans", "dmelanogaster", "drerio",
   "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae")
-  species_name<-species_list[[org]]
+
+  taxa_name<-species_list[[org]]
 
   print(org)
 
@@ -26,45 +28,19 @@ for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" 
   QUEUEWD=normalizePath("../queue/")
 
 ########################
-# Get info from sradb
+# Get info from sradb vers 2
 ########################
 
   setwd(SRADBWD)
-  sqlfile <- 'SRAmetadb.sqlite'
-  #sqlfile<-paste(SRADBWD,"/SRAmetadb.sqlite",sep="")
-  if(!file.exists('SRAmetadb.sqlite')) sqlfile <<- getSRAdbFile()
-  #creation time
-  ct<-as.numeric(file.info('SRAmetadb.sqlite')$ctime)
-  #current time
-  now<-as.numeric(Sys.time())
-  #calculate difference between
-  dif<-now-ct
-  #define 1 week in seconds
-  wk<-60*60*24*7*1
 
-  #Test if ctime older than a week, redownload if neccessary
-  if (dif>wk) {
-    print("sqlfile too old - getting a new one now..")
-    unlink(sqlfile)
-    sqlfile <<- getSRAdbFile()
-  } else {
-    print("sqlfile still OK!")
-  }
+  oidx = Omicidx$new()
+  query=paste( paste0('sample_taxon_id:', taxa_name), 'AND experiment_library_strategy : "rna-seq"')
+  z = oidx$search(q=query,entity='full',size=100L)
+  s = z$scroll()
+  res = s$collate(limit = Inf)
 
-  #connect to DB
-  sra_con <- dbConnect(SQLite(),sqlfile)
-  sra_tables <- dbListTables(sra_con)
-
-  #make a list of RNA-seq samples
-  rs<-dbGetQuery(sra_con,"select study_accession, sample_accession, experiment_accession, library_source from experiment where library_strategy like 'RNA-seq' ")
-
-  #make a list of samples from a particular species
-  sqlStatement <- paste("select sample_accession , scientific_name FROM sample WHERE scientific_name LIKE ",species_name)
-  species<-dbGetQuery(sra_con, sqlStatement)
-
-  #filter accession list by
-  accessions<-merge(rs,species,by="sample_accession")
-  accessions<-sraConvert(accessions$experiment_accession,sra_con = sra_con)
+  accessions<-as.data.frame(cbind(res$experiment_accession,res$study_accession,res$sample_accession,res$run_accession))
+  colnames(accessions)=c("experiment","study","sample","run")
   runs<-accessions$run
 
 ########################
@@ -90,70 +66,30 @@ for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" 
    accessions_done<-accessions[which(accessions$run %in% runs_done),]
    write.table(accessions_done,file=paste(SRADBWD,"/",org,"_accessions.tsv",sep=""),quote=F,row.names=F)
 
-   #now the metadata   experiment submission     study    sample        run
-   x<-paste("('",paste(accessions_done$sample,collapse="','"),"')",sep="")
-   sql_statement<-paste("select * FROM sample WHERE sample_accession IN ",x)
-   sample_metadata<-dbGetQuery(sra_con, sql_statement)
- 
-   x<-paste("('",paste(accessions_done$run,collapse="','"),"')",sep="")
-   sql_statement<-paste("select * FROM run WHERE run_accession IN ",x)
-   run_metadata<-dbGetQuery(sra_con, sql_statement)
-
-   x<-paste("('",paste(accessions_done$experiment,collapse="','"),"')",sep="")
-   sql_statement<-paste("select * FROM experiment WHERE experiment_accession IN ",x)
-   experiment_metadata<-dbGetQuery(sra_con, sql_statement)
-
-   x<-paste("('",paste(accessions_done$submission,collapse="','"),"')",sep="")
-   sql_statement<-paste("select * FROM submission WHERE submission_accession IN ",x)
-   submission_metadata<-dbGetQuery(sra_con, sql_statement)
-
-   x<-paste("('",paste(accessions_done$study,collapse="','"),"')",sep="")
-   sql_statement<-paste("select * FROM study WHERE study_accession IN ",x)
-   study_metadata<-dbGetQuery(sra_con, sql_statement)
-
-   #now merging this data together to make a big metadata table
-   x<-merge(run_metadata,experiment_metadata,by='experiment_accession')
-   x<-x[,-grep(".y$",colnames(x))]
-   colnames(x)<-gsub(".x$","",colnames(x))
-
-   x<-merge(x,sample_metadata,by='sample_accession')
-   x<-x[,-grep(".y$",colnames(x))]
-   colnames(x)<-gsub(".x$","",colnames(x))
-
-   x<-merge(x,submission_metadata,by='submission_accession')
-   x<-x[,-grep(".y$",colnames(x))] 
-   colnames(x)<-gsub(".x$","",colnames(x))
-
-   x<-merge(x,study_metadata,by='study_accession')
-   x<-x[,-grep(".y$",colnames(x))]
-   colnames(x)<-gsub(".x$","",colnames(x))
-
    #collect QC info - this is temporary and logic will be incorporated in future
-   x$QC_summary="PASS"
+   QC_summary="PASS"
 
    #Need to rearrange columns
-   GSE<-function(i) {res=grepl("GEO:",i) ; if (res == FALSE) { j="NA" } else { j<-gsub("GEO: ","",i) ; j} }
-   x$GSE_accession<-as.vector(sapply(x[,66],GSE))
-   GSM<-function(i) {res=grepl("GEO Accession:",i) ; if (res == FALSE) { j="NA" } else { j<-gsub("GEO Accession: ","",i) ; j} }
-   x$GSM_accession<-as.vector(sapply(x[,53],GSM))
+   GSE<-function(i) {res=grepl("GSE",i) ; if (res == FALSE) {j="NA"} else {j=i } ; j }
+   GSE_accession<-as.vector(sapply(res$study_GEO,GSE))
+
+   GSM<-function(i) {res=grepl("GSM",i) ; if (res == FALSE) {j="NA"} else { j=i} ; j }
+   GSM_accession<-as.vector(sapply(res$study_GEO,GSM))
 
    #extract out the important accessions in order
-   x2<-as.data.frame(cbind(x$run_accession,x$QC_summary,x$experiment_accession,x$sample_accession,
-   x$study_accession,x$submission_accession, x$GSE_accession, x$GSM_accession))
+   x2<-as.data.frame(cbind(res$run_accession,QC_summary,res$experiment_accession,res$sample_accession,
+   res$study_accession, GSE_accession, GSM_accession))
 
    colnames(x2)<-c("SRR_accession","QC_summary","SRX_accession","SRS_accession",
-   "SRP_accession","SRA_accession","GSE_accession","GSM_accession")
+   "SRP_accession","GSE_accession","GSM_accession")
 
    #now remove the moved cols from x
-   x<-x[, !(colnames(x) %in% c("run_accession", "QC_summary","experiment_accession","sample_accession",
-   "study_accession","submission_accession","GSE_accession","GSM_accession"))]
-
-   x<-cbind(x2,x)
-  
-   #save metadata as mysql
-   connection <- dbConnect(SQLite())
-   dbWriteTable(connection, value = x, name = org, append = TRUE )
-
+   x<-res[, !(colnames(res) %in% c("run_accession", "QC_summary","experiment_accession","sample_accession","study_accession","submission_accession","GSE_accession","GSM_accession"))]
+   x<-as.data.frame(cbind(x2,x))
+ 
+   x<-x[which(x$SRR_accession %in% runs_done),]
+   x <- apply(x,2,as.character)
+   x<-gsub("\r?\n|\r", " ", x)
    write.table(x,file=paste(SRADBWD,"/",org,"_metadata.tsv",sep=""),quote=F,sep="\t",row.names=F)
 
    #upload 
@@ -182,15 +118,14 @@ for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" 
   rownames(z)=z$Row.names
   z$Row.names=NULL
 
-  DATE=strsplit(as.character(file.info(FILES2[6])[,4])," ",fixed=T)[[1]][1]
+  DATE=strsplit(as.character(file.info(FILES2[1])[,4])," ",fixed=T)[[1]][1]
   HEADER=paste("Updated",DATE)
-  #colnames(z)=HEADER
   z<-z[order(rownames(z),decreasing=T ), ,drop=F]
   par(las=2) ; par(mai=c(1,2.5,1,0.5))
-  MAX=max(as.numeric(z[,1]))+80000
+  MAX=max(as.numeric(z[,1]))+30000
 
   bb<-barplot( rbind( as.numeric(z$queued) , as.numeric(z$completed) ) ,
-   names.arg=rownames(z) ,xlim=c(0,MAX+50000),beside=T, main=HEADER, col=c("darkblue","red") ,
+   names.arg=rownames(z) ,xlim=c(0,MAX),beside=T, main=HEADER, col=c("darkblue","red") ,
    horiz=T , las=1, cex.axis=1.3, cex.names=1.4,cex.main=1.4 )
 
   legend("topright", colnames(z), fill=c("darkblue","red") , cex=1.2)
