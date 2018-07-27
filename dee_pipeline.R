@@ -74,7 +74,7 @@ for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" 
    GSE_accession<-as.vector(sapply(res$study_GEO,GSE))
 
    GSM<-function(i) {res=grepl("GSM",i) ; if (res == FALSE) {j="NA"} else { j=i} ; j }
-   GSM_accession<-as.vector(sapply(res$study_GEO,GSM))
+   GSM_accession<-as.vector(sapply(res$sample_GEO,GSM))
 
    #extract out the important accessions in order
    x2<-as.data.frame(cbind(res$run_accession,QC_summary,res$experiment_accession,res$sample_accession,
