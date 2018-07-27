@@ -83,7 +83,12 @@ for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" 
    colnames(x2)<-c("SRR_accession","QC_summary","SRX_accession","SRS_accession",
    "SRP_accession","GSE_accession","GSM_accession")
 
-   #now remove the moved cols from x
+   #write out the accession number info and upload to webserver
+   write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep=""),quote=F,sep="\t",row.names=F)
+   SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ", paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ," ubuntu@118.138.240.228:/mnt/dee2_data/metadata")
+   system(SCP_COMMAND)
+
+   #now attach the additional metadata and upload
    x<-res[, !(colnames(res) %in% c("run_accession", "QC_summary","experiment_accession","sample_accession","study_accession","submission_accession","GSE_accession","GSM_accession"))]
    x<-as.data.frame(cbind(x2,x))
  
@@ -91,11 +96,8 @@ for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" 
    x <- apply(x,2,as.character)
    x<-gsub("\r?\n|\r", " ", x)
    write.table(x,file=paste(SRADBWD,"/",org,"_metadata.tsv",sep=""),quote=F,sep="\t",row.names=F)
-
-   #upload 
    SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ", paste(SRADBWD,"/",org,"_metadata.tsv",sep="") ," ubuntu@118.138.240.228:/mnt/dee2_data/metadata")
    system(SCP_COMMAND)
-
   }
 
   setwd("/scratch/mziemann/dee2/code/")
