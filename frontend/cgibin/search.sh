@@ -116,12 +116,6 @@ if [ -n "$ACC" -a -z "$KEY" ] ; then
 
   Q=`echo $ACC | sed 's/\%2C/\|/g' | sed 's/^/\(/' | sed 's/$/\)/'`
 
-  if [ -r "$MDCUT" ] ; then
-    CNT=`egrep -cw "$Q" $MDCUT`
-  else
-    CNT=`cut -f-8 $MD | tee $MDCUT | egrep -cw "$Q"`
-  fi
-
   if [ $CNT -eq 0 ] ; then
     echo No results found
     echo "<br>"
