@@ -1,5 +1,6 @@
 #!/usr/bin/env Rscript
-setwd("/scratch/mziemann/dee2/code/") 
+
+setwd("/scratch/mziemann/dee2/code/")
 
 #library(SRAdb)
 library(parallel)
@@ -43,6 +44,7 @@ for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" 
   colnames(accessions)=c("experiment","study","sample","run")
   runs<-accessions$run
 
+  save.image(file = paste(org,".RData",sep=""))
 ########################
 # Now determine which datasets have already been processed and completed
 ########################
@@ -66,6 +68,8 @@ for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" 
    accessions_done<-accessions[which(accessions$run %in% runs_done),]
    write.table(accessions_done,file=paste(SRADBWD,"/",org,"_accessions.tsv",sep=""),quote=F,row.names=F)
 
+   save.image(file = paste(org,".RData",sep=""))
+
    #collect QC info - this is temporary and logic will be incorporated in future
    QC_summary="PASS"
 
@@ -88,6 +92,8 @@ for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" 
    SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ", paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ," ubuntu@118.138.240.228:/mnt/dee2_data/metadata")
    system(SCP_COMMAND)
 
+   save.image(file = paste(org,".RData",sep=""))
+
    #now attach the additional metadata and upload
    x<-res[, !(colnames(res) %in% c("run_accession", "QC_summary","experiment_accession","sample_accession","study_accession","submission_accession","GSE_accession","GSM_accession"))]
    x<-as.data.frame(cbind(x2,x))
@@ -98,6 +104,9 @@ for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" 
    write.table(x,file=paste(SRADBWD,"/",org,"_metadata.tsv",sep=""),quote=F,sep="\t",row.names=F)
    SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ", paste(SRADBWD,"/",org,"_metadata.tsv",sep="") ," ubuntu@118.138.240.228:/mnt/dee2_data/metadata")
    system(SCP_COMMAND)
+
+   save.image(file = paste(org,".RData",sep=""))
+
   }
 
   setwd("/scratch/mziemann/dee2/code/")
@@ -120,11 +129,11 @@ for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" 
   rownames(z)=z$Row.names
   z$Row.names=NULL
 
-  DATE=strsplit(as.character(file.info(FILES2[1])[,4])," ",fixed=T)[[1]][1]
+  DATE=strsplit(as.character(file.info(FILES2[1])[,6])," ",fixed=T)[[1]][1]
   HEADER=paste("Updated",DATE)
   z<-z[order(rownames(z),decreasing=T ), ,drop=F]
   par(las=2) ; par(mai=c(1,2.5,1,0.5))
-  MAX=max(as.numeric(z[,1]))+30000
+  MAX=max(as.numeric(z[,1]))+100000
 
   bb<-barplot( rbind( as.numeric(z$queued) , as.numeric(z$completed) ) ,
    names.arg=rownames(z) ,xlim=c(0,MAX),beside=T, main=HEADER, col=c("darkblue","red") ,
@@ -132,7 +141,7 @@ for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" 
 
   legend("topright", colnames(z), fill=c("darkblue","red") , cex=1.2)
 
-  text( cbind(as.numeric(z[,1])+20000 ,as.numeric(z[,2])+20000 )  ,t(bb),labels=c(z[,1],z[,2]) ,cex=1.2)
+  text( cbind(as.numeric(z[,1])+50000 ,as.numeric(z[,2])+50000 )  ,t(bb),labels=c(z[,1],z[,2]) ,cex=1.2)
   dev.off()
   system("scp -i ~/.ssh/cloud/cloud2.key dee_datasets.png ubuntu@118.138.240.228:/mnt/dee2_data/mx")
 
