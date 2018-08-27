@@ -37,7 +37,7 @@ for SRR in $(cat $FINLIST ) ; do
   chmod -R +w $DIR/$SRR
   SE_TSV=$DIR/$SRR/$SRR.se.tsv
   KE_TSV=$DIR/$SRR/$SRR.ke.tsv
-  QC_TSV=$DIR/$SRR/$SRR.qc.tsv
+  QC_TSV=$DIR/$SRR/$SRR.qc
 
   if [ ! -e  "$SE_TSV" ] || [ ! -e  "$KE_TSV" ] || [ ! -e  "$QC_TSV" ] ; then
     rm -rf $DIR/$SRR

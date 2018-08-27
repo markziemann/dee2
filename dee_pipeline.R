@@ -7,8 +7,11 @@ library(parallel)
 library(data.table)
 library(SRAdbV2)
 
+#simple rowcount function
+rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
+
 CORES=ceiling(detectCores()/2)
-for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
+for (org in c("ecoli", "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
 
   #create a list of NCBI taxa full names
   species_list<-c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
@@ -53,7 +56,12 @@ for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" 
 
   if ( length(finished_files) > 0 ) { 
    system(paste("./dee_pipeline.sh",org))
+   validated_count<-rowcnt2(paste(DATAWD,"/",org,"_val_list.txt",sep=""))
+
+   if ( validated_count > 0 ) {
    runs_done<-unique( read.table(paste(DATAWD,"/",org,"_val_list.txt",sep=""),stringsAsFactors=F)[,1] )
+   } else { runs_done=NULL } 
+
    print(paste(length(runs_done),"new runs completed"))
    runs_todo<-base::setdiff(runs, runs_done)
    print(paste(length(runs_todo),"requeued runs"))
@@ -111,7 +119,7 @@ for (org in c("ecoli" , "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" 
 
   setwd("/scratch/mziemann/dee2/code/")
 
-  rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
+  #rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
 
   png("dee_datasets.png",width=580,height=580)
 
