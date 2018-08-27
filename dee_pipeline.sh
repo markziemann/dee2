@@ -125,7 +125,7 @@ echo "ke_agg"
 ####
 ke_agg(){
 ACC=$1
-awk '{print $4}' $ACC/$ACC.se.tsv | sed 's/_est_counts//'> $ACC/${ACC}_tx.cnt
+awk '{print $4}' $ACC/$ACC.ke.tsv | sed 's/_est_counts//'> $ACC/${ACC}_tx.cnt
 sed 1d $ACC/$ACC.ke.tsv | cut -f1,4 | sed "s/^/${ACC}\t/"
 }
 export -f ke_agg
