@@ -1324,7 +1324,7 @@ export -f myfunc
 key_setup(){
 TMPHTML=/tmp/tmp.$RANDOM.html
 wget --no-check-certificate -r -O $TMPHTML "dee2.io/ip"
-SFTP_URL=$(curl -k $(grep 'frame src=' $TMPHTML | cut -d '"' -f2))
+SFTP_URL=$(cat $TMPHTML )
 mkdir -p /dee2/.ssh
 rm $TMPHTML
 touch /dee2/.ssh/known_hosts
