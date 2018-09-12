@@ -1256,7 +1256,8 @@ ACC_URL="http://dee2.io/acc.html"
 ACC_REQUEST="http://dee2.io/cgi-bin/acc.sh"
 TMPHTML=/tmp/tmp.$RANDOM.html
 wget --no-check-certificate -r -O $TMPHTML "dee2.io/ip"
-SFTP_URL=$(curl -k $(grep 'frame src=' $TMPHTML | cut -d '"' -f2))
+SFTP_URL=$(cat $TMPHTML )
+
 rm $TMPHTML
 
 if [ ! -z $MY_ORG ] ; then
