@@ -472,6 +472,104 @@ WBGene00235314          0         12  12
 
 ```
 ## Running a differential analysis
+
+In this example, I'll demonstrate a complete workflow for a GEO series accession (GSE93236) starting with SRAdb metadata query then differential expression analysis. 
+
+```
+> library(SRAdbV2)
+> oidx = Omicidx$new()
+> query=paste(
++ paste0('sample_taxon_id:', 9606),
++ 'AND experiment_library_source:transcriptomic',
++ 'AND study_GEO:GSE93236')
+
+> z = oidx$search(q=query,entity='full',size=100L)
+> s = z$scroll()
+> res = s$collate(limit = 100L)
+> head(res)
+# A tibble: 6 x 71
+  experiment_Insdc experiment_LastMet… experiment_LastUpd… experiment_Publish…
+  <lgl>            <dttm>              <dttm>              <dttm>             
+1 TRUE             2017-01-06 15:40:42 2017-01-10 15:19:34 2017-01-10 15:19:34
+2 TRUE             2017-01-06 15:40:43 2017-01-10 15:19:34 2017-01-10 15:19:34
+3 TRUE             2017-01-06 15:40:42 2017-01-10 15:19:34 2017-01-10 15:19:34
+4 TRUE             2017-01-06 15:40:42 2017-01-10 15:19:34 2017-01-10 15:19:34
+5 TRUE             2017-01-06 15:40:43 2017-01-10 15:19:34 2017-01-10 15:19:34
+6 TRUE             2017-01-06 15:40:42 2017-01-10 15:19:34 2017-01-10 15:19:34
+# ... with 67 more variables: experiment_Received <dttm>,
+#   experiment_Status <chr>, experiment_accession <chr>,
+#   experiment_alias <chr>, experiment_attributes <list>,
+#   experiment_identifiers <list>, experiment_instrument_model <chr>,
+#   experiment_library_construction_protocol <chr>,
+#   experiment_library_layout <chr>, experiment_library_selection <chr>,
+#   experiment_library_source <chr>, experiment_library_strategy <chr>,
+#   experiment_platform <chr>, experiment_title <chr>, experiment_xrefs <list>,
+#   run_FileDate <dbl>, run_FileMd5 <chr>, run_FileSize <int>, run_Insdc <lgl>,
+#   run_LastMetaUpdate <dttm>, run_LastUpdate <dttm>, run_Published <dttm>,
+#   run_Received <dttm>, run_Status <chr>, run_accession <chr>,
+#   run_alias <chr>, run_bases <int>, run_identifiers <list>, run_nreads <int>,
+#   run_reads <list>, run_spot_length <int>, run_spots <int>,
+#   sample_BioSample <chr>, sample_GEO <chr>, sample_Insdc <lgl>,
+#   sample_LastMetaUpdate <dttm>, sample_LastUpdate <dttm>,
+#   sample_Published <dttm>, sample_Received <dttm>, sample_Status <chr>,
+#   sample_accession <chr>, sample_alias <chr>, sample_attributes <list>,
+#   sample_identifiers <list>, sample_numeric_properties <list>,
+#   sample_ontology_terms <list>, sample_organism <chr>, sample_taxon_id <int>,
+#   sample_title <chr>, sample_type <chr>, sample_xrefs <list>,
+#   study_BioProject <chr>, study_GEO <chr>, study_Insdc <lgl>,
+#   study_LastMetaUpdate <dttm>, study_LastUpdate <dttm>,
+#   study_Published <dttm>, study_Received <dttm>, study_Status <chr>,
+#   study_abstract <chr>, study_accession <chr>, study_alias <chr>,
+#   study_center_name <chr>, study_identifiers <list>, study_title <chr>,
+#   study_type <chr>, study_xrefs <list>
+
+#now extract sample name info into a samplesheet
+> sample_sheet<-as.data.frame(cbind(res$run_accession,res$sample_title))
+> sample_sheet
+          V1          V2
+1 SRR5150592 Set7KD_rep1
+2 SRR5150597    NTC_rep3
+3 SRR5150594 Set7KD_rep3
+4 SRR5150593 Set7KD_rep2
+5 SRR5150596    NTC_rep2
+6 SRR5150595    NTC_rep1
+#tidy up the table
+> sample_sheet<-sample_sheet[order(sample_sheet$run),]
+> colnames(sample_sheet)=c("run","sample")
+> sample_sheet
+         run      sample
+1 SRR5150592 Set7KD_rep1
+4 SRR5150593 Set7KD_rep2
+3 SRR5150594 Set7KD_rep3
+6 SRR5150595    NTC_rep1
+5 SRR5150596    NTC_rep2
+2 SRR5150597    NTC_rep3
+
+#identify the knockdown samples
+> sample_sheet$knockdown<-as.factor(as.numeric(grepl("KD",sample_sheet$sample)))
+> sample_sheet
+         run      sample knockdown
+1 SRR5150592 Set7KD_rep1         1
+4 SRR5150593 Set7KD_rep2         1
+3 SRR5150594 Set7KD_rep3         1
+6 SRR5150595    NTC_rep1         0
+5 SRR5150596    NTC_rep2         0
+2 SRR5150597    NTC_rep3         0
+> sample_sheet$knockdown
+[1] 1 1 1 0 0 0
+Levels: 0 1
+#get expression data
+> x<-getDEE2("hsapiens",sample_sheet$run)
+trying URL 'http://dee2.io/metadata/hsapiens_metadata.tsv.cut'
+Content type 'text/tab-separated-values' length 21089134 bytes (20.1 MB)
+==================================================
+downloaded 20.1 MB
+
+trying URL 'http://dee2.io/cgi-bin/request.sh?org=hsapiens&x=SRR5150592&x=SRR5150593&x=SRR5150594&x=SRR5150595&x=SRR5150596&x=SRR5150597'
+downloaded 3.2 MB
+
+
+```
 * edgeR
 * DESeq
 
