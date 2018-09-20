@@ -96,7 +96,9 @@ getDEE2<-function(species, SRRvec, outfile=NULL, metadata=NULL,
     QcMx<-loadQcMx(zipname)
     dat <- list("GeneCounts" = GeneCounts, "TxCounts" = TxCounts, "QcMx" = QcMx, "absent" = absent)
     if(is.null(outfile)){unlink(zipname)}
-    message(paste0("Warning, datasets not found: '",paste(absent,collapse=","),"'"))
+    if(length(absent)>0){
+      message(paste0("Warning, datasets not found: '",paste(absent,collapse=","),"'"))
+    }
     return(dat)
   }
 }
