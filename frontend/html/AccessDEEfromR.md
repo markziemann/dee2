@@ -1,25 +1,16 @@
-# Accessing Digital Expression Explorer from R
-(March 2018)
+# Incorporating dee2 data into your RNA-seq workflow
 
-To facilitate convenient access to these data from within the R environment, a 
-function called 'getDEE2' has been written that interfaces with the web server 
-and loads the matrix into R. The function can be 'sourced' as follows:
+This tutorial provides a walkthrough for how to work with dee2 expression data,
+starting with data searches, obtaining the data from dee2.io and then performing
+a differential analysis with DESeq or edgeR.
+
+To use search and obtain dee2 data in R, you will need to source the 'getDEE2' script as follows:
 
 `> source("https://raw.githubusercontent.com/markziemann/dee2/master/frontend/html/getDEE2.R")`
 
-Function syntax is as follows:
+## Searching for datasets of interest
 
-`> getDEE2(organism,SRRlist,outfile="NULL")`
-
-The function will download the data as a zip archive that contains a (1) a gene-wise
-count expression matrix, (2) a transcript-wise count expression matrix, (3) a matrix
-of quality metrics and (4) a folder of run logs detailing the processing of the 
-data including base quality scores, alignment rates, etc. If 'outfile' is 
-defined, then files will be downloaded to the current working directory. If it
-is not defined, then the files are downloaded to the temporary directory of R
-and deleted immediately after use.
-
-The options for organism currently are:
+The first step is to download the list of accession numbers of available datasets with the 'getDee2Metadata' function, specifying a species name. The options for species currently are:
 
 * athaliana
 * celegans
@@ -30,6 +21,58 @@ The options for organism currently are:
 * mmusculus
 * rnorvegicus
 * scerevisiae
+
+If the species name is incorrect, an error will be thrown.
+
+```
+> mdat<-getDee2Metadata("celegans")
+trying URL 'http://dee2.io/metadata/celegans_metadata.tsv.cut'
+Content type 'text/tab-separated-values' length 549206 bytes (536 KB)
+==================================================
+downloaded 536 KB
+
+> head(metadata)
+  SRR_accession QC_summary SRX_accession SRS_accession SRP_accession
+1    SRR1557807       PASS     SRX686598     SRS689414     SRP045778
+2    SRR2537196       PASS    SRX1295772    SRS1094603     SRP064324
+3    SRR1658975       PASS     SRX765271     SRS749590     SRP050116
+4     SRR087429       PASS     SRX035773     SRS150525     SRP004901
+5    SRR7443620       PASS    SRX4314169    SRS3473340     SRP151477
+6    SRR3535786       PASS    SRX1770003    SRS1442527     SRP075276
+  GSE_accession GSM_accession
+1      GSE60755    GSM1487404
+2      GSE73589    GSM1898659
+3      GSE63528    GSM1551798
+4      GSE26165     GSM642428
+5          <NA>          <NA>
+6      GSE81522    GSM2155077
+```
+
+
+
+
+
+## Accessing Digital Expression Explorer 2 data from R
+
+To facilitate convenient access to these data from within the R environment, a 
+function called 'getDEE2' has been written that interfaces with the web server 
+and loads the matrix into R. The function can be 'sourced' as follows:
+
+`> source("https://raw.githubusercontent.com/markziemann/dee2/master/frontend/html/getDEE2.R")`
+
+Function syntax is as follows:
+
+`> getDEE2(species,SRRlist,outfile="NULL")`
+
+The function will download the data as a zip archive that contains a (1) a gene-wise
+count expression matrix, (2) a transcript-wise count expression matrix, (3) a matrix
+of quality metrics and (4) a folder of run logs detailing the processing of the 
+data including base quality scores, alignment rates, etc. If 'outfile' is 
+defined, then files will be downloaded to the current working directory. If it
+is not defined, then the files are downloaded to the temporary directory of R
+and deleted immediately after use.
+
+
 
 The SRR numbers need to exactly match those in SRA.
 
