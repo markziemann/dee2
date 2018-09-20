@@ -90,6 +90,7 @@ If 'outfile' is defined, then files will be downloaded to the current working di
 The SRR numbers need to exactly match those in SRA.
 
 Here is an example of using the SRRlist as defined above. 
+
 ```
 > x<-getDEE2("celegans",SRRlist)
 trying URL 'http://dee2.io/metadata/celegans_metadata.tsv.cut'
@@ -100,8 +101,8 @@ downloaded 536 KB
 trying URL 'http://dee2.io/cgi-bin/request.sh?org=celegans&x=SRR363796&x=SRR363797&x=SRR363798&x=SRR363799'
 downloaded 479 KB
 
-> x$
-x$GeneCounts  x$TxCounts    x$QcMx        x$absent      
+> names(x)
+[1] "GeneCounts" "TxCounts"   "QcMx"       "absent"   
 > head(x$GeneCounts)
                SRR363796 SRR363797 SRR363798 SRR363799
 WBGene00197333         0         0         0         0
@@ -151,10 +152,12 @@ Warning, datasets not found: 'SRR3581689,SRR3581692'
 ```
 
 In this case the accessions SRR3581689 and SRR3581692 are A. thaliana accessions and therefore not present in the C. elegans accession list. The list of absent accessions is provided in case you need these for your records.
+
 ```
 > x$absent
 [1] "SRR3581689" "SRR3581692"
 ```
+
 ## Keyword searching metadata
 
 Here I'll demonstrate two ways to query SRAdbv2
@@ -169,6 +172,7 @@ BiocManager::install('seandavi/SRAdbV2')
 #load library
 library(SRAdbV2)
 ```
+
 The first method is to download all the transcriptome metadata for a particular species (taxid:6239 is for C. elegans).
 
 ```
@@ -243,7 +247,9 @@ Next, you will want to filter these results for those that have dee2 datasets av
 [6,] "SRR6002322" "FALSE"
 
 ```
-You can also see how complete the dataset is:
+
+You can also see how complete the dee2 coverage is:
+
 ```
 > length(which(res$dee2data==T))
 [1] 8721
@@ -304,6 +310,7 @@ You can then browse and make targeted searches of this metadata locally with gre
 ```
 
 Now check that the runs have corresponding dee2 datasets:
+
 ```
 > res2<-res[grep("PAR-CLIP",res$study_abstract),]
 > cbind(res2$run_accession,res2$dee2data)
@@ -332,6 +339,7 @@ Now check that the runs have corresponding dee2 datasets:
 ```
 
 The drawback of this approach is that it could be very slow for species like human and mouse with hundreds of thousands of RNA-seq datasets. A more targeted search can be performed with a keyword for one of the fields. In this case, we'll search for datasets with the term "PAR-CLIP" in the study abstract. This is definitely a faster approach.
+
 ```
 > oidx = Omicidx$new()
 > query=paste(
