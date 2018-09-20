@@ -6,6 +6,11 @@ Copyright, Mark Ziemann, 2018.
 1. [Getting started](#getting-started)
 2. [Searching for datasets of interest starting with accession numbers](#searching-for-datasets-of-interest-starting-with-accession-numbers)
 3. [Fetching dee2 data using SRA run accession numbers](#fetching-dee2-data-using-sra-run-accession-numbers)
+4. [Keyword searching metadata](#keyword-searching-metadata)
+5. [Stand-alone functions for downloading and loading dee2 data]()
+6. [Aggregating runs data]()
+7. [Running a differential analysis]()
+8. [Report bugs, issues and suggestions]()
 
 ## Getting started
 
@@ -470,5 +475,5 @@ WBGene00235314          0         12  12
 * edgeR
 * DESeq
 
-## Report bugs, issues and suggestions at the github page
-https://github.com/markziemann/dee2
+## Report bugs, issues and suggestions
+Submit at the [github page](https://github.com/markziemann/dee2).
