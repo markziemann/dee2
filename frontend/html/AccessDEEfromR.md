@@ -568,8 +568,18 @@ downloaded 20.1 MB
 trying URL 'http://dee2.io/cgi-bin/request.sh?org=hsapiens&x=SRR5150592&x=SRR5150593&x=SRR5150594&x=SRR5150595&x=SRR5150596&x=SRR5150597'
 downloaded 3.2 MB
 
+> head(x$GeneCounts)
+                SRR5150592 SRR5150593 SRR5150595 SRR5150596 SRR5150597
+ENSG00000223972          1          0          0          0          0
+ENSG00000227232          0          1          2          1          1
+ENSG00000278267          0          0          0          0          0
+ENSG00000243485          0          0          0          1          1
+ENSG00000284332          0          0          0          0          0
+ENSG00000237613          0          0          0          0          0
+
 
 ```
+The next step is to run the differential analysis. First with edgeR.
 * edgeR
 * DESeq
 
