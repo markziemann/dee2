@@ -169,7 +169,7 @@ BiocManager::install('seandavi/SRAdbV2')
 #load library
 library(SRAdbV2)
 ```
-The first method is to download all the metadata for a particular species (taxid:6239 is for C. elegans).
+The first method is to download all the transcriptome metadata for a particular species (taxid:6239 is for C. elegans).
 
 ```
 #new query
@@ -225,12 +225,113 @@ The first method is to download all the metadata for a particular species (taxid
 #   experiment_library_layout_length <dbl>,
 #   experiment_library_layout_sdev <chr>
 ```
-Next, you will want to filter these results for those that have dee2 datasets available. 
+Next, you will want to filter these results for those that have dee2 datasets available. Couple of ways to do this but the best might be to attach a logical value for whether there is data available for the runs.
 
-You can then browse and make targeted searches of this metadata locally with grepl. The drawback of this approach is that it could be very slow for species like human and mouse with hundreds of thousands of RNA-seq datasets. 
+```
+#get the C. elegans metadata if not already obtained
+> mdat<-getDee2Metadata("celegans")
+#next attach logical value to SRAdb metadata
+> res$dee2data<-res$run_accession %in% mdat$SRR_accession
+#Check that it has been added
+> head(cbind(res$run_accession,res$dee2data))
+     [,1]         [,2]   
+[1,] "SRR1557807" "TRUE" 
+[2,] "SRR2537196" "TRUE" 
+[3,] "SRR1658975" "TRUE" 
+[4,] "SRR087429"  "TRUE" 
+[5,] "SRR7443620" "TRUE" 
+[6,] "SRR6002322" "FALSE"
 
+```
+You can also see how complete the dataset is:
+```
+> length(which(res$dee2data==T))
+[1] 8721
+> length(which(res$dee2data==F))
+[1] 1246
+```
 
-A more targeted search can be performed with a keyword for one of the fields. In this case, we'll search for datasets with the term "PAR-CLIP" in the study abstract. This is definitely a faster approach.
+You can then browse and make targeted searches of this metadata locally with grepl. In this case I will search for studies with "PAR-CLIP" in the abstract.
+
+```
+> res[grep("PAR-CLIP",res$study_abstract),]
+# A tibble: 21 x 86
+   experiment_Insdc experiment_LastMet… experiment_LastUpd… experiment_Publish…
+   <lgl>            <dttm>              <dttm>              <dttm>             
+ 1 TRUE             2014-06-17 23:15:06 2014-06-17 23:15:29 2011-12-09 15:17:33
+ 2 TRUE             2014-02-25 18:52:07 2014-11-28 16:04:14 2014-11-21 21:37:23
+ 3 TRUE             2014-03-28 19:34:16 2014-05-23 20:22:05 2014-05-23 11:06:30
+ 4 TRUE             2013-09-23 16:45:14 2013-09-23 16:45:14 2011-12-09 15:17:15
+ 5 TRUE             2013-09-23 16:45:14 2013-09-23 16:45:14 2011-12-09 15:17:15
+ 6 TRUE             2014-03-28 19:34:16 2014-05-23 20:22:05 2014-05-23 11:06:30
+ 7 TRUE             2014-03-28 19:34:16 2014-05-23 20:22:05 2014-05-23 11:06:30
+ 8 TRUE             2014-03-28 19:34:16 2015-07-22 21:07:18 2015-07-22 21:07:18
+ 9 TRUE             2014-02-25 18:52:41 2014-11-28 16:05:03 2014-11-21 21:38:04
+10 TRUE             2014-06-17 23:15:06 2014-06-17 23:15:29 2011-12-09 15:17:33
+# ... with 11 more rows, and 82 more variables: experiment_Received <dttm>,
+#   experiment_Status <chr>, experiment_accession <chr>,
+#   experiment_alias <chr>, experiment_attributes <list>,
+#   experiment_center_name <chr>, experiment_identifiers <list>,
+#   experiment_instrument_model <chr>,
+#   experiment_library_construction_protocol <chr>,
+#   experiment_library_layout <chr>, experiment_library_selection <chr>,
+#   experiment_library_source <chr>, experiment_library_strategy <chr>,
+#   experiment_platform <chr>, experiment_title <chr>, experiment_xrefs <list>,
+#   run_FileDate <dbl>, run_FileMd5 <chr>, run_FileSize <int>, run_Insdc <lgl>,
+#   run_LastMetaUpdate <dttm>, run_LastUpdate <dttm>, run_Published <dttm>,
+#   run_Received <dttm>, run_Status <chr>, run_accession <chr>,
+#   run_alias <chr>, run_bases <dbl>, run_center_name <chr>,
+#   run_identifiers <list>, run_nreads <int>, run_reads <list>,
+#   run_spot_length <int>, run_spots <int>, sample_BioSample <chr>,
+#   sample_GEO <chr>, sample_Insdc <lgl>, sample_LastMetaUpdate <dttm>,
+#   sample_LastUpdate <dttm>, sample_Published <dttm>, sample_Received <dttm>,
+#   sample_Status <chr>, sample_accession <chr>, sample_alias <chr>,
+#   sample_attributes <list>, sample_identifiers <list>, sample_organism <chr>,
+#   sample_taxon_id <int>, sample_title <chr>, sample_xrefs <list>,
+#   study_BioProject <chr>, study_GEO <chr>, study_Insdc <lgl>,
+#   study_LastMetaUpdate <dttm>, study_LastUpdate <dttm>,
+#   study_Published <dttm>, study_Received <dttm>, study_Status <chr>,
+#   study_abstract <chr>, study_accession <chr>, study_alias <chr>,
+#   study_attributes <list>, study_center_name <chr>, study_identifiers <list>,
+#   study_title <chr>, study_type <chr>, study_xrefs <list>,
+#   experiment_library_name <chr>, run_attributes <list>,
+#   sample_center_name <chr>, experiment_design <chr>,
+#   sample_description <chr>, experiment_broker_name <chr>,
+#   run_broker_name <chr>, run_center <chr>, sample_broker_name <chr>,
+#   study_broker_name <chr>, study_description <chr>, run_file_addons <list>,
+#   experiment_library_layout_length <dbl>,
+#   experiment_library_layout_sdev <chr>, dee2data <lgl>
+```
+
+Now check that the runs have corresponding dee2 datasets:
+```
+> res2<-res[grep("PAR-CLIP",res$study_abstract),]
+> cbind(res2$run_accession,res2$dee2data)
+      [,1]         [,2]  
+ [1,] "SRR363980"  "TRUE"
+ [2,] "SRR1176664" "TRUE"
+ [3,] "SRR1207392" "TRUE"
+ [4,] "SRR363797"  "TRUE"
+ [5,] "SRR363796"  "TRUE"
+ [6,] "SRR1207390" "TRUE"
+ [7,] "SRR1207391" "TRUE"
+ [8,] "SRR1207395" "TRUE"
+ [9,] "SRR1176669" "TRUE"
+[10,] "SRR363981"  "TRUE"
+[11,] "SRR363798"  "TRUE"
+[12,] "SRR1176645" "TRUE"
+[13,] "SRR1207389" "TRUE"
+[14,] "SRR1207394" "TRUE"
+[15,] "SRR1176665" "TRUE"
+[16,] "SRR1176644" "TRUE"
+[17,] "SRR1176646" "TRUE"
+[18,] "SRR1176670" "TRUE"
+[19,] "SRR1176666" "TRUE"
+[20,] "SRR363799"  "TRUE"
+[21,] "SRR1207393" "TRUE"
+```
+
+The drawback of this approach is that it could be very slow for species like human and mouse with hundreds of thousands of RNA-seq datasets. A more targeted search can be performed with a keyword for one of the fields. In this case, we'll search for datasets with the term "PAR-CLIP" in the study abstract. This is definitely a faster approach.
 ```
 > oidx = Omicidx$new()
 > query=paste(
@@ -286,14 +387,19 @@ dim(res)
 
 ```
 
-Lastly, obtain a list of SRR accessions 
+Lastly, obtain a list of SRR accessions and obtain the dee2 data
+```
+SRRvec=res2$run_accession
+> x<-getDEE2("celegans",SRRvec)
+trying URL 'http://dee2.io/metadata/celegans_metadata.tsv.cut'
+Content type 'text/tab-separated-values' length 549206 bytes (536 KB)
+==================================================
+downloaded 536 KB
 
+trying URL 'http://dee2.io/cgi-bin/request.sh?org=celegans&x=SRR363980&x=SRR1176664&x=SRR1207392&x=SRR363797&x=SRR363796&x=SRR1207390&x=SRR1207391&x=SRR1207395&x=SRR1176669&x=SRR363981&x=SRR363798&x=SRR1176645&x=SRR1207389&x=SRR1207394&x=SRR1176665&x=SRR1176644&x=SRR1176646&x=SRR1176670&x=SRR1176666&x=SRR363799&x=SRR1207393'
+downloaded 1.7 MB
 
-* Use the SRAdb package to make queries of the SRA metadata
-* Intersect SRAdb hits with dee2 accession numbers. 
-
-
-
+```
 
 ## Stand-alone functions for downloading and loading dee2 data
 
@@ -317,10 +423,6 @@ WBGene00002061        44       100       217        77
 WBGene00255704         0         5         1         1
 WBGene00235314         0         0         0         1
 ```
-
-
-
-
 
 ## Aggregating runs data
 
