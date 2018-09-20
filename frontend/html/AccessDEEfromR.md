@@ -5,7 +5,7 @@ Copyright, Mark Ziemann, 2018.
 # Table of Contents
 1. [Getting started](#getting-started)
 2. [Searching for datasets of interest starting with accession numbers](#searching-for-datasets-of-interest-starting-with-accession-numbers)
-3. [Fetching dee2 data using SRA run accession numbers](#fetching-dee2-data-using-SRA-run-accession-numbers)
+3. [Fetching dee2 data using SRA run accession numbers](#fetching-dee2-data-using-sra-run-accession-numbers)
 
 ## Getting started
 
