@@ -157,6 +157,79 @@ In this case the accessions SRR3581689 and SRR3581692 are A. thaliana accessions
 ```
 ## Keyword searching metadata
 
+Here I'll demonstrate two ways to query SRAdbv2
+https://seandavi.github.io/SRAdbV2/articles/SRAdbv2.html
+
+You will need to install, then load the library.
+
+```
+#installation
+install.packages('BiocManager')
+BiocManager::install('seandavi/SRAdbV2')
+#load library
+library(SRAdbV2)
+```
+The first method is to download all the metadata for a particular species (taxid:6239 is for C. elegans).
+
+```
+#new query
+oidx = Omicidx$new()
+
+query=paste(
+  paste0('sample_taxon_id:', 6239),
+  'AND experiment_library_source:transcriptomic')
+z = oidx$search(q=query,entity='full',size=100L)
+s = z$scroll()
+res = s$collate(limit = 1000)
+ working: ( - ) [================================================] 100% eta:  0s
+> head(res)
+# A tibble: 6 x 85
+  experiment_Insdc experiment_LastMet… experiment_LastUpd… experiment_Publish…
+  <lgl>            <dttm>              <dttm>              <dttm>             
+1 TRUE             2014-08-26 14:00:12 2016-02-18 21:16:28 2016-02-18 21:16:28
+2 TRUE             2015-09-29 20:32:16 2016-06-01 19:55:21 2016-06-01 19:55:21
+3 TRUE             2014-11-21 13:38:14 2016-01-07 20:57:05 2016-01-07 20:57:05
+4 TRUE             2013-09-23 16:45:14 2013-09-23 16:45:14 2011-02-09 16:35:05
+5 TRUE             2018-06-27 19:10:23 2018-06-27 19:21:11 2018-06-27 19:21:11
+6 TRUE             2017-09-04 18:59:05 2018-05-11 20:51:14 2018-05-11 20:51:14
+# ... with 81 more variables: experiment_Received <dttm>,
+#   experiment_Status <chr>, experiment_accession <chr>,
+#   experiment_alias <chr>, experiment_attributes <list>,
+#   experiment_center_name <chr>, experiment_identifiers <list>,
+#   experiment_instrument_model <chr>,
+#   experiment_library_construction_protocol <chr>,
+#   experiment_library_layout <chr>, experiment_library_selection <chr>,
+#   experiment_library_source <chr>, experiment_library_strategy <chr>,
+#   experiment_platform <chr>, experiment_title <chr>, experiment_xrefs <list>,
+#   run_FileDate <dbl>, run_FileMd5 <chr>, run_FileSize <int>, run_Insdc <lgl>,
+#   run_LastMetaUpdate <dttm>, run_LastUpdate <dttm>, run_Published <dttm>,
+#   run_Received <dttm>, run_Status <chr>, run_accession <chr>,
+#   run_alias <chr>, run_bases <dbl>, run_center_name <chr>,
+#   run_identifiers <list>, run_nreads <int>, run_reads <list>,
+#   run_spot_length <int>, run_spots <int>, sample_BioSample <chr>,
+#   sample_GEO <chr>, sample_Insdc <lgl>, sample_LastMetaUpdate <dttm>,
+#   sample_LastUpdate <dttm>, sample_Published <dttm>, sample_Received <dttm>,
+#   sample_Status <chr>, sample_accession <chr>, sample_alias <chr>,
+#   sample_attributes <list>, sample_identifiers <list>, sample_organism <chr>,
+#   sample_taxon_id <int>, sample_title <chr>, sample_xrefs <list>,
+#   study_BioProject <chr>, study_GEO <chr>, study_Insdc <lgl>,
+#   study_LastMetaUpdate <dttm>, study_LastUpdate <dttm>,
+#   study_Published <dttm>, study_Received <dttm>, study_Status <chr>,
+#   study_abstract <chr>, study_accession <chr>, study_alias <chr>,
+#   study_attributes <list>, study_center_name <chr>, study_identifiers <list>,
+#   study_title <chr>, study_type <chr>, study_xrefs <list>,
+#   experiment_library_name <chr>, run_attributes <list>,
+#   sample_center_name <chr>, experiment_design <chr>,
+#   sample_description <chr>, experiment_broker_name <chr>,
+#   run_broker_name <chr>, run_center <chr>, sample_broker_name <chr>,
+#   study_broker_name <chr>, study_description <chr>, run_file_addons <list>,
+#   experiment_library_layout_length <dbl>,
+#   experiment_library_layout_sdev <chr>
+```
+You can then perform a targeted search of this metadata locally. The drawback of this approach is that it could be very slow  for species like human and mouse with over one hundred thousand RNA-seq datasets.
+
+A more targeted search can be performed like this:
+
 * Use the SRAdb package to make queries of the SRA metadata
 * Intersect SRAdb hits with dee2 accession numbers. 
 
