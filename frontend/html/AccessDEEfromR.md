@@ -7,7 +7,7 @@ Copyright, Mark Ziemann, 2018.
 2. [Searching for datasets of interest starting with accession numbers](#searching-for-datasets-of-interest-starting-with-accession-numbers)
 3. [Fetching dee2 data using SRA run accession numbers](#fetching-dee2-data-using-sra-run-accession-numbers)
 4. [Keyword searching metadata](#keyword-searching-metadata)
-5. [Stand-alone functions for downloading and loading dee2 data](stand-alone-functions-for-downloading-and-loading-dee2-data)
+5. [Stand-alone functions for downloading and loading dee2 data](#stand-alone-functions-for-downloading-and-loading-dee2-data)
 6. [Aggregating runs data](#aggregating-runs-data)
 7. [Running a differential analysis](#running-a-differential-analysis)
 8. [Report bugs, issues and suggestions](#report-bugs-issues-and-suggestions)
