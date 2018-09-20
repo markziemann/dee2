@@ -67,8 +67,8 @@ Dee2 data is centred around SRA run accessions numbers, these SRR_accessions can
 
 ```
 > mdat1<-mdat[which(mdat$GSE_accession %in% "GSE33569"),]
-> SRRvec<-as.vector(mdat1$SRR_accession)
-> SRRvec
+> SRRlist<-as.vector(mdat1$SRR_accession)
+> SRRlist
 [1] "SRR363796" "SRR363797" "SRR363798" "SRR363799"
 ```
 
@@ -88,119 +88,110 @@ If 'outfile' is defined, then files will be downloaded to the current working di
 
 The SRR numbers need to exactly match those in SRA.
 
-Here is an example of usage for a small number of E. coli datasets that are 
-loaded into a 'mytable' and the zip archive is saved in the current working
-directory as "DEE_count_data.zip".
-
+Here is an example of using the SRRlist as defined above. 
 ```
-> x<-getDEE2("celegans",c("SRR029423","SRR029424"))
-trying URL 'http://dee2.io/cgi-bin/request.sh?'
-Content type 'text/html; charset=utf-8' length 488 bytes
+> x<-getDEE2("celegans",SRRlist)
+trying URL 'http://dee2.io/metadata/celegans_metadata.tsv.cut'
+Content type 'text/tab-separated-values' length 549206 bytes (536 KB)
 ==================================================
-downloaded 488 bytes
+downloaded 536 KB
 
-trying URL 'http://118.138.240.228/cgi-bin/request.sh?org=celegans&x=SRR029423&x=SRR029424'
-downloaded 342 KB
-```
+trying URL 'http://dee2.io/cgi-bin/request.sh?org=celegans&x=SRR363796&x=SRR363797&x=SRR363798&x=SRR363799'
+downloaded 479 KB
 
-If all works, then "x" is a list containing 3 data frames (GeneCounts,TxCounts,QcMx).
-
-```
+> x$
+x$GeneCounts  x$TxCounts    x$QcMx        x$absent      
 > head(x$GeneCounts)
-               SRR029423 SRR029424
-WBGene00197333         0         0
-WBGene00198386         0         0
-WBGene00015153         0         2
-WBGene00002061        14        30
-WBGene00255704         1         0
-WBGene00235314         0         1
-
+               SRR363796 SRR363797 SRR363798 SRR363799
+WBGene00197333         0         0         0         0
+WBGene00198386         0         0         0         0
+WBGene00015153         4        16         6         4
+WBGene00002061        44       100       217        77
+WBGene00255704         0         5         1         1
+WBGene00235314         0         0         0         1
 > head(x$TxCounts)
-           SRR029423.ke.tsv SRR029424.ke.tsv
-Y110A7A.10               15                7
-F27C8.1                   1                0
-F07C3.7                   1                1
-F52H2.2a                  0                8
-F52H2.2b                  0                0
-T13A10.10a                0                0
-
+           SRR363796 SRR363797 SRR363798 SRR363799
+Y110A7A.10        11        23        48        45
+F27C8.1            0         0         0         0
+F07C3.7            0         2         0        21
+F52H2.2a           0         0         7         0
+F52H2.2b           0         4         0         5
+T13A10.10a         0         0         0         0
 > head(x$QcMx)
-                            SRR029423          SRR029424
-SequenceFormat                     SE                 SE
-QualityEncoding    Sanger/Illumina1.9 Sanger/Illumina1.9
-Read1MinimumLength                 36                 36
-Read1MedianLength                  36                 36
-Read1MaxLength                     36                 36
-Read2MinimumLength               NULL               NULL
+                                   SE               SE.1               SE.2
+SequenceFormat     Sanger/Illumina1.9 Sanger/Illumina1.9 Sanger/Illumina1.9
+QualityEncoding                    36                 36                 36
+Read1MinimumLength                 36                 36                 36
+Read1MedianLength                  36                 36                 36
+Read1MaxLength                   NULL               NULL               NULL
+Read2MinimumLength               NULL               NULL               NULL
+                                 SE.3
+SequenceFormat     Sanger/Illumina1.9
+QualityEncoding                    36
+Read1MinimumLength                 36
+Read1MedianLength                  36
+Read1MaxLength                   NULL
+Read2MinimumLength               NULL
 ```
 
-Another example this time starting with a list of SRR accession numbers in a 
-plain text file and not saving the zip archive. This approach works well with 
-SRAdb integration.
+You can directly specify the SRR accessions in the command line, but be sure to type them correctly. In case SRR accessions are not present in the database, there will be a warning message.
 
 ```
-> SRRlist<-read.table("SRRlist.txt")
-> SRRlist
-          V1
-1 SRR3581689
-2 SRR3581692
-3 SRR3581858
-
-> x2<-getDEE2("athaliana",SRRlist$V1)
-trying URL 'http://dee2.io/cgi-bin/request.sh?'
-Content type 'text/html; charset=utf-8' length 488 bytes
+> x<-getDEE2("celegans",c("SRR363798","SRR363799","SRR3581689","SRR3581692"))
+trying URL 'http://dee2.io/metadata/celegans_metadata.tsv.cut'
+Content type 'text/tab-separated-values' length 549206 bytes (536 KB)
 ==================================================
-downloaded 488 bytes
+downloaded 536 KB
 
-trying URL 'http://118.138.240.228/cgi-bin/request.sh?org=athaliana&x=SRR3581689&x=SRR3581692&x=SRR3581658'
-downloaded 593 KB
+trying URL 'http://dee2.io/cgi-bin/request.sh?org=celegans&x=SRR363798&x=SRR363799'
+downloaded 369 KB
 
-> head(x2$GeneCounts)
-          SRR3581689 SRR3581692
-AT1G01010        129         17
-AT1G01020        193        206
-AT1G03987          0          0
-AT1G01030        230        205
-AT1G01040       1239        783
-AT1G03993          0          0
-
-> head(x2$TxCounts)
-            SRR3581689.ke.tsv SRR3581692.ke.tsv
-AT1G19090.1            0.0000             0.000
-AT1G18320.1           14.3433            41.557
-AT5G11100.1           52.0000            37.000
-AT4G35335.1          466.0000           607.000
-AT1G60930.1          173.0000           103.000
-AT1G17000.1            0.0000             0.000
-
-> head(x2$QcMx)
-                           SRR3581689         SRR3581692
-SequenceFormat                     SE                 SE
-QualityEncoding    Sanger/Illumina1.9 Sanger/Illumina1.9
-Read1MinimumLength                 50                 50
-Read1MedianLength                  50                 50
-Read1MaxLength                     50                 50
-Read2MinimumLength                 50                 50
+Warning, datasets not found: 'SRR3581689,SRR3581692'
 ```
 
-For convenience, we provide stand alone functions to load each of the data tables 
-from previously downloaded zip files.
+In this case the accessions SRR3581689 and SRR3581692 are A. thaliana accessions and therefore not present in the C. elegans accession list. The list of absent accessions is provided in case you need these for your records.
+```
+> x$absent
+[1] "SRR3581689" "SRR3581692"
+```
+## Keyword searching metadata
 
+* Use the SRAdb package to make queries of the SRA metadata
+* Intersect SRAdb hits with dee2 accession numbers. 
+
+
+
+
+## Stand-alone functions for downloading and loading dee2 data
+
+In case you want to download the data once, then reuse it many times, using the standalone scripts can be faster. Data is saved in zip format as follows:
+
+```
+x<-getDEE2("celegans",SRRlist,outfile="DEE_count_data.zip")
+```
+
+Loading data from previously downloaded zip files is done as follows
 ```
 > myGeneCounts<-loadGeneCounts("DEE_count_data.zip")
 > myTxCounts<-loadTxCounts("DEE_count_data.zip")
 > myQcMx<-loadQcMx("DEE_count_data.zip")
-> head(mytable3)
-             GeneName    SRR922260    SRR922261
-ECDH10B_0001     thrL          470          452
-ECDH10B_0002     thrA         6046         8138
-ECDH10B_0003     thrB         1758         2918
-ECDH10B_0004     thrC         3082         4188
-ECDH10B_0005     yaaX           95          268
-ECDH10B_0006     yaaA          169          734
+> head(myGeneCounts)
+               SRR363796 SRR363797 SRR363798 SRR363799
+WBGene00197333         0         0         0         0
+WBGene00198386         0         0         0         0
+WBGene00015153         4        16         6         4
+WBGene00002061        44       100       217        77
+WBGene00255704         0         5         1         1
+WBGene00235314         0         0         0         1
 ```
 
-In case you need to aggregate datasets that are technical replicates, read this
+
+
+
+
+## Aggregating runs data
+
+In case you need to aggregate runs that are technical replicates, read this
 thread (http://stackoverflow.com/questions/26046776/sum-two-columns-in-r). Here
 is an example:
 
@@ -223,6 +214,9 @@ ECDH10B_0004        3082        4188                    7270
 ECDH10B_0005          95         268                     363
 ECDH10B_0006         169         734                     903
 ```
+## Running a differential analysis
+* edgeR
+* DESeq
 
 ## Report bugs, issues and suggestions at the github page
 https://github.com/markziemann/dee2
