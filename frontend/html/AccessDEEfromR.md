@@ -1,5 +1,7 @@
 # Incorporating dee2 data into your RNA-seq workflow
 
+Copyright, Mark Ziemann, 2018.
+
 This tutorial provides a walkthrough for how to work with dee2 expression data,
 starting with data searches, obtaining the data from dee2.io and then performing
 a differential analysis with DESeq or edgeR.
