@@ -1,3 +1,27 @@
+getDee2Metadata<-function(species,outfile=NULL){
+  metadataURL=paste("http://dee2.io/metadata/",species,"_metadata.tsv.cut",sep="")
+  if(is.null(outfile)){
+    metadataname=tempfile()
+  } else {
+    metadataname=outfile
+    if(!grepl(".tsv$",metadataname)){metadataname=paste0(metadataname,".tsv")}
+  }
+  download.file(metadataURL, destfile=metadataname)
+  mdat<-read.table(metadataname,header=T)
+
+  if(is.null(outfile)){unlink(metadataname)}
+  return(mdat)
+}
+
+
+queryDee2<-function(species, SRRvec) {
+  present<-SRRvec[which(SRRvec %in% dee2metadata.celegans$SRR_accession)]
+  absent<-SRRvec[-which(SRRvec %in% dee2metadata.celegans$SRR_accession)]
+  dat <- list("present" = present, "absent" = absent)
+  return(dat)
+}
+
+
 loadGeneCounts<-function(zipname){
   CM="GeneCountMatrix.tsv"
   TF=tempfile()
