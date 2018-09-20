@@ -2,6 +2,13 @@
 
 Copyright, Mark Ziemann, 2018.
 
+# Table of Contents
+1. [Getting started](#getting started)
+2. [Searching for datasets of interest starting with accession numbers](#Searching for datasets of interest starting with accession numbers)
+3. [Third Example](#third-example)
+
+## Getting started
+
 This tutorial provides a walkthrough for how to work with dee2 expression data,
 starting with data searches, obtaining the data from dee2.io and then performing
 a differential analysis with DESeq or edgeR.
@@ -75,7 +82,7 @@ Dee2 data is centred around SRA run accessions numbers, these SRR_accessions can
 [1] "SRR363796" "SRR363797" "SRR363798" "SRR363799"
 ```
 
-## Fetching expression data from dee2.io
+## Fetching dee2 data using SRA run accession numbers
 
 The general syntax for obtaining dee2 data is this:
 
@@ -246,7 +253,6 @@ Next, you will want to filter these results for those that have dee2 datasets av
 [4,] "SRR087429"  "TRUE" 
 [5,] "SRR7443620" "TRUE" 
 [6,] "SRR6002322" "FALSE"
-
 ```
 
 You can also see how complete the dee2 coverage is:
@@ -393,10 +399,10 @@ dim(res)
 #   study_identifiers <list>, study_title <chr>, study_type <chr>,
 #   study_xrefs <list>, experiment_library_name <chr>, run_FileSize <int>,
 #   run_attributes <list>, run_file_addons <list>
-
 ```
 
 Lastly, obtain a list of SRR accessions and obtain the dee2 data
+
 ```
 > SRRvec=res2$run_accession
 > x<-getDEE2("celegans",SRRvec)
@@ -407,7 +413,6 @@ downloaded 536 KB
 
 trying URL 'http://dee2.io/cgi-bin/request.sh?org=celegans&x=SRR363980&x=SRR1176664&x=SRR1207392&x=SRR363797&x=SRR363796&x=SRR1207390&x=SRR1207391&x=SRR1207395&x=SRR1176669&x=SRR363981&x=SRR363798&x=SRR1176645&x=SRR1207389&x=SRR1207394&x=SRR1176665&x=SRR1176644&x=SRR1176646&x=SRR1176670&x=SRR1176666&x=SRR363799&x=SRR1207393'
 downloaded 1.7 MB
-
 ```
 
 ## Stand-alone functions for downloading and loading dee2 data
@@ -435,28 +440,31 @@ WBGene00235314         0         0         0         1
 
 ## Aggregating runs data
 
-In case you need to aggregate runs that are technical replicates, read this
-thread (http://stackoverflow.com/questions/26046776/sum-two-columns-in-r). Here
-is an example:
+In case you need to aggregate runs that are technical replicates, these can be aggregated easily in R. [This
+SO thread](http://stackoverflow.com/questions/26046776/sum-two-columns-in-r) provides some examples. Here
+is one way:
 
 ```
-> head(mytable)
-             SRR922260v1 SRR922261v1
-ECDH10B_0001         470         452
-ECDH10B_0002        6046        8138
-ECDH10B_0003        1758        2918
-ECDH10B_0004        3082        4188
-ECDH10B_0005          95         268
-ECDH10B_0006         169         734
-> mytable$SRR922260v1_SRR922261v1<-mytable$SRR922260v1 + mytable$SRR922261v1
-> head(mytable)
-             SRR922260v1 SRR922261v1 SRR922260v1_SRR922261v1
-ECDH10B_0001         470         452                     922
-ECDH10B_0002        6046        8138                   14184
-ECDH10B_0003        1758        2918                    4676
-ECDH10B_0004        3082        4188                    7270
-ECDH10B_0005          95         268                     363
-ECDH10B_0006         169         734                     903
+#Here's a data frame of two datasets
+> head(gcounts)
+               SRR1176644 SRR1176645
+WBGene00197333          0          0
+WBGene00198386          0          0
+WBGene00015153         67         43
+WBGene00002061        131        121
+WBGene00255704         11          4
+WBGene00235314          0         12
+#make a new column sum of the 
+> gcounts$sum<-gcounts$SRR1176644+gcounts$SRR1176645
+> head(gcounts)
+               SRR1176644 SRR1176645 sum
+WBGene00197333          0          0   0
+WBGene00198386          0          0   0
+WBGene00015153         67         43 110
+WBGene00002061        131        121 252
+WBGene00255704         11          4  15
+WBGene00235314          0         12  12
+
 ```
 ## Running a differential analysis
 * edgeR
