@@ -8,7 +8,7 @@ To use search and obtain dee2 data in R, you will need to source the 'getDEE2' s
 
 `> source("https://raw.githubusercontent.com/markziemann/dee2/master/frontend/html/getDEE2.R")`
 
-## Searching for datasets of interest
+## Searching for datasets of interest starting with accession numbers
 
 The first step is to download the list of accession numbers of available datasets with the 'getDee2Metadata' function, specifying a species name. The options for species currently are:
 
@@ -48,31 +48,43 @@ downloaded 536 KB
 6      GSE81522    GSM2155077
 ```
 
+If we have a GEO series accession number in mind already (eg: GSE33569) then we can see if the datasets are present.
 
+```> mdat[which(mdat$GSE_accession %in% "GSE33569"),]
+     SRR_accession QC_summary SRX_accession SRS_accession SRP_accession
+2127     SRR363796       PASS     SRX105188     SRS270025     SRP009256
+4608     SRR363797       PASS     SRX105189     SRS270026     SRP009256
+5976     SRR363798       PASS     SRX105190     SRS270027     SRP009256
+8072     SRR363799       PASS     SRX105191     SRS270028     SRP009256
+     GSE_accession GSM_accession
+2127      GSE33569     GSM829554
+4608      GSE33569     GSM829555
+5976      GSE33569     GSM829556
+8072      GSE33569     GSM829557
+```
 
+Dee2 data is centred around SRA run accessions numbers, these SRR_accessions can be obtained like this:
 
+```
+> mdat1<-mdat[which(mdat$GSE_accession %in% "GSE33569"),]
+> SRRvec<-as.vector(mdat1$SRR_accession)
+> SRRvec
+[1] "SRR363796" "SRR363797" "SRR363798" "SRR363799"
+```
 
-## Accessing Digital Expression Explorer 2 data from R
+## Fetching expression data from dee2.io
 
-To facilitate convenient access to these data from within the R environment, a 
-function called 'getDEE2' has been written that interfaces with the web server 
-and loads the matrix into R. The function can be 'sourced' as follows:
-
-`> source("https://raw.githubusercontent.com/markziemann/dee2/master/frontend/html/getDEE2.R")`
-
-Function syntax is as follows:
+The general syntax for obtaining dee2 data is this:
 
 `> getDEE2(species,SRRlist,outfile="NULL")`
 
-The function will download the data as a zip archive that contains a (1) a gene-wise
-count expression matrix, (2) a transcript-wise count expression matrix, (3) a matrix
-of quality metrics and (4) a folder of run logs detailing the processing of the 
-data including base quality scores, alignment rates, etc. If 'outfile' is 
-defined, then files will be downloaded to the current working directory. If it
-is not defined, then the files are downloaded to the temporary directory of R
-and deleted immediately after use.
+First, the function downloads a copy of the metadata, then runs a query to make sure that the requested datasets are present. It then downloads the requested expression data as a zip archive that contains the following:
+1. a gene-wise count expression matrix, 
+2. a transcript-wise count expression matrix,
+3. a matrix of quality metrics, and
+4. a folder of run logs detailing the processing of the data including base quality scores, alignment rates, etc.
 
-
+If 'outfile' is defined, then files will be downloaded to the current working directory. If it is not defined, then the files are downloaded to the temporary directory of R and deleted immediately after use.
 
 The SRR numbers need to exactly match those in SRA.
 
