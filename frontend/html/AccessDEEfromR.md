@@ -160,8 +160,7 @@ In this case the accessions SRR3581689 and SRR3581692 are A. thaliana accessions
 
 ## Keyword searching metadata
 
-Here I'll demonstrate two ways to query SRAdbv2
-https://seandavi.github.io/SRAdbV2/articles/SRAdbv2.html
+Here I'll demonstrate two ways to query SRAdbv2 ([Docs](https://seandavi.github.io/SRAdbV2/articles/SRAdbv2.html)).
 
 You will need to install, then load the library.
 
@@ -397,7 +396,7 @@ dim(res)
 
 Lastly, obtain a list of SRR accessions and obtain the dee2 data
 ```
-SRRvec=res2$run_accession
+> SRRvec=res2$run_accession
 > x<-getDEE2("celegans",SRRvec)
 trying URL 'http://dee2.io/metadata/celegans_metadata.tsv.cut'
 Content type 'text/tab-separated-values' length 549206 bytes (536 KB)
@@ -414,7 +413,7 @@ downloaded 1.7 MB
 In case you want to download the data once, then reuse it many times, using the standalone scripts can be faster. Data is saved in zip format as follows:
 
 ```
-x<-getDEE2("celegans",SRRlist,outfile="DEE_count_data.zip")
+> x<-getDEE2("celegans",SRRlist,outfile="DEE_count_data.zip")
 ```
 
 Loading data from previously downloaded zip files is done as follows
