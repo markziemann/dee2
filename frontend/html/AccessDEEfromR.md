@@ -50,7 +50,8 @@ downloaded 536 KB
 
 If we have a GEO series accession number in mind already (eg: GSE33569) then we can see if the datasets are present.
 
-```> mdat[which(mdat$GSE_accession %in% "GSE33569"),]
+```
+> mdat[which(mdat$GSE_accession %in% "GSE33569"),]
      SRR_accession QC_summary SRX_accession SRS_accession SRP_accession
 2127     SRR363796       PASS     SRX105188     SRS270025     SRP009256
 4608     SRR363797       PASS     SRX105189     SRS270026     SRP009256
