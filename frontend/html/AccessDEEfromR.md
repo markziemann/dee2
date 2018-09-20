@@ -2,7 +2,7 @@
 
 Copyright, Mark Ziemann, 2018.
 
-# Table of Contents
+## Table of Contents
 1. [Getting started](#getting-started)
 2. [Searching for datasets of interest starting with accession numbers](#searching-for-datasets-of-interest-starting-with-accession-numbers)
 3. [Fetching dee2 data using SRA run accession numbers](#fetching-dee2-data-using-sra-run-accession-numbers)
@@ -580,8 +580,60 @@ ENSG00000237613          0          0          0          0          0
 
 ```
 The next step is to run the differential analysis. First with edgeR.
-* edgeR
-* DESeq
+
+```
+> library("edgeR")
+#filter counts for genes with 10 or more reads per sample 
+> y<-x$GeneCounts
+> y<-y[which(rowSums(y)/ncol(y)>=(10)),]
+#set knockdown as the treatment
+> design<-model.matrix(~sample_sheet$knockdown)
+> rownames(design)<-sample_sheet$run
+> y<-DGEList(counts=y)
+> y<-calcNormFactors(y)
+#design<-design[which(rownames(design) %in% colnames(y$counts)),]
+> y <- estimateDisp(y, design,robust=TRUE)
+> fit <- glmFit(y, design)
+> lrt <- glmLRT(fit)
+> dge<-as.data.frame(topTags(lrt,n=Inf))
+> dge$dispersion<-lrt$dispersion
+> dge<-merge(dge,lrt$fitted.values,by='row.names')
+> rownames(dge)=dge$Row.names
+> dge$Row.names=NULL
+> dge<-merge(dge,y$counts,by='row.names')
+> dge<-dge[order(dge$PValue),]
+> head(dge)
+            Row.names     logFC   logCPM       LR        PValue           FDR
+12389 ENSG00000168542  2.729477 5.693558 760.7346 1.859234e-167 1.083971e-162
+11419 ENSG00000164692  2.259761 8.893806 376.1168  8.717894e-84  2.541353e-79
+13332 ENSG00000172531 -1.713319 6.772587 363.1704  5.744332e-81  1.116354e-76
+12656 ENSG00000169715 -1.478648 5.482148 225.2870  6.356442e-51  9.264832e-47
+3317  ENSG00000106484  1.205877 7.274166 223.5334  1.533471e-50  1.788089e-46
+11902 ENSG00000166595 -1.372937 5.681828 208.4336  3.017219e-47  2.931832e-43
+        dispersion SRR5150592.x SRR5150593.x SRR5150595.x SRR5150596.x
+12389 2.977294e-02    2135.7324    2096.3321     338.4845     331.8332
+11419 9.765625e-05   18301.0957   17963.4752    4017.8772    3938.9253
+13332 2.977294e-02     931.2977     914.1170    3211.2547    3148.1530
+12656 2.977294e-02     434.0033     425.9968    1271.9650    1246.9707
+3317  2.977294e-02    4738.4889    4651.0728    2159.7640    2117.3243
+11902 2.977294e-02     528.8961     519.1390    1440.5010    1412.1949
+      SRR5150597.x SRR5150592.y SRR5150593.y SRR5150595.y SRR5150596.y
+12389     337.7491         2312         1923          337          338
+11419    4009.1481        20781        15529         4131         3834
+13332    3204.2780          902          943         3352         3085
+12656    1269.2016          434          426         1328         1195
+3317     2155.0718         4936         4457         2172         2129
+11902    1437.3714          526          522         1492         1423
+      SRR5150597.y
+12389          333
+11419         4003
+13332         3128
+12656         1266
+3317          2131
+11902         1375
+```
+Next run the DESeq2 analysis 
+
 
 ## Report bugs, issues and suggestions
 Submit at the [github page](https://github.com/markziemann/dee2).
