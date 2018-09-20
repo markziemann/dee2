@@ -173,14 +173,13 @@ The first method is to download all the metadata for a particular species (taxid
 
 ```
 #new query
-oidx = Omicidx$new()
-
-query=paste(
-  paste0('sample_taxon_id:', 6239),
-  'AND experiment_library_source:transcriptomic')
-z = oidx$search(q=query,entity='full',size=100L)
-s = z$scroll()
-res = s$collate(limit = 1000)
+> oidx = Omicidx$new()
+> query=paste(
+>  paste0('sample_taxon_id:', 6239),
+>  'AND experiment_library_source:transcriptomic')
+> z = oidx$search(q=query,entity='full',size=100L)
+> s = z$scroll()
+> res = s$collate(limit = 10000L)
  working: ( - ) [================================================] 100% eta:  0s
 > head(res)
 # A tibble: 6 x 85
@@ -226,9 +225,69 @@ res = s$collate(limit = 1000)
 #   experiment_library_layout_length <dbl>,
 #   experiment_library_layout_sdev <chr>
 ```
-You can then perform a targeted search of this metadata locally. The drawback of this approach is that it could be very slow  for species like human and mouse with over one hundred thousand RNA-seq datasets.
+Next, you will want to filter these results for those that have dee2 datasets available. 
 
-A more targeted search can be performed like this:
+You can then browse and make targeted searches of this metadata locally with grepl. The drawback of this approach is that it could be very slow for species like human and mouse with hundreds of thousands of RNA-seq datasets. 
+
+
+A more targeted search can be performed with a keyword for one of the fields. In this case, we'll search for datasets with the term "PAR-CLIP" in the study abstract. This is definitely a faster approach.
+```
+> oidx = Omicidx$new()
+> query=paste(
++   paste0('sample_taxon_id:', 6239),
++   'AND experiment_library_source:transcriptomic',
++   'AND study_abstract:PAR-CLIP')
+> z = oidx$search(q=query,entity='full',size=100L)
+> 
+> s = z$scroll()
+> 
+> res = s$collate(limit = 10000L)
+dim(res)
+> dim(res)
+[1] 38 75
+> head(res)
+# A tibble: 6 x 75
+  experiment_Insdc experiment_LastMet… experiment_LastUpd… experiment_Publish…
+  <lgl>            <dttm>              <dttm>              <dttm>             
+1 TRUE             2014-02-25 18:47:09 2014-11-28 16:04:13 2014-11-21 21:37:21
+2 TRUE             2014-02-25 18:47:09 2014-11-28 16:04:12 2014-11-21 21:37:21
+3 TRUE             2014-02-25 18:47:09 2014-11-28 16:04:13 2014-11-21 21:37:21
+4 TRUE             2013-09-23 16:45:14 2013-09-23 16:45:14 2011-12-09 15:17:15
+5 TRUE             2013-09-23 16:45:14 2013-09-23 16:45:14 2011-12-09 15:17:15
+6 TRUE             2013-09-23 16:45:14 2013-09-23 16:45:14 2011-12-09 15:17:15
+# ... with 71 more variables: experiment_Received <dttm>,
+#   experiment_Status <chr>, experiment_accession <chr>,
+#   experiment_alias <chr>, experiment_attributes <list>,
+#   experiment_center_name <chr>, experiment_identifiers <list>,
+#   experiment_instrument_model <chr>,
+#   experiment_library_construction_protocol <chr>,
+#   experiment_library_layout <chr>, experiment_library_selection <chr>,
+#   experiment_library_source <chr>, experiment_library_strategy <chr>,
+#   experiment_platform <chr>, experiment_title <chr>, experiment_xrefs <list>,
+#   run_FileDate <dbl>, run_FileMd5 <chr>, run_Insdc <lgl>,
+#   run_LastMetaUpdate <dttm>, run_LastUpdate <dttm>, run_Published <dttm>,
+#   run_Received <dttm>, run_Status <chr>, run_accession <chr>,
+#   run_alias <chr>, run_bases <dbl>, run_center_name <chr>,
+#   run_identifiers <list>, run_nreads <int>, run_reads <list>,
+#   run_spot_length <int>, run_spots <int>, sample_BioSample <chr>,
+#   sample_GEO <chr>, sample_Insdc <lgl>, sample_LastMetaUpdate <dttm>,
+#   sample_LastUpdate <dttm>, sample_Published <dttm>, sample_Received <dttm>,
+#   sample_Status <chr>, sample_accession <chr>, sample_alias <chr>,
+#   sample_attributes <list>, sample_center_name <chr>,
+#   sample_identifiers <list>, sample_organism <chr>, sample_taxon_id <int>,
+#   sample_title <chr>, sample_xrefs <list>, study_BioProject <chr>,
+#   study_GEO <chr>, study_Insdc <lgl>, study_LastMetaUpdate <dttm>,
+#   study_LastUpdate <dttm>, study_Published <dttm>, study_Received <dttm>,
+#   study_Status <chr>, study_abstract <chr>, study_accession <chr>,
+#   study_alias <chr>, study_attributes <list>, study_center_name <chr>,
+#   study_identifiers <list>, study_title <chr>, study_type <chr>,
+#   study_xrefs <list>, experiment_library_name <chr>, run_FileSize <int>,
+#   run_attributes <list>, run_file_addons <list>
+
+```
+
+Lastly, obtain a list of SRR accessions 
+
 
 * Use the SRAdb package to make queries of the SRA metadata
 * Intersect SRAdb hits with dee2 accession numbers. 
