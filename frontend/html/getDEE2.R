@@ -1,26 +1,37 @@
-getDee2Metadata<-function(species,outfile=NULL){
-  metadataURL=paste("http://dee2.io/metadata/",species,"_metadata.tsv.cut",sep="")
-  if(is.null(outfile)){
-    metadataname=tempfile()
-  } else {
-    metadataname=outfile
-    if(!grepl(".tsv$",metadataname)){metadataname=paste0(metadataname,".tsv")}
-  }
-  download.file(metadataURL, destfile=metadataname)
-  mdat<-read.table(metadataname,header=T)
+#R interface to DEE2 data
+#Copyright Mark Ziemann and Antony Kaspi 2016 to 2018 mark.ziemann@gmail.com
 
-  if(is.null(outfile)){unlink(metadataname)}
-  return(mdat)
+getDee2Metadata<-function(species,outfile=NULL){
+  orgs=c("athaliana","celegans","dmelanogaster","drerio","ecoli","hsapiens","mmusculus","rnorvegicus","scerevisiae")
+  if (species %in% orgs == FALSE ) {
+    message(paste("Provided species '",species,"' is not found in the list. Check spelling and try again" ,sep=""))
+    message(paste("Valid choices are '",paste(orgs,collapse = "', '"),"'."))
+  } else {  
+    metadataURL=paste("http://dee2.io/metadata/",species,"_metadata.tsv.cut",sep="")
+    if(is.null(outfile)){
+      metadataname=tempfile()
+    } else {
+      metadataname=outfile
+      if(!grepl(".tsv$",metadataname)){metadataname=paste0(metadataname,".tsv")}
+    }
+    download.file(metadataURL, destfile=metadataname)
+    mdat<-read.table(metadataname,header=T)
+    if(is.null(outfile)){unlink(metadataname)}
+    return(mdat)
+  }
 }
 
-
-queryDee2<-function(species, SRRvec) {
-  present<-SRRvec[which(SRRvec %in% dee2metadata.celegans$SRR_accession)]
-  absent<-SRRvec[-which(SRRvec %in% dee2metadata.celegans$SRR_accession)]
+queryDee2<-function(species, SRRvec,metadata=NULL) {
+  if(is.null(metadata)){
+    mdat<-getDee2Metadata(species)
+  } else {
+    mdat<-metadata
+  }
+  present<-SRRvec[which(SRRvec %in% mdat$SRR_accession)]
+  absent<-SRRvec[-which(SRRvec %in% mdat$SRR_accession)]
   dat <- list("present" = present, "absent" = absent)
   return(dat)
 }
-
 
 loadGeneCounts<-function(zipname){
   CM="GeneCountMatrix.tsv"
@@ -32,7 +43,6 @@ loadGeneCounts<-function(zipname){
   unlink(TF)
   return(dat)
 }
-
 
 loadTxCounts<-function(zipname){
   CM="TxCountMatrix.tsv"
@@ -56,26 +66,39 @@ loadQcMx<-function(zipname){
   return(dat)
 }
 
-getDEE2<-function(species, SRRvec, outfile=NULL ,
+getDEE2<-function(species, SRRvec, outfile=NULL, metadata=NULL,
   baseURL="http://dee2.io/cgi-bin/request.sh?"){
-  SRRvec<-gsub(" ","",SRRvec)
-  llist<-paste0("&x=",paste(SRRvec,collapse = "&x="))
-  murl <- paste0(baseURL,"org=",species, llist)
-  if(is.null(outfile)){
-        zipname=tempfile()
-  } else {
-        zipname=outfile
-        if(!grepl(".zip$",zipname)){zipname=paste0(zipname,".zip")}
+  #dat1<-queryDee2(species, SRRvec)
+  if(is.null(metadata)){
+  dat1<-queryDee2(species, SRRvec)
+    } else {
+  dat1<-queryDee2(species, SRRvec,metadata=metadata)
   }
-  download.file(murl, destfile=zipname)
+  absent<-dat1$absent
+  present<-dat1$present
+  if ( length(present) < 1 ) {
+    message("Error. None of the specified SRR accessions are present.")
+  } else {
+#  message(paste0("Warning, datasets not found: '",paste(absent,collapse=","),"'"))
+    SRRvec<-gsub(" ","",present)
+    llist<-paste0("&x=",paste(SRRvec,collapse = "&x="))
+    murl <- paste0(baseURL,"org=",species, llist)
+    if(is.null(outfile)){
+      zipname=tempfile()
+    } else {
+      zipname=outfile
+      if(!grepl(".zip$",zipname)){zipname=paste0(zipname,".zip")}
+    }
+    download.file(murl, destfile=zipname)
 
-  GeneCounts<-loadGeneCounts(zipname)
-  TxCounts<-loadTxCounts(zipname)
-  QcMx<-loadQcMx(zipname)
-  dat <- list("GeneCounts" = GeneCounts, "TxCounts" = TxCounts, "QcMx" = QcMx)
-
-  if(is.null(outfile)){unlink(zipname)}
-  return(dat)
+    GeneCounts<-loadGeneCounts(zipname)
+    TxCounts<-loadTxCounts(zipname)
+    QcMx<-loadQcMx(zipname)
+    dat <- list("GeneCounts" = GeneCounts, "TxCounts" = TxCounts, "QcMx" = QcMx, "absent" = absent)
+    if(is.null(outfile)){unlink(zipname)}
+    message(paste0("Warning, datasets not found: '",paste(absent,collapse=","),"'"))
+    return(dat)
+  }
 }
 
 #mytable<-getDEE("Ecoli",c("SRR922260","SRR922261"))
