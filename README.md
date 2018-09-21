@@ -9,7 +9,7 @@ DEE2 currently supports analysis of several major species including A. thaliana 
 ## How can I access the processed data?
 The processed data is available at http://dee2.io but keep in mind that processing is not yet complete. 
 
-Dee2 data can be accessed using our specially developed [R interface](../blob/master/AccessDEEfromR.md)
+Dee2 data can be accessed using our specially developed [R interface](../master/AccessDEEfromR.md)
 
 ## Pipeline key features
 Here are some of the key features:
