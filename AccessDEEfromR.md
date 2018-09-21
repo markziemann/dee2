@@ -20,7 +20,7 @@ a differential analysis with DESeq or edgeR.
 
 To use search and obtain dee2 data in R, you will need to source the 'getDEE2' script as follows:
 
-`> source("https://raw.githubusercontent.com/markziemann/dee2/master/frontend/html/getDEE2.R")`
+`> source("https://raw.githubusercontent.com/markziemann/dee2/master/getDEE2.R")`
 
 ## Searching for datasets of interest starting with accession numbers
 
