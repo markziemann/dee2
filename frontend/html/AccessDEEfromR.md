@@ -534,8 +534,8 @@ In this example, I'll demonstrate a complete workflow for a GEO series accession
 5 SRR5150596    NTC_rep2
 6 SRR5150595    NTC_rep1
 #tidy up the table
-> sample_sheet<-sample_sheet[order(sample_sheet$run),]
 > colnames(sample_sheet)=c("run","sample")
+> sample_sheet<-sample_sheet[order(sample_sheet$run),]
 > sample_sheet
          run      sample
 1 SRR5150592 Set7KD_rep1
@@ -633,7 +633,51 @@ The next step is to run the differential analysis. First with edgeR.
 11902         1375
 ```
 Next run the DESeq2 analysis 
+```
+> library("DESeq2")
 
+> sample_sheet$knockdown<-as.factor(as.numeric(grepl("KD",sample_sheet$sample)))
+#> sample_sheet<-sample_sheet[which(sample_sheet$run %in% colnames(x1)),]
+> x1<-x$GeneCounts[which(rowSums(x$GeneCounts)/ncol(x$GeneCounts)>=(10)),]
+> sample_sheet<-sample_sheet[which(sample_sheet$run %in% colnames(x1)),]
+
+> dds <- DESeqDataSetFromMatrix(countData = x1, colData = sample_sheet, design = ~ knockdown)
+> res <- DESeq(dds)
+estimating size factors
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+> z<- results(res)
+> vsd <- vst(dds, blind=FALSE)
+#stick on the normalised expression values to the table
+> zz<-cbind(z,assay(vsd))
+#sort by adjusted p-value
+> zz<-as.data.frame(zz[order(zz$padj),])
+> head(zz)
+                 baseMean log2FoldChange      lfcSE      stat        pvalue
+ENSG00000168542 1065.1201       2.717235 0.10765778  25.23956 1.474689e-140
+ENSG00000164692 9780.1702       2.247032 0.10414641  21.57570 3.038595e-103
+ENSG00000172531 2255.1312      -1.726000 0.08077537 -21.36790 2.657985e-101
+ENSG00000106484 3186.7105       1.193305 0.07224973  16.51640  2.796178e-61
+ENSG00000169715  919.6678      -1.491496 0.09875523 -15.10296  1.548274e-51
+ENSG00000166595 1056.7284      -1.385686 0.09346528 -14.82567  9.997384e-50
+                         padj SRR5150592 SRR5150593 SRR5150595 SRR5150596
+ENSG00000168542 2.173397e-136  11.497073  11.306165   9.641273   9.656953
+ENSG00000164692  2.239141e-99  14.402089  14.023006  12.159873  12.090571
+ENSG00000172531  1.305779e-97  10.482920  10.545884  11.897193  11.819312
+ENSG00000106484  1.030252e-57  12.442404  12.336635  11.375295  11.375280
+ENSG00000169715  4.563692e-48   9.853176   9.854604  10.830405  10.741488
+ENSG00000166595  2.455691e-46  10.004341  10.014810  10.954333  10.924912
+                SRR5150597
+ENSG00000168542   9.636455
+ENSG00000164692  12.126039
+ENSG00000172531  11.817721
+ENSG00000106484  11.358812
+ENSG00000169715  10.785519
+ENSG00000166595  10.872210
+```
 
 ## Report bugs, issues and suggestions
 Submit at the [github page](https://github.com/markziemann/dee2).
