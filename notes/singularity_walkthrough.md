@@ -116,3 +116,5 @@ cd /path/to/working/image/
 >sbatch.log
 nohup bash -c 'while true ; do singularity run -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-18-xxx.img >sbatch.log 2>&1 ; done'
 ```
+## Known bugs
+Occassionally, wget will hang inside a container inexplicably after downloading a file. With some investigation, I found that the file ".wget-hsts" in the home directory can cause this behavior inside singularity containers. Deleting the file will solve the problem.
