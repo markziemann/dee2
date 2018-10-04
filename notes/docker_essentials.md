@@ -39,6 +39,7 @@ docker system prune
 #now shell in and then delete the test_pass file. this will force ssh key update. 
 
 docker run -it --entrypoint /bin/bash mziemann/tallyup_dre
+
 #now get the container name
 
 docker ps -a
