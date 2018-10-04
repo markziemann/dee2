@@ -44,40 +44,6 @@ input[type=checkbox] {
 <body>
 '
 
-
-
-
-#save some awk functions for tabulation
-tbl(){
-awk 'BEGIN { print "<table border="1"><tr><th> <input type=\"checkbox\" name=\"DataSetList\" onClick=\"toggle(this)\" />Select all</th><th> SRA run accession</th><th> QC summary </th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>" }
-	{ print "<tr><td> <input type='checkbox' name='x' value="$1">  </td><td>  <a href=http://www.ncbi.nlm.nih.gov/sra/?term="$1" target=\"_blank\"   >"$1"  </a>  </td><td>  <a href=/qc/"$1".qc > "$2" </a> </td><td>" $3 "</td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td></tr>" }
-     END   { print "</table>" }'
-}
-export -f tbl
-
-tbl1(){
-awk 'BEGIN { print "<table border="1"><tr> <th> SRA run accession </th><th> QC summary </th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>" }
-        { print "<tr><td> <a href=http://www.ncbi.nlm.nih.gov/sra/?term="$1" target=\"_blank\"  >"$1"</a>  </td><td>" $2 "</td><td>" $3 "</td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td></tr>" }
-     END   { print "</table>" }'
-}
-export -f tbl1
-
-tbl2(){
-awk ' {OFS="\t";FS="\t"} BEGIN { print "<table border="1"><tr><th> <input type=\"checkbox\" name=\"DataSetList\" onClick=\"toggle(this)\" />Select all</th><th> SRA run accession </th><th> QC summary </th><th>Keyword context</th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>" }
-        { print "<tr><td> <input type='checkbox' name='x' value="$1">  </td><td>  <a href=http://www.ncbi.nlm.nih.gov/sra/"$1" target=\"_blank\" >"$1"</a> </td><td> <a href=/qc/"$1".qc > "$3" </a> </td><td>..." $2 "...</td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td><td>" $8  "</td></tr>" }
-     END   { print "</table>" }'
-}
-export -f tbl2
-
-tbl3(){
-awk ' {OFS="\t";FS="\t"} BEGIN { print "<table border="1"><tr><th> SRA run accession </th><th> QC summary </th><th>Keyword context</th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>" }
-	{ print "<tr><td>  <a href=http://www.ncbi.nlm.nih.gov/sra/"$1" target=\"_blank\" >"$1"  </a>  </td><td> <a href=/qc/"$1".qc > "$3" </a>  </td><td>..." $2 "...</td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td><td>" $8 "</td></tr>" }
-     END   { print "</table>" }'
-}
-export -f tbl3
-
-
-#DIR=/var/www/metadata
 DIR=/var/www/html/metadata/
 
 #QUERY_STRING="org=ecoli&accessionsearch=&keywordsearch=chaperone"
@@ -94,6 +60,36 @@ KEY=`echo $QUERY_STRING | cut -d '&' -f3 | cut -d '=' -f2`
 
 MD=$DIR/${ORG}_metadata.tsv
 MDCUT=$DIR/${ORG}_metadata.tsv.cut
+
+#save some awk functions for tabulation
+tbl(){
+awk -v o=$ORG 'BEGIN { print "<table border="1"><tr><th> <input type=\"checkbox\" name=\"DataSetList\" onClick=\"toggle(this)\" />Select all</th><th> SRA run accession</th><th> QC summary </th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>" }
+	{ print "<tr><td> <input type='checkbox' name='x' value="$1">  </td><td>  <a href=http://www.ncbi.nlm.nih.gov/sra/?term="$1" target=\"_blank\"   >"$1"  </a>  </td><td>  <a href=/data/"o"/"$1"/"$1".qc > "$2" </a> </td><td>" $3 "</td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td></tr>" }
+     END   { print "</table>" }'
+}
+export -f tbl
+
+tbl1(){
+awk -v o=$ORG 'BEGIN { print "<table border="1"><tr> <th> SRA run accession </th><th> QC summary </th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>" }
+        { print "<tr><td> <a href=http://www.ncbi.nlm.nih.gov/sra/?term="$1" target=\"_blank\"  >"$1"</a>  </td><td>" $2 "</td><td>" $3 "</td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td></tr>" }
+     END   { print "</table>" }'
+}
+export -f tbl1
+
+tbl2(){
+awk -v o=$ORG ' {OFS="\t";FS="\t"} BEGIN { print "<table border="1"><tr><th> <input type=\"checkbox\" name=\"DataSetList\" onClick=\"toggle(this)\" />Select all</th><th> SRA run accession </th><th> QC summary </th><th>Keyword context</th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>" }
+        { print "<tr><td> <input type='checkbox' name='x' value="$1">  </td><td>  <a href=http://www.ncbi.nlm.nih.gov/sra/"$1" target=\"_blank\" >"$1"</a> </td><td> <a href=/data/"o"/"$1"/"$1".qc > "$3" </a> </td><td>..." $2 "...</td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td><td>" $8  "</td></tr>" }
+     END   { print "</table>" }'
+}
+export -f tbl2
+
+tbl3(){
+awk -v o=$ORG ' {OFS="\t";FS="\t"} BEGIN { print "<table border="1"><tr><th> SRA run accession </th><th> QC summary </th><th>Keyword context</th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>" }
+	{ print "<tr><td>  <a href=http://www.ncbi.nlm.nih.gov/sra/"$1" target=\"_blank\" >"$1"  </a>  </td><td> <a href=/data/"o"/"$1"/"$1".qc > "$3" </a>  </td><td>..." $2 "...</td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td><td>" $8 "</td></tr>" }
+     END   { print "</table>" }'
+}
+export -f tbl3
+
 
 if [ -z "$ACC" -a -z "$KEY" ] ; then
   echo 'No search terms provided.'
