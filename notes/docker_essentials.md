@@ -1,6 +1,6 @@
-# essential commands
+# Essential Docker commands
 
-# Build
+## Build
 docker build -t dee2 .
 
 docker run -it -d dee2 bash
@@ -11,7 +11,7 @@ docker commit container_name mziemann/tallyup
 
 docker push mziemann/tallyup
 
-# other useful commands
+## Maintenance
 
 alias docker-purge='docker rm $(docker ps -aq) ; docker rmi $(docker images -aq)'
 
@@ -25,13 +25,13 @@ docker rmi $(docker images -q "dangling=true")
 
 docker system prune
 
-# copy container data to pwd
+## copy container data to pwd
 docker cp $(docker ps -alq):/root/data/ .
 
-# run bash in an entrypoint container 
+## run bash in an entrypoint container 
 docker run -it --entrypoint /bin/bash <image>
 
-# how to update test-pass without remaking the genome indexes
+## how to update test-pass without remaking the genome indexes
 #prune system first
 
 docker system prune
