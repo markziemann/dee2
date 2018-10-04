@@ -1,7 +1,5 @@
 #!/bin/bash
-set -x
-
-#QUERY_STRING='org=ecoli&x=SRR2044879'
+#set -x
 
 CNT=`echo "$QUERY_STRING" | grep -c '&'`
 if [ $CNT -eq "0" ] ; then
@@ -12,13 +10,13 @@ if [ $CNT -eq "0" ] ; then
   exit
 fi
 
-echo "Content-type: text"
+echo "Content-type: text/html"
 echo "Content-Type: application/zip"
 echo "Content-Encoding: zip"
 echo "Content-disposition: attachment; filename=Data.zip"
 echo ""
 
-
+#ID=$(< /dev/urandom tr -dc A-Za-z0-9 | head -c${1:-32};echo;)
 ID=${RANDOM}_${RANDOM}
 USRDIR=/mnt/tmp/$ID/
 mkdir -p $USRDIR
