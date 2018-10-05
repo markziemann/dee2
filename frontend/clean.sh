@@ -56,7 +56,7 @@ if [ ! -r started ] ; then
             mkdir $DATA/$ORG
 #            unzip -o $FILE -d $DATA/$ORG && scp -i ~/.ssh/monash/id_rsa -r -l 8192 $DATA/$ORG/$SRR mziemann@118.138.246.227:/scratch/mziemann/dee2/data/$ORG && sudo rm -rf $DATA/$ORG/$SRR $FILE
             unzip -o $FILE -d $DATA/$ORG && rsync -Pavz -e "ssh -i ~/.ssh/monash/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" $DATA/$ORG/$SRR mziemann@118.138.246.227:/scratch/mziemann/dee2/data/$ORG && sudo rm -rf $DATA/$ORG/$SRR $FILE
-            ssh -i ~/.ssh/monash/id_rsa mziemann@118.138.246.227 "chmod -R +w $DATA/$ORG/$SRR"
+            ssh -i ~/.ssh/monash/id_rsa mziemann@118.138.246.227 "chmod -R +w /scratch/mziemann/dee2/data/$ORG/$SRR"
           else
             sudo rm $FILE
           fi
