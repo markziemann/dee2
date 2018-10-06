@@ -39,6 +39,43 @@ echo '<!DOCTYPE html>
 input[type=checkbox] {
     zoom: 1.5;
 }
+
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    top: -5px;
+    left: 110%;
+}
+
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    margin-top: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent black transparent transparent;
+}
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}
+
+
 </style>
 </head>
 <body>
@@ -63,8 +100,9 @@ MDCUT=$DIR/${ORG}_metadata.tsv.cut
 
 #save some awk functions for tabulation
 tbl(){
+#todo: display QC content on hover with ajax a bit like this <a class="tooltip" onclick="return false;" href="tooltip/src/tooltip-ajax.html" onmouseover="tooltip.ajax(this, 'tooltip/src/tooltip-ajax.html');">Triggered by hijax link</a>
 awk -v o=$ORG 'BEGIN { print "<table border="1"><tr><th> <input type=\"checkbox\" name=\"DataSetList\" onClick=\"toggle(this)\" />Select all</th><th> SRA run accession</th><th> QC summary </th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>" }
-	{ print "<tr><td> <input type='checkbox' name='x' value="$1">  </td><td>  <a href=http://www.ncbi.nlm.nih.gov/sra/?term="$1" target=\"_blank\"   >"$1"  </a>  </td><td>  <a href=/data/"o"/"$1"/"$1".qc > "$2" </a> </td><td>" $3 "</td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td></tr>" }
+	{ print "<tr><td> <input type='checkbox' name='x' value="$1">  </td><td> <a href=http://www.ncbi.nlm.nih.gov/sra/?term="$1" target=\"_blank\" >"$1" </a> </td><td> <a href=/data/"o"/"$1"/"$1".qc target=\"_blank\" > <div class=\"tooltip\">"$2"<span class=\"tooltiptext\"  > abc </span> </div> </a> </td><td>" $3 "</td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td></tr>" }
      END   { print "</table>" }'
 }
 export -f tbl
@@ -78,14 +116,14 @@ export -f tbl1
 
 tbl2(){
 awk -v o=$ORG ' {OFS="\t";FS="\t"} BEGIN { print "<table border="1"><tr><th> <input type=\"checkbox\" name=\"DataSetList\" onClick=\"toggle(this)\" />Select all</th><th> SRA run accession </th><th> QC summary </th><th>Keyword context</th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>" }
-        { print "<tr><td> <input type='checkbox' name='x' value="$1">  </td><td>  <a href=http://www.ncbi.nlm.nih.gov/sra/"$1" target=\"_blank\" >"$1"</a> </td><td> <a href=/data/"o"/"$1"/"$1".qc > "$3" </a> </td><td>..." $2 "...</td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td><td>" $8  "</td></tr>" }
+        { print "<tr><td> <input type='checkbox' name='x' value="$1">  </td><td>  <a href=http://www.ncbi.nlm.nih.gov/sra/"$1" target=\"_blank\" >"$1"</a> </td><td> <a href=/data/"o"/"$1"/"$1".qc  target=\"_blank\" > "$3" </a> </td><td>..." $2 "...</td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td><td>" $8  "</td></tr>" }
      END   { print "</table>" }'
 }
 export -f tbl2
 
 tbl3(){
 awk -v o=$ORG ' {OFS="\t";FS="\t"} BEGIN { print "<table border="1"><tr><th> SRA run accession </th><th> QC summary </th><th>Keyword context</th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>" }
-	{ print "<tr><td>  <a href=http://www.ncbi.nlm.nih.gov/sra/"$1" target=\"_blank\" >"$1"  </a>  </td><td> <a href=/data/"o"/"$1"/"$1".qc > "$3" </a>  </td><td>..." $2 "...</td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td><td>" $8 "</td></tr>" }
+	{ print "<tr><td>  <a href=http://www.ncbi.nlm.nih.gov/sra/"$1" target=\"_blank\" >"$1"  </a>  </td><td> <a href=/data/"o"/"$1"/"$1".qc  target=\"_blank\" > "$3" </a>  </td><td>..." $2 "...</td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td><td>" $8 "</td></tr>" }
      END   { print "</table>" }'
 }
 export -f tbl3
