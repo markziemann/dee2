@@ -35,7 +35,6 @@ echo '<!DOCTYPE html>
    padding: 2px;
   }
 
-
 input[type=checkbox] {
     zoom: 1.5;
 }
@@ -49,7 +48,7 @@ input[type=checkbox] {
 
 .tooltip .tooltiptext {
     visibility: hidden;
-    width: 120px;
+    width: 380px;
     background-color: black;
     color: #fff;
     text-align: center;
@@ -64,7 +63,7 @@ input[type=checkbox] {
 .tooltip .tooltiptext::after {
     content: "";
     position: absolute;
-    top: 50%;
+    top: 2%;
     right: 100%;
     margin-top: -5px;
     border-width: 5px;
@@ -74,7 +73,6 @@ input[type=checkbox] {
 .tooltip:hover .tooltiptext {
     visibility: visible;
 }
-
 
 </style>
 </head>
@@ -99,20 +97,36 @@ MD=$DIR/${ORG}_metadata.tsv
 MDCUT=$DIR/${ORG}_metadata.tsv.cut
 
 #save some awk functions for tabulation
-tbl(){
-#todo: display QC content on hover with ajax a bit like this <a class="tooltip" onclick="return false;" href="tooltip/src/tooltip-ajax.html" onmouseover="tooltip.ajax(this, 'tooltip/src/tooltip-ajax.html');">Triggered by hijax link</a>
-awk -v o=$ORG 'BEGIN { print "<table border="1"><tr><th> <input type=\"checkbox\" name=\"DataSetList\" onClick=\"toggle(this)\" />Select all</th><th> SRA run accession</th><th> QC summary </th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>" }
-	{ print "<tr><td> <input type='checkbox' name='x' value="$1">  </td><td> <a href=http://www.ncbi.nlm.nih.gov/sra/?term="$1" target=\"_blank\" >"$1" </a> </td><td> <a href=/data/"o"/"$1"/"$1".qc target=\"_blank\" > <div class=\"tooltip\">"$2"<span class=\"tooltiptext\"  > abc </span> </div> </a> </td><td>" $3 "</td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td></tr>" }
-     END   { print "</table>" }'
+# note that the shell functions are used when less than 500 results as the tooltip can be used
+tblx(){
+echo "<table border="1"><tr><th> <input type=\"checkbox\" name=\"DataSetList\" onClick=\"toggle(this)\" />Select all</th><th> SRA run accession</th><th> QC summary </th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>"
+while read line ; do
+  C1=$(echo $line | cut -d ' ' -f1)
+  C2=$(echo $line | cut -d ' ' -f2)
+  C3=$(echo $line | cut -d ' ' -f3)
+  C4=$(echo $line | cut -d ' ' -f4)
+  C5=$(echo $line | cut -d ' ' -f5)
+  C6=$(echo $line | cut -d ' ' -f6)
+  C7=$(echo $line | cut -d ' ' -f7)
+  echo "<tr><td> <input type=checkbox name=x value="$C1">  </td><td> <a href=http://www.ncbi.nlm.nih.gov/sra/?term="$C1" target=_blank >"$C1" </a> </td><td> <a href=/data/"$ORG"/"$C1"/"$C1".qc target=_blank > <div class=tooltip>"$C2"<span class=tooltiptext > $(cat /dee2_data/data/"$ORG"/"$C1"/"$C1".qc) </span> </div> </a> </td><td>" $C3 "</td><td>" $C4 "</td><td>" $C5 "</td><td>" $C6 "</td><td>" $C7 "</td></tr>"
+done
 }
-export -f tbl
+export -f tblx
 
-tbl1(){
-awk -v o=$ORG 'BEGIN { print "<table border="1"><tr> <th> SRA run accession </th><th> QC summary </th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>" }
-        { print "<tr><td> <a href=http://www.ncbi.nlm.nih.gov/sra/?term="$1" target=\"_blank\"  >"$1"</a>  </td><td>" $2 "</td><td>" $3 "</td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td></tr>" }
-     END   { print "</table>" }'
+tbl1x(){
+echo "<table border=1><tr> <th> SRA run accession </th><th> QC summary </th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>"
+while read line ; do
+  C1=$(echo $line | cut -d ' ' -f1)
+  C2=$(echo $line | cut -d ' ' -f2)
+  C3=$(echo $line | cut -d ' ' -f3)
+  C4=$(echo $line | cut -d ' ' -f4)
+  C5=$(echo $line | cut -d ' ' -f5)
+  C6=$(echo $line | cut -d ' ' -f6)
+  C7=$(echo $line | cut -d ' ' -f7)
+  echo "<tr><td> <a href=http://www.ncbi.nlm.nih.gov/sra/?term="$C1" target=\"_blank\"  >"$C1"</a>  </td><td> <a href=/data/"$ORG"/"$C1"/"$C1".qc target=_blank > <div class=tooltip>"$C2"<span class=tooltiptext > $(cat /dee2_data/data/"$ORG"/"$C1"/"$C1".qc) </span> </div> </a>  </td><td>" $C3 "</td><td>" $C4 "</td><td>" $C5 "</td><td>" $C6 "</td><td>" $C7 "</td></tr>"
+done
 }
-export -f tbl1
+export -f tblx1
 
 tbl2(){
 awk -v o=$ORG ' {OFS="\t";FS="\t"} BEGIN { print "<table border="1"><tr><th> <input type=\"checkbox\" name=\"DataSetList\" onClick=\"toggle(this)\" />Select all</th><th> SRA run accession </th><th> QC summary </th><th>Keyword context</th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>" }
@@ -121,6 +135,22 @@ awk -v o=$ORG ' {OFS="\t";FS="\t"} BEGIN { print "<table border="1"><tr><th> <in
 }
 export -f tbl2
 
+tbl2x(){
+echo "<table border=1><tr><th> <input type=checkbox name=DataSetList onClick=\"toggle(this)\" />Select all</th><th> SRA run accession </th><th> QC summary </th><th>Keyword context</th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>"
+while read line ; do
+  C1=$(echo $line | cut -d ' ' -f1)
+  C2=$(echo $line | cut -d ' ' -f2)
+  C3=$(echo $line | cut -d ' ' -f3)
+  C4=$(echo $line | cut -d ' ' -f4)
+  C5=$(echo $line | cut -d ' ' -f5)
+  C6=$(echo $line | cut -d ' ' -f6)
+  C7=$(echo $line | cut -d ' ' -f7)
+  C8=$(echo $line | cut -d ' ' -f8)
+  echo "<tr><td> <input type=checkbox name=x value="$C1"> </td><td> <a href=http://www.ncbi.nlm.nih.gov/sra/"$C1" target=_blank >"$C1"</a> </td><td> <a href=/data/"$ORG"/"$C1"/"$C1".qc target=_blank > <div class=tooltip>"$C3"<span class=tooltiptext > $(cat /dee2_data/data/"$ORG"/"$C1"/"$C1".qc) </span> </div> </a> </td><td>..."$C2"...</td><td>"$C4"</td><td>"$C5"</td><td>"$C6"</td><td>"$C7"</td><td>"$C8"</td></tr>"
+done
+}
+export -f tbl2x
+
 tbl3(){
 awk -v o=$ORG ' {OFS="\t";FS="\t"} BEGIN { print "<table border="1"><tr><th> SRA run accession </th><th> QC summary </th><th>Keyword context</th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>" }
 	{ print "<tr><td>  <a href=http://www.ncbi.nlm.nih.gov/sra/"$1" target=\"_blank\" >"$1"  </a>  </td><td> <a href=/data/"o"/"$1"/"$1".qc  target=\"_blank\" > "$3" </a>  </td><td>..." $2 "...</td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td><td>" $8 "</td></tr>" }
@@ -128,7 +158,23 @@ awk -v o=$ORG ' {OFS="\t";FS="\t"} BEGIN { print "<table border="1"><tr><th> SRA
 }
 export -f tbl3
 
+tbl3x(){
+echo "<table border=1><tr><th> SRA run accession </th><th> QC summary </th><th>Keyword context</th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th></tr>"
+while read line ; do
+  C1=$(echo $line | cut -d ' ' -f1)
+  C2=$(echo $line | cut -d ' ' -f2)
+  C3=$(echo $line | cut -d ' ' -f3)
+  C4=$(echo $line | cut -d ' ' -f4)
+  C5=$(echo $line | cut -d ' ' -f5)
+  C6=$(echo $line | cut -d ' ' -f6)
+  C7=$(echo $line | cut -d ' ' -f7)
+  C8=$(echo $line | cut -d ' ' -f8)
+  echo "<tr><td>  <a href=http://www.ncbi.nlm.nih.gov/sra/"$C1" target=_blank >"$C1"</a> </td><td> <a href=/data/"o"/"$C1"/"$C1".qc target=_blank> <div class=tooltip>"$C3"<span class=tooltiptext > $(cat /dee2_data/data/"$ORG"/"$C1"/"$C1".qc) </span> </div> </a> </td><td>..."$C2"...</td><td>"$C4"</td><td>"$C5"</td><td>"$C6"</td><td>"$C7"</td><td>"$C8"</td></tr>"
+done
+}
+export -f tbl3x
 
+#Error handling if no input provided
 if [ -z "$ACC" -a -z "$KEY" ] ; then
   echo 'No search terms provided.'
   echo "<br>"
@@ -136,6 +182,7 @@ if [ -z "$ACC" -a -z "$KEY" ] ; then
   exit
 fi
 
+#Error handling if both keyword and accession provided
 if [ -n "$ACC" -a -n "$KEY" ] ; then
   echo 'Please enter an accession number OR keyword, not both.'
   echo "<br>"
@@ -143,12 +190,14 @@ if [ -n "$ACC" -a -n "$KEY" ] ; then
   exit
 fi
 
+#Accession number workflow
 if [ -n "$ACC" -a -z "$KEY" ] ; then
+  Q=`echo $ACC | sed 's/\%2C/\|/g' | sed 's/^/\(/' | sed 's/$/\)/'`
+  CNT=$(cut -f-8 $MD | egrep -wc "$Q")
+
   echo "<script type=\"text/javascript\"> function toggle(source) { checkboxes = document.getElementsByName('x'); for(var i=0, n=checkboxes.length;i<n;i++) { checkboxes[i].checked = source.checked; } } </script>"
   echo '<form action="request.sh" method="get">'
   echo '<input type="hidden" name="org" value="ORG">' | sed "s/ORG/${ORG}/"
-
-  Q=`echo $ACC | sed 's/\%2C/\|/g' | sed 's/^/\(/' | sed 's/$/\)/'`
 
   if [ $CNT -eq 0 ] ; then
     echo No results found
@@ -172,21 +221,24 @@ if [ -n "$ACC" -a -z "$KEY" ] ; then
     echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
     #display all results
     cut -f-8 $MD | egrep -w "$Q" | sort -k1 | tbl1
+    echo '</table>'
     exit
   fi
 
-  cut -f-8 $MD | egrep -w "$Q" | sort -k1 | tbl
+  echo ${CNT} datasets found. Use the checkboxes to select ones of interest.
+  cut -f-8 $MD | egrep -w "$Q" | sort -k1 | tblx
+  echo '</table>'
   echo '<input type="submit" value="Get Counts" class="tfbutton" style="font-size : 22px;" >'
   echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
   echo Please hit the submit button just once. Retrieval time is about 1 dataset per second.
   exit
 fi
 
+#keyword workflow
 if [ -n "$KEY" -a -z "$ACC" ] ; then
   echo "<script type=\"text/javascript\"> function toggle(source) { checkboxes = document.getElementsByName('x'); for(var i=0, n=checkboxes.length;i<n;i++) { checkboxes[i].checked = source.checked; } } </script>"
   echo '<form action="request.sh" method="get">'
   echo '<input type="hidden" name="org" value="ORG">' | sed "s/ORG/${ORG}/"
-
 
   Q=`echo $KEY | tr '+' ' '`
   #echo $Q
@@ -224,17 +276,20 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
     exit
   fi
 
-  echo Use the checkboxes to select data sets of interest.
+  echo ${CNT} datasets found. Use the checkboxes to select ones of interest.
   sed "s/${Q}/x@x/I" $TMP | egrep -o ".{0,30}x@x.{0,30}" | sed "s/x@x/${Q}/" | tr '\t ' '_' \
   | paste - $TMP | cut -f-9 \
   | tr -d ' ' | awk '{FS="\t";OFS="\t"} {print $2,$1,$3,$4,$5,$6,$7,$8,$9}' \
-  | sort -k1 | tbl2
+  | sort -k1 | tbl2x
+  echo '</table>'
   echo '<input type="submit" value="Get Counts" class="tfbutton" style="font-size:22px;" >'
   echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"  style="font-size : 22px;"  ></FORM>'
   echo Please hit the submit button just once. Retrieval time is about 1 dataset per second.
   rm -f $TMP
+
 fi
 rm -f $TMP
 echo '</body>
 </html>'
+
 
