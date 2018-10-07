@@ -269,7 +269,7 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
     echo "<br>"
     echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"></FORM>'
     #display all results
-    sed "s/${Q}/x@x/I" $TMP | egrep -o ".{0,30}x@x.{0,30}" | sed "s/x@x/${Q}/" | tr '\t ' '_' \
+    sed "s/${Q}/x@x/I" $TMP | egrep -io ".{0,30}x@x.{0,30}" | sed "s/x@x/${Q}/" | tr '\t ' '_' \
     | paste - $TMP | cut -f-9 \
     | tr -d ' ' | awk '{FS="\t";OFS="\t"} {print $2,$1,$3,$4,$5,$6,$7,$8,$9}' \
     | sort -k1 | tbl3
@@ -277,7 +277,7 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
   fi
 
   echo ${CNT} datasets found. Use the checkboxes to select ones of interest.
-  sed "s/${Q}/x@x/I" $TMP | egrep -o ".{0,30}x@x.{0,30}" | sed "s/x@x/${Q}/" | tr '\t ' '_' \
+  sed "s/${Q}/x@x/I" $TMP | egrep -io ".{0,30}x@x.{0,30}" | sed "s/x@x/${Q}/" | tr '\t ' '_' \
   | paste - $TMP | cut -f-9 \
   | tr -d ' ' | awk '{FS="\t";OFS="\t"} {print $2,$1,$3,$4,$5,$6,$7,$8,$9}' \
   | sort -k1 | tbl2x
