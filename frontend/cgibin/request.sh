@@ -52,7 +52,7 @@ paste $ROWNAMES_GENE $GENECOUNTS > $USRDIR/GeneCountMatrix.tsv
 #################################################
 QCS=$(echo $QS2 | tr ' ' '\n' | awk '{print $1"/"$1".qcl"}' | tr '\n' ' ' | sed 's/$/\n/')
 ROWNAMES_QC=rownames_qc.txt
-paste $ROWNAMES_QC $QCS > $USRDIR/QC_Matrix.tsv
+paste $ROWNAMES_QC $QCS | cat <(echo SeqMetric2 $QS2 | tr ' ' '\t') - > $USRDIR/QC_Matrix.tsv
 
 #################################################
 # Kallisto Transcript counts
