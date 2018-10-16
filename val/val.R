@@ -5,7 +5,8 @@ library("locfit")
 library("reshape2")
 library("parallel")
 
-source("https://raw.githubusercontent.com/markziemann/dee2/master/frontend/html/getDEE2.R")
+source("https://raw.githubusercontent.com/markziemann/dee2/master/getDEE2.R")
+
 
 #############
 # A. thaliana GSE53078 ctrl=c(“SRR1044945”,”SRR1044946”), trt=c(“SRR1044947”,”SRR1044948”)
@@ -223,20 +224,26 @@ dee_res<-dge[order(dge$PValue),]
 
 system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1442nnn/GSM1442819/suppl/GSM1442819_1.txt.gz | gunzip | cut -f3- > SRR1523211.tsv")
 SRR1523211<-read.table("SRR1523211.tsv",header=T)
+dre_genes<-SRR1523211[-nrow(SRR1523211),1]
+SRR1523211<-as.numeric(SRR1523211[-nrow(SRR1523211),2])
 system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1442nnn/GSM1442820/suppl/GSM1442820_2.txt.gz | gunzip | cut -f3- > SRR1523212.tsv")
 SRR1523212<-read.table("SRR1523212.tsv",header=T)
+SRR1523212<-as.numeric(SRR1523212[-nrow(SRR1523212),2])
 system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1442nnn/GSM1442821/suppl/GSM1442821_3.txt.gz | gunzip | cut -f3- > SRR1523213.tsv")
 SRR1523213<-read.table("SRR1523213.tsv",header=T)
+SRR1523213<-as.numeric(SRR1523213[-nrow(SRR1523213),2])
 system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1442nnn/GSM1442822/suppl/GSM1442822_4.txt.gz | gunzip | cut -f3- > SRR1523214.tsv")
 SRR1523214<-read.table("SRR1523214.tsv",header=T)
+SRR1523214<-as.numeric(SRR1523214[-nrow(SRR1523214),2])
 system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1442nnn/GSM1442823/suppl/GSM1442823_5.txt.gz | gunzip | cut -f3- > SRR1523215.tsv")
 SRR1523215<-read.table("SRR1523215.tsv",header=T)
+SRR1523215<-as.numeric(SRR1523215[-nrow(SRR1523215),2])
 system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1442nnn/GSM1442824/suppl/GSM1442824_6.txt.gz | gunzip | cut -f3- > SRR1523216.tsv")
 SRR1523216<-read.table("SRR1523216.tsv",header=T)
+SRR1523216<-as.numeric(SRR1523216[-nrow(SRR1523216),2])
 
-b<-cbind(SRR1523211[,2],SRR1523212[,2],SRR1523213[,2],SRR1523214[,2],SRR1523215[,2],SRR1523216[,2])
-rownames(b)=SRR1523211[,1]
-colnames(b)=c("SRR1523211","SRR1523212","SRR1523213","SRR1523214","SRR1523215","SRR1523216")
+b<-cbind(SRR1523211,SRR1523212,SRR1523213,SRR1523214,SRR1523215,SRR1523216)
+rownames(b)=dre_genes
 b<-b[which(rowMeans(b)>10),]
 group<-c(1,1,1,2,2,2)
 y <- DGEList(counts=b, group=group)
