@@ -283,11 +283,11 @@ dre_res=c(dre_cor,SRR1523211,SRR1523212,SRR1523213,SRR1523214,SRR1523215,SRR1523
 # E. coli GSE48829 ctrl=c(“SRR933983”,”SRR933984”,”SRR933985”), trt=c(“SRR933989”,”SRR933990”,”SRR933991”)
 ###########
 # DEE2
-#x<-getDEE2("ecoli",c("SRR3379590","SRR3379591","SRR3379592","SRR3379593","SRR3379594","SRR3379595","SRR3379596","SRR3379597","SRR3379598"))
-x<-getDEE2("ecoli",c("SRR933983","SRR933984","SRR933985","SRR933989","SRR933990","SRR933991"))
+x<-getDEE2("ecoli",c("SRR3379590","SRR3379591","SRR3379592","SRR3379593","SRR3379594","SRR3379595"))
+#x<-getDEE2("ecoli",c("SRR933983","SRR933984","SRR933985","SRR933989","SRR933990","SRR933991"))
 
 x$GeneCounts<-x$GeneCounts[which(rowMeans(x$GeneCounts)>10),]
-group<-c(2,2,2,1,1,1)
+group<-c(1,1,1,2,2,2)
 y <- DGEList(counts=x$GeneCounts, group=group)
 y <- calcNormFactors(y)
 y <- estimateDisp(y,robust=TRUE,prior.df=1)
@@ -302,13 +302,23 @@ dge<-merge(dge,y$counts,by='row.names')
 dee_res<-dge[order(dge$PValue),]
 
 #GEO
-system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE48nnn/GSE48829/suppl/GSE48829_counts.txt.gz | gunzip > GSE48829.tsv")
-GSE48829<-read.table("GSE48829.tsv",header=T)
-colnames(GSE48829)=c("SRR933983","SRR933984","SRR933985","SRR933986","SRR933987","SRR933988","SRR933989","SRR933990","SRR933991")
+#system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE48nnn/GSE48829/suppl/GSE48829_counts.txt.gz | gunzip > GSE48829.tsv")
+#GSE48829<-read.table("GSE48829.tsv",header=T)
+#colnames(GSE48829)=c("SRR933983","SRR933984","SRR933985","SRR933986","SRR933987","SRR933988","SRR933989","SRR933990","SRR933991")
+#b<-GSE48829[,c(1:3,7:9)]
 
-b<-GSE48829[,c(1:3,7:9)]
+#
+system("curl 'https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE80251&format=file&file=GSE80251%5Fprocessed%5FRNA%5Fexpression%5Fmnfyap%2Exlsx' > GSE80251.xlsx ")
+system("ssconvert -S --export-type Gnumeric_stf:stf_assistant -O 'separator=\"''\t''\"' GSE80251.xlsx GSE80251.xlsx.txt")
+GSE48829<-read.table("GSE80251.xlsx.txt.1",header=T,stringsAsFactors = FALSE)
+GSE48829<-GSE48829[,-c(1:3,5)]
+GSE48829<-aggregate(x=GSE48829[,2:ncol(GSE48829)], by = list(unique.values = GSE48829$gene ) , FUN=sum)
+rownames(GSE48829)=GSE48829$unique.values
+GSE48829$unique.values=NULL
+b<-GSE48829[,1:6]
+
 b<-b[which(rowMeans(b)>10),]
-group<-c(2,2,2,1,1,1)
+group<-c(1,1,1,2,2,2)
 y <- DGEList(counts=b, group=group)
 y <- calcNormFactors(y)
 y <- estimateDisp(y,robust=TRUE,prior.df=1)
@@ -322,6 +332,7 @@ dge$Row.names=NULL
 dge<-merge(dge,y$counts,by='row.names')
 geo_res<-dge[order(dge$PValue),]
 
+##HERENOW
 dee_geo_res<-merge(dee_res,geo_res,by="Row.names")
 
 #contrast wise correlation
