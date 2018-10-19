@@ -1,17 +1,19 @@
 #!/usr/bin/env Rscript
 
-setwd("/scratch/mziemann/dee2/code/")
+setwd("/mnt/md0/dee2/code")
 
 #library(SRAdb)
 library(parallel)
 library(data.table)
 library(SRAdbV2)
 
+IPADD="118.138.234.131"
 #simple rowcount function
 rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
 
 CORES=ceiling(detectCores()/2)
 for (org in c("ecoli", "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
+#for (org in c("celegans" ) ) {
 
   #create a list of NCBI taxa full names
   species_list<-c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
@@ -42,7 +44,7 @@ for (org in c("ecoli", "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" ,
   z = oidx$search(q=query,entity='full',size=100L)
   s = z$scroll()
   res = s$collate(limit = Inf)
-
+  save.image(file = paste(org,".RData",sep=""))
   accessions<-as.data.frame(cbind(res$experiment_accession,res$study_accession,res$sample_accession,res$run_accession))
   colnames(accessions)=c("experiment","study","sample","run")
   runs<-accessions$run
@@ -62,14 +64,14 @@ for (org in c("ecoli", "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" ,
    runs_done<-unique( read.table(paste(DATAWD,"/",org,"_val_list.txt",sep=""),stringsAsFactors=F)[,1] )
    } else { runs_done=NULL } 
 
-   print(paste(length(runs_done),"new runs completed"))
+   print(paste(length(runs_done),"runs completed"))
    runs_todo<-base::setdiff(runs, runs_done)
    print(paste(length(runs_todo),"requeued runs"))
 
    #Update queue on webserver
    queue_name=paste(QUEUEWD,"/",org,".queue.txt",sep="")
    write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
-   SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ",queue_name ," ubuntu@118.138.240.228:~/Public")
+   SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key ",queue_name ," ubuntu@118.138.234.131:~/Public")
    system(SCP_COMMAND)
 
    #Update metadata on webserver
@@ -97,7 +99,7 @@ for (org in c("ecoli", "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" ,
 
    #write out the accession number info and upload to webserver
    write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep=""),quote=F,sep="\t",row.names=F)
-   SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ", paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ," ubuntu@118.138.240.228:/mnt/dee2_data/metadata")
+   SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key", paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ," ubuntu@118.138.234.131:/mnt/dee2_data/metadata")
    system(SCP_COMMAND)
 
    save.image(file = paste(org,".RData",sep=""))
@@ -110,25 +112,25 @@ for (org in c("ecoli", "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" ,
    x <- apply(x,2,as.character)
    x<-gsub("\r?\n|\r", " ", x)
    write.table(x,file=paste(SRADBWD,"/",org,"_metadata.tsv",sep=""),quote=F,sep="\t",row.names=F)
-   SCP_COMMAND=paste("scp -i ~/.ssh/cloud/id_rsa ", paste(SRADBWD,"/",org,"_metadata.tsv",sep="") ," ubuntu@118.138.240.228:/mnt/dee2_data/metadata")
+   SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key ", paste(SRADBWD,"/",org,"_metadata.tsv",sep="") ," ubuntu@118.138.234.131:/mnt/dee2_data/metadata")
    system(SCP_COMMAND)
 
    save.image(file = paste(org,".RData",sep=""))
 
   }
 
-  setwd("/scratch/mziemann/dee2/code/")
+  setwd("/mnt/md0/dee2/code")
 
   #rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
 
   png("dee_datasets.png",width=580,height=580)
 
-  FILES1<-list.files(pattern="*queue.txt$",path="/scratch/mziemann/dee2/queue/",full.names=T)
+  FILES1<-list.files(pattern="*queue.txt$",path="/mnt/md0/dee2/queue/",full.names=T)
   x<-as.data.frame(sapply(FILES1,rowcnt2),stringsAsFactors=FALSE)
   rownames(x)=c("A. thaliana","C. elegans","D. melanogaster","D. rerio","E. coli","H. sapiens","M. musculus","R. norvegicus","S. cerevisiae")
   colnames(x)="queued"
 
-  FILES2<-list.files(pattern="*accessions.tsv$",path="/scratch/mziemann/dee2/sradb/",full.names=T)
+  FILES2<-list.files(pattern="*accessions.tsv$",path="/mnt/md0/dee2/sradb/",full.names=T)
   y<-as.data.frame(sapply(FILES2,rowcnt2),stringsAsFactors=FALSE)
   rownames(y)=c("A. thaliana","C. elegans","D. melanogaster","D. rerio","E. coli","H. sapiens","M. musculus","R. norvegicus","S. cerevisiae")
   colnames(y)="completed"
@@ -151,6 +153,6 @@ for (org in c("ecoli", "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" ,
 
   text( cbind(as.numeric(z[,1])+50000 ,as.numeric(z[,2])+50000 )  ,t(bb),labels=c(z[,1],z[,2]) ,cex=1.2)
   dev.off()
-  system("scp -i ~/.ssh/cloud/cloud2.key dee_datasets.png ubuntu@118.138.240.228:/mnt/dee2_data/mx")
+  system("scp -i ~/.ssh/monash/cloud2.key dee_datasets.png ubuntu@118.138.234.131:/mnt/dee2_data/mx")
 
 }
