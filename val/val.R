@@ -57,8 +57,8 @@ geo_res<-dge[order(dge$PValue),]
 dee_geo_res<-merge(dee_res,geo_res,by="Row.names")
 
 #contrast wise correlation
-dee_geo_res$dee_metric=dee_geo_res$logFC.x/-log10(dee_geo_res$PValue.x)
-dee_geo_res$geo_metric=dee_geo_res$logFC.y/-log10(dee_geo_res$PValue.y)
+dee_geo_res$dee_metric=sign(dee_geo_res$logFC.x)/-log10(dee_geo_res$PValue.x)
+dee_geo_res$geo_metric=sign(dee_geo_res$logFC.y)/-log10(dee_geo_res$PValue.y)
 ath_cor=cor(dee_geo_res$dee_metric,dee_geo_res$geo_metric,method="s")
 
 #sample wise correlation
@@ -121,20 +121,20 @@ geo_res<-dge[order(dge$PValue),]
 dee_geo_res<-merge(dee_res,geo_res,by="Row.names")
 
 #contrast wise correlation
-dee_geo_res$dee_metric=dee_geo_res$logFC.x/-log10(dee_geo_res$PValue.x)
-dee_geo_res$geo_metric=dee_geo_res$logFC.y/-log10(dee_geo_res$PValue.y)
+dee_geo_res$dee_metric=sign(dee_geo_res$logFC.x)/-log10(dee_geo_res$PValue.x)
+dee_geo_res$geo_metric=sign(dee_geo_res$logFC.y)/-log10(dee_geo_res$PValue.y)
 cel_cor=cor(dee_geo_res$dee_metric,dee_geo_res$geo_metric,method="s")
 
 #sample wise correlation
 colnames(x$GeneCounts)=gsub("$","_dee",colnames(x$GeneCounts))
 colnames(b)=gsub("$","_geo",colnames(b))
 d<-merge(x$GeneCounts,b,by=0)
-SRR834594=cor(d[,2:13])[1,7]
-SRR834595=cor(d[,2:13])[2,8]
-SRR834596=cor(d[,2:13])[3,9]
-SRR834600=cor(d[,2:13])[4,10]
-SRR834601=cor(d[,2:13])[5,11]
-SRR834602=cor(d[,2:13])[6,12]
+SRR834594=cor(d[,2:13],method="s")[1,7]
+SRR834595=cor(d[,2:13],method="s")[2,8]
+SRR834596=cor(d[,2:13],method="s")[3,9]
+SRR834600=cor(d[,2:13],method="s")[4,10]
+SRR834601=cor(d[,2:13],method="s")[5,11]
+SRR834602=cor(d[,2:13],method="s")[6,12]
 
 cel_res=c(cel_cor,SRR834594,SRR834595,SRR834596,SRR834600,SRR834601,SRR834602)
 
@@ -188,8 +188,8 @@ geo_res<-dge[order(dge$PValue),]
 dee_geo_res<-merge(dee_res,geo_res,by="Row.names")
 
 #contrast wise correlation
-dee_geo_res$dee_metric=dee_geo_res$logFC.x/-log10(dee_geo_res$PValue.x)
-dee_geo_res$geo_metric=dee_geo_res$logFC.y/-log10(dee_geo_res$PValue.y)
+dee_geo_res$dee_metric=sign(dee_geo_res$logFC.x)/-log10(dee_geo_res$PValue.x)
+dee_geo_res$geo_metric=sign(dee_geo_res$logFC.y)/-log10(dee_geo_res$PValue.y)
 dme_cor=cor(dee_geo_res$dee_metric,dee_geo_res$geo_metric,method="s")
 
 #sample wise correlation
@@ -206,6 +206,7 @@ dme_res=c(dme_cor,SRR641382,SRR641383,SRR641384,SRR641385)
 ##########
 # D. rerio GSE59683 ctrl=c(“SRR1523211”,”SRR1523212”,”SRR1523213”), trt=c(“SRR1523214”,”SRR1523215”,”SRR1523216”)
 ##########
+#HERENOW
 x<-getDEE2("drerio",c("SRR1523211","SRR1523212","SRR1523213","SRR1523214","SRR1523215","SRR1523216"))
 x$GeneCounts<-x$GeneCounts[which(rowMeans(x$GeneCounts)>10),]
 group<-c(1,1,1,2,2,2)
@@ -262,33 +263,47 @@ geo_res<-dge[order(dge$PValue),]
 dee_geo_res<-merge(dee_res,geo_res,by="Row.names")
 
 #contrast wise correlation
-dee_geo_res$dee_metric=dee_geo_res$logFC.x/-log10(dee_geo_res$PValue.x)
-dee_geo_res$geo_metric=dee_geo_res$logFC.y/-log10(dee_geo_res$PValue.y)
+dee_geo_res$dee_metric=sign(dee_geo_res$logFC.x)/-log10(dee_geo_res$PValue.x)
+dee_geo_res$geo_metric=sign(dee_geo_res$logFC.y)/-log10(dee_geo_res$PValue.y)
 dre_cor=cor(dee_geo_res$dee_metric,dee_geo_res$geo_metric,method="s")
 
 #sample wise correlation
 colnames(x$GeneCounts)=gsub("$","_dee",colnames(x$GeneCounts))
 colnames(b)=gsub("$","_geo",colnames(b))
 d<-merge(x$GeneCounts,b,by=0)
-SRR1523211=cor(d[,2:13])[1,7]
-SRR1523212=cor(d[,2:13])[2,8]
-SRR1523213=cor(d[,2:13])[3,9]
-SRR1523214=cor(d[,2:13])[4,10]
-SRR1523215=cor(d[,2:13])[5,11]
-SRR1523216=cor(d[,2:13])[6,12]
+SRR1523211=cor(d[,2:13],method="s")[1,7]
+SRR1523212=cor(d[,2:13],method="s")[2,8]
+SRR1523213=cor(d[,2:13],method="s")[3,9]
+SRR1523214=cor(d[,2:13],method="s")[4,10]
+SRR1523215=cor(d[,2:13],method="s")[5,11]
+SRR1523216=cor(d[,2:13],method="s")[6,12]
 
 dre_res=c(dre_cor,SRR1523211,SRR1523212,SRR1523213,SRR1523214,SRR1523215,SRR1523216)
 
 ###########
-# E. coli GSE48829 ctrl=c(“SRR933983”,”SRR933984”,”SRR933985”), trt=c(“SRR933989”,”SRR933990”,”SRR933991”)
+# E. coli GSE80251
 ###########
 # DEE2
 x<-getDEE2("ecoli",c("SRR3379590","SRR3379591","SRR3379592","SRR3379593","SRR3379594","SRR3379595"))
 #x<-getDEE2("ecoli",c("SRR933983","SRR933984","SRR933985","SRR933989","SRR933990","SRR933991"))
 
-x$GeneCounts<-x$GeneCounts[which(rowMeans(x$GeneCounts)>10),]
+#Add gene names
+system("wget -N ftp://ftp.ensemblgenomes.org/pub/release-36/bacteria//gtf/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655/Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.36.gtf.gz  ")
+system("gunzip -f Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.36.gtf.gz  ")
+system("grep -w gene Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.36.gtf | cut -d '\"' -f2,4 | tr '\"' '\t' | sort > ecoli_genes.tsv")
+ecoli_genes<-read.table("ecoli_genes.tsv",row.names=1)
+x$GeneCounts<-merge(ecoli_genes,x$GeneCounts,by=0)
+x$GeneCounts$Row.names=NULL
+
+#Aggregate as there are a few redundant names
+xx<-aggregate(x=x$GeneCounts[,2:ncol(x$GeneCounts)], by = list(unique.values = x$GeneCounts$V2 ) , FUN=sum)
+rownames(xx)=xx$unique.values
+xx$unique.values=NULL
+
+#run edgeR
+xx<-xx[which(rowMeans(xx)>10),]
 group<-c(1,1,1,2,2,2)
-y <- DGEList(counts=x$GeneCounts, group=group)
+y <- DGEList(counts=xx, group=group)
 y <- calcNormFactors(y)
 y <- estimateDisp(y,robust=TRUE,prior.df=1)
 fit <- glmFit(y)
@@ -300,23 +315,20 @@ rownames(dge)=dge$Row.names
 dge$Row.names=NULL
 dge<-merge(dge,y$counts,by='row.names')
 dee_res<-dge[order(dge$PValue),]
+rownames(dee_res)=dee_res$Row.names
+dee_res$Row.names=NULL
 
 #GEO
-#system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE48nnn/GSE48829/suppl/GSE48829_counts.txt.gz | gunzip > GSE48829.tsv")
-#GSE48829<-read.table("GSE48829.tsv",header=T)
-#colnames(GSE48829)=c("SRR933983","SRR933984","SRR933985","SRR933986","SRR933987","SRR933988","SRR933989","SRR933990","SRR933991")
-#b<-GSE48829[,c(1:3,7:9)]
-
-#
 system("curl 'https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE80251&format=file&file=GSE80251%5Fprocessed%5FRNA%5Fexpression%5Fmnfyap%2Exlsx' > GSE80251.xlsx ")
 system("ssconvert -S --export-type Gnumeric_stf:stf_assistant -O 'separator=\"''\t''\"' GSE80251.xlsx GSE80251.xlsx.txt")
-GSE48829<-read.table("GSE80251.xlsx.txt.1",header=T,stringsAsFactors = FALSE)
-GSE48829<-GSE48829[,-c(1:3,5)]
-GSE48829<-aggregate(x=GSE48829[,2:ncol(GSE48829)], by = list(unique.values = GSE48829$gene ) , FUN=sum)
-rownames(GSE48829)=GSE48829$unique.values
-GSE48829$unique.values=NULL
-b<-GSE48829[,1:6]
-
+GSE80251<-read.table("GSE80251.xlsx.txt.1",header=T,stringsAsFactors = FALSE)
+GSE80251<-GSE80251[,-c(1:3,5)]
+GSE80251<-aggregate(x=GSE80251[,2:ncol(GSE80251)], by = list(unique.values = GSE80251$gene ) , FUN=sum)
+rownames(GSE80251)=GSE80251$unique.values
+GSE80251$unique.values=NULL
+b<-GSE80251[,1:6]
+#The authors dof the study report the basepair coverage, not the number of reads. Here I'm scaling the matrix down by the observed median readlength 
+b<-round(b/108)
 b<-b[which(rowMeans(b)>10),]
 group<-c(1,1,1,2,2,2)
 y <- DGEList(counts=b, group=group)
@@ -330,26 +342,29 @@ dge<-merge(dge,lrt$fitted.values,by='row.names')
 rownames(dge)=dge$Row.names
 dge$Row.names=NULL
 dge<-merge(dge,y$counts,by='row.names')
+rownames(dge)=dge$Row.names
+dge$Row.names=NULL
 geo_res<-dge[order(dge$PValue),]
 
-##HERENOW
-dee_geo_res<-merge(dee_res,geo_res,by="Row.names")
+dee_geo_res<-merge(dee_res,geo_res,by=0)
+rownames(dee_geo_res)=dee_geo_res$Row.names
+dee_geo_res$Row.names=NULL
 
 #contrast wise correlation
-dee_geo_res$dee_metric=dee_geo_res$logFC.x/-log10(dee_geo_res$PValue.x)
-dee_geo_res$geo_metric=dee_geo_res$logFC.y/-log10(dee_geo_res$PValue.y)
+dee_geo_res$dee_metric=sign(dee_geo_res$logFC.x)/-log10(dee_geo_res$PValue.x)
+dee_geo_res$geo_metric=sign(dee_geo_res$logFC.y)/-log10(dee_geo_res$PValue.y)
 eco_cor=cor(dee_geo_res$dee_metric,dee_geo_res$geo_metric,method="s")
 
 #sample wise correlation
-colnames(x$GeneCounts)=gsub("$","_dee",colnames(x$GeneCounts))
+colnames(xx)=gsub("$","_dee",colnames(xx))
 colnames(b)=gsub("$","_geo",colnames(b))
-d<-merge(x$GeneCounts,b,by=0)
-SRR933983=cor(d[,2:13])[1,7]
-SRR933984=cor(d[,2:13])[2,8]
-SRR933985=cor(d[,2:13])[3,9]
-SRR933989=cor(d[,2:13])[4,10]
-SRR933990=cor(d[,2:13])[5,11]
-SRR933991=cor(d[,2:13])[6,12]
+d<-merge(xx,b,by=0)
+SRR933983=cor(d[,2:13],method="s")[1,7]
+SRR933984=cor(d[,2:13],method="s")[2,8]
+SRR933985=cor(d[,2:13],method="s")[3,9]
+SRR933989=cor(d[,2:13],method="s")[4,10]
+SRR933990=cor(d[,2:13],method="s")[5,11]
+SRR933991=cor(d[,2:13],method="s")[6,12]
 
 eco_res=c(eco_cor,SRR933983,SRR933984,SRR933985,SRR933989,SRR933990,SRR933991)
 
@@ -404,24 +419,22 @@ geo_res<-dge[order(dge$PValue),]
 dee_geo_res<-merge(dee_res,geo_res,by="Row.names")
 
 #contrast wise correlation
-dee_geo_res$dee_metric=dee_geo_res$logFC.x/-log10(dee_geo_res$PValue.x)
-dee_geo_res$geo_metric=dee_geo_res$logFC.y/-log10(dee_geo_res$PValue.y)
+dee_geo_res$dee_metric=sign(dee_geo_res$logFC.x)/-log10(dee_geo_res$PValue.x)
+dee_geo_res$geo_metric=sign(dee_geo_res$logFC.y)/-log10(dee_geo_res$PValue.y)
 hsa_cor=cor(dee_geo_res$dee_metric,dee_geo_res$geo_metric,method="s")
 
 #sample wise correlation
 colnames(x$GeneCounts)=gsub("$","_dee",colnames(x$GeneCounts))
 colnames(b)=gsub("$","_geo",colnames(b))
 d<-merge(x$GeneCounts,b,by=0)
-SRR1692137=cor(d[,2:13])[1,7]
-SRR1692138=cor(d[,2:13])[2,8]
-SRR1692139=cor(d[,2:13])[3,9]
-SRR1692140=cor(d[,2:13])[4,10]
-SRR1692141=cor(d[,2:13])[5,11]
-SRR1692142=cor(d[,2:13])[6,12]
+SRR1692137=cor(d[,2:13],method="s")[1,7]
+SRR1692138=cor(d[,2:13],method="s")[2,8]
+SRR1692139=cor(d[,2:13],method="s")[3,9]
+SRR1692140=cor(d[,2:13],method="s")[4,10]
+SRR1692141=cor(d[,2:13],method="s")[5,11]
+SRR1692142=cor(d[,2:13],method="s")[6,12]
 
 hsa_res=c(hsa_cor,SRR1692137,SRR1692138,SRR1692139,SRR1692140,SRR1692141,SRR1692142)
-
-
 
 ###########
 # M. musculus
@@ -469,20 +482,20 @@ geo_res<-dge[order(dge$PValue),]
 dee_geo_res<-merge(dee_res,geo_res,by="Row.names")
 
 #contrast wise correlation
-dee_geo_res$dee_metric=dee_geo_res$logFC.x/-log10(dee_geo_res$PValue.x)
-dee_geo_res$geo_metric=dee_geo_res$logFC.y/-log10(dee_geo_res$PValue.y)
+dee_geo_res$dee_metric=sign(dee_geo_res$logFC.x)/-log10(dee_geo_res$PValue.x)
+dee_geo_res$geo_metric=sign(dee_geo_res$logFC.y)/-log10(dee_geo_res$PValue.y)
 mmu_cor=cor(dee_geo_res$dee_metric,dee_geo_res$geo_metric,method="s")
 
 #sample wise correlation
 colnames(x$GeneCounts)=gsub("$","_dee",colnames(x$GeneCounts))
 colnames(b)=gsub("$","_geo",colnames(b))
 d<-merge(x$GeneCounts,b,by=0)
-SRR1533761=cor(d[,2:13])[1,7]
-SRR1533762=cor(d[,2:13])[2,8]
-SRR1533764=cor(d[,2:13])[3,9]
-SRR1533766=cor(d[,2:13])[4,10]
-SRR1533763=cor(d[,2:13])[5,11]
-SRR1533765=cor(d[,2:13])[6,12]
+SRR1533761=cor(d[,2:13],method="s")[1,7]
+SRR1533762=cor(d[,2:13],method="s")[2,9]
+SRR1533764=cor(d[,2:13],method="s")[3,11]
+SRR1533766=cor(d[,2:13],method="s")[4,8]
+SRR1533763=cor(d[,2:13],method="s")[5,10]
+SRR1533765=cor(d[,2:13],method="s")[6,12]
 
 mmu_res=c(mmu_cor,SRR1533761,SRR1533762,SRR1533763,SRR1533764,SRR1533765,SRR1533766)
 
@@ -552,8 +565,8 @@ geo_res<-dge[order(dge$PValue),]
 dee_geo_res<-merge(dee_res,geo_res,by="Row.names")
 
 #contrast wise correlation
-dee_geo_res$dee_metric=dee_geo_res$logFC.x/-log10(dee_geo_res$PValue.x)
-dee_geo_res$geo_metric=dee_geo_res$logFC.y/-log10(dee_geo_res$PValue.y)
+dee_geo_res$dee_metric=sign(dee_geo_res$logFC.x)/-log10(dee_geo_res$PValue.x)
+dee_geo_res$geo_metric=sign(dee_geo_res$logFC.y)/-log10(dee_geo_res$PValue.y)
 sce_cor=cor(dee_geo_res$dee_metric,dee_geo_res$geo_metric,method="s")
 
 #there is something very wrone with the geo entry for SRR039179 and SRR039180 which doesn't match the raw data.
