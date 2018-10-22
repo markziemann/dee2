@@ -81,7 +81,7 @@ Run the pipeline by specifying organism and SRA run accessions
 
 You can also process your own fastq files in the current working directory. Gzip and bzip2 compressed files are OK. Data remain private and are not transmitted.
 
-`docker run -v $(pwd):/mnt mziemann/tallyup hsapiens -f sample1_R1.fq.gz,sample2_R1.fq sample1_R2.fq.gz,sample2_R2.fq`
+`docker run -v $(pwd):/dee2/mnt mziemann/tallyup hsapiens -f sample1_R1.fq.gz,sample2_R1.fq sample1_R2.fq.gz,sample2_R2.fq`
 
 Return the data directory from the container to the host filesystem
 
