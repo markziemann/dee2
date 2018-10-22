@@ -85,7 +85,7 @@ You can also process your own fastq files in the current working directory. Gzip
 
 Return the data directory from the container to the host filesystem
 
-`docker cp $(docker ps -alq):/root/data/ .`
+`docker cp $(docker ps -alq):/dee2/data/ .`
 
 ## Donating compute time
 If you have a species of interest
