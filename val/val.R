@@ -9,7 +9,7 @@ source("https://raw.githubusercontent.com/markziemann/dee2/master/getDEE2.R")
 
 
 #############
-# A. thaliana GSE53078 ctrl=c(“SRR1044945”,”SRR1044946”), trt=c(“SRR1044947”,”SRR1044948”)
+# A. thaliana GSE53078 OK
 #############
 x<-getDEE2("athaliana",c("SRR1044945","SRR1044946","SRR1044947","SRR1044948")) 
 x$GeneCounts<-x$GeneCounts[which(rowMeans(x$GeneCounts)>10),]
@@ -74,7 +74,7 @@ SRR1044948=cor(d[,2:9],method="s")[4,8]
 ath_res=c(ath_cor,SRR1044945,SRR1044946,SRR1044947,SRR1044948)
 
 #########
-#C. elegans GSE46344  ctrl=c(“SRR834594”,”SRR834595”,”SRR834596”), trt=c(“SRR834600”,”SRR834601”,”SRR834602”)
+#C. elegans GSE46344 OK
 #########
 x<-getDEE2("celegans",c("SRR834594","SRR834595","SRR834596","SRR834600","SRR834601","SRR834602"))
 x$GeneCounts<-x$GeneCounts[which(rowMeans(x$GeneCounts)>10),]
@@ -139,7 +139,7 @@ SRR834602=cor(d[,2:13],method="s")[6,12]
 cel_res=c(cel_cor,SRR834594,SRR834595,SRR834596,SRR834600,SRR834601,SRR834602)
 
 ################
-#D. melanogaster GSE43180 ctrl=c(“SRR641382”,”SRR641383”), trt=(“SRR641384”,”SRR641385”)
+#D. melanogaster OK
 ################
 
 x<-getDEE2("dmelanogaster",c("SRR641382","SRR641383","SRR641384","SRR641385"))
@@ -204,12 +204,16 @@ SRR641385=cor(d[,2:9],method="s")[4,8]
 dme_res=c(dme_cor,SRR641382,SRR641383,SRR641384,SRR641385)
 
 ##########
-# D. rerio GSE59683 ctrl=c(“SRR1523211”,”SRR1523212”,”SRR1523213”), trt=c(“SRR1523214”,”SRR1523215”,”SRR1523216”)
+# D. rerio OK
 ##########
-#HERENOW
-x<-getDEE2("drerio",c("SRR1523211","SRR1523212","SRR1523213","SRR1523214","SRR1523215","SRR1523216"))
+#HERENOW looks like SRR3465556 is dropped off the database for some reason will refresh tonight
+x<-getDEE2("drerio",c("SRR3465542","SRR3465543","SRR3465544","SRR3465545",
+"SRR3465546","SRR3465547","SRR3465548","SRR3465549","SRR3465550","SRR3465551",
+"SRR3465552","SRR3465553","SRR3465554","SRR3465555","SRR3465556"))
+
 x$GeneCounts<-x$GeneCounts[which(rowMeans(x$GeneCounts)>10),]
-group<-c(1,1,1,2,2,2)
+group<-c(1,1,1,1,1,1,1,1,2,2,2,2,2,2,2)
+
 y <- DGEList(counts=x$GeneCounts, group=group)
 y <- calcNormFactors(y)
 y <- estimateDisp(y,robust=TRUE,prior.df=1)
@@ -223,30 +227,14 @@ dge$Row.names=NULL
 dge<-merge(dge,y$counts,by='row.names')
 dee_res<-dge[order(dge$PValue),]
 
-system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1442nnn/GSM1442819/suppl/GSM1442819_1.txt.gz | gunzip | cut -f3- > SRR1523211.tsv")
-SRR1523211<-read.table("SRR1523211.tsv",header=T)
-dre_genes<-SRR1523211[-nrow(SRR1523211),1]
-SRR1523211<-as.numeric(SRR1523211[-nrow(SRR1523211),2])
-system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1442nnn/GSM1442820/suppl/GSM1442820_2.txt.gz | gunzip | cut -f3- > SRR1523212.tsv")
-SRR1523212<-read.table("SRR1523212.tsv",header=T)
-SRR1523212<-as.numeric(SRR1523212[-nrow(SRR1523212),2])
-system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1442nnn/GSM1442821/suppl/GSM1442821_3.txt.gz | gunzip | cut -f3- > SRR1523213.tsv")
-SRR1523213<-read.table("SRR1523213.tsv",header=T)
-SRR1523213<-as.numeric(SRR1523213[-nrow(SRR1523213),2])
-system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1442nnn/GSM1442822/suppl/GSM1442822_4.txt.gz | gunzip | cut -f3- > SRR1523214.tsv")
-SRR1523214<-read.table("SRR1523214.tsv",header=T)
-SRR1523214<-as.numeric(SRR1523214[-nrow(SRR1523214),2])
-system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1442nnn/GSM1442823/suppl/GSM1442823_5.txt.gz | gunzip | cut -f3- > SRR1523215.tsv")
-SRR1523215<-read.table("SRR1523215.tsv",header=T)
-SRR1523215<-as.numeric(SRR1523215[-nrow(SRR1523215),2])
-system("curl ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1442nnn/GSM1442824/suppl/GSM1442824_6.txt.gz | gunzip | cut -f3- > SRR1523216.tsv")
-SRR1523216<-read.table("SRR1523216.tsv",header=T)
-SRR1523216<-as.numeric(SRR1523216[-nrow(SRR1523216),2])
+system(" curl \'https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE80768&format=file&file=GSE80768%5F9267R%5FTumor%5Fvs%5FControl%2Etxt%2Egz\' | gunzip > GSE80768.tsv ")
+system( "sed 's@\\r@\\n@g' GSE80768.tsv | sed 's@ counts@@g'| cut -f1,4-18 > GSE80768.tsv.tmp ; mv GSE80768.tsv.tmp GSE80768.tsv ")
+GSE80768<-read.table("GSE80768.tsv",header=T,row.names=1)
+GSE80768<- GSE80768[ , c(8,12,13,14,15,9,10,11,4,5,6,7,1,2,3) ] 
+b<-GSE80768
 
-b<-cbind(SRR1523211,SRR1523212,SRR1523213,SRR1523214,SRR1523215,SRR1523216)
-rownames(b)=dre_genes
 b<-b[which(rowMeans(b)>10),]
-group<-c(1,1,1,2,2,2)
+group<-c(1,1,1,1,1,1,1,1,2,2,2,2,2,2,2)
 y <- DGEList(counts=b, group=group)
 y <- calcNormFactors(y)
 y <- estimateDisp(y,robust=TRUE,prior.df=1)
@@ -271,17 +259,27 @@ dre_cor=cor(dee_geo_res$dee_metric,dee_geo_res$geo_metric,method="s")
 colnames(x$GeneCounts)=gsub("$","_dee",colnames(x$GeneCounts))
 colnames(b)=gsub("$","_geo",colnames(b))
 d<-merge(x$GeneCounts,b,by=0)
-SRR1523211=cor(d[,2:13],method="s")[1,7]
-SRR1523212=cor(d[,2:13],method="s")[2,8]
-SRR1523213=cor(d[,2:13],method="s")[3,9]
-SRR1523214=cor(d[,2:13],method="s")[4,10]
-SRR1523215=cor(d[,2:13],method="s")[5,11]
-SRR1523216=cor(d[,2:13],method="s")[6,12]
+SRR3465542=cor(d[,2:ncol(d)],method="s")[1,16]
+SRR3465543=cor(d[,2:ncol(d)],method="s")[2,17]
+SRR3465544=cor(d[,2:ncol(d)],method="s")[3,18]
+SRR3465545=cor(d[,2:ncol(d)],method="s")[4,19]
+SRR3465546=cor(d[,2:ncol(d)],method="s")[5,20]
+SRR3465547=cor(d[,2:ncol(d)],method="s")[6,21]
+SRR3465548=cor(d[,2:ncol(d)],method="s")[7,22]
+SRR3465549=cor(d[,2:ncol(d)],method="s")[8,23]
+SRR3465550=cor(d[,2:ncol(d)],method="s")[9,24]
+SRR3465551=cor(d[,2:ncol(d)],method="s")[10,25]
+SRR3465552=cor(d[,2:ncol(d)],method="s")[11,26]
+SRR3465553=cor(d[,2:ncol(d)],method="s")[12,27]
+SRR3465554=cor(d[,2:ncol(d)],method="s")[13,28]
+SRR3465555=cor(d[,2:ncol(d)],method="s")[14,29]
+SRR3465556=cor(d[,2:ncol(d)],method="s")[15,30]
 
-dre_res=c(dre_cor,SRR1523211,SRR1523212,SRR1523213,SRR1523214,SRR1523215,SRR1523216)
+dre_res=c(dre_cor, SRR3465542, SRR3465543, SRR3465544, SRR3465545, SRR3465546, SRR3465547, SRR3465548,
+ SRR3465548, SRR3465549, SRR3465550, SRR3465551, SRR3465552, SRR3465553, SRR3465554, SRR3465555, SRR3465556)
 
 ###########
-# E. coli GSE80251
+# E. coli GSE80251 OK
 ###########
 # DEE2
 x<-getDEE2("ecoli",c("SRR3379590","SRR3379591","SRR3379592","SRR3379593","SRR3379594","SRR3379595"))
@@ -327,7 +325,7 @@ GSE80251<-aggregate(x=GSE80251[,2:ncol(GSE80251)], by = list(unique.values = GSE
 rownames(GSE80251)=GSE80251$unique.values
 GSE80251$unique.values=NULL
 b<-GSE80251[,1:6]
-#The authors dof the study report the basepair coverage, not the number of reads. Here I'm scaling the matrix down by the observed median readlength 
+#The authors of the study report the basepair coverage, not the number of reads. Here I'm scaling the matrix down by the observed median readlength 
 b<-round(b/108)
 b<-b[which(rowMeans(b)>10),]
 group<-c(1,1,1,2,2,2)
@@ -369,7 +367,7 @@ SRR933991=cor(d[,2:13],method="s")[6,12]
 eco_res=c(eco_cor,SRR933983,SRR933984,SRR933985,SRR933989,SRR933990,SRR933991)
 
 ###########
-# H. sapiens
+# H. sapiens OK
 ###########
 # DEE2
 x<-getDEE2("hsapiens",c("SRR1692137","SRR1692138","SRR1692139","SRR1692140","SRR1692141","SRR1692142"))
@@ -437,7 +435,7 @@ SRR1692142=cor(d[,2:13],method="s")[6,12]
 hsa_res=c(hsa_cor,SRR1692137,SRR1692138,SRR1692139,SRR1692140,SRR1692141,SRR1692142)
 
 ###########
-# M. musculus
+# M. musculus OK
 ###########
 
 #DEE2
@@ -500,20 +498,13 @@ SRR1533765=cor(d[,2:13],method="s")[6,12]
 mmu_res=c(mmu_cor,SRR1533761,SRR1533762,SRR1533763,SRR1533764,SRR1533765,SRR1533766)
 
 ###########
-# R. norvigicus
+# R. norvigicus OK
 ###########
 #R. norvegicus GSE65715 ctrl=c(“SRR1793792”,”SRR1793793”,”SRR1793794”), trt=c(“SRR1793795”,”SRR1793796”,”SRR1793797”)
-
-###########
-# S. cerevisiae
-###########
-#S. cerevisiae GSE19685 ctrl=c(“SRR039177”,”SRR039178”), trt=c(“SRR039179”,”SRR039179”)
-
-#DEE2
-x<-getDEE2("scerevisiae",c("SRR039177","SRR039178","SRR039179","SRR039180"))
+x<-getDEE2("rnorvegicus",c("SRR1793792","SRR1793793","SRR1793794","SRR1793795","SRR1793796","SRR1793797"))
 
 x$GeneCounts<-x$GeneCounts[which(rowMeans(x$GeneCounts)>10),]
-group<-c(1,2,1,2)
+group<-c(1,1,1,2,2,2)
 y <- DGEList(counts=x$GeneCounts, group=group)
 y <- calcNormFactors(y)
 y <- estimateDisp(y,robust=TRUE,prior.df=1)
@@ -527,28 +518,13 @@ dge$Row.names=NULL
 dge<-merge(dge,y$counts,by='row.names')
 dee_res<-dge[order(dge$PValue),]
 
-#GEO
-system("curl \"https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE19685&format=file\" > GSE19685.tar")
-system("tar xf GSE19685.tar")
-system("gunzip GSM49151[2-5].txt.gz")
-SRR039177<-read.table("GSM491512.txt",header=F,row.names=1)
-SRR039178<-read.table("GSM491513.txt",header=F,row.names=1)
-SRR039179<-read.table("GSM491514.txt",header=F,row.names=1)
-SRR039180<-read.table("GSM491515.txt",header=F,row.names=1)
+system("curl 'https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE65715&format=file&file=GSE65715%5FRaw%5Fcount%5Fdata%2Etxt%2Egz' | gunzip | sed 's@ @_@g' > GSE65715.tsv ")
+GSE65715<-read.table("GSE65715.tsv",header=T,row.names=1)
 
-cbind.fill <- function(...){
-    nm <- list(...) 
-    nm <- lapply(nm, as.matrix)
-    n <- max(sapply(nm, nrow)) 
-    do.call(cbind, lapply(nm, function (x) 
-        rbind(x, matrix(, n-nrow(x), ncol(x))))) 
-}
-GSE19685<-as.data.frame(cbind.fill(SRR039177,SRR039178,SRR039179,SRR039180))
-
-colnames(GSE19685)=c("SRR039177","SRR039178","SRR039179","SRR039180")
-b<-GSE19685
+b<-GSE65715
 b<-b[which(rowMeans(b)>10),]
-group<-c(1,2,1,2)
+group<-c(2,2,2,1,1,1)
+
 y <- DGEList(counts=b, group=group)
 y <- calcNormFactors(y)
 y <- estimateDisp(y,robust=TRUE,prior.df=1)
@@ -567,6 +543,74 @@ dee_geo_res<-merge(dee_res,geo_res,by="Row.names")
 #contrast wise correlation
 dee_geo_res$dee_metric=sign(dee_geo_res$logFC.x)/-log10(dee_geo_res$PValue.x)
 dee_geo_res$geo_metric=sign(dee_geo_res$logFC.y)/-log10(dee_geo_res$PValue.y)
+rno_cor=cor(dee_geo_res$dee_metric,dee_geo_res$geo_metric,method="s")
+
+#sample wise correlation
+colnames(x$GeneCounts)=gsub("$","_dee",colnames(x$GeneCounts))
+colnames(b)=gsub("$","_geo",colnames(b))
+d<-merge(x$GeneCounts,b,by=0)
+SRR1793792=cor(d[,2:13],method="s")[1,10]
+SRR1793793=cor(d[,2:13],method="s")[2,11]
+SRR1793794=cor(d[,2:13],method="s")[3,12]
+SRR1793795=cor(d[,2:13],method="s")[4,7]
+SRR1793796=cor(d[,2:13],method="s")[5,8]
+SRR1793797=cor(d[,2:13],method="s")[6,9]
+
+rno_res=c(rno_cor,SRR1793792, SRR1793793, SRR1793794, SRR1793795, SRR1793796, SRR1793797)
+
+
+###########
+# S. cerevisiae need to fix that some of the validated datasets are absent. SRR6749965 looks like its corrupted
+###########
+#S. cerevisiae GSE19685 ctrl=c(“SRR039177”,”SRR039178”), trt=c(“SRR039179”,”SRR039179”)
+
+x<-getDEE2("scerevisiae",c("SRR6165262","SRR6165263","SRR6165264","SRR6165265","SRR6165266","SRR6165267") )
+
+x$GeneCounts<-x$GeneCounts[which(rowMeans(x$GeneCounts)>10),]
+group<-c(1,1,1,2,2,2)
+y <- DGEList(counts=x$GeneCounts, group=group)
+y <- calcNormFactors(y)
+y <- estimateDisp(y,robust=TRUE,prior.df=1)
+fit <- glmFit(y)
+lrt <- glmLRT(fit)
+dge<-as.data.frame(topTags(lrt,n=1000000))
+dge$dispersion<-lrt$dispersion
+dge<-merge(dge,lrt$fitted.values,by='row.names')
+rownames(dge)=dge$Row.names
+dge$Row.names=NULL
+dge<-merge(dge,y$counts,by='row.names')
+dee_res<-dge[order(dge$PValue),]
+
+
+#herenow
+#GEO
+system("curl 'https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE76444&format=file&file=GSE76444%5FTotalmRNA%5Fcounts%5Fraw%2Etxt%2Egz' > GSE76444.tsv.gz")
+system("gunzip -f GSE76444.tsv.gz")
+GSE76444<-read.table("GSE76444.tsv",row.names=1,header=T)
+GSE76444<-GSE76444[,1:6]
+
+b<-GSE76444
+b<-b[which(rowMeans(b)>10),]
+group<-c(1,1,1,2,2,2)
+y <- DGEList(counts=b, group=group)
+y <- calcNormFactors(y)
+y <- estimateDisp(y,robust=TRUE,prior.df=1)
+fit <- glmFit(y)
+lrt <- glmLRT(fit)
+dge<-as.data.frame(topTags(lrt,n=1000000))
+dge$dispersion<-lrt$dispersion
+dge<-merge(dge,lrt$fitted.values,by='row.names')
+rownames(dge)=dge$Row.names
+dge$Row.names=NULL
+dge<-merge(dge,y$counts,by='row.names')
+geo_res<-dge[order(dge$PValue),]
+
+dee_geo_res<-merge(dee_res,geo_res,by="Row.names")
+
+#contrast wise correlation
+dee_geo_res$dee_metric=sign(dee_geo_res$logFC.x)/-log10(dee_geo_res$PValue.x)
+dee_geo_res$geo_metric=sign(dee_geo_res$logFC.y)/-log10(dee_geo_res$PValue.y)
+dee_geo_res<-dee_geo_res[which(!is.na(dee_geo_res$dee_metric)),]
 sce_cor=cor(dee_geo_res$dee_metric,dee_geo_res$geo_metric,method="s")
 
 #there is something very wrone with the geo entry for SRR039179 and SRR039180 which doesn't match the raw data.
@@ -576,10 +620,33 @@ colnames(x$GeneCounts)=gsub("$","_dee",colnames(x$GeneCounts))
 colnames(b)=gsub("$","_geo",colnames(b))
 d<-merge(x$GeneCounts,b,by=0)
 
-SRR039177=cor(d[,2:9],method="s")[1,5]
-SRR039178=cor(d[,2:9],method="s")[2,6]
-SRR039179=cor(d[,2:9],method="s")[3,7]
-SRR039180=cor(d[,2:9],method="s")[4,8]
+SRR6165262=cor(d[,2:13],method="s")[1,7]
+SRR6165263=cor(d[,2:13],method="s")[2,8]
+SRR6165264=cor(d[,2:13],method="s")[3,9]
+SRR6165265=cor(d[,2:13],method="s")[4,10]
+SRR6165266=cor(d[,2:13],method="s")[5,11]
+SRR6165267=cor(d[,2:13],method="s")[6,12]
+sce_res=c(sce_cor,SRR6165262,SRR6165263,SRR6165264,SRR6165265,SRR6165266,SRR6165267)
 
-sce_res=c(sce_cor,SRR039177,SRR039178,SRR039179,SRR039180)
+###################
+# summary stats
+###################
+
+
+MIN=min(c(ath_res,cel_res,dme_res,dre_res,eco_res,hsa_res,mmu_res,rno_res,sce_res))
+summary2<-function(x){ summary(x[2:length(x)]) }
+z<-lapply(list(ath_res,cel_res,dme_res,dre_res,eco_res,hsa_res,mmu_res,rno_res,sce_res),summary2 )
+names(z)=c("ath","cel","dme","dre","eco","hsa","mmu","rno","sce")
+
+de_cor<-function(x){ x[1] }
+zz<-lapply(list(ath_res,cel_res,dme_res,dre_res,eco_res,hsa_res,mmu_res,rno_res,sce_res), de_cor)
+names(zz)=c("ath","cel","dme","dre","eco","hsa","mmu","rno","sce")
+
+pdf("val.pdf")
+par(mfrow=c(2,1))
+boxplot(z,ylab="Spearman coefficient",main="Sample-wise correlation")
+
+plot(1:length(zz),zz,pch=19,xaxt = "n",xlab="",ylab="Spearman coefficient",main="Differential expression correlation")
+axis(1, at=1:length(zz), labels=c("ath","cel","dme","dre","eco","hsa","mmu","rno","sce") )
+dev.off()
 
