@@ -24,7 +24,6 @@ LOGDIR=$USRDIR/logs
 mkdir -p $LOGDIR
 ORG=`echo $QUERY_STRING | cut -d '&' -f1 | cut -d '=' -f2 | tr 'A-Z' 'a-z'`
 DATA_DIR=/dee2_data/data/${ORG}/
-LIST=$DATA_DIR/${ORG}_val_list.txt
 
 cd $DATA_DIR
 
@@ -33,12 +32,9 @@ QS=`echo $QUERY_STRING | cut -d '&' -f2- | sed 's/DataSetList=on&//' \
 | sed 's/x=/\ /g' | sed 's/ //' | tr -d '&' | sed 's/|//' \
 | sed 's/ /_gene.cnt /g' | sed 's/$/_gene.cnt/'`
 
-#Omit entries with no datasets
-##Check list age
-LIST_TIME=`expr $(date +%s) - $(date +%s -r $LIST)`
-
 ##remove SRRs with files absent
-QS2=`echo $QS | tr ' ' '\n' | cut -d '_' -f1 | sort - $LIST | uniq -d | tr '\n' ' '`
+QS2=`echo $QS | tr ' ' '\n' | cut -d '_' -f1 | tr '\n' ' '`
+
 
 #################################################
 # STAR Gene counts
