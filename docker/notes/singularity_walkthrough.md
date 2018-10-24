@@ -57,9 +57,6 @@ singularity run -w -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-18-xxx.img
 Copy the image and tmp folder to the HPC (without root access) and test it as above.
 
 ## Running DEE2 via singularity
-(Under construction)
-Download the current image from [here](https://vm-118-138-241-34.erc.monash.edu.au/images/current_singularity_img.tar.gz).
-
 unpack the image.
 ```
 tar xf current_singularity_img.tar.gz
