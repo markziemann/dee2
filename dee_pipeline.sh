@@ -2,14 +2,14 @@
 
 CORES=16
 ORG=$1
-DIR=/scratch/mziemann/dee2/data/$ORG
+DIR=/mnt/md0/dee2/data/$ORG
 FINLIST=$DIR/${ORG}_fin_list.txt
 SELIST=$DIR/${ORG}_se_list.txt
 KELIST=$DIR/${ORG}_ke_list.txt
 QCLIST=$DIR/${ORG}_qc_list.txt
 VALLIST=$DIR/${ORG}_val_list.txt
 QUEUELIST=$DIR/${ORG}_queue_list.txt
-MXDIR=/scratch/mziemann/dee2/mx
+MXDIR=/mnt/md0/dee2/mx
 SEMX=$MXDIR/${ORG}_se.tsv
 KEMX=$MXDIR/${ORG}_ke.tsv
 QCMX=$MXDIR/${ORG}_qc.tsv
