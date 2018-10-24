@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x #-v
+#set -x #-v
 #/usr/lib/cgi-bin
 #QUERY_STRING='ORG=athaliana&sub=Submit'
 cleanit(){
