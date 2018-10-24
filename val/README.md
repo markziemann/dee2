@@ -19,3 +19,11 @@ of 1540165885 (https://doi.org/10.1093/bioinformatics/btr708). The correct versi
 runs properly.
 
 ## Comparison study
+
+In the comparison study, I searched for GEO series that had three or more replicates and summarised expression data on Ensembl
+gene names. Data were fetched from DEE2 and GEO and the corresponding datasets underwent Spearman correlation analysis. In 
+addition, contrasts were performed on DEE2 and GEO datasets and the results were merged side-by-side. The spearman correlation
+of differential expression sign(logFC)/log(p-val) was calculated. 
+
+The GEO series used in this study are GSE53078, GSE46344, GSE43180, GSE80768, GSE80251, GSE63776, GSE59970, GSE65715 and 
+GSE76444.
