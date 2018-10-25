@@ -142,6 +142,8 @@ sed 's/:/\t/' $ACC/$ACC.qc | sed "s/^/${ACC}\t/"
 export -f qc_agg
 parallel -j$CORES qc_agg :::: $VALLIST | pbzip2 -c -j$CORES > $QCMX.bz2
 
+scp -i ~/.ssh/monash/cloud2.key $SEMX.bz2 $KEMX.bz2 $QCMX.bz2  ubuntu@118.138.234.131:/dee2_data/mx
+
 fin_agg(){
 DIRPATH=$1
 chmod 0544 $DIRPATH
