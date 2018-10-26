@@ -208,7 +208,7 @@ if [ -n "$ACC" -a -z "$KEY" ] ; then
 
   if [ $CNT -gt 3000 ]; then
     echo Too many results found \(${CNT}\). The webserver is limited to 500 datasets per search. \
-    Try a stricter accession number search, or consider a bulk data download.
+    Try a stricter accession number search, or consider a '<a href="/bulk">bulk data download</a>.'
     echo "<br>"
     echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
     exit
@@ -216,7 +216,7 @@ if [ -n "$ACC" -a -z "$KEY" ] ; then
 
   if [ $CNT -gt 500 ] ; then
     echo Too many results found \(${CNT}\). The webserver is limited to 500 datasets per search. \
-    Try a stricter accession number search, or consider a bulk data download.
+    Try a stricter accession number search, or a '<a href="/bulk">bulk data download</a>.'
     echo "<br>"
     echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
     #display all results
@@ -255,7 +255,7 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
 
   if [ $CNT -gt 3000 ]; then
     echo Too many results found \(${CNT}\). The webserver is limited to 500 datasets per search. \
-    Try a stricter keyword or accession number search, or consider a bulk data download.
+    Try a stricter keyword or accession number search, or a '<a href="/bulk">bulk data download</a>.'
     echo "<br>"
     echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size:22px;" ></FORM>'
     exit
@@ -265,7 +265,7 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
 
   if [ $CNT -gt 500 ]; then
     echo Too many results found \(${CNT}\). The webserver is limited to 500 datasets per search. \
-    Try a stricter keyword or accession number search, or consider a bulk data download.
+    Try a stricter keyword or accession number search, or a '<a href="/bulk">bulk data download</a>.'
     echo "<br>"
     echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"></FORM>'
     #display all results
