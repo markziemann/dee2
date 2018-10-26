@@ -6,13 +6,12 @@ for ORG in athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnor
 
 FULL_METADATA=${ORG}_metadata.tsv.cut
 DEE2_ACCESSIONS=${ORG}_accessions.tsv
-
 DIR=big_proj/${ORG}
 if [ ! -d $DIR ] ; then mkdir -p $DIR ; fi
 
 cut -d ' ' -f2 $DEE2_ACCESSIONS \
 | sed 1d | sort | uniq -c | awk '$1>200' \
-| head -3 | while read line ; do
+| while read line ; do
   SRP=$(echo $line | cut -d ' ' -f2)
   CNT_DEE=$(echo $line | cut -d ' ' -f1)
   CNT_SRA=$(grep -wc $SRP $FULL_METADATA )
@@ -56,8 +55,10 @@ cut -d ' ' -f2 $DEE2_ACCESSIONS \
       cp $SRRLIST $SRP_DIR/logs
 
       #zip up folder
-      zip -r $SRP_DIR.zip $SRP_DIR
-      rm -rf $SRP_DIR
+      cd $DIR
+      zip -r ${SRP}_${GSE}.zip ${SRP}_${GSE}
+      rm -rf ${SRP}_${GSE}
+      cd -
     fi
   fi
 done
