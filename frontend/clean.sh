@@ -7,6 +7,8 @@ set -x #-v
 #put this script in the location "/home/user/clean.sh"
 
 DATA=/home/ubuntu/dee2_data
+SFTP_INCOMING=/sftp/guestuser/incoming
+STASH=/mnt/stash
 #the below needs to be integrated to automate incorporation of volunteer data
 cd $DATA
 AGE=$(date -r started +%s)
@@ -17,7 +19,6 @@ fi
 
 if [ ! -r started ] ; then
   touch started
-  SFTP_INCOMING=/sftp/guestuser/incoming
 
   if [ -d dee2 ] ; then
     cd dee2 ; git pull ; cd ..
@@ -25,11 +26,11 @@ if [ ! -r started ] ; then
     git clone https://github.com/markziemann/dee2.git
   fi
 
-  REFERENCE_PIPELINE_MD5SUM=$(md5sum dee2/volunteer_pipeline.sh | awk '{print $1}')
+  REFERENCE_PIPELINE_MD5SUM=$(md5sum dee2/pipeline/volunteer_pipeline.sh | awk '{print $1}')
 
   if [ "$(ls -A ${SFTP_INCOMING})" ]; then
 
-    for FILE in $(find ${SFTP_INCOMING} ) ; do
+    for FILE in $(find ${SFTP_INCOMING} ${STASH}) ; do
 
       if [ "$(echo $FILE | grep -c .zip$)" -ne "1" ] ; then
         echo "now rm $FILE"
@@ -55,10 +56,17 @@ if [ ! -r started ] ; then
             #sudo mv $FILE $DATA
             mkdir $DATA/$ORG
 #            unzip -o $FILE -d $DATA/$ORG && scp -i ~/.ssh/monash/id_rsa -r -l 8192 $DATA/$ORG/$SRR mziemann@118.138.246.227:/scratch/mziemann/dee2/data/$ORG && sudo rm -rf $DATA/$ORG/$SRR $FILE
-            unzip -o $FILE -d $DATA/$ORG && \
-            rsync -Pavz -e "ssh -i ~/.ssh/monash/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 2211" $DATA/$ORG/$SRR mdz@localhost:/mnt/md0/dee2/data/$ORG  && \
-            sudo rm -rf $DATA/$ORG/$SRR $FILE
-            ssh -i ~/.ssh/monash/id_rsa -p 2211 mdz@localhost "chmod -R +w /mnt/md0/dee2/data/$ORG/$SRR"
+
+            #test the connection
+            ssh -i ~/.ssh/monash/id_rsa -p 2211 mdz@localhost "ls" >/dev/null && CONNECT=1
+            if [ $CONNECT -eq 1 ] ; then
+              unzip -o $FILE -d $DATA/$ORG && \
+              rsync -Pavz -e "ssh -i ~/.ssh/monash/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 2211" $DATA/$ORG/$SRR mdz@localhost:/mnt/md0/dee2/data/$ORG  && \
+              sudo rm -rf $DATA/$ORG/$SRR $FILE
+              ssh -i ~/.ssh/monash/id_rsa -p 2211 mdz@localhost "chmod -R +w /mnt/md0/dee2/data/$ORG/$SRR"
+            else
+              mv $FILE $STASH
+            fi
           else
             sudo rm $FILE
           fi
@@ -74,3 +82,4 @@ fi
 #[[ $(( $(date +'%s') - $(stat --format "%Y" /mnt/dee2_data/mx/*.bz2 | sort | head -1) )) -gt 86400 ]] && \
 # scp -i ~/.ssh/monash/id_rsa mziemann@118.138.246.227:/scratch/mziemann/dee2/mx/*bz2 /mnt/dee2_data/mx || \
 # echo "not time to refresh"
+find /var/log/apache2/  -mtime +2 -exec rm {} \;
