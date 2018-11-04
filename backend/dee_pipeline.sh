@@ -95,9 +95,9 @@ echo "Run aggregation"
 
 cat $SELIST $KELIST $QCLIST | sort | uniq -c | awk '$1==3 {print $2}' > $VALLIST
 
-####
+##################
 echo "validate"
-####
+##################
 fin_agg(){
 DIRPATH=$1
 chmod -R +w $DIRPATH
@@ -107,6 +107,13 @@ export -f fin_agg
 parallel -j$CORES fin_agg :::: $VALLIST
 
 find $DIR | grep validated | rev | cut -d '/' -f1 | rev | cut -d '.' -f1 | sort -u > $VALLIST
+
+##################
+echo "Upload validated files"
+##################
+while read line ; do
+  rsync -avzh -e "ssh -i  ~/.ssh/monash/cloud2.key " $line ubuntu@118.138.234.131:/dee2_data/data/${ORG}/
+done <  $VALLIST
 
 ####
 echo "se agg"
