@@ -12,8 +12,7 @@ IPADD="118.138.234.131"
 rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
 
 CORES=ceiling(detectCores()/2)
-for (org in c("ecoli", "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
-#for (org in c("celegans" ) ) {
+for (org in c("ecoli", "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" , "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
 
   #create a list of NCBI taxa full names
   species_list<-c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
@@ -38,6 +37,9 @@ for (org in c("ecoli", "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" ,
 ########################
 
   setwd(SRADBWD)
+
+  #clear some objects to prevent errors
+  rm(oidx,z,s,res,accessions,runs)
 
   oidx = Omicidx$new()
   query=paste( paste0('sample_taxon_id:', taxa_name), 'AND experiment_library_strategy : "rna-seq"')
