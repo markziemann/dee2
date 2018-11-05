@@ -61,6 +61,7 @@ if [ ! -r started ] ; then
             ssh -i ~/.ssh/monash/id_rsa -p 2211 mdz@localhost "ls" >/dev/null && CONNECT=1 || CONNECT=0
 
             #test disk space on root is more than 3GB
+            DF=$(df / | awk 'NR>1 {print $4}')
             [ $DF -gt 3249932 ] && STORAGE=1 || STORAGE=0
 
             if [ $CONNECT -eq 1 -a $STORAGE -eq 1 ] ; then
