@@ -111,9 +111,18 @@ find $DIR | grep validated | rev | cut -d '/' -f1 | rev | cut -d '.' -f1 | sort 
 ##################
 echo "Upload validated files"
 ##################
-while read line ; do
-  rsync -avzh -e "ssh -i  ~/.ssh/monash/cloud2.key " $line ubuntu@118.138.234.131:/dee2_data/data/${ORG}/
-done <  $VALLIST
+#while read line ; do
+#  rsync -avzh -e "ssh -i  ~/.ssh/monash/cloud2.key " $line ubuntu@118.138.234.131:/dee2_data/data/${ORG}/
+#done <  $VALLIST
+
+
+while mapfile -t -n 1000 ary && ((${#ary[@]})); do
+  rsync -avzh -e "ssh -i  ~/.ssh/monash/cloud2.key " $(printf '%s\n' "${ary[@]}" | paste -s -d ' ') ubuntu@118.138.234.131:/dee2_data/data/${ORG}/
+done < $VALLIST
+
+
+
+
 
 ####
 echo "se agg"
