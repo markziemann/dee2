@@ -58,8 +58,12 @@ if [ ! -r started ] ; then
 #            unzip -o $FILE -d $DATA/$ORG && scp -i ~/.ssh/monash/id_rsa -r -l 8192 $DATA/$ORG/$SRR mziemann@118.138.246.227:/scratch/mziemann/dee2/data/$ORG && sudo rm -rf $DATA/$ORG/$SRR $FILE
 
             #test the connection
-            ssh -i ~/.ssh/monash/id_rsa -p 2211 mdz@localhost "ls" >/dev/null && CONNECT=1
-            if [ $CONNECT -eq 1 ] ; then
+            ssh -i ~/.ssh/monash/id_rsa -p 2211 mdz@localhost "ls" >/dev/null && CONNECT=1 || CONNECT=0
+
+            #test disk space on root is more than 3GB
+            [ $DF -gt 3249932 ] && STORAGE=1 || STORAGE=0
+
+            if [ $CONNECT -eq 1 -a $STORAGE -eq 1 ] ; then
               unzip -o $FILE -d $DATA/$ORG && \
               rsync -Pavz -e "ssh -i ~/.ssh/monash/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 2211" $DATA/$ORG/$SRR mdz@localhost:/mnt/md0/dee2/data/$ORG  && \
               sudo rm -rf $DATA/$ORG/$SRR $FILE
