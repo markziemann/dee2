@@ -100,7 +100,7 @@ echo "validate"
 ##################
 fin_agg(){
 DIRPATH=$1
-chmod -R +w $DIRPATH
+chmod -R 755 $DIRPATH
 rename -f 's/.finished/.validated/' $DIRPATH/*.finished
 }
 export -f fin_agg
@@ -117,7 +117,7 @@ echo "Upload validated files"
 
 
 while mapfile -t -n 1000 ary && ((${#ary[@]})); do
-  rsync -avzh -e "ssh -i  ~/.ssh/monash/cloud2.key " $(printf '%s\n' "${ary[@]}" | paste -s -d ' ') ubuntu@118.138.234.131:/dee2_data/data/${ORG}/
+  rsync -avzh -e "ssh -i  ~/.ssh/monash/cloud2.key " --chmod=755 $(printf '%s\n' "${ary[@]}" | paste -s -d ' ') ubuntu@118.138.234.131:/dee2_data/data/${ORG}/
 done < $VALLIST
 
 
@@ -162,7 +162,7 @@ scp -i ~/.ssh/monash/cloud2.key $SEMX.bz2 $KEMX.bz2 $QCMX.bz2  ubuntu@118.138.23
 
 fin_agg(){
 DIRPATH=$1
-chmod 0544 $DIRPATH
+chmod -R -w $DIRPATH
 }
 export -f fin_agg
 parallel -j$CORES fin_agg :::: $VALLIST
