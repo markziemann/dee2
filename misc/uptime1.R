@@ -19,8 +19,8 @@
 library(RCurl)
 library(sendmailR)
 
-#source("https://raw.githubusercontent.com/markziemann/dee2/master/getDEE2.R")
-source("getDEE2.R")
+source("https://raw.githubusercontent.com/markziemann/dee2/master/getDEE2.R")
+#source("getDEE2.R")
 
 
 #################################################
