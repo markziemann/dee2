@@ -19,6 +19,7 @@
 library(RCurl)
 library(sendmailR)
 library(dplyr)
+source("https://raw.githubusercontent.com/markziemann/dee2/master/getDEE2.R")
 
 #################################################
 # This is an example of try
