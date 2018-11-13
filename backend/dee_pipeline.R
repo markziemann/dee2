@@ -12,7 +12,8 @@ IPADD="118.138.234.131"
 rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
 
 CORES=ceiling(detectCores()/2)
-for (org in c("ecoli", "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" , "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
+for (org in c("ecoli" ) ) {
+#for (org in c("ecoli", "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
 
   #create a list of NCBI taxa full names
   species_list<-c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
@@ -39,13 +40,20 @@ for (org in c("ecoli", "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" ,
   setwd(SRADBWD)
 
   #clear some objects to prevent errors
-  rm(oidx,z,s,res,accessions,runs)
-
+  #rm(oidx,z,s,res,accessions,runs)
+  message("part A")
+  oidx=z=s=res=accessions=runs=NULL
+  message("part B")
   oidx = Omicidx$new()
+  message("part C")
   query=paste( paste0('sample_taxon_id:', taxa_name), 'AND experiment_library_strategy : "rna-seq"')
+  message("part D")
   z = oidx$search(q=query,entity='full',size=100L)
+  message("part E")
   s = z$scroll()
+  message("part F")
   res = s$collate(limit = Inf)
+  message("part G")
   save.image(file = paste(org,".RData",sep=""))
   accessions<-as.data.frame(cbind(res$experiment_accession,res$study_accession,res$sample_accession,res$run_accession))
   colnames(accessions)=c("experiment","study","sample","run")
@@ -100,6 +108,7 @@ for (org in c("ecoli", "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" ,
    "SRP_accession","GSE_accession","GSM_accession")
 
    #write out the accession number info and upload to webserver
+   x2<-x2[which(x2$SRR_accession %in% runs_done),]
    write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep=""),quote=F,sep="\t",row.names=F)
    SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key", paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ," ubuntu@118.138.234.131:/mnt/dee2_data/metadata")
    system(SCP_COMMAND)
