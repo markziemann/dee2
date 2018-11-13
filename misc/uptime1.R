@@ -22,6 +22,7 @@ library(sendmailR)
 ###########################################
 # Part 1 check that URL is up
 ###########################################
+message ("Starting check 1: checking that URL exists")
 ALERTSENT=0
 if ( ! url.exists("dee2.io") ) { 
  message("URL does not exist") 
@@ -33,14 +34,14 @@ if ( ! url.exists("dee2.io") ) {
  sendmail(from=from,to=to,subject=subject,msg=body)
  ALERTSENT=1
 } else {
- message ("URL OK")
+ message ("Check 1 result: URL OK")
 }
 
 ###########################################
 # Part 2 check that the search is working
 # Select a few searches that should give a minimum number of hits for each species
 ###########################################
-
+message ("Starting check 2: checking that search is working properly")
 #athaliana,petiole,21
 CMD="curl \'http://dee2.io/cgi-bin/search.sh?org=athaliana&accessionsearch=&keywordsearch=petiole\' | tee petiole.html | html2text | awk \'NR==2 {print $1}\' "
 CNT_ATH<-system(CMD,intern=TRUE)
@@ -56,11 +57,14 @@ if ( CNT_ATH < 21 ) {
   sendmail(from=from,to=to,subject=subject,msg=body)
   ALERTSENT=1
  }
+} else {
+ message("Check 2 result: Search working OK")
 }
 
 ###########################################
 # Part 3 check that the download is working
 ###########################################
+message ("Starting check 3: checking that download is working properly")
 source("https://raw.githubusercontent.com/markziemann/dee2/master/getDEE2.R")
 SRRvec<-system("html2text petiole.html | cut -d '|' -f3 | grep RR | tr -d ' ' " ,intern=TRUE)
 x<-getDEE2("athaliana",SRRvec)
@@ -76,4 +80,7 @@ if ( CNT_ATH != CNT_ATH_DL ) {
   sendmail(from=from,to=to,subject=subject,msg=body)
   ALERTSENT=1
  }
+} else {
+ message("Check 3 result: Download working OK")
 }
+
