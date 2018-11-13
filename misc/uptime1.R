@@ -18,10 +18,7 @@
 
 library(RCurl)
 library(sendmailR)
-
-source("https://raw.githubusercontent.com/markziemann/dee2/master/getDEE2.R")
-#source("getDEE2.R")
-
+library(dplyr)
 
 #################################################
 # This is an example of try
@@ -75,12 +72,9 @@ for ( i in 1:nrow(QUERIES)) {
  ORG=QUERIES[i,][1]
  KEYWORD=QUERIES[i,][2]
  NUM=QUERIES[i,][3]
-
  CMD=paste("curl \'http://dee2.io/cgi-bin/search.sh?org=",ORG,"&accessionsearch=&keywordsearch=",KEYWORD,"\' | tee search_res.html | html2text | awk \'NR==2 {print $1}\' ",sep="")
  CNT<-system(CMD,intern=TRUE)
-
  CNT>=NUM
- #21 or greater
  if ( NUM > CNT ) {
   message("ERROR too few datasets were identified. there may be something wrong with the webserver")
   DATE=date()
@@ -101,6 +95,7 @@ for ( i in 1:nrow(QUERIES)) {
 ###########################################
  message ("Starting check 3: checking that download is working properly")
  SRRvec<-system("html2text search_res.html | cut -d '|' -f3 | grep RR | tr -d ' ' " ,intern=TRUE)
+ 
  x<-try(getDEE2(ORG,SRRvec,quiet=TRUE))
  if ( length(x)>3 ) {
  
@@ -119,5 +114,53 @@ for ( i in 1:nrow(QUERIES)) {
     ALERTSENT=1
    }
   }
+ }
+
+
+###########################################
+# Part 4 randomly select some datasets to download
+###########################################
+ message ("Starting check 4: checking that download is working properly")
+ mdat<-getDee2Metadata(ORG,quiet=T)
+ mdat2<-mdat %>% sample_frac(.001)
+ SRRvec<-as.vector(mdat2[,1])
+ LIM=100
+ if ( length(SRRvec)<=LIM )  {
+  x<-try(getDEE2(ORG,SRRvec,quiet=T,metadata=mdat))
+
+  if ( length(x)<4 ) {
+   for ( SRR in SRRvec ) {
+    y<-try(getDEE2(ORG,SRR,quiet=T,metadata=mdat))
+    if ( length(y)<4 ) {
+     message(paste(SRR,"is not available"))
+    } else {
+     message("Check 4 result: download working OK")
+    }
+   }
+  } else {
+   message("Check 4 result: download working OK")
+  }
+
+ } else {
+  length(SRRvec)<-prod(dim(matrix(SRRvec,ncol=LIM)))
+  suppressWarnings(y<-matrix(SRRvec, ncol = LIM, byrow = TRUE))
+  ERRORSTATE=0
+
+  for (i in 1:nrow(y) ) {
+   z<-y[i,]
+   z<-z[which(!is.na(z))]
+   x<-try(getDEE2(ORG,z,quiet=T,metadata=mdat))
+
+   if ( length(x)<4 ) {
+    for ( SRR in SRRvec ) {
+     y<-try(getDEE2(ORG,SRR,quiet=T,metadata=mdat))
+     if ( length(y)<4 ) {
+      message(paste(SRR,"is not available"))
+      ERRORSTATE=1
+     }
+    }
+   }
+  }
+  if (ERRORSTATE==0) { message("Check 4 result: download working OK") }  
  }
 }
