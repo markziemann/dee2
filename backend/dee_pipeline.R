@@ -12,8 +12,8 @@ IPADD="118.138.234.131"
 rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
 
 CORES=ceiling(detectCores()/2)
-for (org in c("ecoli" ) ) {
-#for (org in c("ecoli", "scerevisiae" , "celegans", "athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
+#for (org in c("athaliana","celegans" ) ) {
+for (org in c("ecoli", "scerevisiae" , "athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
 
   #create a list of NCBI taxa full names
   species_list<-c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
@@ -34,6 +34,18 @@ for (org in c("ecoli" ) ) {
   QUEUEWD=normalizePath("../queue/")
 
 ########################
+# Get metadata mod date
+########################
+CMD=paste("echo $(($(date +%s) - $(date +%s -r ",org,".RData)))",sep="")
+TIME_SINCE_MOD=as.numeric(system(CMD,intern=T))
+if ( TIME_SINCE_MOD<(60*60*24*7*52) ) { 
+
+  message("using existing metadata")
+  load(paste(org,".RData",sep=""))
+
+} else {
+
+########################
 # Get info from sradb vers 2
 ########################
 
@@ -42,6 +54,7 @@ for (org in c("ecoli" ) ) {
   #clear some objects to prevent errors
   #rm(oidx,z,s,res,accessions,runs)
   message("part A")
+  s$reset()
   oidx=z=s=res=accessions=runs=NULL
   message("part B")
   oidx = Omicidx$new()
@@ -60,6 +73,8 @@ for (org in c("ecoli" ) ) {
   runs<-accessions$run
 
   save.image(file = paste(org,".RData",sep=""))
+}
+
 ########################
 # Now determine which datasets have already been processed and completed
 ########################
@@ -108,6 +123,7 @@ for (org in c("ecoli" ) ) {
    "SRP_accession","GSE_accession","GSM_accession")
 
    #write out the accession number info and upload to webserver
+   write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.complete.tsv.cut",sep=""),quote=F,sep="\t",row.names=F)
    x2<-x2[which(x2$SRR_accession %in% runs_done),]
    write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep=""),quote=F,sep="\t",row.names=F)
    SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key", paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ," ubuntu@118.138.234.131:/mnt/dee2_data/metadata")
@@ -116,8 +132,8 @@ for (org in c("ecoli" ) ) {
    save.image(file = paste(org,".RData",sep=""))
 
    #now attach the additional metadata and upload
-   x<-res[, !(colnames(res) %in% c("run_accession", "QC_summary","experiment_accession","sample_accession","study_accession","submission_accession","GSE_accession","GSM_accession"))]
-   x<-as.data.frame(cbind(x2,x))
+   x<-res[, !(colnames(res) %in% c("QC_summary","experiment_accession","sample_accession","study_accession","submission_accession","GSE_accession","GSM_accession"))]
+   x<-merge(x2,x,by.x="SRR_accession",by.y="run_accession")
  
    x<-x[which(x$SRR_accession %in% runs_done),]
    x <- apply(x,2,as.character)
