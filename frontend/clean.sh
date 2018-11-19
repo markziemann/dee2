@@ -7,6 +7,7 @@ set -x #-v
 #put this script in the location "/home/user/clean.sh"
 
 DATA=/home/ubuntu/dee2_data
+STARTED_FILE=$DATA/started
 SFTP_INCOMING=/sftp/guestuser/incoming
 STASH=/mnt/stash
 #the below needs to be integrated to automate incorporation of volunteer data
@@ -14,11 +15,11 @@ cd $DATA
 AGE=$(date -r started +%s)
 TIME=$(date +%s)
 if [ $((TIME-AGE)) -gt 300 ] ; then
-  rm started
+  rm $STARTED_FILE
 fi
 
 if [ ! -r started ] ; then
-  touch started
+  touch $STARTED_FILE
 
   if [ -d dee2 ] ; then
     cd dee2 ; git pull ; cd ..
@@ -79,7 +80,7 @@ if [ ! -r started ] ; then
       fi
     done
   fi
-  rm started
+  rm $STARTED_FILE
 fi
 
 # refresh matrices
