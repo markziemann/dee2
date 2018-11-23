@@ -16,6 +16,8 @@ QCMX=$MXDIR/${ORG}_qc.tsv
 
 cd $DIR
 
+
+
 ##################
 # Run some checks
 ##################
@@ -33,8 +35,9 @@ find $DIR | grep finished | rev | cut -d '/' -f1 |rev | cut -d '.' -f1 > $FINLIS
 ####
 echo "remove directories that are incomplete and add the accession number to the queue"
 ###
+
+find $DIR -name "*RR*" -type d -print0 | xargs -0 chmod -R +wx
 for SRR in $(cat $FINLIST ) ; do
-  chmod -R +w $DIR/$SRR
   SE_TSV=$DIR/$SRR/$SRR.se.tsv
   KE_TSV=$DIR/$SRR/$SRR.ke.tsv
   QC_TSV=$DIR/$SRR/$SRR.qc

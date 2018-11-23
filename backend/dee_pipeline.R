@@ -12,7 +12,7 @@ IPADD="118.138.234.131"
 rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
 
 CORES=ceiling(detectCores()/2)
-#for (org in c("athaliana","celegans" ) ) {
+#for (org in c("ecoli" ) ) {
 for (org in c("ecoli", "scerevisiae" , "athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
 
   #create a list of NCBI taxa full names
@@ -36,20 +36,18 @@ for (org in c("ecoli", "scerevisiae" , "athaliana",  "rnorvegicus" , "celegans",
 ########################
 # Get metadata mod date
 ########################
-CMD=paste("echo $(($(date +%s) - $(date +%s -r ",org,".RData)))",sep="")
+CMD=paste("echo $(($(date +%s) - $(date +%s -r ",SRADBWD,"/",org,".RData)))",sep="")
 TIME_SINCE_MOD=as.numeric(system(CMD,intern=T))
 if ( TIME_SINCE_MOD<(60*60*24*7*52) ) { 
 
   message("using existing metadata")
-  load(paste(org,".RData",sep=""))
+  load(paste(SRADBWD,"/",org,".RData",sep=""))
 
 } else {
 
 ########################
 # Get info from sradb vers 2
 ########################
-
-  setwd(SRADBWD)
 
   #clear some objects to prevent errors
   #rm(oidx,z,s,res,accessions,runs)
@@ -67,18 +65,15 @@ if ( TIME_SINCE_MOD<(60*60*24*7*52) ) {
   message("part F")
   res = s$collate(limit = Inf)
   message("part G")
-  save.image(file = paste(org,".RData",sep=""))
+  save.image(file = paste(SRADBWD,"/",org,".RData",sep=""))
   accessions<-as.data.frame(cbind(res$experiment_accession,res$study_accession,res$sample_accession,res$run_accession))
   colnames(accessions)=c("experiment","study","sample","run")
   runs<-accessions$run
-
-  save.image(file = paste(org,".RData",sep=""))
 }
 
 ########################
 # Now determine which datasets have already been processed and completed
 ########################
-  setwd(CODEWD)
   finished_files<-list.files(path = DATAWD, pattern = "finished" , full.names = FALSE, recursive = TRUE, no.. = FALSE)
 
   if ( length(finished_files) > 0 ) { 
@@ -146,7 +141,6 @@ if ( TIME_SINCE_MOD<(60*60*24*7*52) ) {
 
   }
 
-  setwd("/mnt/md0/dee2/code")
 
   #rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
 
