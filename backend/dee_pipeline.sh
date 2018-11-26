@@ -13,10 +13,10 @@ MXDIR=/mnt/md0/dee2/mx
 SEMX=$MXDIR/${ORG}_se.tsv
 KEMX=$MXDIR/${ORG}_ke.tsv
 QCMX=$MXDIR/${ORG}_qc.tsv
-
+MDDIR=/mnt/md0/dee2/sradb
+MD=$MDDIR/${ORG}_metadata.tsv.cut
+MDC=$MDDIR/${ORG}_accessions.tsv.bz2
 cd $DIR
-
-
 
 ##################
 # Run some checks
@@ -118,14 +118,9 @@ echo "Upload validated files"
 #  rsync -avzh -e "ssh -i  ~/.ssh/monash/cloud2.key " $line ubuntu@118.138.234.131:/dee2_data/data/${ORG}/
 #done <  $VALLIST
 
-
 while mapfile -t -n 1000 ary && ((${#ary[@]})); do
   rsync -avzh -e "ssh -i  ~/.ssh/monash/cloud2.key " --chmod=755 $(printf '%s\n' "${ary[@]}" | paste -s -d ' ') ubuntu@118.138.234.131:/dee2_data/data/${ORG}/
 done < $VALLIST
-
-
-
-
 
 ####
 echo "se agg"
@@ -160,8 +155,8 @@ sed 's/:/\t/' $ACC/$ACC.qc | sed "s/^/${ACC}\t/"
 }
 export -f qc_agg
 parallel -j$CORES qc_agg :::: $VALLIST | pbzip2 -c -j$CORES > $QCMX.bz2
-
-scp -i ~/.ssh/monash/cloud2.key $SEMX.bz2 $KEMX.bz2 $QCMX.bz2  ubuntu@118.138.234.131:/dee2_data/mx
+pbzip2 -c $MD > $MDC
+scp -i ~/.ssh/monash/cloud2.key $SEMX.bz2 $KEMX.bz2 $QCMX.bz2 $MDC ubuntu@118.138.234.131:/dee2_data/mx
 
 fin_agg(){
 DIRPATH=$1
