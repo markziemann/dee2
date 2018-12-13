@@ -16,11 +16,19 @@ HSA_GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/homo_sapiens/Homo_sapiens.G
 HSA_CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz"
 HSA_GTF="Homo_sapiens.GRCh38.90.gtf"
 HSA_CDNA="Homo_sapiens.GRCh38.cdna.all.fa"
-HSA_GENEINFO=hsa_gene_info.tsv
-HSA_TXINFO=hsa_tx_info.tsv
+HSA_GENEINFO="hsa_gene_info.tsv"
+HSA_TXINFO="hsa_tx_info.tsv"
+
 
 MMU_GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/mus_musculus/Mus_musculus.GRCm38.90.gtf.gz"
 MMU_CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/mus_musculus/cdna/Mus_musculus.GRCm38.cdna.all.fa.gz"
+MMU_GTF="Mus_musculus.GRCm38.90.gtf"
+MMU_CDNA="Mus_musculus.GRCm38.cdna.all.fa"
+MMU_GENEINFO="mmu_gene_info.tsv"
+MMU_TXINFO="mmu_tx_info.tsv"
+
+
+
 RNO_GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/rattus_norvegicus/Rattus_norvegicus.Rnor_6.0.90.gtf.gz"
 RNO_CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/rattus_norvegicus/cdna/Rattus_norvegicus.Rnor_6.0.cdna.all.fa.gz"
 SCE_GTFURL="ftp://ftp.ensemblgenomes.org/pub/release-36/fungi/gtf/saccharomyces_cerevisiae/Saccharomyces_cerevisiae.R64-1-1.36.gtf.gz"
@@ -28,31 +36,84 @@ SCE_CDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-36/fungi/fasta/saccharomyc
 
 
 
-# HSA Gene length
+
+
+
+# MMU
+wget -N $MMU_GTFURL && gunzip -kf $MMU_GTF.gz
+wget -N $MMU_CDNAURL && gunzip -kf $MMU_CDNA.gz
+
+# prep the cDNA lengths
+echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $MMU_TXINFO
+awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $MMU_CDNA \
+| sed 1d | paste - - -d '!' | tr -d '>' \
+| sed 's/ gene:/\n/' | sed 's/ gene_symbol:/\n/' | sed 's/!/\n/' \
+| cut -d ' ' -f1  | paste - - - - \
+| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $MMU_TXINFO
+
+# prep the gene lengths
+grep '#' $MMU_GTF > $MMU_GTF.tmp
+grep -v '#' $MMU_GTF | awk '{OFS="\t"} $1=1' >> $MMU_GTF.tmp
+gtftools.py  -l $MMU_GTF.genelength  $MMU_GTF.tmp
+rm $MMU_GTF.tmp
+
+# prep gene names
+grep -w gene $MMU_GTF | cut -d '"' -f2,6 | tr '"' '\t' > $MMU_GTF.genenames
+
+# merge gene names
+echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $MMU_GENEINFO
+awk '{print $0,NR}' $MMU_GTF.genenames | sort -k 1b,1 \
+| join -1 1 -2 1 - <(sort -k 1b,1 $MMU_GTF.genelength) \
+| sort -k3g | tr ' '  '\t' | cut -f-2,4- >> $MMU_GENEINFO
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# HSA
 wget -N $HSA_GTFURL && gunzip -kf $HSA_GTF.gz
 wget -N $HSA_CDNAURL && gunzip -kf $HSA_CDNA.gz
 
-grep -w gene $HSA_GTF | cut -d '"' -f2,6 | tr '"' '\t' > $HSA_GENEINFO
-
-echo "GeneID GeneSymbol GeneLength" > $HSA_GENEINFO.tmp
-
-length(){
- ACCESSION=$1
- GENESYMBOL=$2
- HSA_GTF=$3
- GENE_LENGTH=$(grep -w $ACCESSION  $HSA_GTF | cut -f1,4,5 | bedtools sort | bedtools merge | awk '{print sqrt( ($3-$2)^2) }')
- echo $ACCESSION $GENESYMBOL $GENE_LENGTH | tr ' ' '\t'
-}
-export -f length
-cat $HSA_GENEINFO | parallel --colsep '\t' length {1} {2} $HSA_GTF >> $HSA_GENEINFO.tmp && mv $HSA_GENEINFO.tmp $HSA_GENEINFO
-
+# prep the cDNA lengths
 echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $HSA_TXINFO
 awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $HSA_CDNA \
-| sed 1d | paste - - -d '@'  | while read line ; do
-  TX_ACCESSION=$(echo $line | cut -d ' ' -f1 | tr -d '>' )
-  GENE_ACCESSION=$(echo $line | tr ' ' '\n' | grep gene: | cut -d ':' -f2 | cut -d '.' -f1)
-  GENE_SYMBOL=$(echo $line | tr ' ' '\n' | grep gene_symbol: | cut -d ':' -f2 )
-  LENGTH=$(echo $line  | rev | cut -d '@' -f1 | awk '{print length($1)}')
-  echo $TX_ACCESSION $GENE_ACCESSION $GENE_SYMBOL $LENGTH
-done | tr ' ' '\t' >> $HSA_TXINFO
+| sed 1d | paste - - -d '!' | tr -d '>' \
+| sed 's/ gene:/\n/' | sed 's/ gene_symbol:/\n/' | sed 's/!/\n/' \
+| cut -d ' ' -f1  | paste - - - - \
+| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $HSA_TXINFO
+
+# prep the gene lengths
+grep '#' $HSA_GTF > $HSA_GTF.tmp
+grep -v '#' $HSA_GTF | awk '{OFS="\t"} $1=1' >> $HSA_GTF.tmp
+gtftools.py  -l $HSA_GTF.genelength  $HSA_GTF.tmp
+rm $HSA_GTF.tmp
+
+# prep gene names
+grep -w gene $HSA_GTF | cut -d '"' -f2,6 | tr '"' '\t' > $HSA_GTF.genenames
+
+# merge gene names
+echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $HSA_GENEINFO
+awk '{print $0,NR}' $HSA_GTF.genenames | sort -k 1b,1 \
+| join -1 1 -2 1 - <(sort -k 1b,1 $HSA_GTF.genelength) \
+| sort -k3g | tr ' '  '\t' | cut -f-2,4- >> $HSA_GENEINFO
+
+
+
+
 
