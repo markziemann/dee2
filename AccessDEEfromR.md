@@ -45,7 +45,7 @@ Content type 'text/tab-separated-values' length 549206 bytes (536 KB)
 ==================================================
 downloaded 536 KB
 
-> head(metadata)
+> head(mdat)
   SRR_accession QC_summary SRX_accession SRS_accession SRP_accession
 1    SRR1557807       PASS     SRX686598     SRS689414     SRP045778
 2    SRR2537196       PASS    SRX1295772    SRS1094603     SRP064324
