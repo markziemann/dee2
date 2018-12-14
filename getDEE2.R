@@ -55,6 +55,29 @@ loadTxCounts<-function(zipname){
   return(dat)
 }
 
+
+loadGeneInfo<-function(zipname){
+  CM="GeneInfo.tsv"
+  TF=tempfile()
+  unzip(zipname, files = CM, exdir = tempdir() )
+  mxname<-paste0(tempdir(),"/",CM)
+  file.rename(mxname,TF)
+  dat <- read.table(TF,row.names=1,header=T)
+  unlink(TF)
+  return(dat)
+}
+
+loadTxInfo<-function(zipname){
+  CM="TxInfo.tsv"
+  TF=tempfile()
+  unzip(zipname, files = CM, exdir = tempdir() )
+  mxname<-paste0(tempdir(),"/",CM)
+  file.rename(mxname,TF)
+  dat <- read.table(TF,row.names=1,header=T)
+  unlink(TF)
+  return(dat)
+}
+
 loadQcMx<-function(zipname){
   CM="QC_Matrix.tsv"
   TF=tempfile()
@@ -64,6 +87,16 @@ loadQcMx<-function(zipname){
   dat <- read.table(TF,row.names=1,header=T,fill=T)
   unlink(TF)
   return(dat)
+}
+
+Tx2Gene<-function(x){
+  y<-merge(x$TxInfo,x$TxCounts,by=0)
+  rownames(y)=y$Row.names
+  y$Row.names=y$GeneSymbol=y$TxLength=NULL
+  yy<-aggregate(. ~ GeneID,y,sum)
+  rownames(yy)<-yy$GeneID
+  yy$GeneID=NULL
+  x<-c(list("Tx2Gene"=yy),x)
 }
 
 getDEE2<-function(species, SRRvec, outfile=NULL, metadata=NULL,
@@ -93,8 +126,13 @@ getDEE2<-function(species, SRRvec, outfile=NULL, metadata=NULL,
 
     GeneCounts<-loadGeneCounts(zipname)
     TxCounts<-loadTxCounts(zipname)
+    GeneInfo<-loadGeneInfo(zipname)
+    TxInfo<-loadTxInfo(zipname)
     QcMx<-loadQcMx(zipname)
-    dat <- list("GeneCounts" = GeneCounts, "TxCounts" = TxCounts, "QcMx" = QcMx, "absent" = absent)
+    dat <- list("GeneCounts" = GeneCounts, "TxCounts" = TxCounts, "GeneInfo" = GeneInfo,
+    "TxInfo" = TxInfo , "QcMx" = QcMx, "absent" = absent)
+
+
     if(is.null(outfile)){unlink(zipname)}
     if(length(absent)>0){
       message(paste0("Warning, datasets not found: '",paste(absent,collapse=","),"'"))
