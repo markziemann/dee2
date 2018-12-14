@@ -107,6 +107,9 @@ Here is an example of using the SRRlist as defined above.
 
 ```
 > x<-getDEE2("celegans",SRRlist)
+
+
+
 trying URL 'http://dee2.io/metadata/celegans_metadata.tsv.cut'
 Content type 'text/tab-separated-values' length 549206 bytes (536 KB)
 ==================================================
@@ -116,7 +119,8 @@ trying URL 'http://dee2.io/cgi-bin/request.sh?org=celegans&x=SRR363796&x=SRR3637
 downloaded 479 KB
 
 > names(x)
-[1] "GeneCounts" "TxCounts"   "QcMx"       "absent"   
+[1] "GeneCounts" "TxCounts"   "GeneInfo"   "TxInfo"     "QcMx"      
+[6] "absent"    
 > head(x$GeneCounts)
                SRR363796 SRR363797 SRR363798 SRR363799
 WBGene00197333         0         0         0         0
@@ -148,9 +152,48 @@ Read1MinimumLength                 36
 Read1MedianLength                  36
 Read1MaxLength                   NULL
 Read2MinimumLength               NULL
+> head(x$GeneInfo)
+               GeneSymbol mean median longest_isoform merged
+WBGene00197333   cTel3X.2  150    150             150    150
+WBGene00198386   cTel3X.3  150    150             150    150
+WBGene00015153    B0348.5 1051   1178            1178   1178
+WBGene00002061      ife-3 1015    949            1107   1107
+WBGene00255704   B0348.10  363    363             363    363
+WBGene00235314    B0348.9  220    220             220    220
+> head(x$TxInfo)
+                   GeneID GeneSymbol TxLength
+Y110A7A.10 WBGene00000001      aap-1     1787
+F27C8.1    WBGene00000002      aat-1     1940
+F07C3.7    WBGene00000003      aat-2     1728
+F52H2.2a   WBGene00000004      aat-3     1739
+F52H2.2b   WBGene00000004      aat-3     1840
+T13A10.10a WBGene00000005      aat-4     1734
+
 ```
 
-You can directly specify the SRR accessions in the command line, but be sure to type them correctly. In case SRR accessions are not present in the database, there will be a warning message.
+Notice the new objects x$GeneInfo and x$TxInfo. They have information on the gene and transcript lengths
+that might be useful for calculating FPKM. Gene symbol information might be useful for downstream analysis. 
+The TxInfo dataframe contains the relationships between the transcript and parent genes. There is a function to
+aggregate Tx counts to gene level counts called "Tx2Gene", demonstrated below:
+
+```
+> x<-Tx2Gene(x)
+> names(x)
+[1] "Tx2Gene"    "GeneCounts" "TxCounts"   "GeneInfo"   "TxInfo"    
+[6] "QcMx"       "absent"    
+> head(x$Tx2Gene)
+               SRR363796 SRR363797 SRR363798 SRR363799
+WBGene00000001        11        23        48        45
+WBGene00000002         0         0         0         0
+WBGene00000003         0         2         0        21
+WBGene00000004         0         4         7         5
+WBGene00000005         0         0         0         0
+WBGene00000006         2         1         0         2
+
+```
+
+You can directly specify the SRR accessions in the command line, but be sure to type them correctly.
+In case SRR accessions are not present in the database, there will be a warning message.
 
 ```
 > x<-getDEE2("celegans",c("SRR363798","SRR363799","SRR3581689","SRR3581692"))
