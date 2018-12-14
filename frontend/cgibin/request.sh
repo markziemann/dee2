@@ -37,6 +37,13 @@ QS2=`echo $QS | tr ' ' '\n' | cut -d '_' -f1 | tr '\n' ' '`
 
 
 #################################################
+# Gene info - names and length
+#################################################
+PFX=$(echo $ORG | cut -c-3)
+cp ${PFX}_gene_info.tsv $USRDIR/GeneInfo.tsv
+cp ${PFX}_tx_info.tsv $USRDIR/TxInfo.tsv
+
+#################################################
 # STAR Gene counts
 #################################################
 GENECOUNTS=$(echo $QS2 | tr ' ' '\n' | awk '{print $1"/"$1"_gene.cnt"}' | tr '\n' ' ' | sed 's/$/\n/')
@@ -65,5 +72,5 @@ LOGS=$(echo $QS2 | tr ' ' '\n' | awk '{print $1"/"$1".log"}' | tr '\n' ' ' | sed
 cp $LOGS $LOGDIR
 
 cd $USRDIR
-zip -r - GeneCountMatrix.tsv QC_Matrix.tsv TxCountMatrix.tsv logs
+zip -r - GeneCountMatrix.tsv QC_Matrix.tsv TxCountMatrix.tsv GeneInfo.tsv TxInfo.tsv logs
 find $USRDIR -type d -mmin +60 -maxdepth 1 -exec rm -r {} \;
