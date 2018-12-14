@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 
 which gtftools.py > /dev/null || echo "GTFtools_0.6.5 is required"
 which gtftools.py > /dev/null || exit 1
@@ -96,10 +95,9 @@ grep -w gene $ATH_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "
 | sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - - > $ATH_GTF.genenames
 # merge gene names
 echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $ATH_GENEINFO
-awk '{print $0,NR}' $ATH_GTF.genenames | sort -k 1b,1 \
+awk '{OFS="\t"}{print $0,NR}' $ATH_GTF.genenames | sed 's/ /_/g' | sort -k 1b,1 \
 | join -1 1 -2 1 - <(sort -k 1b,1 $ATH_GTF.genelength) \
-| sort -k3g | tr ' '  '\t' | cut -f-2,4- >> $ATH_GENEINFO
-
+| sort -k3g | sort -k3g | cut -d ' ' -f-2,4- | tr ' ' '\t' >> $ATH_GENEINFO
 
 ###########################################################
 # CEL
