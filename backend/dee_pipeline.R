@@ -12,9 +12,7 @@ IPADD="118.138.234.131"
 rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
 
 CORES=ceiling(detectCores()/2)
-#for (org in c("ecoli" ) ) {
 for (org in c("ecoli", "scerevisiae" , "athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
-
   #create a list of NCBI taxa full names
   species_list<-c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
  
@@ -57,7 +55,7 @@ if ( TIME_SINCE_MOD<(60*60*24*7*52) ) {
   message("part B")
   oidx = Omicidx$new()
   message("part C")
-  query=paste( paste0('sample_taxon_id:', taxa_name), 'AND experiment_library_strategy : "rna-seq"')
+  query=paste( paste0('sample.taxon_id:', taxa_name), 'AND experiment.library_strategy : "rna-seq"')
   message("part D")
   z = oidx$search(q=query,entity='full',size=100L)
   message("part E")
@@ -66,7 +64,7 @@ if ( TIME_SINCE_MOD<(60*60*24*7*52) ) {
   res = s$collate(limit = Inf)
   message("part G")
   save.image(file = paste(SRADBWD,"/",org,".RData",sep=""))
-  accessions<-as.data.frame(cbind(res$experiment_accession,res$study_accession,res$sample_accession,res$run_accession))
+  accessions<-as.data.frame(cbind(res$experiment.accession,res$study.accession,res$sample.accession,res$accession))
   colnames(accessions)=c("experiment","study","sample","run")
   runs<-accessions$run
 }
