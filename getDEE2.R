@@ -1,5 +1,11 @@
-#R interface to DEE2 data
-#Copyright Mark Ziemann and Antony Kaspi 2016 to 2018 mark.ziemann@gmail.com
+#' Get DEE2 Metadata
+#'
+#' This function fetches the short metadata for the species of interest.
+#' @param x A character string matching a species of interest.
+#' @keywords metadata
+#' @export
+#' @examples
+#' ecoli_metadatahea<-getDee2Metadata("ecoli")
 
 getDee2Metadata<-function(species,outfile=NULL, ...){
   orgs=c("athaliana","celegans","dmelanogaster","drerio","ecoli","hsapiens","mmusculus","rnorvegicus","scerevisiae")
@@ -21,6 +27,16 @@ getDee2Metadata<-function(species,outfile=NULL, ...){
   }
 }
 
+#' Query Whether a DEE2 Dataset is Available
+#'
+#' This function sends a query to check whether a dataset is available or not.
+#' @param x A character string matching a species of interest.
+#' @param y A character string or vector thereof of SRA run accession numbers.
+#' @keywords query
+#' @export
+#' @examples
+#' x<-queryDee2("ecoli",c("SRR1067773","SRR5350513"))
+
 queryDee2<-function(species, SRRvec,metadata=NULL, ...) {
   if(is.null(metadata)){
     mdat<-getDee2Metadata(species, ...)
@@ -33,6 +49,15 @@ queryDee2<-function(species, SRRvec,metadata=NULL, ...) {
   return(dat)
 }
 
+#' Load Gene Counts
+#'
+#' This function loads STAR gene level counts from a downloaded zip file.
+#' @param x Path to the zipfile.
+#' @keywords Load Gene
+#' @export
+#' @examples
+#' x<-loadGeneCounts("~/Downloads/Data.zip")
+
 loadGeneCounts<-function(zipname){
   CM="GeneCountMatrix.tsv"
   TF=tempfile()
@@ -43,6 +68,15 @@ loadGeneCounts<-function(zipname){
   unlink(TF)
   return(dat)
 }
+
+#' Load Transcript Counts 
+#'
+#' This function loads Kallisto transcript level counts from a downloaded zip file.         
+#' @param x Path to the zipfile.
+#' @keywords Load Transcript
+#' @export
+#' @examples
+#' x<-loadTxCounts("~/Downloads/Data.zip")
 
 loadTxCounts<-function(zipname){
   CM="TxCountMatrix.tsv"
@@ -55,6 +89,14 @@ loadTxCounts<-function(zipname){
   return(dat)
 }
 
+#' Load Gene Info
+#'
+#' This function loads gene information. This information includes gene names and lengths which is useful for downstream analysis.
+#' @param x Path to the zipfile.
+#' @keywords Load Gene
+#' @export
+#' @examples
+#' x<-loadGeneInfo("~/Downloads/Data.zip")
 
 loadGeneInfo<-function(zipname){
   CM="GeneInfo.tsv"
@@ -67,6 +109,16 @@ loadGeneInfo<-function(zipname){
   return(dat)
 }
 
+
+#' Load Transcript Info
+#'
+#' This function loads transcript information. This information includes transcript lengths, corresponding parent gene accession and gene symbol that might be useful for downstream analysis.
+#' @param x Path to the zipfile.
+#' @keywords Load Transcript
+#' @export
+#' @examples
+#' x<-loadTxInfo("~/Downloads/Data.zip")
+
 loadTxInfo<-function(zipname){
   CM="TxInfo.tsv"
   TF=tempfile()
@@ -77,6 +129,15 @@ loadTxInfo<-function(zipname){
   unlink(TF)
   return(dat)
 }
+
+#' Load Quality Control Info
+#'
+#' This function loads quality control data.
+#' @param x Path to the zipfile.
+#' @keywords Load Qualiy Control QC
+#' @export
+#' @examples
+#' x<-loadQcMx("~/Downloads/Data.zip")
 
 loadQcMx<-function(zipname){
   CM="QC_Matrix.tsv"
@@ -89,6 +150,15 @@ loadQcMx<-function(zipname){
   return(dat)
 }
 
+#' Aggregate Transcript Counts to Gene-Level Counts
+#'
+#' This function converts Kallisto transcript-level expression estimates to gene-level estimates. 
+#' @param x a getDEE2 object.
+#' @keywords Aggregate transcript gene
+#' @export
+#' @examples
+#' x<-Tx2Gene(x)
+
 Tx2Gene<-function(x){
   y<-merge(x$TxInfo,x$TxCounts,by=0)
   rownames(y)=y$Row.names
@@ -98,6 +168,16 @@ Tx2Gene<-function(x){
   yy$GeneID=NULL
   x<-c(list("Tx2Gene"=yy),x)
 }
+
+#' Get DEE2 Gen Expression Data
+#'
+#' This function fetches gene expression data from the DEE2 database of RNA sequencing data.
+#' @param x a character string matching a species of interest.   
+#' @param y a character string or vector of SRA run accession numbers
+#' @keywords DEE2 RNA-seq database
+#' @export
+#' @examples
+#' x<-getDEE2("ecoli",c("SRR1613487","SRR1613488"))
 
 getDEE2<-function(species, SRRvec, outfile=NULL, metadata=NULL,
   baseURL="http://dee2.io/cgi-bin/request.sh?", ...){
@@ -141,5 +221,3 @@ getDEE2<-function(species, SRRvec, outfile=NULL, metadata=NULL,
   }
 }
 
-#mytable<-getDEE("Ecoli",c("SRR922260","SRR922261"))
-#data is returned as a list of three dataframes
