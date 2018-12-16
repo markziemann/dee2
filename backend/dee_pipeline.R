@@ -12,6 +12,7 @@ IPADD="118.138.234.131"
 rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
 
 CORES=ceiling(detectCores()/2)
+#for (org in c("ecoli") ) {
 for (org in c("ecoli", "scerevisiae" , "athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
   #create a list of NCBI taxa full names
   species_list<-c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
@@ -37,7 +38,7 @@ for (org in c("ecoli", "scerevisiae" , "athaliana",  "rnorvegicus" , "celegans",
 CMD=paste("echo $(($(date +%s) - $(date +%s -r ",SRADBWD,"/",org,".RData)))",sep="")
 TIME_SINCE_MOD=as.numeric(system(CMD,intern=T))
 if ( TIME_SINCE_MOD<(60*60*24*7*52) ) { 
-
+#if ( TIME_SINCE_MOD<(60) ) { 
   message("using existing metadata")
   load(paste(SRADBWD,"/",org,".RData",sep=""))
 
@@ -50,7 +51,8 @@ if ( TIME_SINCE_MOD<(60*60*24*7*52) ) {
   #clear some objects to prevent errors
   #rm(oidx,z,s,res,accessions,runs)
   message("part A")
-  s$reset()
+#  s=NULL
+#  s$reset()
   oidx=z=s=res=accessions=runs=NULL
   message("part B")
   oidx = Omicidx$new()
@@ -103,14 +105,15 @@ if ( TIME_SINCE_MOD<(60*60*24*7*52) ) {
 
    #Need to rearrange columns
    GSE<-function(i) {res=grepl("GSE",i) ; if (res == FALSE) {j="NA"} else {j=i } ; j }
-   GSE_accession<-as.vector(sapply(res$study_GEO,GSE))
+   GSE_accession<-as.vector(sapply(res$study.GEO,GSE))
 
    GSM<-function(i) {res=grepl("GSM",i) ; if (res == FALSE) {j="NA"} else { j=i} ; j }
-   GSM_accession<-as.vector(sapply(res$sample_GEO,GSM))
+   GSM_accession<-as.vector(sapply(res$sample.GEO,GSM))
 
    #extract out the important accessions in order
-   x2<-as.data.frame(cbind(res$run_accession,QC_summary,res$experiment_accession,res$sample_accession,
-   res$study_accession, GSE_accession, GSM_accession))
+#   x2<-as.data.frame(cbind(res$run.accession,QC_summary,res$experiment.accession,res$sample.accession,res$study.accession, GSE_accession, GSM_accession))
+   x2<-as.data.frame(cbind(res$accession,QC_summary,res$experiment.accession,res$sample.accession,res$study.accession, GSE_accession, GSM_accession))
+
 
    colnames(x2)<-c("SRR_accession","QC_summary","SRX_accession","SRS_accession",
    "SRP_accession","GSE_accession","GSM_accession")
@@ -125,8 +128,8 @@ if ( TIME_SINCE_MOD<(60*60*24*7*52) ) {
    save.image(file = paste(org,".RData",sep=""))
 
    #now attach the additional metadata and upload
-   x<-res[, !(colnames(res) %in% c("QC_summary","experiment_accession","sample_accession","study_accession","submission_accession","GSE_accession","GSM_accession"))]
-   x<-merge(x2,x,by.x="SRR_accession",by.y="run_accession")
+   x<-res[, !(colnames(res) %in% c("QC_summary","experiment.accession","sample.accession","study.accession","submission.accession","GSE_accession","GSM_accession"))]
+   x<-merge(x2,x,by.x="SRR_accession",by.y="accession")
  
    x<-x[which(x$SRR_accession %in% runs_done),]
    x <- apply(x,2,as.character)
