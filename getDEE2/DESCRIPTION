@@ -1,0 +1,10 @@
+Package: getDEE2
+Title: An R Interface for the DEE2 Transcriptome Database
+Version: 0.0.1
+Authors@R: person("Mark", "Ziemann", email = "mark.ziemann@gmail.com", role = c("aut", "cre"))
+Description: This package simplifies the process of obtaining gene expression data from the DEE2 database (http://dee2.io).
+Depends: R (>= 3.0.0)
+License: GPLv3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.0.9000
