@@ -1,29 +1,30 @@
-# Incorporating dee2 data into your R-based RNA-seq workflow
+# Incorporating DEE2 data into your R-based RNA-seq workflow
 
 Copyright, Mark Ziemann, 2018.
 
 ## Table of Contents
 1. [Getting started](#getting-started)
 2. [Searching for datasets of interest starting with accession numbers](#searching-for-datasets-of-interest-starting-with-accession-numbers)
-3. [Fetching dee2 data using SRA run accession numbers](#fetching-dee2-data-using-sra-run-accession-numbers)
+3. [Fetching DEE2 data using SRA run accession numbers](#fetching-dee2-data-using-sra-run-accession-numbers)
 4. [Keyword searching metadata](#keyword-searching-metadata)
-5. [Stand-alone functions for downloading and loading dee2 data](#stand-alone-functions-for-downloading-and-loading-dee2-data)
+5. [Stand-alone functions for downloading and loading DEE2 data](#stand-alone-functions-for-downloading-and-loading-dee2-data)
 6. [Aggregating runs data](#aggregating-runs-data)
 7. [Running a differential analysis](#running-a-differential-analysis)
 8. [Report bugs, issues and suggestions](#report-bugs-issues-and-suggestions)
 
 ## Getting started
 
-This tutorial provides a walkthrough for how to work with dee2 expression data,
+This tutorial provides a walkthrough for how to work with DEE2 expression data,
 starting with data searches, obtaining the data from dee2.io and then performing
 a differential analysis with DESeq or edgeR.
 
-To use search and obtain dee2 data in R, you can install the DEE2 package as follows:
+To search and obtain DEE2 data in R, you can install the DEE2 package as follows:
 
 ```
 library("devtools")
 devtools::install_github("markziemann/dee2/getDEE2")
 library("getDEE2")
+```
 
 ## Searching for datasets of interest starting with accession numbers
 
@@ -81,7 +82,7 @@ If we have a GEO series accession number in mind already (eg: GSE33569) then we 
 8072      GSE33569     GSM829557
 ```
 
-Dee2 data is centred around SRA run accessions numbers, these SRR_accessions can be obtained like this:
+DEE2 data is centred around SRA run accessions numbers, these SRR_accessions can be obtained like this:
 
 ```
 > mdat1<-mdat[which(mdat$GSE_accession %in% "GSE33569"),]
@@ -90,9 +91,9 @@ Dee2 data is centred around SRA run accessions numbers, these SRR_accessions can
 [1] "SRR363796" "SRR363797" "SRR363798" "SRR363799"
 ```
 
-## Fetching dee2 data using SRA run accession numbers
+## Fetching DEE2 data using SRA run accession numbers
 
-The general syntax for obtaining dee2 data is this:
+The general syntax for obtaining DEE2 data is this:
 
 `> getDEE2(species,SRRlist,outfile="NULL")`
 
@@ -288,7 +289,7 @@ The first method is to download all the transcriptome metadata for a particular 
 #   experiment_library_layout_length <dbl>,
 #   experiment_library_layout_sdev <chr>
 ```
-Next, you will want to filter these results for those that have dee2 datasets available. Couple of ways to do this but the best might be to attach a logical value for whether there is data available for the runs.
+Next, you will want to filter these results for those that have DEE2 datasets available. Couple of ways to do this but the best might be to attach a logical value for whether there is data available for the runs.
 
 ```
 #get the C. elegans metadata if not already obtained
@@ -306,7 +307,7 @@ Next, you will want to filter these results for those that have dee2 datasets av
 [6,] "SRR6002322" "FALSE"
 ```
 
-You can also see how complete the dee2 coverage is:
+You can also see how complete the DEE2 coverage is:
 
 ```
 > length(which(res$dee2data==T))
@@ -367,7 +368,7 @@ You can then browse and make targeted searches of this metadata locally with gre
 #   experiment_library_layout_sdev <chr>, dee2data <lgl>
 ```
 
-Now check that the runs have corresponding dee2 datasets:
+Now check that the runs have corresponding DEE2 datasets:
 
 ```
 > res2<-res[grep("PAR-CLIP",res$study_abstract),]
@@ -452,7 +453,7 @@ dim(res)
 #   run_attributes <list>, run_file_addons <list>
 ```
 
-Lastly, obtain a list of SRR accessions and obtain the dee2 data
+Lastly, obtain a list of SRR accessions and obtain the DEE2 data
 
 ```
 > SRRvec=res2$run_accession
@@ -466,7 +467,7 @@ trying URL 'http://dee2.io/cgi-bin/request.sh?org=celegans&x=SRR363980&x=SRR1176
 downloaded 1.7 MB
 ```
 
-## Stand-alone functions for downloading and loading dee2 data
+## Stand-alone functions for downloading and loading DEE2 data
 
 In case you want to download the data once, then reuse it many times, using the standalone scripts can be faster. Data is saved in zip format as follows:
 
