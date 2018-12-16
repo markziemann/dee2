@@ -8,9 +8,9 @@ getDEE2(species, SRRvec, outfile = NULL, metadata = NULL,
   baseURL = "http://dee2.io/cgi-bin/request.sh?", ...)
 }
 \arguments{
-\item{x}{a character string matching a species of interest.}
+\item{species}{a character string matching a species of interest.}
 
-\item{y}{a character string or vector of SRA run accession numbers}
+\item{SRRvec}{a character string or vector of SRA run accession numbers}
 }
 \description{
 This function fetches gene expression data from the DEE2 database of RNA sequencing data.

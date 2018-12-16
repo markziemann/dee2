@@ -7,7 +7,7 @@
 loadTxInfo(zipname)
 }
 \arguments{
-\item{x}{Path to the zipfile.}
+\item{zipname}{Path to the zipfile.}
 }
 \description{
 This function loads transcript information. This information includes transcript lengths, corresponding parent gene accession and gene symbol that might be useful for downstream analysis.

@@ -7,7 +7,7 @@
 getDee2Metadata(species, outfile = NULL, ...)
 }
 \arguments{
-\item{x}{A character string matching a species of interest.}
+\item{species}{A character string matching a species of interest.}
 }
 \description{
 This function fetches the short metadata for the species of interest.

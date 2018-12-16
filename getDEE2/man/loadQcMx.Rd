@@ -7,7 +7,7 @@
 loadQcMx(zipname)
 }
 \arguments{
-\item{x}{Path to the zipfile.}
+\item{zipname}{Path to the zipfile.}
 }
 \description{
 This function loads quality control data.

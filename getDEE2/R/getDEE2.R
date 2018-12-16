@@ -1,7 +1,7 @@
 #' Get DEE2 Metadata
 #'
 #' This function fetches the short metadata for the species of interest.
-#' @param x A character string matching a species of interest.
+#' @param species A character string matching a species of interest.
 #' @keywords metadata
 #' @export
 #' @examples
@@ -30,8 +30,8 @@ getDee2Metadata<-function(species,outfile=NULL, ...){
 #' Query Whether a DEE2 Dataset is Available
 #'
 #' This function sends a query to check whether a dataset is available or not.
-#' @param x A character string matching a species of interest.
-#' @param y A character string or vector thereof of SRA run accession numbers.
+#' @param species A character string matching a species of interest.
+#' @param SRRvec A character string or vector thereof of SRA run accession numbers.
 #' @keywords query
 #' @export
 #' @examples
@@ -52,7 +52,7 @@ queryDee2<-function(species, SRRvec,metadata=NULL, ...) {
 #' Load Gene Counts
 #'
 #' This function loads STAR gene level counts from a downloaded zip file.
-#' @param x Path to the zipfile.
+#' @param zipname Path to the zipfile.
 #' @keywords Load Gene
 #' @export
 #' @examples
@@ -72,7 +72,7 @@ loadGeneCounts<-function(zipname){
 #' Load Transcript Counts 
 #'
 #' This function loads Kallisto transcript level counts from a downloaded zip file.         
-#' @param x Path to the zipfile.
+#' @param zipname Path to the zipfile.
 #' @keywords Load Transcript
 #' @export
 #' @examples
@@ -92,7 +92,7 @@ loadTxCounts<-function(zipname){
 #' Load Gene Info
 #'
 #' This function loads gene information. This information includes gene names and lengths which is useful for downstream analysis.
-#' @param x Path to the zipfile.
+#' @param zipname Path to the zipfile.
 #' @keywords Load Gene
 #' @export
 #' @examples
@@ -113,7 +113,7 @@ loadGeneInfo<-function(zipname){
 #' Load Transcript Info
 #'
 #' This function loads transcript information. This information includes transcript lengths, corresponding parent gene accession and gene symbol that might be useful for downstream analysis.
-#' @param x Path to the zipfile.
+#' @param zipname Path to the zipfile.
 #' @keywords Load Transcript
 #' @export
 #' @examples
@@ -133,7 +133,7 @@ loadTxInfo<-function(zipname){
 #' Load Quality Control Info
 #'
 #' This function loads quality control data.
-#' @param x Path to the zipfile.
+#' @param zipname Path to the zipfile.
 #' @keywords Load Qualiy Control QC
 #' @export
 #' @examples
@@ -172,8 +172,8 @@ Tx2Gene<-function(x){
 #' Get DEE2 Gen Expression Data
 #'
 #' This function fetches gene expression data from the DEE2 database of RNA sequencing data.
-#' @param x a character string matching a species of interest.   
-#' @param y a character string or vector of SRA run accession numbers
+#' @param species a character string matching a species of interest.   
+#' @param SRRvec a character string or vector of SRA run accession numbers
 #' @keywords DEE2 RNA-seq database
 #' @export
 #' @examples
