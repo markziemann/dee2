@@ -7,7 +7,7 @@
 loadGeneInfo(zipname)
 }
 \arguments{
-\item{x}{Path to the zipfile.}
+\item{zipname}{Path to the zipfile.}
 }
 \description{
 This function loads gene information. This information includes gene names and lengths which is useful for downstream analysis.

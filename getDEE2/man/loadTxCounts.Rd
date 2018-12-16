@@ -7,7 +7,7 @@
 loadTxCounts(zipname)
 }
 \arguments{
-\item{x}{Path to the zipfile.}
+\item{zipname}{Path to the zipfile.}
 }
 \description{
 This function loads Kallisto transcript level counts from a downloaded zip file.
