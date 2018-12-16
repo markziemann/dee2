@@ -18,9 +18,12 @@ This tutorial provides a walkthrough for how to work with dee2 expression data,
 starting with data searches, obtaining the data from dee2.io and then performing
 a differential analysis with DESeq or edgeR.
 
-To use search and obtain dee2 data in R, you will need to source the 'getDEE2' script as follows:
+To use search and obtain dee2 data in R, you can install the DEE2 package as follows:
 
-`> source("https://raw.githubusercontent.com/markziemann/dee2/master/getDEE2.R")`
+```
+library("devtools")
+devtools::install_github("markziemann/dee2/getDEE2")
+library("getDEE2")
 
 ## Searching for datasets of interest starting with accession numbers
 
