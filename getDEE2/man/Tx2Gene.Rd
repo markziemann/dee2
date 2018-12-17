@@ -10,7 +10,7 @@ Tx2Gene(x)
 \item{x}{a getDEE2 object.}
 }
 \description{
-This function converts Kallisto transcript-level expression estimates to gene-level estimates.
+This function converts Kallisto transcript-level expression estimates to gene-level estimates. Counts for each transcript are summed to get an aggregated gene level score.
 }
 \examples{
 x<-Tx2Gene(x)

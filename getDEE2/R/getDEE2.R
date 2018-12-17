@@ -150,9 +150,49 @@ loadQcMx<-function(zipname){
   return(dat)
 }
 
+#' Load Summary Metadata
+#'
+#' This function loads the summary metadata, which are the most relevant SRA accession numbers.
+#' @param zipname Path to the zipfile.
+#' @keywords Load Metadata
+#' @export
+#' @examples
+#' x<-loadQcMx("~/Downloads/Data.zip")
+
+loadSummaryMeta<-function(zipname){
+  CM="MetadataSummary.tsv"
+  TF=tempfile()
+  unzip(zipname, files = CM, exdir = tempdir() )
+  mxname<-paste0(tempdir(),"/",CM)
+  file.rename(mxname,TF)
+  dat <- read.table(TF,row.names=1,header=T,fill=T)
+  unlink(TF)
+  return(dat)
+}
+
+#' Load Full Metadata   
+#'
+#' This function loads the full metadata, which contains many fields.
+#' @param zipname Path to the zipfile.
+#' @keywords Load Metadata  
+#' @export
+#' @examples
+#' x<-loadQcMx("~/Downloads/Data.zip")
+
+loadFullMeta<-function(zipname){
+  CM="MetadataFull.tsv"
+  TF=tempfile()
+  unzip(zipname, files = CM, exdir = tempdir() )
+  mxname<-paste0(tempdir(),"/",CM)
+  file.rename(mxname,TF)
+  dat <- read.table(TF,row.names=1,header=T,fill=T,sep='\t')
+  unlink(TF)
+  return(dat)
+}
+
 #' Aggregate Transcript Counts to Gene-Level Counts
 #'
-#' This function converts Kallisto transcript-level expression estimates to gene-level estimates. 
+#' This function converts Kallisto transcript-level expression estimates to gene-level estimates. Counts for each transcript are summed to get an aggregated gene level score.
 #' @param x a getDEE2 object.
 #' @keywords Aggregate transcript gene
 #' @export
@@ -209,9 +249,11 @@ getDEE2<-function(species, SRRvec, outfile=NULL, metadata=NULL,
     GeneInfo<-loadGeneInfo(zipname)
     TxInfo<-loadTxInfo(zipname)
     QcMx<-loadQcMx(zipname)
+    MetadataSummary<-loadSummaryMeta(zipname)
+    MetadataFull<-loadFullMeta(zipname)
     dat <- list("GeneCounts" = GeneCounts, "TxCounts" = TxCounts, "GeneInfo" = GeneInfo,
-    "TxInfo" = TxInfo , "QcMx" = QcMx, "absent" = absent)
-
+    "TxInfo" = TxInfo , "QcMx" = QcMx, "MetadataSummary" = MetadataSummary , "MetadataFull" = MetadataFull ,
+    "absent" = absent)
 
     if(is.null(outfile)){unlink(zipname)}
     if(length(absent)>0){
