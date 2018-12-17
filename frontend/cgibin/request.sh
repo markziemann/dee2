@@ -24,6 +24,8 @@ LOGDIR=$USRDIR/logs
 mkdir -p $LOGDIR
 ORG=`echo $QUERY_STRING | cut -d '&' -f1 | cut -d '=' -f2 | tr 'A-Z' 'a-z'`
 DATA_DIR=/dee2_data/data/${ORG}/
+ACCESSIONS=/mnt/dee2_data/metadata/${ORG}_metadata.tsv.cut
+METADATA=/mnt/dee2_data/metadata/${ORG}_metadata.tsv
 
 cd $DATA_DIR
 
@@ -35,11 +37,24 @@ QS=`echo $QUERY_STRING | cut -d '&' -f2- | sed 's/DataSetList=on&//' \
 ##remove SRRs with files absent
 QS2=`echo $QS | tr ' ' '\n' | cut -d '_' -f1 | tr '\n' ' '`
 
+##get the 3 digit species prefix
+PFX=$(echo $ORG | cut -c-3)
+
+#################################################
+# Accession numbers
+#################################################
+head -1 $ACCESSIONS > $USRDIR/MetadataSummary.tsv
+echo $QS2 | tr ' ' '\n' | grep -wFf - $ACCESSIONS | sort >> $USRDIR/MetadataSummary.tsv
+
+#################################################
+# Accession numbers
+#################################################
+head -1 $METADATA > $USRDIR/MetadataFull.tsv
+echo $QS2 | tr ' ' '\n' | grep -wFf - $METADATA | sort >> $USRDIR/MetadataFull.tsv
 
 #################################################
 # Gene info - names and length
 #################################################
-PFX=$(echo $ORG | cut -c-3)
 cp ${PFX}_gene_info.tsv $USRDIR/GeneInfo.tsv
 cp ${PFX}_tx_info.tsv $USRDIR/TxInfo.tsv
 
@@ -72,5 +87,5 @@ LOGS=$(echo $QS2 | tr ' ' '\n' | awk '{print $1"/"$1".log"}' | tr '\n' ' ' | sed
 cp $LOGS $LOGDIR
 
 cd $USRDIR
-zip -r - GeneCountMatrix.tsv QC_Matrix.tsv TxCountMatrix.tsv GeneInfo.tsv TxInfo.tsv logs
+zip -r - MetadataSummary.tsv MetadataFull.tsv GeneCountMatrix.tsv QC_Matrix.tsv TxCountMatrix.tsv GeneInfo.tsv TxInfo.tsv logs
 find $USRDIR -type d -mmin +60 -maxdepth 1 -exec rm -r {} \;
