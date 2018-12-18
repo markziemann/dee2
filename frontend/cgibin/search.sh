@@ -82,7 +82,7 @@ input[type=checkbox] {
 DIR=/var/www/html/metadata/
 
 #QUERY_STRING="org=ecoli&accessionsearch=&keywordsearch=chaperone"
-#QUERY_STRING="org=ecoli&accessionsearch=GSE33671&keywordsearch="
+#QUERY_STRING="org=scerevisiae&accessionsearch=&keywordsearch=zinc AND deficiency"
 
 ORG=`echo $QUERY_STRING | cut -d '&' -f1 | cut -d '=' -f2`
 ACC=`echo $QUERY_STRING | cut -d '&' -f2 | cut -d '=' -f2`
@@ -128,7 +128,7 @@ while read line ; do
   echo "<tr><td> <a href=http://www.ncbi.nlm.nih.gov/sra/?term="$C1" target=\"_blank\"  >"$C1"</a>  </td><td> <a href=/data/"$ORG"/"$C1"/"$C1".qc target=_blank > <div class=tooltip>"$C2"<span class=tooltiptext > $(cat /dee2_data/data/"$ORG"/"$C1"/"$C1".qc) </span> </div> </a>  </td><td>" $C3 "</td><td>" $C4 "</td><td>" $C5 "</td><td>" $C6 "</td><td>" $C7 "</td><td>" $C8 "</td></tr>"
 done
 }
-export -f tblx1
+export -f tbl1x
 
 tbl2(){
 awk -v o=$ORG ' {OFS="\t";FS="\t"} BEGIN { print "<table border="1"><tr><th> <input type=\"checkbox\" name=\"DataSetList\" onClick=\"toggle(this)\" />Select all</th><th> SRA run accession </th><th> QC summary </th><th>Keyword context</th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th><th>Experiment.title</th></tr>" }
@@ -248,7 +248,13 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
   #echo $Q
   STR=`< /dev/urandom tr -dc A-Za-z0-9 | head -c${1:-32};echo;`
   TMP=/tmp/TMP_${STR}.txt
-  CNT=`egrep -ic "$Q" $MD `
+
+  #CNT=`egrep -ic "$Q" $MD `
+  Q=$(echo $Q | tr '[:upper:]' '[:lower:]' | sed 's/ and / AND /')
+  QQ=$(echo $Q | sed 's/ and /\n/gI' | tail -1)
+  AWK_CMD=$(echo $Q | tr -s ' ' | sed 's#^#/#' | sed 's#AND#/ \&\& /#g' | sed 's#$#/#' )
+  CMD="awk ' tolower(\$0) ~ "${AWK_CMD}" '"
+  CNT=$(eval $CMD $MD | wc -l)
 
   if [ $CNT -eq 0 ]; then
     echo No results found
@@ -265,8 +271,9 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
     exit
   fi
 
-  egrep -i "$Q" $MD | tr '\t' '\n' | egrep -i "$Q" $MD > $TMP
-#  egrep -i "$Q" $MD | sed 's/"/\\"/g' | sed 's/\t/ /' > $TMP
+  AWK_CMD=$(echo $Q | tr -s ' ' | sed 's#^#/#' | sed 's#AND#/ \&\& /#g' | sed 's#$#/#' )
+  CMD="awk ' tolower(\$0) ~ "${AWK_CMD}" '"
+  eval $CMD $MD > $TMP
 
   if [ $CNT -gt 500 ]; then
     echo Too many results found \(${CNT}\). The webserver is limited to 500 datasets per search. \
@@ -274,7 +281,7 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
     echo "<br>"
     echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"></FORM>'
     #display all results
-    sed "s/${Q}/x@x/I" $TMP | egrep -io ".{0,30}x@x.{0,30}" | tr '\t' ' ' | sed "s/x@x/${Q}/" \
+    sed "s#${QQ}#x@x#I" $TMP |  egrep -io ".{0,30}x@x.{0,30}" | tr '\t' ' ' | sed "s/x@x/${QQ}/g" \
     | tr '\t' ' ' | paste - $TMP | cut -f-9 \
     | awk -F'\t' 'BEGIN{OFS=FS} {print $2,$1,$3,$4,$5,$6,$7,$8,$9}' \
     | sort -k1 | tbl3
@@ -282,8 +289,8 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
   fi
 
   echo ${CNT} datasets found. Use the checkboxes to select ones of interest.
-  sed "s/${Q}/x@x/I" $TMP | egrep -io ".{0,30}x@x.{0,30}" | tr '\t' ' ' | sed "s/x@x/${Q}/"  \
-  | paste - $TMP | cut -f-9 \
+  sed "s#${QQ}#x@x#I" $TMP |  egrep -io ".{0,30}x@x.{0,30}" | tr '\t' ' ' | sed "s/x@x/${QQ}/g" \
+  | tr '\t' ' ' | paste - $TMP | cut -f-9 \
   | awk -F'\t' 'BEGIN{OFS=FS} ;{print $2,$1,$3,$4,$5,$6,$7,$8,$9}' \
   | sort -k1 | tbl2x
   echo '</table>'
