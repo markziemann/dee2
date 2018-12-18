@@ -82,7 +82,7 @@ input[type=checkbox] {
 DIR=/var/www/html/metadata/
 
 #QUERY_STRING="org=ecoli&accessionsearch=&keywordsearch=chaperone"
-#QUERY_STRING="org=scerevisiae&accessionsearch=&keywordsearch=zinc AND deficiency"
+#QUERY_STRING="org=scerevisiae&accessionsearch=&keywordsearch=metaboli"
 
 ORG=`echo $QUERY_STRING | cut -d '&' -f1 | cut -d '=' -f2`
 ACC=`echo $QUERY_STRING | cut -d '&' -f2 | cut -d '=' -f2`
@@ -138,7 +138,7 @@ awk -v o=$ORG ' {OFS="\t";FS="\t"} BEGIN { print "<table border="1"><tr><th> <in
 export -f tbl2
 
 tbl2x(){
-echo "<table border=1> <tr><th> <input type=checkbox name=DataSetList onClick=\"toggle(this)\" />Select all</th><th> SRA run accession </th><th> QC summary </th><th>Keyword context</th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th><th>Experiment.title</th></tr>"
+echo "<table border=1> <tr><th> <input type=checkbox name=DataSetList onClick=\"toggle(this)\" />Select all</th><th> SRA run accession </th><th> Keyword context </th><th> QC summary </th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession</th><th>Experiment.title</th></tr>"
 while read line ; do
   C1=$(echo "$line" | cut -f1)
   C2=$(echo "$line" | cut -f2)
@@ -149,14 +149,14 @@ while read line ; do
   C7=$(echo "$line" | cut -f7)
   C8=$(echo "$line" | cut -f8)
   C9=$(echo "$line" | cut -f9)
-  echo "<tr><td> <input type=checkbox name=x value="$C1"> </td><td> <a href=http://www.ncbi.nlm.nih.gov/sra/"$C1" target=_blank >"$C1"</a> </td><td> <a href=/data/"$ORG"/"$C1"/"$C1".qc target=_blank > <div class=tooltip>"$C3"<span class=tooltiptext > $(cat /dee2_data/data/"$ORG"/"$C1"/"$C1".qc) </span> </div> </a> </td><td>..."$C2"...</td><td>"$C4"</td><td>"$C5"</td><td>"$C6"</td><td>"$C7"</td><td>"$C8"</td><td>"$C9"</td></tr>"
+  echo "<tr><td> <input type=checkbox name=x value="$C1"> </td><td> <a href=http://www.ncbi.nlm.nih.gov/sra/"$C1" target=_blank >"$C1"</a> </td><td> ..."$C2"...</td><td> <a href=/data/"$ORG"/"$C1"/"$C1".qc target=_blank > <div class=tooltip>"$C3"<span class=tooltiptext > $(cat /dee2_data/data/"$ORG"/"$C1"/"$C1".qc) </span> </div> </a> </td><td>"$C4"</td><td>"$C5"</td><td>"$C6"</td><td>"$C7"</td><td>"$C8"</td><td>"$C9"</td></tr>"
 done
 }
 export -f tbl2x
 
 tbl3(){
-awk -F'\t' -v o=$ORG '{OFS=FS} BEGIN { print "<table border="1"><tr><th> SRA run accession </th><th> QC summary </th><th>Keyword context</th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession </th><th>Experiment.title </th></tr>" }
-	{ print "<tr><td>  <a href=http://www.ncbi.nlm.nih.gov/sra/"$1" target=\"_blank\" >"$1"  </a>  </td><td> <a href=/data/"o"/"$1"/"$1".qc  target=\"_blank\" > "$3" </a>  </td><td>..." $2 "...</td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td><td>" $8 "</td><td>" $9   "</td></tr>" }
+awk -F'\t' -v o=$ORG '{OFS=FS} BEGIN { print "<table border="1"><tr><th> SRA run accession </th><th>Keyword context </th><th> QC summary </th><th>SRA experiment accession</th><th>SRA sample accession</th><th>SRA project accession</th><th>GEO series accession</th><th>GEO sample accession </th><th>Experiment.title </th></tr>" }
+	{ print "<tr><td>  <a href=http://www.ncbi.nlm.nih.gov/sra/"$1" target=\"_blank\" >"$1"  </a>  </td><td> ..." $2 "... </td><td> <a href=/data/"o"/"$1"/"$1".qc  target=\"_blank\" > "$3" </a></td><td>" $4 "</td><td>" $5 "</td><td>" $6 "</td><td>" $7 "</td><td>" $8 "</td><td>" $9   "</td></tr>" }
      END   { print "</table>" }'
 }
 export -f tbl3
@@ -173,7 +173,9 @@ while read line ; do
   C7=$(echo "$line" | cut -f7)
   C8=$(echo "$line" | cut -f8)
   C9=$(echo "$line" | cut -f9)
-  echo "<tr><td>  <a href=http://www.ncbi.nlm.nih.gov/sra/"$C1" target=_blank >"$C1"</a> </td><td> <a href=/data/"o"/"$C1"/"$C1".qc target=_blank> <div class=tooltip>"$C3"<span class=tooltiptext > $(cat /dee2_data/data/"$ORG"/"$C1"/"$C1".qc) </span> </div> </a> </td><td>..."$C2"...</td><td>"$C4"</td><td>"$C5"</td><td>"$C6"</td><td>"$C7"</td><td>"$C8"</td><td>"$C9"</td></tr>"
+  echo "<tr><td>  <a href=http://www.ncbi.nlm.nih.gov/sra/"$C1" target=_blank >"$C1"</a> \
+  </td><td> <a href=/data/"o"/"$C1"/"$C1".qc target=_blank> <div class=tooltip>"$C3"<span class=tooltiptext > $(cat /dee2_data/data/"$ORG"/"$C1"/"$C1".qc) </span></div></a> \
+  </td><td>..."$C2"...</td><td>"$C4"</td><td>"$C5"</td><td>"$C6"</td><td>"$C7"</td><td>"$C8"</td><td>"$C9"</td></tr>"
 done
 }
 export -f tbl3x
@@ -245,11 +247,10 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
   echo '<input type="hidden" name="org" value="ORG">' | sed "s/ORG/${ORG}/"
 
   Q=`echo $KEY | tr '+' ' '`
-  #echo $Q
   STR=`< /dev/urandom tr -dc A-Za-z0-9 | head -c${1:-32};echo;`
   TMP=/tmp/TMP_${STR}.txt
+  TMP_TSV=/tmp/TMP_${STR}.tsv
 
-  #CNT=`egrep -ic "$Q" $MD `
   Q=$(echo $Q | tr '[:upper:]' '[:lower:]' | sed 's/ and / AND /')
   QQ=$(echo $Q | sed 's/ and /\n/gI' | tail -1)
   AWK_CMD=$(echo $Q | tr -s ' ' | sed 's#^#/#' | sed 's#AND#/ \&\& /#g' | sed 's#$#/#' )
@@ -263,10 +264,9 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
     exit
   fi
 
-  if [ $CNT -gt 3000 ]; then
+  if [ $CNT -gt 5000 ]; then
     echo Too many results found \(${CNT}\). The webserver is limited to 500 datasets per search. \
-    Try a stricter keyword or accession number search, or a '<a href="/bulk">bulk data download</a>.'
-    echo "<br>"
+    Try a stricter keyword or accession number search, or a '<a href="/bulk">bulk download</a>.' "<br>"
     echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size:22px;" ></FORM>'
     exit
   fi
@@ -276,15 +276,17 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
   eval $CMD $MD > $TMP
 
   if [ $CNT -gt 500 ]; then
+    HL=$(echo "<a href=\"${TMP_TSV}\"> here</a>")
+    echo "SRA_run_accession Keyword_context QC_summary SRA_experiment_accession SRA_sample_accession SRA_project_accession GEO_series_accession GEO_sample_accession Experiment.title" | tr ' ' '\t' >$TMP_TSV
     echo Too many results found \(${CNT}\). The webserver is limited to 500 datasets per search. \
-    Try a stricter keyword or accession number search, or a '<a href="/bulk">bulk data download</a>.'
-    echo "<br>"
+    Try a stricter keyword or accession number search, or a '<a href="/bulk">bulk download</a>.' \
+    Click $HL to download the search results as a tab separated file \(TSV\). "<br>"
     echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"></FORM>'
     #display all results
     sed "s#${QQ}#x@x#I" $TMP |  egrep -io ".{0,30}x@x.{0,30}" | tr '\t' ' ' | sed "s/x@x/${QQ}/g" \
     | tr '\t' ' ' | paste - $TMP | cut -f-9 \
     | awk -F'\t' 'BEGIN{OFS=FS} {print $2,$1,$3,$4,$5,$6,$7,$8,$9}' \
-    | sort -k1 | tbl3
+    | sort -k1 | tee -a $TMP_TSV | tbl3
     exit
   fi
 
