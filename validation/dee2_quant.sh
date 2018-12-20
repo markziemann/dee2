@@ -79,11 +79,11 @@ fi
 PFX=${ORG}_art
 SEED=1540165885
 for LEN in 50 100 ; do
-  $ART --rndSeed $SEED -sam -i $REF -l $LEN -f 2 -o ${PFX}_se_${LEN} &
+  $ART -ss HS25 --rndSeed $SEED -sam -i $REF -l $LEN -f 2 -o ${PFX}_se_${LEN} &
 done
 
 for LEN in 50 100 ; do
-  $ART --rndSeed $SEED -sam -i $REF -l $LEN -p -m 300 -s 30 -f 2 -o ${PFX}_pe_${LEN}_ &
+  $ART -ss HS25 --rndSeed $SEED -sam -i $REF -l $LEN -p -m 300 -s 30 -f 2 -o ${PFX}_pe_${LEN}_ &
 done
 
 wait
@@ -191,7 +191,7 @@ cut -f1,4 ${ORG}_se/${SPECIES}/${ORG}_art_se_100/${ORG}_art_se_100.ke.tsv | sed 
 
 ##PAIRED END
 #50 bp PE reads
-join -1 1 -2 1 ${ORG}_art_se_50_g.tsv <(sort -k 1b,1 ${ORG}_pe/${SPECIES}/${ORG}_art_pe_50_1/${ORG}_art_pe_50_1.se.tsv) \
+join -1 1 -2 1 ${ORG}_art_pe_50_g.tsv <(sort -k 1b,1 ${ORG}_pe/${SPECIES}/${ORG}_art_pe_50_1/${ORG}_art_pe_50_1.se.tsv) \
 > ${ORG}_art_pe_50_star.tsv
 
 #sim vs kal transcripts
@@ -224,5 +224,5 @@ export -f main
 
 
 for i in athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae ; do
-  main $i
+main $i
 done
