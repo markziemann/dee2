@@ -2,7 +2,7 @@ library(reshape2)
 
 for (QCZ in list.files(pattern="_qc.tsv.bz2") ) {
 
-ORG=sapply(strsplit(QC,"_"),"[[",1)
+ORG=sapply(strsplit(QCZ,"_"),"[[",1)
 QC=gsub(".bz2","",QCZ)
 CMD=paste("pbzip2 -dc",QCZ,"| awk 'NF==3' > ", QC)
 system(CMD)
@@ -10,7 +10,7 @@ tmp<-read.table(QC)
 x<-as.matrix(acast(tmp, V1~V2, value.var="V3"))
 #ROWNAMES=rownames(x)
 #heax<-as.data.frame(x)
-
+print(ORG)
 PDF=paste(ORG,"_qc.pdf",sep="")
 pdf(PDF)
 par(mfrow=c(3,3))
@@ -47,6 +47,7 @@ hist(z ,main="STAR reads assigned percent",xlab="Percent",cex.main=0.8)
 
 #STAR_Strandedness
 z<-summary(x[,"STAR_Strandedness"])[1:3]
+print(names(z))
 names(z)=c("pos","none","neg")
 barplot(z ,main="STAR Strandedness",ylab="no. SRA runs",cex.main=0.8)
 text(  ((1:3)-0.5)*1.3, ( z *1.0 ) +400, labels=z, xpd=TRUE)
