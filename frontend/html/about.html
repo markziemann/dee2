@@ -145,7 +145,7 @@ li {
 
 
 <header>
-<h1 id="content">About Digital Expression Explorer</h1>
+<h1 id="content">About DEE2</h1>
 
 <p>The compendium is designed to bring biologists closer to large scale gene expression data sets.
 We have processed thousands of public RNA-seq data sets from a veriety of organisms with open-source bioinformatics tools and make them 
@@ -183,6 +183,8 @@ support from <a href="http://www.ncbi.nlm.nih.gov/sra"> SRA</a> and
 </p>
 
 <hr>
+<hr>
+
 <h2 id="content">Latest News</h2>
 
 <p> 28th November 2018 - DEE2 was presented at the ABACBS2018 conference in Melbourne. See the <a href="https://doi.org/10.5281/zenodo.1561839">Poster</a>.
@@ -191,7 +193,7 @@ support from <a href="http://www.ncbi.nlm.nih.gov/sra"> SRA</a> and
 <p> 28th November 2018 - A guide to loading in bulk dumps had been added to my <a href="https://genomespot.blogspot.com/2018/11/using-dee2-bulk-data-dumps.html">Blog</a>. 
 </p>
 
-<p> 12th November 2018 - Ever wondered how accurate DEE2 data actially is? Well we have just undertaken a simulation 
+<p> 12th November 2018 - Ever wondered how accurate DEE2 data actually is? Well we have just undertaken a simulation 
 study and comparison to GEO deposited data to demonstrate the quality of DEE2 data. More details 
 <a href="https://github.com/markziemann/dee2/tree/master/validation"> here</a>.
 </p>
@@ -224,119 +226,208 @@ webserver cgi scripts. Also the keyword search is now case insensitive.
 <li> -Assignment of reads to genes and transcripts</li>
 </ol>
 
-<p>More information regarding the data processing method is available at the  <a href="https://github.com/markziemann/dee2" target="_blank"> GitHub repo</a>.
+<p>More information regarding the data processing method is available at the  <a href="https://github.com/markziemann/dee2" target="_blank"> GitHub repo</a>. 
+Below are the versions and major parameters used in the pipeline.
 </p>
-<hr>	
+
+<style type="text/css">
+.tg1  {border-collapse:collapse;border-spacing:0;}
+.tg1 td{font-family:Arial, sans-serif;font-size:12px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+.tg1 th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+.tg1 .tg-0lax{text-align:left;vertical-align:top}
+</style>
+<table class="tg1">
+  <tr>
+    <th class="tg-0lax" colspan="4">Software versions and parameters used in the pipeline.</th>
+  </tr>
+  <tr>
+    <td class="tg-0lax" rowspan="2"><span style="font-weight:bold">Software, version</span></td>
+    <td class="tg-0lax" rowspan="2"><span style="font-weight:700">Purpose</span></td>
+    <td class="tg-0lax" colspan="2"><span style="font-weight:bold">Parameter</span></td>
+  </tr>
+  <tr>
+    <td class="tg-0lax"><span style="font-weight:bold">SE</span></td>
+    <td class="tg-0lax"><span style="font-weight:bold">PE</span></td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">Aspera client, v3.5.4</td>
+    <td class="tg-0lax">Rapid download of sequence data</td>
+    <td class="tg-0lax" colspan="2">ascp -l 500m -O 33001 -T -i $ID $URL .</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax" rowspan="3">SRA toolkit, v2.8.2</td>
+    <td class="tg-0lax">Validate downloaded SRA files</td>
+    <td class="tg-0lax" colspan="2">vdb-validate $SRA</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">diagnose single or paired end</td>
+    <td class="tg-0lax" colspan="2">fastq-dump -X 4000 --split-files $SRA</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">dump fastq</td>
+    <td class="tg-0lax" colspan="2">(see parallel-fastq-dump below)</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">FastQC, v0.11.5</td>
+    <td class="tg-0lax">Diagnose basespace / colorspace, quality encoding, read length from 4000 reads</td>
+    <td class="tg-0lax">fastqc $FQ1</td>
+    <td class="tg-0lax">fastqc $FQ2</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">parallel-fastq-dump, 0.6.3</td>
+    <td class="tg-0lax">Rapid decompression of sequence data from .sra files</td>
+    <td class="tg-0lax" colspan="2">parallel-fastq-dump --threads $THREADS --outdir . --split-files --defline-qual + -s ${SRR}.sra</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax" rowspan="3">Skewer, v0.2.2</td>
+    <td class="tg-0lax">3’ quality trimming</td>
+    <td class="tg-0lax">skewer -l 18 -q 10 -k inf -t $THREADS -o $SRR $FQ1</td>
+    <td class="tg-0lax">skewer -l 18 -q 10 -k inf -t $THREADS -o $SRR $FQ1 $FQ2</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">Adapter clipping</td>
+    <td class="tg-0lax">skewer -l 18 -t $THREADS -x $ADAPTER -o $SRR $FQ1</td>
+    <td class="tg-0lax">skewer -l 18 -t $THREADS -x $ADAPTER1 -y $ADAPTER2 -o $SRR $FQ1 $FQ2</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">5’ trimming</td>
+    <td class="tg-0lax">skewer -m ap --cut $CLIP_NUM,$CLIP_NUM -l 18 -k inf -t $THREADS $FQ1</td>
+    <td class="tg-0lax">skewer -m ap --cut $R1_CLIP_NUM,$R2_CLIP_NUM -l 18 -k inf -t $THREADS $FQ1 $FQ2</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">Minion, v13-100</td>
+    <td class="tg-0lax">3’ adapter detection</td>
+    <td class="tg-0lax">minion search-adapter -i $FQ1</td>
+    <td class="tg-0lax">minion search-adapter -i $FQ2</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">Bowtie2, v2.3.2</td>
+    <td class="tg-0lax">Adapter contamination detection</td>
+    <td class="tg-0lax" colspan="2">bowtie2 -f -x $BT2_REF -S /dev/stdout $ADAPTER</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">FASTX-Toolkit, v0.0.14</td>
+    <td class="tg-0lax">Progressive 5’ trimming</td>
+    <td class="tg-0lax">fastx_trimmer -f {5,9,13,21} -m 18 -Q 33 -i  $FQ1</td>
+    <td class="tg-0lax">fastx_trimmer -f {5,9,13,21} -m 18 -Q 33 -i  $FQ2</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">STAR v020201</td>
+    <td class="tg-0lax">Gene-level mapping, Diagnose strandedness</td>
+    <td class="tg-0lax">STAR --runThreadN $THREADS --quantMode GeneCounts \<br>--genomeLoad LoadAndKeep  --outSAMtype None \<br>--genomeDir $STAR_DIR --readFilesIn=$FQ1</td>
+    <td class="tg-0lax">STAR --runThreadN $THREADS --quantMode GeneCounts \<br>--genomeLoad LoadAndKeep --outSAMtype None \<br>--genomeDir $STAR_DIR --readFilesIn=$FQ1 $FQ2</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">Kallisto, v0.43.1</td>
+    <td class="tg-0lax">Transcript-level mapping</td>
+    <td class="tg-0lax">kallisto quant $KALLISTO_STRAND_PARAMETER \<br>--single -l 100 -s 20 -t $THREADS -o . \<br> -i $KAL_REF $FQ1</td>
+    <td class="tg-0lax">kallisto quant $KALLISTO_STRAND_PARAMETER \<br>-t $THREADS -o . -i $KAL_REF $FQ1 $FQ2</td>
+  </tr>
+</table>
+
+<hr>
+<hr>
 <h2 id="content">Reference genome information</h2>
 
 <p>The compendium relies on reference genome sequence and annotation information provided by 
 <a href="http://ensemblgenomes.org/" target="_blank" > Ensembl Genomes </a>. 
 </p>
 
-<table widt=85% BORDER="1" CLASS="boldtable">
+
+<style type="text/css">
+.tg2  {border-collapse:collapse;border-spacing:0;}
+.tg2 td{font-family:Arial, sans-serif;font-size:18px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+.tg2 th{font-family:Arial, sans-serif;font-size:18px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+.tg2 .tg-s268{text-align:left}
+</style>
+<table class="tg2">
   <tr>
-   <td><strong>Species</strong></th>
-   <td><strong>Genome Reference Sequence and Annotation</strong></th> 
+    <th class="tg-s268"><strong>Species</strong></th>
+    <th class="tg-s268"><strong>Genome Reference Sequence and Annotation</strong>
+  </th>
   </tr>
   <tr>
-   <td>Arabidopsis thaliana</td>
-   <td>Ensembl release 36 <br> 
-   <a href="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna_sm.toplevel.fa.gz">Genome sequence (fasta)</a> 
-   <br>
-   <a href="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.36.gtf.gz">Gene annotation set (GTF)</a>
-   <br>
-   <a href="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/fasta/arabidopsis_thaliana/cdna/Arabidopsis_thaliana.TAIR10.cdna.all.fa.gz">cDNA sequences (fasta)</a>
+    <td class="tg-s268"><span style="font-style:italic">Arabidopsis thaliana</span></td>
+    <td class="tg-s268">Ensembl release 36<br>
+     <a href="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna_sm.toplevel.fa.gz">Genome sequence (fasta)</a><br>
+     <a href="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.36.gtf.gz">Gene annotation set (GTF)</a><br>
+     <a href="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/fasta/arabidopsis_thaliana/cdna/Arabidopsis_thaliana.TAIR10.cdna.all.fa.gz">cDNA sequences (fasta)</a><br>
   </td>
   </tr>
   <tr>
-   <td>Caenorhabditis elegans</td>
-   <td>Ensembl release 90<br>
-   <a href="ftp://ftp.ensemblorg.ebi.ac.uk/pub/release-90/fasta/caenorhabditis_elegans/dna/Caenorhabditis_elegans.WBcel235.dna_sm.toplevel.fa.gz">Genome sequence (fasta)</a>
-   <br>
-   <a href="ftp://ftp.ensembl.org/pub/release-90/gtf/caenorhabditis_elegans/Caenorhabditis_elegans.WBcel235.90.gtf.gz">Gene annotation set (GTF)</a>
-   <br> 
-   <a href="ftp://ftp.ensembl.org/pub/release-90/fasta/caenorhabditis_elegans/cdna/Caenorhabditis_elegans.WBcel235.cdna.all.fa.gz">cDNA sequences (fasta)</a>
+    <td class="tg-s268"><span style="font-style:italic">Caenorhabditis elegans</span><br></td>
+    <td class="tg-s268">Ensembl release 90<br>
+     <a href="ftp://ftp.ensemblorg.ebi.ac.uk/pub/release-90/fasta/caenorhabditis_elegans/dna/Caenorhabditis_elegans.WBcel235.dna_sm.toplevel.fa.gz">Genome sequence (fasta)</a><br>
+     <a href="ftp://ftp.ensembl.org/pub/release-90/gtf/caenorhabditis_elegans/Caenorhabditis_elegans.WBcel235.90.gtf.gz">Gene annotation set (GTF)</a><br>
+     <a href="ftp://ftp.ensembl.org/pub/release-90/fasta/caenorhabditis_elegans/cdna/Caenorhabditis_elegans.WBcel235.cdna.all.fa.gz">cDNA sequences (fasta)</a><br>
   </td>
   </tr>
   <tr>
-   <td>Drosophila melanogaster</td>
-   <td>Ensembl release 90<br>
-   <a href="ftp://ftp.ensemblorg.ebi.ac.uk/pub/release-90/fasta/drosophila_melanogaster/dna/Drosophila_melanogaster.BDGP6.dna_sm.toplevel.fa.gz">Genome sequence (fasta)</a>
-   <br>
-   <a href="ftp://ftp.ensembl.org/pub/release-90/gtf/drosophila_melanogaster/Drosophila_melanogaster.BDGP6.90.gtf.gz">Gene annotation set (GTF)</a>
-   <br>
-   <a href="ftp://ftp.ensembl.org/pub/release-90/fasta/drosophila_melanogaster/cdna/Drosophila_melanogaster.BDGP6.cdna.all.fa.gz">cDNA sequences (fasta)</a>
-   </td>
-  </tr>
-  <tr>
-   <td>Danio rerio</td>
-   <td>Ensembl release 90 <br>
-   <a href="ftp://ftp.ensemblorg.ebi.ac.uk/pub/release-90/fasta/danio_rerio/dna/Danio_rerio.GRCz10.dna_sm.toplevel.fa.gz">Genome sequence (fasta)</a>
-   <br>
-   <a href="ftp://ftp.ensembl.org/pub/release-90/gtf/danio_rerio/Danio_rerio.GRCz10.90.gtf.gz">Gene annotation set (GTF)</a>
-   <br>
-   <a href="ftp://ftp.ensembl.org/pub/release-90/fasta/drosophila_melanogaster/cdna/Drosophila_melanogaster.BDGP6.cdna.all.fa.gz">cDNA sequences (fasta)</a>
-   </td>
-  </tr>
-  <tr>
-   <td>Escherichia coli</td>
-   <td>Ensembl release 36<br>
-   <a href="ftp://ftp.ensemblgenomes.org/pub/bacteria/release-36/fasta/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655/dna/Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.dna_sm.toplevel.fa.gz">Genome sequence (fasta)</a>
-   <br>
-   <a href="ftp://ftp.ensemblgenomes.org/pub/bacteria/release-36/gtf/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655/Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.36.gtf.gz">Gene annotation set (GTF)</a>
-   <br>
-   <a href="ftp://ftp.ensemblgenomes.org/pub/bacteria/release-36/fasta/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655/cdna/Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.cdna.all.fa.gz">cDNA sequences (fasta)</a>
-   </td>
-  </tr>
-  <tr>
-   <td>Homo sapiens</td>
-   <td>Ensembl release 90 <br>
-   <a href="ftp://ftp.ensemblorg.ebi.ac.uk/pub/release-90/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa.gz">Genome sequence (fasta)</a>
-   <br>
-   <a href="ftp://ftp.ensembl.org/pub/release-90/gtf/homo_sapiens/Homo_sapiens.GRCh38.90.gtf.gz">Gene annotation set (GTF)</a>
-   <br>
-   <a href="ftp://ftp.ensembl.org/pub/release-90/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz">cDNA sequences (fasta)</a>
+    <td class="tg-s268"><span style="font-style:italic">Drosophila melanogaster</span></td>
+    <td class="tg-s268">Ensembl release 90<br>
+     <a href="ftp://ftp.ensemblorg.ebi.ac.uk/pub/release-90/fasta/drosophila_melanogaster/dna/Drosophila_melanogaster.BDGP6.dna_sm.toplevel.fa.gz">Genome sequence (fasta)</a><br>
+     <a href="ftp://ftp.ensembl.org/pub/release-90/gtf/drosophila_melanogaster/Drosophila_melanogaster.BDGP6.90.gtf.gz">Gene annotation set (GTF)</a><br>
+     <a href="ftp://ftp.ensembl.org/pub/release-90/fasta/drosophila_melanogaster/cdna/Drosophila_melanogaster.BDGP6.cdna.all.fa.gz">cDNA sequences (fasta)</a><br>
   </td>
   </tr>
   <tr>
-   <td>Mus musculus</td>
-   <td>Ensembl release 90 <br>
-   <a href="ftp://ftp.ensemblorg.ebi.ac.uk/pub/release-90/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna_sm.primary_assembly.fa.gz">Genome sequence (fasta)</a>
-   <br>
-   <a href="ftp://ftp.ensembl.org/pub/release-90/gtf/mus_musculus/Mus_musculus.GRCm38.90.gtf.gz">Gene annotation set (GTF)</a>
-   <br>
-   <a href="ftp://ftp.ensembl.org/pub/release-90/fasta/mus_musculus/cdna/Mus_musculus.GRCm38.cdna.all.fa.gz">cDNA sequences (fasta)</a>
+    <td class="tg-s268"><span style="font-style:italic">Danio rerio</span></td>
+    <td class="tg-s268">Ensembl release 90<br>
+     <a href="ftp://ftp.ensemblorg.ebi.ac.uk/pub/release-90/fasta/danio_rerio/dna/Danio_rerio.GRCz10.dna_sm.toplevel.fa.gz">Genome sequence (fasta)</a><br>
+     <a href="ftp://ftp.ensembl.org/pub/release-90/gtf/danio_rerio/Danio_rerio.GRCz10.90.gtf.gz">Gene annotation set (GTF)</a><br>
+     <a href="ftp://ftp.ensemblorg.ebi.ac.uk/pub/release-90/fasta/danio_rerio/cdna/Danio_rerio.GRCz10.cdna.all.fa.gz">cDNA sequences (fasta)</a><br>
   </td>
   </tr>
   <tr>
-   <td>Rattus norvegicus</td>
-   <td>Ensembl release 90 <br>
-   <a href="ftp://ftp.ensemblorg.ebi.ac.uk/pub/release-90/fasta/rattus_norvegicus/dna/Rattus_norvegicus.Rnor_6.0.dna_sm.toplevel.fa.gz">Genome sequence (fasta)</a>
-   <br>
-   <a href="ftp://ftp.ensembl.org/pub/release-90/gtf/rattus_norvegicus/Rattus_norvegicus.Rnor_6.0.90.gtf.gz">Gene annotation set (GTF)</a>
-   <br>
-   <a href="ftp://ftp.ensembl.org/pub/release-90/fasta/rattus_norvegicus/cdna/Rattus_norvegicus.Rnor_6.0.cdna.all.fa.gz">cDNA sequences (fasta)</a>
+    <td class="tg-s268"><span style="font-style:italic">Escherichia coli</span></td>
+    <td class="tg-s268">Ensembl release 36<br>
+     <a href="ftp://ftp.ensemblgenomes.org/pub/bacteria/release-36/fasta/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655/dna/Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.dna_sm.toplevel.fa.gz">Genome sequence (fasta)</a><br>
+     <a href="ftp://ftp.ensemblgenomes.org/pub/bacteria/release-36/gtf/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655/Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.36.gtf.gz">Gene annotation set (GTF)</a><br>
+     <a href="ftp://ftp.ensemblgenomes.org/pub/bacteria/release-36/fasta/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655/cdna/Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.cdna.all.fa.gz">cDNA sequences (fasta)</a><br>
   </td>
   </tr>
   <tr>
-   <td>Saccharomyces cerevisiae</td>
-   <td>Ensembl release 36 <br>
-   <a href="ftp://ftp.ensemblgenomes.org/pub/fungi/release-36/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna_sm.toplevel.fa.gz">Genome sequence (fasta)</a>
-   <br>
-   <a href="ftp://ftp.ensemblgenomes.org/pub/release-36/fungi/gtf/saccharomyces_cerevisiae/Saccharomyces_cerevisiae.R64-1-1.36.gtf.gz">Gene annotation set (GTF)</a>
-   <br>
-   <a href="ftp://ftp.ensemblgenomes.org/pub/release-36/fungi/fasta/saccharomyces_cerevisiae/cdna/Saccharomyces_cerevisiae.R64-1-1.cdna.all.fa.gz">cDNA sequences (fasta)</a>
+    <td class="tg-s268"><span style="font-style:italic">Homo sapiens</span></td>
+    <td class="tg-s268">Ensembl release 90<br>
+     <a href="ftp://ftp.ensemblorg.ebi.ac.uk/pub/release-90/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa.gz">Genome sequence (fasta)</a><br>
+     <a href="ftp://ftp.ensembl.org/pub/release-90/gtf/homo_sapiens/Homo_sapiens.GRCh38.90.gtf.gz">Gene annotation set (GTF)</a><br>
+     <a href="ftp://ftp.ensembl.org/pub/release-90/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz">cDNA sequences (fasta)</a><br>
+  </td>
+  </tr>
+  <tr>
+    <td class="tg-s268"><span style="font-style:italic">Mus musculus</span></td>
+    <td class="tg-s268">Ensembl release 90<br>
+     <a href="ftp://ftp.ensemblorg.ebi.ac.uk/pub/release-90/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna_sm.primary_assembly.fa.gz">Genome sequence (fasta)</a><br>
+     <a href="ftp://ftp.ensembl.org/pub/release-90/gtf/mus_musculus/Mus_musculus.GRCm38.90.gtf.gz">Gene annotation set (GTF)</a><br>
+     <a href="ftp://ftp.ensembl.org/pub/release-90/fasta/mus_musculus/cdna/Mus_musculus.GRCm38.cdna.all.fa.gz">cDNA sequences (fasta)</a><br>
+  </td>
+  </tr>
+  <tr>
+    <td class="tg-s268"><span style="font-style:italic">Rattus norvegicus</span></td>
+    <td class="tg-s268">Ensembl release 90 <br>
+     <a href="ftp://ftp.ensemblorg.ebi.ac.uk/pub/release-90/fasta/rattus_norvegicus/dna/Rattus_norvegicus.Rnor_6.0.dna_sm.toplevel.fa.gz">Genome sequence (fasta)</a><br>
+     <a href="ftp://ftp.ensembl.org/pub/release-90/gtf/rattus_norvegicus/Rattus_norvegicus.Rnor_6.0.90.gtf.gz">Gene annotation set (GTF)</a><br>
+     <a href="ftp://ftp.ensembl.org/pub/release-90/fasta/rattus_norvegicus/cdna/Rattus_norvegicus.Rnor_6.0.cdna.all.fa.gz">cDNA sequences (fasta)</a><br>
+  </td>
+  </tr>
+  <tr>
+    <td class="tg-s268"><span style="font-style:italic">Saccharomyces cerevisiae</span></td>
+    <td class="tg-s268">Ensembl release 36<br>
+     <a href="ftp://ftp.ensemblgenomes.org/pub/fungi/release-36/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna_sm.toplevel.fa.gz">Genome sequence (fasta)</a><br>
+     <a href="ftp://ftp.ensemblgenomes.org/pub/release-36/fungi/gtf/saccharomyces_cerevisiae/Saccharomyces_cerevisiae.R64-1-1.36.gtf.gz">Gene annotation set (GTF)</a><br>
+     <a href="ftp://ftp.ensemblgenomes.org/pub/release-36/fungi/fasta/saccharomyces_cerevisiae/cdna/Saccharomyces_cerevisiae.R64-1-1.cdna.all.fa.gz">cDNA sequences (fasta)</a><br>  
   </td>
   </tr>
 </table>
 
+<br>
+
+
 <hr>
 <h2 id="content">Update schedule</h2>
 
-<p>New datasets deposited to SRA will be incorporated into the compendium fortnightly. Upon release
-of an updated genome build, we intend to update the data for that organism within a year, keeping a
-previously archived version for bulk download only. Gene annotation sets will not be updated
-independent of the genome build.
+<p>We are updating the compendium fortnightly. Upon release of an updated genome build, we intend to update the data for that organism within a year, keeping a
+previously archived version for bulk download only. Gene annotation sets will not be updated windependent of the genome build.
 </p>
 
 </div>
