@@ -132,7 +132,7 @@ loadTxInfo<-function(zipname){
 
 #' Load Quality Control Info
 #'
-#' This function loads quality control data.
+#' This function loads quality control data. More information about the QC metrics is available from the project github page: https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md
 #' @param zipname Path to the zipfile.
 #' @keywords Load Qualiy Control QC
 #' @export
@@ -147,6 +147,7 @@ loadQcMx<-function(zipname){
   file.rename(mxname,TF)
   dat <- read.table(TF,row.names=1,header=T,fill=T)
   unlink(TF)
+  message("For more information about DEE2 QC metrics, visit https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md")
   return(dat)
 }
 
