@@ -21,7 +21,7 @@ getDee2Metadata<-function(species,outfile=NULL, ...){
       if(!grepl(".tsv$",metadataname)){metadataname=paste0(metadataname,".tsv")}
     }
     download.file(metadataURL, destfile=metadataname, ...)
-    mdat<-read.table(metadataname,header=T)
+    mdat<-read.table(metadataname,header=T,sep='\t')
     if(is.null(outfile)){unlink(metadataname)}
     return(mdat)
   }
