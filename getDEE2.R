@@ -165,7 +165,7 @@ loadSummaryMeta<-function(zipname){
   unzip(zipname, files = CM, exdir = tempdir() )
   mxname<-paste0(tempdir(),"/",CM)
   file.rename(mxname,TF)
-  dat <- read.table(TF,row.names=1,header=T,fill=T)
+  dat <- read.table(TF,row.names=1,header=T,quote="",sep='\t',fill=FALSE)
   unlink(TF)
   return(dat)
 }
@@ -185,7 +185,7 @@ loadFullMeta<-function(zipname){
   unzip(zipname, files = CM, exdir = tempdir() )
   mxname<-paste0(tempdir(),"/",CM)
   file.rename(mxname,TF)
-  dat <- read.table(TF,row.names=1,header=T,fill=T,sep='\t')
+  dat <- read.table(TF,row.names=1,header=T,quote="",fill=T,sep='\t')
   unlink(TF)
   return(dat)
 }
