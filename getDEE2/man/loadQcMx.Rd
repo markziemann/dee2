@@ -10,7 +10,7 @@ loadQcMx(zipname)
 \item{zipname}{Path to the zipfile.}
 }
 \description{
-This function loads quality control data.
+This function loads quality control data. More information about the QC metrics is available from the project github page: https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md
 }
 \examples{
 x<-loadQcMx("~/Downloads/Data.zip")
