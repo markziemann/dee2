@@ -4,8 +4,13 @@ library("edgeR")
 library("locfit")
 library("reshape2")
 library("parallel")
+library("getDEE2")
 
-source("https://raw.githubusercontent.com/markziemann/dee2/master/getDEE2.R")
+#too install getDEE2 package follow these steps
+#library("devtools")
+#devtools::install_github("markziemann/dee2/getDEE2")
+#alternatively, source shouls also work
+#source("https://raw.githubusercontent.com/markziemann/dee2/master/getDEE2.R")
 
 
 #############
@@ -641,6 +646,8 @@ names(z)=c("ath","cel","dme","dre","eco","hsa","mmu","rno","sce")
 de_cor<-function(x){ x[1] }
 zz<-lapply(list(ath_res,cel_res,dme_res,dre_res,eco_res,hsa_res,mmu_res,rno_res,sce_res), de_cor)
 names(zz)=c("ath","cel","dme","dre","eco","hsa","mmu","rno","sce")
+zz_median<-median(as.numeric(zz))
+print(paste("Median spearman correlation across 9 contrasts:",zz_median))
 
 pdf("val.pdf")
 par(mfrow=c(2,1))
@@ -650,3 +657,4 @@ plot(1:length(zz),zz,pch=19,xaxt = "n",xlab="",ylab="Spearman coefficient",main=
 axis(1, at=1:length(zz), labels=c("ath","cel","dme","dre","eco","hsa","mmu","rno","sce") )
 dev.off()
 
+save.image("val.RData")
