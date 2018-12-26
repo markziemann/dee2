@@ -83,6 +83,7 @@ awk -v n=$NROW '$1==n' $KELIST \
 ####
 echo "QC checks"
 ####
+parallel "sed -i -n '/:/p'  " {}/{}.qc :::: $FINLIST
 parallel -j$CORES wc -l {}/{}.qc :::: $FINLIST > $QCLIST
 NROW=$(awk '{print $1}' $QCLIST | sort | uniq -c | sort -k1nr | head -1 | awk '{print $NF}')
 awk -v n=$NROW '$1!=n {print $2}' $QCLIST | cut -d '/' -f2 | parallel -j$CORES rm -rf {}
@@ -150,6 +151,7 @@ echo "qc agg"
 ####
 qc_agg(){
 ACC=$1
+sed -i -n '/:/p'  $ACC/$ACC.qc
 cut -d ':' -f2 $ACC/$ACC.qc > $ACC/$ACC.qcl
 sed 's/:/\t/' $ACC/$ACC.qc | sed "s/^/${ACC}\t/"
 }
