@@ -67,11 +67,11 @@ qc_analysis<-function(org,srr) {
     }
   }
 
-  if ( is.na(STAR_UniqMapRate) == TRUE ) {
+  if ( is.na(STAR_AssignRate) == TRUE ) {
     FAIL=paste(FAIL,"4",sep=",")
   } else {
     if ( STAR_AssignRate < 60 ) {
-      if (STAR_UniqMapRate < 40 ) {
+      if (STAR_AssignRate < 40 ) {
         FAIL=paste(FAIL,"4",sep=",")
       } else {
          WARN=paste(WARN,"4",sep=",")
@@ -79,35 +79,35 @@ qc_analysis<-function(org,srr) {
     }
   }
 
-  if ( is.na(Kallisto_MapRate) == TRUE ) {
+  if ( is.na(STAR_AssignedReads) == TRUE ) {
     FAIL=paste(FAIL,"5",sep=",")
+  } else {
+    if ( STAR_AssignedReads_PerGene < 500 ) {
+      if ( STAR_AssignedReads_PerGene < 50 ) {
+        FAIL=paste(FAIL,"5",sep=",")
+      } else {
+        WARN=paste(WARN,"5",sep=",")
+      }
+    }
+  }
+
+  if ( is.na(Kallisto_MapRate) == TRUE ) {
+    FAIL=paste(FAIL,"6",sep=",")
   } else {
     if ( Kallisto_MapRate < 60 ) {
       if (Kallisto_MapRate < 40 ) {
-        FAIL=paste(FAIL,"5",sep=",")
+        FAIL=paste(FAIL,"6",sep=",")
       } else {
-         WARN=paste(WARN,"5",sep=",")
+         WARN=paste(WARN,"6",sep=",")
       }
     }
   }
 
   if ( is.na(Kallisto_MappedReads) == TRUE ) {
-    FAIL=paste(FAIL,"6",sep=",")
+    FAIL=paste(FAIL,"7",sep=",")
   } else {
     if ( Kallisto_MappedReads_PerGene < 500 ) {
       if ( Kallisto_MappedReads_PerGene < 50 ) {
-        FAIL=paste(FAIL,"6",sep=",")
-      } else {
-        WARN=paste(WARN,"6",sep=",")
-      }
-    }
-  }
-
-  if ( is.na(STAR_AssignedReads) == TRUE ) {
-    FAIL=paste(FAIL,"7",sep=",")
-  } else {
-    if ( STAR_AssignedReads_PerGene < 500 ) {
-      if ( STAR_AssignedReads_PerGene < 50 ) {
         FAIL=paste(FAIL,"7",sep=",")
       } else {
         WARN=paste(WARN,"7",sep=",")
