@@ -116,9 +116,11 @@ qc_analysis<-function(org,srr) {
   }
 
   if (!is.null(FAIL)) {
-    QCRES=paste("FAIL",FAIL,sep="")
+    FAIL=sub(',','',FAIL)
+    QCRES=paste("FAIL(",FAIL,")",sep="")
   } else if (!is.null(WARN)) {
-    QCRES=paste("WARN",WARN,sep="")
+    WARN=sub(',','',WARN)
+    QCRES=paste("WARN(",WARN,")",sep="")
   } else {
     QCRES="PASS"
   }
@@ -126,7 +128,7 @@ qc_analysis<-function(org,srr) {
 }
 
 
-for (org in c("celegans") ) {
+for (org in c("athaliana") ) {
 #for (org in c("ecoli", "scerevisiae" , "athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
   #create a list of NCBI taxa full names
   species_list<-c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
@@ -155,22 +157,23 @@ for (org in c("celegans") ) {
   ########################
   # Get metadata mod date
   ########################
-  CMD=paste("echo $(($(date +%s) - $(date +%s -r ",SRADBWD,"/",org,".RData)))",sep="")
-  TIME_SINCE_MOD=as.numeric(system(CMD,intern=T))
-  if ( TIME_SINCE_MOD<(60*60*24*7*1) ) { 
-  #  if ( TIME_SINCE_MOD<(60) ) { 
-    message("using existing metadata")
-    load(paste(SRADBWD,"/",org,".RData",sep=""))
-  } else {
 
-    ########################
+  RDA=paste(SRADBWD,"/",org,".RData",sep="")
+  TIME_SINCE_MOD=1545911646
+
+  if(file.exists(RDA)){ 
+    load(RDA)
+    CMD=paste("echo $(($(date +%s) - $(date +%s -r ",SRADBWD,"/",org,".RData)))",sep="")
+    TIME_SINCE_MOD=as.numeric(system(CMD,intern=T))
+  }
+
+#  if ( TIME_SINCE_MOD>(60*60*24*7) | (length(runs)<1) ) { 
+  if ( missing(runs)==TRUE | TIME_SINCE_MOD>60 ) { 
+
+
     # Get info from sradb vers 2
-    ########################
-    #clear some objects to prevent errors
-    #rm(oidx,z,s,res,accessions,runs)
     message("part A")
-    #  s=NULL
-    #  s$reset()
+    if ( !missing(s) == TRUE ) { s$reset() ; }
     oidx=z=s=res=accessions=runs=NULL
     message("part B")
     oidx = Omicidx$new()
@@ -188,6 +191,8 @@ for (org in c("celegans") ) {
     runs<-accessions$run
     s$reset()
     save.image(file = paste(SRADBWD,"/",org,".RData",sep=""))
+  } else {
+    message("using existing metadata")
   }
 
   ########################
@@ -199,11 +204,7 @@ for (org in c("celegans") ) {
   system(paste("./dee_pipeline.sh",org))
   validated_count<-rowcnt2(paste(DATAWD,"/",org,"_val_list.txt",sep=""))
 
-  if ( validated_count > 0 ) {
-    runs_done<-unique( read.table(paste(DATAWD,"/",org,"_val_list.txt",sep=""),stringsAsFactors=F)[,1] )
-  } else {
-    runs_done=NULL 
-  } 
+  runs_done<-unique( read.table(paste(DATAWD,"/",org,"_val_list.txt",sep=""),stringsAsFactors=F)[,1] )
 
   print(paste(length(runs_done),"runs completed"))
   runs_todo<-base::setdiff(runs, runs_done)
