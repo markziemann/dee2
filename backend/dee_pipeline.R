@@ -34,8 +34,8 @@ qc_analysis<-function(org,srr) {
   if ( is.na(NumReadsQcPass) == TRUE ) {
     FAIL=paste(FAIL,"1",sep=",")
   } else {
-    if ( NumReadsQcPass_PerGene < 1000 ) {
-      if ( NumReadsQcPass_PerGene < 100 ) {
+    if ( NumReadsQcPass_PerGene < 500 ) {
+      if ( NumReadsQcPass_PerGene < 50 ) {
         FAIL=paste(FAIL,"1",sep=",")
       } else {
         WARN=paste(WARN,"1",sep=",")
@@ -94,8 +94,8 @@ qc_analysis<-function(org,srr) {
   if ( is.na(Kallisto_MappedReads) == TRUE ) {
     FAIL=paste(FAIL,"6",sep=",")
   } else {
-    if ( Kallisto_MappedReads_PerGene < 1000 ) {
-      if ( Kallisto_MappedReads_PerGene < 100 ) {
+    if ( Kallisto_MappedReads_PerGene < 500 ) {
+      if ( Kallisto_MappedReads_PerGene < 50 ) {
         FAIL=paste(FAIL,"6",sep=",")
       } else {
         WARN=paste(WARN,"6",sep=",")
@@ -106,8 +106,8 @@ qc_analysis<-function(org,srr) {
   if ( is.na(STAR_AssignedReads) == TRUE ) {
     FAIL=paste(FAIL,"7",sep=",")
   } else {
-    if ( STAR_AssignedReads_PerGene < 1000 ) {
-      if ( STAR_AssignedReads_PerGene < 100 ) {
+    if ( STAR_AssignedReads_PerGene < 500 ) {
+      if ( STAR_AssignedReads_PerGene < 50 ) {
         FAIL=paste(FAIL,"7",sep=",")
       } else {
         WARN=paste(WARN,"7",sep=",")
@@ -124,7 +124,6 @@ qc_analysis<-function(org,srr) {
   }
   QCRES
 }
-
 
 
 for (org in c("celegans") ) {
@@ -158,7 +157,7 @@ for (org in c("celegans") ) {
   ########################
   CMD=paste("echo $(($(date +%s) - $(date +%s -r ",SRADBWD,"/",org,".RData)))",sep="")
   TIME_SINCE_MOD=as.numeric(system(CMD,intern=T))
-  if ( TIME_SINCE_MOD<(60*60*24*7*52) ) { 
+  if ( TIME_SINCE_MOD<(60*60*24*7*1) ) { 
   #  if ( TIME_SINCE_MOD<(60) ) { 
     message("using existing metadata")
     load(paste(SRADBWD,"/",org,".RData",sep=""))
@@ -184,11 +183,11 @@ for (org in c("celegans") ) {
     message("part F")
     res = s$collate(limit = Inf)
     message("part G")
-    save.image(file = paste(SRADBWD,"/",org,".RData",sep=""))
     accessions<-as.data.frame(cbind(res$experiment.accession,res$study.accession,res$sample.accession,res$accession))
     colnames(accessions)=c("experiment","study","sample","run")
     runs<-accessions$run
     s$reset()
+    save.image(file = paste(SRADBWD,"/",org,".RData",sep=""))
   }
 
   ########################
