@@ -146,7 +146,7 @@ li {
 <a href="/bulk.html" class="button">BULK DATA</a>
 </ul>
 
-<h1 id="content">Help@Digital Expression Explorer</h1>
+<h1 id="content">Help@DEE2</h1>
 
 <h2 id="content">FAQ</h2>
 
@@ -168,6 +168,23 @@ Alternatively contact us and we'll have it added.</li>
  <li> I have provided an explanation of each of the QC metrics on the GitHub page 
  <a href="https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md" >here</a>.
 </ol>
+<hr>
+
+<p>Q) Can I get the TPM values from Kallisto?
+</p>
+
+<ol>
+ <li>A) Yes, the abundance.tsv files containing the TPM values are available for download for each SRA run (eg: <a href="http://dee2.io/data/dmelanogaster/SRR1991949/SRR1991949.ke.tsv.gz" target="_blank">http://dee2.io/data/dmelanogaster/SRR1991949/SRR1991949.ke.tsv.gz</a>).
+</ol>
+
+<hr>
+<p>Q) How do I collapse transcript counts to the gene level?
+</p>
+
+<ol>
+ <li> You can use the getDEE2 R package documented <a href="https://github.com/markziemann/dee2/blob/master/AccessDEEfromR.md" target="_blank" >here</a>. It performs a simple aggregation by sum of isoforms to the parent gene. 
+</ol>
+
 <hr>
 
 <p>Q) How do I open zip compressed files?
@@ -193,7 +210,7 @@ for new users.</li>
 </p>
 
 <ol>
- <li>A) We have written an R function that interfaces with the webpage and loads data into R. For more
+ <li>A) We have written an R package that interfaces with the webpage and loads data into R. For more
 information, read the documentation <a href="https://github.com/markziemann/dee2/blob/master/AccessDEEfromR.md"  target="_blank" >here</a> </li> .
 </ol>
 <hr>
