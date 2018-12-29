@@ -88,7 +88,7 @@ Using the QC metrics outlined above, we have classified the datasets as â€œpassâ
 some simple rules as summarised in the table below. Each rule has a numeric code.
 
 | Metric | Fail threshold | Warn threshold | Code |
-| ------ | ------ | ------ | ------ | ------ |
+| ------ | ------ | ------ | ------ | 
 | NumReadsQcPass | < 50 reads per gene | <500 reads per gene | 1 |
 | QcPassRate | <60% | <80% | 2 |
 | STAR_UniqMapRate | <50% | <70% | 3 |
