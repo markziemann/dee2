@@ -1,7 +1,8 @@
 # DEE2 quality metrics
 The DEE2 pipeline gathers a large number of metrics that are critical to determining the validity of 
 transcriptome data. Remember that DEE2 is organised by SRA runs. Here, I will describe how these metrics are 
-generated and what they mean.
+generated and what they mean. Further down, I discuss the logic behind classification of pass, warn and fail
+datasets.
 
 ## SequenceFormat
 Prior to a full analysis, a sample of 4000 reads is obtained from the .sra file to perform some checks. The 
@@ -81,3 +82,18 @@ number of assigned reads, the more accurate the quantificaiton will be.
 ## Kallisto_MapRate
 This is the proportion of reads that were assigned to transcripts. A low value here could be a sign that there 
 are issues with the library preparation.
+
+# QC classifications
+Using the QC metrics outlined above, we have classified the datasets as “pass”, “warn” and “fail” according to 
+some simple rules as summarised in the table below. Each rule has a numeric code.
+
+| Metric | Fail threshold | Warn threshold | Code |
+| ------ | ------ | ------ | ------ | ------ |
+| NumReadsQcPass | < 50 reads per gene | <500 reads per gene | 1 |
+| QcPassRate | <60% | <80% | 2 |
+| STAR_UniqMapRate | <50% | <70% | 3 |
+| STAR_AssignRate | <40% | <60% | 4 |
+| STAR_AssignedReads | < 50 reads per gene | <500 reads per gene | 5 |
+| Kallisto_MapRate | <40% | <60% | 6 |
+| Kallisto_MappedReads | <50 reads per gene | <500 reads per gene | 7 |
+
