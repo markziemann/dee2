@@ -89,11 +89,11 @@ some simple rules as summarised in the table below. Each rule has a numeric code
 
 | Metric | Fail threshold | Warn threshold | Code |
 | ------ | ------ | ------ | ------ | 
-| NumReadsQcPass | < 50 reads per gene | <500 reads per gene | 1 |
-| QcPassRate | <60% | <80% | 2 |
-| STAR_UniqMapRate | <50% | <70% | 3 |
-| STAR_AssignRate | <40% | <60% | 4 |
-| STAR_AssignedReads | < 50 reads per gene | <500 reads per gene | 5 |
-| Kallisto_MapRate | <40% | <60% | 6 |
-| Kallisto_MappedReads | <50 reads per gene | <500 reads per gene | 7 |
+| NumReadsQcPass | < 50 reads per gene | < 500 reads per gene | 1 |
+| QcPassRate | < 60% | < 80% | 2 |
+| STAR_UniqMapRate | < 50% | < 70% | 3 |
+| STAR_AssignRate | < 40% | < 60% | 4 |
+| STAR_AssignedReads | < 50 reads per gene | < 500 reads per gene | 5 |
+| Kallisto_MapRate | < 40% | < 60% | 6 |
+| Kallisto_MappedReads | < 50 reads per gene | < 500 reads per gene | 7 |
 
