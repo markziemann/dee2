@@ -6,6 +6,7 @@ setwd("/mnt/md0/dee2/code")
 library(parallel)
 library(data.table)
 library(SRAdbV2)
+library(R.utils)
 
 IPADD="118.138.234.131"
 #simple rowcount function
@@ -15,9 +16,11 @@ CORES=ceiling(detectCores()/2)
 
 qc_analysis<-function(org,srr) {
  QCFILE=paste("../data/",org,"/",srr,"/",srr,".qc",sep="")
+ QCLFILE=paste("../data/",org,"/",srr,"/",srr,".qcl",sep="")
  q<-read.table(QCFILE,stringsAsFactors=F)
  q<-as.data.frame(t(   data.frame(strsplit(as.character(q$V1),split=":"),stringsAsFactors=F) ))
  rownames(q)=1:nrow(q)
+ q<-q[1:28,]
  #get number of genes to determine required number of reads
  NumReadsQcPass=as.numeric(as.character(q[10,2]))
  NumReadsQcPass_PerGene=NumReadsQcPass/numgenes
@@ -115,6 +118,17 @@ qc_analysis<-function(org,srr) {
     }
   }
 
+  #incorporate a warning about low correlation data
+  mycor<-cors[which(rownames(cors) %in% srr),]
+  if ( mycor < 0.5 ) {
+    WARN=paste(WARN,"8",sep=",")
+  }
+  mycor=c("DatasetCorrel",round(mycor,digits=2))
+
+  #attach mycor to the qc file
+  q<-rbind(q,t(mycor))
+
+
   if (!is.null(FAIL)) {
     FAIL=sub(',','',FAIL)
     QCRES=paste("FAIL(",FAIL,")",sep="")
@@ -124,11 +138,140 @@ qc_analysis<-function(org,srr) {
   } else {
     QCRES="PASS"
   }
+
+  qcres=c("QC_SUMMARY",QCRES)
+  q<-rbind(q,t(qcres))
+  write.table(q,file=QCFILE,quote=F,sep=':',col.names=F,row.names=F)
+  write.table(q$V2,file=QCLFILE,quote=F,sep=':',col.names=F,row.names=F)
   QCRES
 }
 
 
-for (org in c("athaliana") ) {
+getmean<-function(org) {
+# Generate an "average" sample that can be used for correlation QC analysis
+# Make the solution scalable from 100 datasets to 1M.
+
+# load libraries
+library(data.table)
+library(reshape2)
+
+
+meanfile=paste("../mx/",org,"_means.tsv",sep="")
+
+DOIT=0
+if( !file.exists(meanfile) ) {
+  DOIT=1
+} else {
+  MODTIME=as.numeric(difftime(Sys.time() ,file.mtime(meanfile),units="s"))
+  if (MODTIME>60*60*24*30) {
+    DOIT=1
+  }
+}
+
+if ( DOIT==1) {
+  # read in metadata
+  mdat=paste("../sradb/",org,"_metadata.tsv.cut",sep="")
+  m<-read.table(mdat,header=T,sep="\t",quote="",fill=F)
+
+  # make a list of samples to use
+  p<-m[grep("PASS",m$QC_summary),1]
+
+  # make blocks of datasets to analyse
+  num_blocks=ceiling(length(p)/1000)
+  block_size=floor(length(p)/num_blocks)
+
+  # grow a data frame with colums
+  df=NULL
+  TSV=paste("../mx/",org,"_se.tsv.bz2",sep="")
+  for ( i in 1:num_blocks) {
+    s<-sample(p,block_size)
+    p<-setdiff(p,s)
+    d<-fread(TSV)[which(fread(TSV)$V1 %in% s),]
+    d<-as.matrix(acast(d, V2~V1, value.var="V3"))
+    d<-d/colSums(d)*1000000
+    d<-rowMeans(d)
+    df<-cbind(df,d)
+  }
+
+  #get the means and format as dataframe
+  df<-as.data.frame(rowMeans(df))
+  colnames(df)="mean"
+  write.table(df,file=meanfile,quote=F,sep="\t")
+
+} else {
+  df<-read.table(meanfile,sep="\t",header=T,row.names=1)
+}
+df
+}
+
+#check the folder contents and validate
+check_contents<-function(d,gre,tre) {
+SRR=sapply(strsplit(d,"/"),"[[",7)
+DELETE=0
+SE=paste(d,"/",SRR,".se.tsv",sep="")
+G=paste(d,"/",SRR,"_gene.cnt",sep="")
+KE=paste(d,"/",SRR,".ke.tsv",sep="")
+TX=paste(d,"/",SRR,"_tx.cnt",sep="")
+QC=paste(d,"/",SRR,".qc",sep="")
+LOG=paste(d,"/",SRR,".log",sep="")
+FIN=paste(d,"/",SRR,".finished",sep="")
+VAL=paste(d,"/",SRR,".validated",sep="")
+
+if ( !file.exists( SE ) ) {
+  DELETE=1
+} else {
+  se<-fread( SE ,header=F)
+  gro<-dim( se )[1]
+  write(SRR,file=G)
+  write(se$V2,file=G,append=T,ncolumns=1)    
+  gzip(SE)
+  if ( gro!=gre ) {
+    DELETE=1
+  }
+}
+
+if ( !file.exists( KE ) ) {
+  DELETE=1
+} else {
+  ke<-fread( KE ,header=T)
+  tro<-dim( ke )[1]
+  write(SRR,file=TX)
+  write.table(ke[,4],file=TX,append=T,row.names = F,col.names=F)
+  gzip(KE)
+  if ( tro!=tre ) {
+    DELETE=1
+  }
+}
+
+if ( !file.exists( QC ) ) {
+  DELETE=1
+} else {
+  qc<-fread( QC ,header=F)
+  qcro<-dim( fread( QC ,header=F) )[1]
+  if ( qcro<29 ) {
+    DELETE=1
+  }
+}
+
+if ( !file.exists( LOG ) ) {
+  DELETE=1
+} else {
+  LOGOK=length(grep("completed mapping pipeline successfully",readLines( LOG ) ) )
+  if ( LOGOK!=1 ) {
+    DELETE=1
+  }
+}
+
+if ( DELETE==1 ) {
+  unlink(d,recursive=TRUE)
+} else {
+  file.rename(FIN, VAL)
+}
+}
+
+
+#start the analysis
+for (org in c("scerevisiae") ) {
 #for (org in c("ecoli", "scerevisiae" , "athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
   #create a list of NCBI taxa full names
   species_list<-c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
@@ -159,21 +302,22 @@ for (org in c("athaliana") ) {
   ########################
 
   RDA=paste(SRADBWD,"/",org,".RData",sep="")
-  TIME_SINCE_MOD=1545911646
+  GETNEW=0
 
-  if(file.exists(RDA)){ 
-    load(RDA)
-    CMD=paste("echo $(($(date +%s) - $(date +%s -r ",SRADBWD,"/",org,".RData)))",sep="")
-    TIME_SINCE_MOD=as.numeric(system(CMD,intern=T))
+  if(!file.exists(RDA)){ 
+    GETNEW=1
+  } else {
+    MODTIME=as.numeric(difftime(Sys.time() ,file.mtime(RDA),units="s"))
+    if (MODTIME>60*60*24*30) {
+      GETNEW=1
+    }
   }
 
-#  if ( TIME_SINCE_MOD>(60*60*24*7) | (length(runs)<1) ) { 
-  if ( missing(runs)==TRUE | TIME_SINCE_MOD>60 ) { 
-
-
+  if ( GETNEW==1 ) { 
     # Get info from sradb vers 2
     message("part A")
-    if ( !missing(s) == TRUE ) { s$reset() ; }
+    if ( exists("s") ) { s$reset() }
+
     oidx=z=s=res=accessions=runs=NULL
     message("part B")
     oidx = Omicidx$new()
@@ -190,22 +334,54 @@ for (org in c("athaliana") ) {
     colnames(accessions)=c("experiment","study","sample","run")
     runs<-accessions$run
     s$reset()
-    save.image(file = paste(SRADBWD,"/",org,".RData",sep=""))
+    save.image(file = RDA)
   } else {
     message("using existing metadata")
+    load(RDA)
   }
 
   ########################
   # Now determine which datasets have already been processed and completed
   ########################
-  finished_files<-list.files(path = DATAWD, pattern = "finished" , full.names = FALSE, recursive = TRUE, no.. = FALSE)
 
-  #  if ( length(finished_files) > 0 ) { 
-  system(paste("./dee_pipeline.sh",org))
-  validated_count<-rowcnt2(paste(DATAWD,"/",org,"_val_list.txt",sep=""))
+  folders<-list.files(DATAWD,full.names=T,pattern="RR")
+  fin_new<-paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "finished" , full.names = T, recursive = T),"/"),"[[",7),sep="/")
+  fin_new<-fin_new[grep("RR",fin_new)]
+  val_old<-paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "validated" , full.names = T, recursive = T),"/"),"[[",7),sep="/")
 
-  runs_done<-unique( read.table(paste(DATAWD,"/",org,"_val_list.txt",sep=""),stringsAsFactors=F)[,1] )
+  # delete folders that are not expected as they are not in known runs
+  expected_folders<-paste(DATAWD,runs,sep="/")
+  unexpected_folders<-setdiff(folders,expected_folders)
+  write(unexpected_folders,file=paste(DATAWD,"/unexpected_folders.txt",sep=""))
 
+  # delete folders without finished or validated files
+  allocated<-union(fin_new,val_old)
+  unalloc<-setdiff(folders,allocated)
+  unlink(unalloc,recursive=TRUE)
+
+  #Expected rows of se and ke files
+  gre<-dim( read.table(paste(DATAWD,"/rownames_gene.txt",sep=""),header=F) )[1]
+  tre<-dim( read.table(paste(DATAWD,"/rownames_tx.txt",sep=""),header=T) )[1]
+
+  # run the check of new datasets
+  lapply(fin_new,check_contents,gre,tre)
+
+  val<-paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "validated" , full.names = T, recursive = T),"/"),"[[",7),sep="/")
+  runs_done<-sapply(strsplit(val,"/"),"[[",7)
+
+  av<-getmean(org)
+
+  se_files<-paste( DATAWD , "/" , runs_done , "/" , runs_done , ".se.tsv.gz",sep="")
+
+  corav<-function(x) {
+    xx<-read.table(x)
+    cor(merge(xx,av,by=0)[2:3],method="p")[1,2]
+  }
+
+  cors<-data.frame(as.numeric(  mclapply( se_files , corav , mc.cores=CORES) ) )
+  rownames(cors)<-sapply(strsplit(se_files,"/"),"[[",7)
+
+  runs_done<-sapply(strsplit(val,"/"),"[[",7)
   print(paste(length(runs_done),"runs completed"))
   runs_todo<-base::setdiff(runs, runs_done)
   print(paste(length(runs_todo),"requeued runs"))
@@ -245,7 +421,26 @@ for (org in c("athaliana") ) {
 
   x2$QC_summary<-unlist(lapply(x2$SRR_accession , qc_analysis, org=org))
 
+  #here we rsync files to server in chunks of 1000
+  rsync<-function(d,org) {
+    while ( length(d)>0 ) {
+      CHUNKSIZE=1000
+      if ( length(d)>CHUNKSIZE ) {
+        chunk<-paste(d[1:CHUNKSIZE],collapse=" ")
+        d<-setdiff(d,d[1:1000])
+      } else {
+        chunk<-paste(d[1:length(d)],collapse=" ")
+        d<-setdiff(d,d[1:1000])
+      }
+      CMD=paste('rsync -avzh -e \"ssh -i  ~/.ssh/monash/cloud2.key \" ', chunk ,' ubuntu@118.138.234.131:/dee2_data/data/',org,sep="")
+      system(CMD)
+    }
+  } 
+  d<-val
+  rsync(d,org)
+
   write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep=""),quote=F,sep="\t",row.names=F)
+
   SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key", paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ," ubuntu@118.138.234.131:/mnt/dee2_data/metadata")
   system(SCP_COMMAND)
 
