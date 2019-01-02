@@ -104,4 +104,5 @@ some simple rules as summarised in the table below. Each rule has a numeric code
 | Kallisto_MapRate | < 40% | < 60% | 6 |
 | Kallisto_MappedReads | < 50 reads per gene | < 500 reads per gene | 7 |
 | DatasetCorrel | - | < 0.5 | 8 |
+
 Datasets with metrics above these thresholds are given a "pass" classification.
