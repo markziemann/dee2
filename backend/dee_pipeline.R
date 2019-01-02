@@ -271,8 +271,7 @@ if ( DELETE==1 ) {
 
 
 #start the analysis
-for (org in c("scerevisiae") ) {
-#for (org in c("ecoli", "scerevisiae" , "athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
+for (org in c("ecoli", "scerevisiae" , "athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
   #create a list of NCBI taxa full names
   species_list<-c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
  
@@ -439,8 +438,14 @@ for (org in c("scerevisiae") ) {
   d<-val
   rsync(d,org)
 
+  # write metadata
   write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep=""),quote=F,sep="\t",row.names=F)
 
+  #aggregate se ke and qc data
+  CMD=paste("./dee_pipeline.sh",org)
+  system(CMD)
+
+  #upload metadata
   SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key", paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ," ubuntu@118.138.234.131:/mnt/dee2_data/metadata")
   system(SCP_COMMAND)
 
