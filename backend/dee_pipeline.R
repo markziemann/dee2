@@ -147,7 +147,7 @@ qc_analysis<-function(org,srr) {
 }
 
 
-getmean<-function(org) {
+getmean_old<-function(org) {
 # Generate an "average" sample that can be used for correlation QC analysis
 # Make the solution scalable from 100 datasets to 1M.
 
@@ -204,7 +204,75 @@ if ( DOIT==1) {
 df
 }
 
-#check the folder contents and validate
+
+ 
+
+getmean<-function(org) {
+# Generate an "average" sample that can be used for correlation QC analysis
+# Make the solution scalable from 100 datasets to 1M.
+
+# load libraries
+library(data.table)
+library(reshape2)
+
+
+meanfile=paste("../mx/",org,"_means.tsv",sep="")
+
+DOIT=0
+if( !file.exists(meanfile) ) {
+  DOIT=1
+} else {
+  MODTIME=as.numeric(difftime(Sys.time() ,file.mtime(meanfile),units="s"))
+  if (MODTIME>60*60*24*30) {
+    DOIT=1
+  }
+}
+
+if ( DOIT==1) {
+  # read in metadata
+  mdat=paste("../sradb/",org,"_metadata.tsv.cut",sep="")
+  m<-read.table(mdat,header=T,sep="\t",quote="",fill=F)
+
+  # make a list of samples to use
+  p<-m[grep("PASS",m$QC_summary),1]
+
+  # make blocks of datasets to analyse
+  num_blocks=ceiling(length(p)/1000)
+  block_size=floor(length(p)/num_blocks)
+
+  # grow a data frame with colums
+  df=NULL
+  TSV=paste("../mx/",org,"_se.tsv.bz2",sep="")
+
+  dt<-fread(TSV)
+
+  setkey(dt, V1)
+
+  for ( i in 1:num_blocks) {
+    s<-sample(p,block_size)
+    p<-setdiff(p,s)
+    d<-dt[which(dt$V1 %in% s)]
+    d<-as.matrix(acast(d, V2~V1, value.var="V3"))
+    d<-d/colSums(d)*1000000
+    d<-rowMeans(d)
+    df<-cbind(df,d)
+  }
+
+
+  #get the means and format as dataframe
+  df<-as.data.frame(rowMeans(df))
+  colnames(df)="mean"
+  write.table(df,file=meanfile,quote=F,sep="\t")
+
+} else {
+  df<-read.table(meanfile,sep="\t",header=T,row.names=1)
+}
+df
+}
+
+
+
+# check the folder contents and validate
 check_contents<-function(d,gre,tre) {
 SRR=sapply(strsplit(d,"/"),"[[",7)
 DELETE=0
@@ -271,7 +339,7 @@ if ( DELETE==1 ) {
 
 
 #start the analysis
-for (org in c("ecoli", "scerevisiae" , "athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
+for (org in c("athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
   #create a list of NCBI taxa full names
   species_list<-c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
  
