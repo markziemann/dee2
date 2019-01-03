@@ -83,9 +83,16 @@ number of assigned reads, the more accurate the quantificaiton will be.
 This is the proportion of reads that were assigned to transcripts. A low value here could be a sign that there 
 are issues with the library preparation.
 
+## DatasetCorrel
+This is the Pearson correlation between the gene expression profile of the dataset as compared to an average profile of all
+other "PASS" datasets. The rationale behind this is that datasets that are too different can be easily filtered out as they
+might not be standard RNA-seq but some other derivative assay. As the "average" profile will vary slightly over time with the 
+inclusion of more datasets, the correlation coefficient stated here might also vary slightly. This is why it is reported to 2 
+significant figures only.
+
 # QC classifications
 Using the QC metrics outlined above, we have classified the datasets as “pass”, “warn” and “fail” according to 
-some simple rules as summarised in the table below. Each rule has a numeric code.
+some simple rules as summarised in the table below. Each rule has a numeric code. 
 
 | Metric | Fail threshold | Warn threshold | Code |
 | ------ | ------ | ------ | ------ | 
@@ -96,5 +103,6 @@ some simple rules as summarised in the table below. Each rule has a numeric code
 | STAR_AssignedReads | < 50 reads per gene | < 500 reads per gene | 5 |
 | Kallisto_MapRate | < 40% | < 60% | 6 |
 | Kallisto_MappedReads | < 50 reads per gene | < 500 reads per gene | 7 |
+| DatasetCorrel | - | < 0.5 | 8 |
 
 Datasets with metrics above these thresholds are given a "pass" classification.
