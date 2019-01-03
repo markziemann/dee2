@@ -1,5 +1,10 @@
 library(reshape2)
 library(gplots)
+#install_github("GuangchuangYu/bitr")
+library(clusterProfiler)
+library("org.Sc.sgd.db")
+#library("viridis")
+library(RColorBrewer)
 
 tmp<-read.table("scerevisiae_se.tsv")
 x<-as.matrix(acast(tmp, V2~V1, value.var="V3"))
@@ -42,7 +47,8 @@ heatmap.2(  cyp, col=colfunc(25),scale="none", trace="none",margins = c(6,6), ce
 c<-as.dist(1-cor(yp, method="spearman"))
 hr <- hclust(c, method="complete")
 mycl <- cutree(hr, h=max(hr$height/1.6))
-clusterCols <- rainbow(length(unique(mycl)))
+#clusterCols <- rainbow(length(unique(mycl)))
+clusterCols <- brewer.pal(length(unique(mycl)),"Paired")
 myClusterSideBar <- clusterCols[mycl]
 colfunc <- colorRampPalette(c("blue", "white", "red"))
 write.table(mycl,file="DatasetClusters1.txt",quote=F,sep="\t")
@@ -57,7 +63,7 @@ heatmap.2( tcyp, col=colfunc(25), scale="none",trace="none",margins = c(6,6), ce
 c<-as.dist(1-cor(t(yp), method="spearman"))
 hr <- hclust(c , method="complete")
 mycl <- cutree(hr, h=max(hr$height/1.2))
-clusterCols <- rainbow(length(unique(mycl)))
+clusterCols <- brewer.pal(length(unique(mycl)),"Paired")
 myClusterSideBar <- clusterCols[mycl]
 colfunc <- colorRampPalette(c("blue", "white", "red"))
 write.table(mycl,file="GeneClusters1.txt",quote=F,sep="\t")
@@ -97,7 +103,7 @@ heatmap.2(  cyw, col=colfunc(25),scale="none", trace="none",margins = c(6,6), ce
 c<-as.dist(1-cor(yw, method="spearman"))
 hr <- hclust(c, method="complete")
 mycl <- cutree(hr, h=max(hr$height/1.6))
-clusterCols <- rainbow(length(unique(mycl)))
+clusterCols <- brewer.pal(length(unique(mycl)),"Paired")
 myClusterSideBar <- clusterCols[mycl]
 colfunc <- colorRampPalette(c("blue", "white", "red"))
 write.table(mycl,file="DatasetClusters2.txt",quote=F,sep="\t")
@@ -113,7 +119,7 @@ heatmap.2( tcyw, col=colfunc(25), scale="none",trace="none",margins = c(6,6), ce
 c<-as.dist(1-cor(t(yw), method="spearman"))
 hr <- hclust(c , method="complete")
 mycl <- cutree(hr, h=max(hr$height/1.2))
-clusterCols <- rainbow(length(unique(mycl)))
+clusterCols <- brewer.pal(length(unique(mycl)),"Paired")
 myClusterSideBar <- clusterCols[mycl]
 colfunc <- colorRampPalette(c("blue", "white", "red"))
 write.table(mycl,file="GeneClusters2.txt",quote=F,sep="\t")
@@ -122,3 +128,46 @@ heatmap.2(tcyw, main="Gene Clustering 2", Rowv=as.dendrogram(hr), Colv=as.dendro
  dendrogram="row", scale="none", col = colfunc(25), trace="none",
  RowSideColors= myClusterSideBar)
 dev.off()
+
+
+
+g<-read.table("GeneClusters2.txt")
+
+bg<-unique(rownames(g))
+
+bge<-bitr(as.character(bg), fromType="ENSEMBL", toType="ENTREZID", OrgDb="org.Sc.sgd.db")
+
+bge<-as.character(bge$ENTREZID)
+
+res=NULL
+for (n in unique(g$x) ) {
+  c<-rownames(subset(g,x==n))
+  ce<-bitr(as.character(c), fromType="ENSEMBL", toType="ENTREZID", OrgDb="org.Sc.sgd.db")
+  ce<-as.character(ce$ENTREZID)
+  r<-enrichGO(ce,OrgDb="org.Sc.sgd.db",pvalueCutoff = 0.5,pAdjustMethod = "fdr",universe=bge)
+  #r<-enrichPathway(gene=ce,organism = "yeast",pvalueCutoff = 0.5,pAdjustMethod = "BH", universe=bge)
+  r<-r@result
+  r<-r[which(r$p.adjust<0.1),]
+  r<-r[1:3,]
+  r$cluster<-n
+  res<-rbind(res,r)
+}
+
+res$sign<- -log10(res$p.adjust)
+cols<-as.data.frame(brewer.pal(10, "Paired"))
+#cols<-as.data.frame(magma(10))
+#cols<-as.data.frame(brewer.pal(10, "Spectral"))
+#cols<-as.data.frame(rainbow(10))
+cols$num<-1:10
+colnames(cols)=c("colour","num")
+
+res<-merge(res,cols,by.x="cluster",by.y="num")
+
+res$Description<-strtrim(res$Description,80)
+
+
+pdf("GO_chart.pdf")
+par(mai=c(1,4,1,0.5))
+barplot(rev(res$sign),main="Enriched molecular function", horiz=TRUE,names.arg=rev(res$Description),las=1,cex.axis=1,cex.names=0.6,xlab="-log10(FDR)",col=as.character(rev(res$colour)))
+dev.off()
+
