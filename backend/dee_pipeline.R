@@ -14,7 +14,7 @@ rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
 
 CORES=ceiling(detectCores()/2)
 
-qc_analysis<-function(org,srr) {
+qc_analysis<-function(srr,org) {
  QCFILE=paste("../data/",org,"/",srr,"/",srr,".qc",sep="")
  QCLFILE=paste("../data/",org,"/",srr,"/",srr,".qcl",sep="")
  q<-read.table(QCFILE,stringsAsFactors=F)
@@ -120,7 +120,9 @@ qc_analysis<-function(org,srr) {
 
   #incorporate a warning about low correlation data
   mycor<-cors[which(rownames(cors) %in% srr),]
-  if ( mycor < 0.5 ) {
+  if ( is.na(mycor) ) {
+    WARN=paste(WARN,"8",sep=",")
+  } else if ( mycor < 0.5 ) {
     WARN=paste(WARN,"8",sep=",")
   }
   mycor=c("DatasetCorrel",round(mycor,digits=2))
@@ -223,7 +225,7 @@ if( !file.exists(meanfile) ) {
   DOIT=1
 } else {
   MODTIME=as.numeric(difftime(Sys.time() ,file.mtime(meanfile),units="s"))
-  if (MODTIME>60*60*24*30) {
+  if (MODTIME>60*60*24*30*6) {
     DOIT=1
   }
 }
@@ -263,6 +265,8 @@ if ( DOIT==1) {
   df<-as.data.frame(rowMeans(df))
   colnames(df)="mean"
   write.table(df,file=meanfile,quote=F,sep="\t")
+  rm(dt)
+  gc()
 
 } else {
   df<-read.table(meanfile,sep="\t",header=T,row.names=1)
@@ -277,35 +281,43 @@ check_contents<-function(d,gre,tre) {
 SRR=sapply(strsplit(d,"/"),"[[",7)
 DELETE=0
 SE=paste(d,"/",SRR,".se.tsv",sep="")
+SEZ=paste(d,"/",SRR,".se.tsv.gz",sep="")
 G=paste(d,"/",SRR,"_gene.cnt",sep="")
 KE=paste(d,"/",SRR,".ke.tsv",sep="")
+KEZ=paste(d,"/",SRR,".ke.tsv.gz",sep="")
 TX=paste(d,"/",SRR,"_tx.cnt",sep="")
 QC=paste(d,"/",SRR,".qc",sep="")
 LOG=paste(d,"/",SRR,".log",sep="")
 FIN=paste(d,"/",SRR,".finished",sep="")
 VAL=paste(d,"/",SRR,".validated",sep="")
 
-if ( !file.exists( SE ) ) {
+# compress if necessary
+if ( file.exists( SE ) ) {
+  gzip(SE,overwrite=T)
+}
+if ( !file.exists( KE ) ) {
+  gzip(KE,overwrite=TRUE)
+}
+
+if ( !file.exists( SEZ ) ) {
   DELETE=1
 } else {
-  se<-fread( SE ,header=F)
+  se<-fread( SEZ ,header=F)
   gro<-dim( se )[1]
   write(SRR,file=G)
   write(se$V2,file=G,append=T,ncolumns=1)    
-  gzip(SE)
   if ( gro!=gre ) {
     DELETE=1
   }
 }
 
-if ( !file.exists( KE ) ) {
+if ( !file.exists( KEZ ) ) {
   DELETE=1
 } else {
-  ke<-fread( KE ,header=T)
+  ke<-fread( KEZ ,header=T)
   tro<-dim( ke )[1]
   write(SRR,file=TX)
   write.table(ke[,4],file=TX,append=T,row.names = F,col.names=F)
-  gzip(KE)
   if ( tro!=tre ) {
     DELETE=1
   }
@@ -339,7 +351,8 @@ if ( DELETE==1 ) {
 
 
 #start the analysis
-for (org in c("athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio", "hsapiens", "mmusculus" ) ) {
+for (org in c("celegans" ) ) {
+#for (org in c("drerio", "hsapiens", "mmusculus" ) ) {
   #create a list of NCBI taxa full names
   species_list<-c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
  
@@ -431,7 +444,7 @@ for (org in c("athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio
   tre<-dim( read.table(paste(DATAWD,"/rownames_tx.txt",sep=""),header=T) )[1]
 
   # run the check of new datasets
-  lapply(fin_new,check_contents,gre,tre)
+  mclapply(fin_new,check_contents,gre,tre,mc.cores=CORES)
 
   val<-paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "validated" , full.names = T, recursive = T),"/"),"[[",7),sep="/")
   runs_done<-sapply(strsplit(val,"/"),"[[",7)
@@ -486,7 +499,8 @@ for (org in c("athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio
   write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.complete.tsv.cut",sep=""),quote=F,sep="\t",row.names=F)
   x2<-x2[which(x2$SRR_accession %in% runs_done),]
 
-  x2$QC_summary<-unlist(lapply(x2$SRR_accession , qc_analysis, org=org))
+  x2$QC_summary<-unlist(mclapply(x2$SRR_accession , qc_analysis, org=org,mc.cores=CORES))
+  #x2$QC_summary<-unlist(lapply(x2$SRR_accession , qc_analysis, org=org))
 
   #here we rsync files to server in chunks of 1000
   rsync<-function(d,org) {
@@ -499,7 +513,7 @@ for (org in c("athaliana",  "rnorvegicus" , "celegans", "dmelanogaster", "drerio
         chunk<-paste(d[1:length(d)],collapse=" ")
         d<-setdiff(d,d[1:1000])
       }
-      CMD=paste('rsync -avzh -e \"ssh -i  ~/.ssh/monash/cloud2.key \" ', chunk ,' ubuntu@118.138.234.131:/dee2_data/data/',org,sep="")
+      CMD=paste('rsync -azh -e \"ssh -i  ~/.ssh/monash/cloud2.key \" ', chunk ,' ubuntu@118.138.234.131:/dee2_data/data/',org,sep="")
       system(CMD)
     }
   } 
