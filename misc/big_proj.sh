@@ -3,8 +3,7 @@
 echo need to increase ULIMIT for this
 #sudo sh -c "ulimit -n 1000000 && exec su $LOGNAME"
 
-#for ORG in athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae ; do
-for ORG in athaliana celegans dmelanogaster drerio ecoli rnorvegicus scerevisiae ; do
+for ORG in athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae ; do
 
 FULL_METADATA=${ORG}_metadata.tsv.cut
 DEE2_ACCESSIONS=${ORG}_accessions.tsv
