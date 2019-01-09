@@ -137,7 +137,7 @@ qc_analysis<-function(srr,org) {
 }
 
 
-getmean_old<-function(org) {
+getmean_old_old<-function(org) {
 # Generate an "average" sample that can be used for correlation QC analysis
 # Make the solution scalable from 100 datasets to 1M.
 
@@ -197,7 +197,7 @@ df
 
  
 
-getmean<-function(org) {
+getmean_old<-function(org) {
 # Generate an "average" sample that can be used for correlation QC analysis
 # Make the solution scalable from 100 datasets to 1M.
 
@@ -262,6 +262,74 @@ if ( DOIT==1) {
 df
 }
 
+getmean<-function(org) {
+# Generate an "average" sample that can be used for correlation QC analysis
+# Make the solution scalable from 100 datasets to 1M.
+
+# load libraries
+library(data.table)
+library(reshape2)
+
+
+meanfile=paste("../mx/",org,"_means.tsv",sep="")
+
+DOIT=0
+if( !file.exists(meanfile) ) {
+  DOIT=1
+} else {
+  MODTIME=as.numeric(difftime(Sys.time() ,file.mtime(meanfile),units="s"))
+  if (MODTIME>60*60*24*30*6) {
+    DOIT=1
+  }
+}
+
+if ( DOIT==1) {
+  # read in metadata
+  mdat=paste("../sradb/",org,"_metadata.tsv.cut",sep="")
+  m<-read.table(mdat,header=T,sep="\t",quote="",fill=F)
+
+  # make a list of samples to use
+  p<-m[grep("PASS",m$QC_summary),1]
+
+  # make blocks of datasets to analyse
+  num_blocks=ceiling(length(p)/100)
+  block_size=floor(length(p)/num_blocks)
+
+  chunks=NULL
+  for (n in 1:num_blocks) {
+    chunk<-sample(p,block_size)
+    p<-setdiff(p,chunk)
+    chunks<-c(list(chunk),chunks)
+  }
+
+  chunkmean<-function(chunk) {
+  df=NULL
+  for ( SRR in chunk ) {
+    sefile=paste("../data/",org,"/",SRR,"/",SRR,".se.tsv.gz",sep="")
+    if ( file.exists(sefile) ) {
+      se<-fread(sefile,header=F)
+      x<-as.matrix(se$V2/sum(se$V2)*1000000)
+      colnames(x)=SRR
+      df = cbind(df,x)
+    }
+  }
+  rowMeans(df)
+  }
+
+  chunkmeans<-mclapply(chunks,chunkmean,mc.cores=CORES)
+  means<-as.data.frame(matrix(unlist(chunkmeans), nrow=length(unlist(chunkmeans[1]))))
+  means<-as.data.frame(rowMeans(means))
+  colnames(means)="means"
+  gene_names_file=paste("../data/",org,"/rownames_gene.txt",sep="")
+  genes<-readLines(gene_names_file)
+  genes<-genes[2:length(genes)]
+  rownames(means)=genes
+  write.table(means,file=meanfile,quote=F,sep="\t")
+} else {
+  means<-read.table(meanfile,sep="\t",header=T,row.names=1)
+}
+means
+}
 
 
 # check the folder contents and validate

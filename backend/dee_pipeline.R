@@ -14,8 +14,7 @@ IPADD="118.138.234.131"
 CORES=ceiling(detectCores())
 
 #start the analysis
-for (org in c("drerio" ) ) {
-#for (org in c("drerio", "hsapiens", "mmusculus" ) ) {
+for (org in c("ecoli","scerevisiae","rnorvegicus","athaliana","celegans","dmelanogaster","drerio", "hsapiens", "mmusculus" ) ) {
   #create a list of NCBI taxa full names
   species_list<-c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
  
