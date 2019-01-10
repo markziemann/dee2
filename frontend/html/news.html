@@ -149,6 +149,23 @@ li {
 
         <h2 id="content">Recent updates</h2>
 
+<p> 11th January 2019 - In response to feedback we are unveiling several new features:
+</p>
+<ul style="list-style-type:circle">
+  <li>&bull;Data bundles: any project with >200 runs we've collected into bundles which can be downloaded <a href="/bundles">here</a>. </li><br><br>
+  <li>&bull;Keyword searches: users can now string together multiple keywords with "and" to restrict the search results. Multiple word search terms also wrk better now.</li><br><br>
+  <li>&bull;Metadata: Now when you perform a search with the web UI, the experiment.name from SRA is shown and hopefully this will make it easier to perform downstream analysis. Also
+              we have included full and summary metadata in each DEE2 download. The metadata are also available for download from the bulk page.</li><br><br>
+  <li>&bull;R API: previously the API code was sourced from GitHub, due to some security concerns we now have a package on github which can be installed with devtools.</li><br><br>
+  <li>&bull;You will also notice two new files in each download GeneInfo.tsv and TxInfo.tsv. These contain the gene symbols information as well as the gene and transcript lengths for FPKM calculation.
+              Importantly, the TxInfo.tsv contains the tx-->parent gene information so that transcript data can be easily aggregated to the gene level. In the R package, there is a new function called Tx2Gene
+              which performs aggregation (sum) with a single command "x<-Tx2Gene(x)". </li><br><br>
+  <li>&bull;QC classification: We have just implemented QC thresholds to classify datasets as pass, warn or fail. More infor on this can be found
+              <a href="https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md" >here</a></li><br><br>
+  <li>&bull;Kallisto TPM: In addition to being able to caluculate FPKM using the R API, you can get Kallisto TPM from the repository for individual runs. Here is an example:
+              <a href="http://dee2.io/data/dmelanogaster/SRR1991949" target="_blank">SRR1991949</a>. The kallisto output file has the "ke.tsv.gz" suffix.</li><br><br>
+</ul>
+
 <p> 28th November 2018 - DEE2 was presented at the ABACBS2018 conference in Melbourne. See the <a href="https://doi.org/10.5281/zenodo.1561839">Poster</a>.
 </p>
 
@@ -163,7 +180,7 @@ study and comparison to GEO deposited data to demonstrate the quality of DEE2 da
 <p> 26th October 2018 - Recently there have been many projects with &#8805;500 SRA runs, meaning that they have not 
 been readily available from the webserver as one file. In order to address this, I've packaged these SRA projects with 
 &#8805;200 SRA run numbers into zip files. Only projects with EVERY run processed successfully by DEE2 are included.
-These are now available <a href="/huge">here</a>.
+These are now available <a href="/bundles">here</a>.
 </p>
 
 <p>7th October 2018 - QC information is now linked in the search results and available by hovering the
