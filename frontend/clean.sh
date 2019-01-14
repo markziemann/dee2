@@ -14,7 +14,7 @@ STASH=/mnt/stash
 cd $DATA
 AGE=$(date -r started +%s)
 TIME=$(date +%s)
-if [ $((TIME-AGE)) -gt 300 ] ; then
+if [ $((TIME-AGE)) -gt 3600 ] ; then
   rm $STARTED_FILE
 fi
 
