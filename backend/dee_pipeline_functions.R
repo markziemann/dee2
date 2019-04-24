@@ -360,14 +360,20 @@ if ( !file.exists( SEZ ) ) {
 } else if ( file.info(SEZ)[1]<1000 ) {
   DELETE=1
 } else {
-
-  se<-fread( SEZ ,header=F)
-  gro<-dim( se )[1]
-  write(SRR,file=G)
-  write(se$V2,file=G,append=T,ncolumns=1)    
-  if ( gro!=gre ) {
-    DELETE=1
-  }
+  se<-NULL
+  tryCatch({ se<-fread(SEZ,header=F) },
+    error = function(e) { DELETE=1 },
+    finally = {
+      gro<-dim( se )[1]
+      write(SRR,file=G)
+      write(se$V2,file=G,append=T,ncolumns=1)    
+      if ( is.null( se )) {
+        DELETE=1
+      } else if ( gro!=gre ) {
+        DELETE=1
+      }
+    }
+  )
 }
 
 if ( !file.exists( KEZ ) ) {
@@ -375,13 +381,20 @@ if ( !file.exists( KEZ ) ) {
 } else if ( file.info(KEZ)[1]<1000 ) {
   DELETE=1
 } else {
-  ke<-fread( KEZ ,header=T)
-  tro<-dim( ke )[1]
-  write(SRR,file=TX)
-  write.table(ke[,4],file=TX,append=T,row.names = F,col.names=F)
-  if ( tro!=tre ) {
-    DELETE=1
-  }
+  ke<-NULL                 
+  tryCatch({ ke<-fread(KEZ,header=T) },
+    error = function(e) { DELETE=1 },
+    finally = {
+      tro<-dim( ke )[1]
+      write(SRR,file=TX)
+      write.table(ke[,4],file=TX,append=T,row.names = F,col.names=F)
+      if ( is.null( ke )) {
+        DELETE=1
+      } else if ( tro!=tre ) {
+        DELETE=1
+      }
+    }
+  )
 }
 
 if ( !file.exists( QC ) ) {
