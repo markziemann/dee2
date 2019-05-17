@@ -399,6 +399,8 @@ if ( !file.exists( KEZ ) ) {
 
 if ( !file.exists( QC ) ) {
   DELETE=1
+} else if (file.info(QC)[1]<100 ) {
+  DELETE=1
 } else {
   qc<-fread( QC ,header=F,sep=":")
   qcro=nrow(qc)
