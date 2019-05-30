@@ -225,6 +225,8 @@ Here I'll demonstrate two ways to query SRAdbv2 ([Docs](https://seandavi.github.
 
 You will need to install, then load the library.
 
+*** Edit 30th May 2019: The URL hosting the API is down, meaning that queries to SRAdbV2 as demonstrated beloware not working. We will update when there's a solution to this problem. ***
+
 ```
 #installation
 install.packages('BiocManager')
