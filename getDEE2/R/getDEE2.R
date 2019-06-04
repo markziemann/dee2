@@ -20,7 +20,7 @@ getDee2Metadata<-function(species,outfile=NULL, ...){
       metadataname=outfile
       if(!grepl(".tsv$",metadataname)){metadataname=paste0(metadataname,".tsv")}
     }
-    download.file(metadataURL, destfile=metadataname, ...)
+    download.file(metadataURL, destfile=metadataname, mode = "wb", ...)
     mdat<-read.table(metadataname,header=T,quote="",sep='\t',fill=FALSE)
     if(is.null(outfile)){unlink(metadataname)}
     return(mdat)
@@ -243,7 +243,7 @@ getDEE2<-function(species, SRRvec, outfile=NULL, metadata=NULL,
       zipname=outfile
       if(!grepl(".zip$",zipname)){zipname=paste0(zipname,".zip")}
     }
-    download.file(murl, destfile=zipname, ...)
+    download.file(murl, destfile=zipname, mode = "wb", ...)
 
     GeneCounts<-loadGeneCounts(zipname)
     TxCounts<-loadTxCounts(zipname)
