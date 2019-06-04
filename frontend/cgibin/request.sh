@@ -80,6 +80,11 @@ ROWNAMES_TX=rownames_tx.txt
 paste $ROWNAMES_TX $TXCOUNTS > $USRDIR/TxCountMatrix.tsv
 
 #################################################
+# README file based on contents
+#################################################
+cp /usr/lib/cgi-bin/contents.md $USRDIR/README.md
+
+#################################################
 # Collect run logs
 #################################################
 # Collect reports
@@ -87,5 +92,5 @@ LOGS=$(echo $QS2 | tr ' ' '\n' | awk '{print $1"/"$1".log"}' | tr '\n' ' ' | sed
 cp $LOGS $LOGDIR
 
 cd $USRDIR
-zip -r - MetadataSummary.tsv MetadataFull.tsv GeneCountMatrix.tsv QC_Matrix.tsv TxCountMatrix.tsv GeneInfo.tsv TxInfo.tsv logs
+zip -r - README.md MetadataSummary.tsv MetadataFull.tsv GeneCountMatrix.tsv QC_Matrix.tsv TxCountMatrix.tsv GeneInfo.tsv TxInfo.tsv logs
 find $USRDIR -type d -mmin +60 -maxdepth 1 -exec rm -r {} \;
