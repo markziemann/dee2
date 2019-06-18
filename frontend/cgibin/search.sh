@@ -234,7 +234,9 @@ if [ -n "$ACC" -a -z "$KEY" ] ; then
   echo ${CNT} datasets found. Use the checkboxes to select ones of interest.
   cut -f-10 $MD | egrep -w "$Q" | sort -k1 | tblx
   echo '</table>'
+
   echo '<input type="submit" value="Get Counts" class="tfbutton" style="font-size : 22px;" >'
+  echo '<input type="submit" formaction="request2.sh" method="get" value="Degust" class="tfbutton" style="font-size : 22px;" >'
   echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
   echo Please hit the submit button just once. Retrieval time is about 1 dataset per second.
   exit
@@ -297,6 +299,7 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
   | sort -k1 | tbl2x
   echo '</table>'
   echo '<input type="submit" value="Get Counts" class="tfbutton" style="font-size:22px;" >'
+  echo '<input type="submit" formaction="request2.sh" method="get" value="Degust" class="tfbutton" style="font-size : 22px;" >'
   echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"  style="font-size : 22px;"  ></FORM>'
   echo Please hit the submit button just once. Retrieval time is about 1 dataset per second.
   rm -f $TMP
