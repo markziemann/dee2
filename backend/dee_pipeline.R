@@ -1,5 +1,8 @@
 #!/usr/bin/env Rscript
 
+# if an error occurs on here: mclapply(fin_new,check_contents,gre,tre,mc.cores=CORES)
+# then need to run this rm -rf `find ../data/org | grep tmp$ | head -1000`
+
 setwd("/mnt/md0/dee2/code")
 
 #library(SRAdb)
@@ -11,10 +14,11 @@ library(R.utils)
 IPADD="118.138.234.131"
 #simple rowcount function
 
-CORES=ceiling(detectCores())
+CORES=5
 
 #start the analysis
-for (org in c("ecoli","scerevisiae","rnorvegicus","athaliana","celegans","dmelanogaster","drerio", "hsapiens", "mmusculus" ) ) {
+for (org in c("hsapiens" ) ) {
+#for (org in c("drerio", "hsapiens", "mmusculus" ) ) {
   #create a list of NCBI taxa full names
   species_list<-c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
  
@@ -50,7 +54,7 @@ for (org in c("ecoli","scerevisiae","rnorvegicus","athaliana","celegans","dmelan
     GETNEW=1
   } else {
     MODTIME=as.numeric(difftime(Sys.time() ,file.mtime(RDA),units="s"))
-    if (MODTIME>60*60*24*30) {
+    if (MODTIME>60*60*24*30*12) {
       GETNEW=1
     }
   }
@@ -108,7 +112,7 @@ for (org in c("ecoli","scerevisiae","rnorvegicus","athaliana","celegans","dmelan
   tre<-dim( read.table(paste(DATAWD,"/rownames_tx.txt",sep=""),header=T) )[1]
 
   # run the check of new datasets
-  mclapply(fin_new,check_contents,gre,tre,mc.cores=CORES)
+  mclapply(fin_new,check_contents,gre,tre,mc.cores=5)
 
   val<-paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "validated" , full.names = T, recursive = T),"/"),"[[",7),sep="/")
   runs_done<-sapply(strsplit(val,"/"),"[[",7)
@@ -122,7 +126,7 @@ for (org in c("ecoli","scerevisiae","rnorvegicus","athaliana","celegans","dmelan
     cor(merge(xx,av,by=0)[2:3],method="p")[1,2]
   }
 
-  cors<-data.frame(as.numeric(  mclapply( se_files , corav , mc.cores=CORES) ) )
+  cors<-data.frame(as.numeric(  mclapply( se_files , corav , mc.cores=5) ) )
   rownames(cors)<-sapply(strsplit(se_files,"/"),"[[",7)
 
   runs_done<-sapply(strsplit(val,"/"),"[[",7)
@@ -163,7 +167,7 @@ for (org in c("ecoli","scerevisiae","rnorvegicus","athaliana","celegans","dmelan
   write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.complete.tsv.cut",sep=""),quote=F,sep="\t",row.names=F)
   x2<-x2[which(x2$SRR_accession %in% runs_done),]
 
-  x2$QC_summary<-unlist(mclapply(x2$SRR_accession , qc_analysis, org=org,mc.cores=CORES))
+  x2$QC_summary<-unlist(mclapply(x2$SRR_accession , qc_analysis, org=org,mc.cores=5))
   #x2$QC_summary<-unlist(lapply(x2$SRR_accession , qc_analysis, org=org))
 
   #here we rsync files to server in chunks of 1000
@@ -226,11 +230,13 @@ for (org in c("ecoli","scerevisiae","rnorvegicus","athaliana","celegans","dmelan
   rownames(z)=z$Row.names
   z$Row.names=NULL
 
-  DATE=strsplit(as.character(file.info(FILES2[1])[,6])," ",fixed=T)[[1]][1]
+  DATE="2019-06-15"
+# DATE=strsplit(as.character(file.info(FILES2[1])[,6])," ",fixed=T)[[1]][1]
   HEADER=paste("Updated",DATE)
   z<-z[order(rownames(z),decreasing=T ), ,drop=F]
   par(las=2) ; par(mai=c(1,2.5,1,0.5))
-  MAX=max(as.numeric(z[,1]))+100000
+  MAX=500000
+#  MAX=max(as.numeric(z[,1]))+100000
 
   bb<-barplot( rbind( as.numeric(z$queued) , as.numeric(z$completed) ) ,
    names.arg=rownames(z) ,xlim=c(0,MAX), beside=T, main=HEADER, col=c("darkblue","red") ,
