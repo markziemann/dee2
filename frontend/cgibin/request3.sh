@@ -115,37 +115,9 @@ QS2=`echo $QS | tr ' ' '\n' | cut -d '_' -f1 | tr '\n' ' '`
 PFX=$(echo $ORG | cut -c-3)
 
 #################################################
-# Accession numbers
-#################################################
-head -1 $ACCESSIONS > $USRDIR/MetadataSummary.tsv
-echo $QS2 | tr ' ' '\n' | grep -wFf - $ACCESSIONS | sort >> $USRDIR/MetadataSummary.tsv
-
-#################################################
-# Accession numbers
-#################################################
-head -1 $METADATA > $USRDIR/MetadataFull.tsv
-echo $QS2 | tr ' ' '\n' | grep -wFf - $METADATA | sort >> $USRDIR/MetadataFull.tsv
-
-#################################################
 # Gene info - names and length
 #################################################
-cp ${PFX}_gene_info.tsv $USRDIR/GeneInfo.tsv
 cp ${PFX}_tx_info.tsv $USRDIR/TxInfo.tsv
-
-#################################################
-# STAR Gene counts
-#################################################
-GENECOUNTS=$(echo $QS2 | tr ' ' '\n' | awk '{print $1"/"$1"_gene.cnt"}' | tr '\n' ' ' | sed 's/$/\n/')
-#add gene symbol
-cut -f-2 $USRDIR/GeneInfo.tsv | tr '\t' '_' \
-| paste - $GENECOUNTS > $USRDIR/GeneCountMatrix.tsv
-
-#################################################
-# QC matrix
-#################################################
-QCS=$(echo $QS2 | tr ' ' '\n' | awk '{print $1"/"$1".qcl"}' | tr '\n' ' ' | sed 's/$/\n/')
-ROWNAMES_QC=rownames_qc.txt
-paste $ROWNAMES_QC $QCS | cat <(echo SeqMetric2 $QS2 | tr ' ' '\t') - > $USRDIR/QC_Matrix.tsv
 
 #################################################
 # Kallisto Transcript counts
@@ -155,17 +127,6 @@ ROWNAMES_TX=rownames_tx.txt
 cut -f-3 $USRDIR/TxInfo.tsv | tr '\t' '_' \
 | paste - $TXCOUNTS > $USRDIR/TxCountMatrix.tsv
 
-#################################################
-# README file based on contents
-#################################################
-cp /usr/lib/cgi-bin/contents.md $USRDIR/README.md
-
-#################################################
-# Collect run logs
-#################################################
-# Collect reports
-LOGS=$(echo $QS2 | tr ' ' '\n' | awk '{print $1"/"$1".log"}' | tr '\n' ' ' | sed 's/$/\n/')
-cp $LOGS $LOGDIR
 cd $USRDIR
 
 TOKEN=$(curl -b cookies.txt -c cookies.txt 'http://degust.erc.monash.edu/upload' | sort | grep 'name="authenticity_token"' | cut -d '"' -f8)
