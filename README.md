@@ -9,8 +9,6 @@ DEE2 currently supports analysis of several major species including A. thaliana 
 ## How can I access the processed data?
 The processed data is available at http://dee2.io and can be also accessed using our specially developed [R interface](../master/AccessDEEfromR.md)
 
-***Due to planned maintenance of the Nectar research cloud, there will be an 8 hour outage some time between 10am 19th June and 6pm 4th June (AEST).***
-
 ## Want to learn more?
 For information on different parts of the app, see the specific documentation:
 * [How to use the pipeline to process raw data](../master/pipeline/README.md)
