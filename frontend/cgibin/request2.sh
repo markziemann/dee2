@@ -136,8 +136,9 @@ cp ${PFX}_tx_info.tsv $USRDIR/TxInfo.tsv
 # STAR Gene counts
 #################################################
 GENECOUNTS=$(echo $QS2 | tr ' ' '\n' | awk '{print $1"/"$1"_gene.cnt"}' | tr '\n' ' ' | sed 's/$/\n/')
-ROWNAMES_GENE=rownames_gene.txt
-paste $ROWNAMES_GENE $GENECOUNTS > $USRDIR/GeneCountMatrix.tsv
+#add gene symbol
+cut -f-2 $USRDIR/GeneInfo.tsv | tr '\t' '_' \
+| paste - $GENECOUNTS > $USRDIR/GeneCountMatrix.tsv
 
 #################################################
 # QC matrix
