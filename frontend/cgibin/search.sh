@@ -236,7 +236,11 @@ if [ -n "$ACC" -a -z "$KEY" ] ; then
   echo '</table>'
 
   echo '<input type="submit" value="Get Counts" class="tfbutton" style="font-size : 22px;" >'
-  echo '<input type="submit" formaction="request2.sh" method="get" value="Degust" class="tfbutton" style="font-size : 22px;" >'
+  echo '<br>'
+  echo '<input type="submit" formaction="request2.sh" method="get" value="Degust (STAR gene counts)" class="tfbutton" style="font-size : 22px;" >'
+  echo '<input type="submit" formaction="request3.sh" method="get" value="Degust (Kallisto tx counts)" class="tfbutton" style="font-size : 22px;" >'
+  echo '<input type="submit" formaction="request4.sh" method="get" value="Degust (Kallisto tx2gene counts)" class="tfbutton" style="font-size : 22px;" >'
+  echo '<br>'
   echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
   echo Please hit the submit button just once. Retrieval time is about 1 dataset per second.
   exit
@@ -298,9 +302,14 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
   | awk -F'\t' 'BEGIN{OFS=FS} ;{print $2,$1,$3,$4,$5,$6,$7,$8,$9}' \
   | sort -k1 | tbl2x
   echo '</table>'
-  echo '<input type="submit" value="Get Counts" class="tfbutton" style="font-size:22px;" >'
-  echo '<input type="submit" formaction="request2.sh" method="get" value="Degust" class="tfbutton" style="font-size : 22px;" >'
-  echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"  style="font-size : 22px;"  ></FORM>'
+
+  echo '<input type="submit" value="Get Counts" class="tfbutton" style="font-size : 22px;" >'
+  echo '<br>'
+  echo '<input type="submit" formaction="request2.sh" method="get" value="Degust (STAR gene counts)" class="tfbutton" style="font-size : 22px;" >'
+  echo '<input type="submit" formaction="request3.sh" method="get" value="Degust (Kallisto tx counts)" class="tfbutton" style="font-size : 22px;" >'
+  echo '<input type="submit" formaction="request4.sh" method="get" value="Degust (Kallisto tx2gene counts)" class="tfbutton" style="font-size : 22px;" >'
+  echo '<br>'
+  echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
   echo Please hit the submit button just once. Retrieval time is about 1 dataset per second.
   rm -f $TMP
 
