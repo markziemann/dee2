@@ -17,7 +17,8 @@ IPADD="118.138.234.131"
 CORES=5
 
 #start the analysis
-for (org in c("hsapiens" ) ) {
+args = commandArgs(trailingOnly=TRUE)
+org=args[1]
 #for (org in c("drerio", "hsapiens", "mmusculus" ) ) {
   #create a list of NCBI taxa full names
   species_list<-c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
@@ -92,6 +93,8 @@ for (org in c("hsapiens" ) ) {
   # Now determine which datasets have already been processed and completed
   ########################
 
+  unlink(list.files(DATAWD,pattern="_STARtmp",recursive=T))
+
   folders<-list.files(DATAWD,full.names=T,pattern="RR")
   fin_new<-paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "finished" , full.names = T, recursive = T),"/"),"[[",7),sep="/")
   fin_new<-fin_new[grep("RR",fin_new)]
@@ -112,6 +115,7 @@ for (org in c("hsapiens" ) ) {
   tre<-dim( read.table(paste(DATAWD,"/rownames_tx.txt",sep=""),header=T) )[1]
 
   # run the check of new datasets
+  source("dee_pipeline_functions.R")
   mclapply(fin_new,check_contents,gre,tre,mc.cores=5)
 
   val<-paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "validated" , full.names = T, recursive = T),"/"),"[[",7),sep="/")
@@ -126,6 +130,7 @@ for (org in c("hsapiens" ) ) {
     cor(merge(xx,av,by=0)[2:3],method="p")[1,2]
   }
 
+  source("dee_pipeline_functions.R")
   cors<-data.frame(as.numeric(  mclapply( se_files , corav , mc.cores=5) ) )
   rownames(cors)<-sapply(strsplit(se_files,"/"),"[[",7)
 
@@ -167,6 +172,7 @@ for (org in c("hsapiens" ) ) {
   write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.complete.tsv.cut",sep=""),quote=F,sep="\t",row.names=F)
   x2<-x2[which(x2$SRR_accession %in% runs_done),]
 
+  source("dee_pipeline_functions.R")
   x2$QC_summary<-unlist(mclapply(x2$SRR_accession , qc_analysis, org=org,mc.cores=5))
   #x2$QC_summary<-unlist(lapply(x2$SRR_accession , qc_analysis, org=org))
 
@@ -230,7 +236,7 @@ for (org in c("hsapiens" ) ) {
   rownames(z)=z$Row.names
   z$Row.names=NULL
 
-  DATE="2019-06-15"
+  DATE=date()
 # DATE=strsplit(as.character(file.info(FILES2[1])[,6])," ",fixed=T)[[1]][1]
   HEADER=paste("Updated",DATE)
   z<-z[order(rownames(z),decreasing=T ), ,drop=F]
@@ -248,4 +254,4 @@ for (org in c("hsapiens" ) ) {
   dev.off()
   system("scp -i ~/.ssh/monash/cloud2.key dee_datasets.png ubuntu@118.138.234.131:/mnt/dee2_data/mx")
 
-}
+#}
