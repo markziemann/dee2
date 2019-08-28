@@ -14,11 +14,15 @@ shopt -s expand_aliases
 
 #handling verbosity setting
 LASTVAR=$(echo $@ | rev | cut -d ' ' -f1 | rev)
-if [ $LASTVAR == "-V" ] ; then
-  set -x
-  VERBOSE=TRUE
-  NUMVARS=$#
-  NUMVARS=$((NUMVARS-1))
+if [ ! -z $LASTVAR ] ; then
+  alias wget='wget -q'
+  alias curl='curl -s'
+  if [ $LASTVAR == "-V" ] ; then
+    set -x
+    VERBOSE=TRUE
+    NUMVARS=$#
+    NUMVARS=$((NUMVARS-1))
+  fi
 else
   alias wget='wget -q'
   alias curl='curl -s'
@@ -338,9 +342,9 @@ Ta7g6mGwIMXrdTQQ8fZs
 EOF
       chmod 700 $DEE_DIR/.ascp
     fi
-    ascp -l 500m -O 33001 -T -i $ID $URL . \
-    || ( echo $SRR failed ascp download | tee -a $SRR.log ; sleep 5 ; exit1 ; return 1 )
-    SRASIZE=$(du ${SRR}.sra)
+    prefetch -a "/usr/local/bin/ascp|/dee2/.ascp/aspera-license" $SRR \
+    || ( echo $SRR failed download with prefetch | tee -a $SRR.log ; sleep 5 ; exit1 ; return 1 )
+    mv /root/ncbi/public/sra/${SRR}.sra .
   fi
 
 ##########################################################################
@@ -1299,7 +1303,6 @@ scerevisiae	1644684' | awk -v M=$MEM -v F=$MEM_FACTOR 'M>($2*F)' | sort -k2gr | 
 
   TMPHTML=/tmp/tmp.$RANDOM.html
   wget --no-check-certificate -O $TMPHTML "$ACC_URL"
-  wget --no-check-certificate -O $TMPHTML $(grep 'frame src=' $TMPHTML | cut -d '"' -f2)
 
   #specify organism if it has not already been specified by user
   MY_ORG=$(join -1 1 -2 1 \
@@ -1315,7 +1318,7 @@ MY_ORG=$1
 ACC_REQUEST=$2
 TMPHTML=/tmp/tmp.$RANDOM.html
 wget --no-check-certificate -r -O $TMPHTML "${ACC_REQUEST}?ORG=${MY_ORG}&Submit" 2>&1 /dev/null
-wget --no-check-certificate -O $TMPHTML $(grep 'frame src=' $TMPHTML | cut -d '"' -f2)
+wget --no-check-certificate -O $TMPHTML $(grep 'frame src=' $TMPHTML | cut -d '"' -f2) 2>&1 /dev/null
 ACCESSION=$(grep 'ACCESSION=' $TMPHTML | cut -d '=' -f2)
 STAR --genomeLoad LoadAndExit --genomeDir ../ref/$MY_ORG/ensembl/star >/dev/null  2>&1
 echo $ACCESSION
