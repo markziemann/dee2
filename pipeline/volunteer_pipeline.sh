@@ -1253,8 +1253,10 @@ for DIR in $(find /dee2/ref/ | grep /ensembl/star$ | sed 's#\/code\/\.\.##' ) ; 
   STAR --genomeLoad Remove --genomeDir $DIR >/dev/null 2>&1
 done
 
-MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
-#MEM=$(free | awk 'NR==2{print $4}')
+MEM=$(echo $(free | awk '$1 ~ /Mem:/  {print $2-$3}') \
+  $(free | awk '$1 ~ /Swap:/  {print $2-$3}') \
+  | awk '{print $1+$2}' )
+
 NUM_CPUS=$(grep -c ^processor /proc/cpuinfo)
 CPU_SPEED=$(lscpu | grep MHz | awk '{print $NF}' | sort -k2gr)
 
