@@ -88,7 +88,9 @@ ALNLIM=2
 MEMALNLIM=4
 THREADS=$(grep -c ^processor /proc/cpuinfo)
 DISK=$(df . | awk 'END{print$4}')
-MEM=$(free | awk '$1 ~ /Mem:/  {print $2-$3}')
+MEM=$(echo $(free | awk '$1 ~ /Mem:/  {print $2-$3}') \
+  $(free | awk '$1 ~ /Swap:/  {print $2-$3}') \
+  | awk '{print $1+$2}' )
 
 ##########################################################################
 #Initial disk space check
@@ -186,7 +188,7 @@ if [ -z $GTF ] || [ ! -r $GTF  ] ; then
   gunzip -f $(basename $GTFURL)
   GTF=$MYREF_DIR/$(basename $GTFURL .gz)
   grep -cw gene $GTF > $GTF.cnt
-  cd -
+  cd - > /dev/null
 fi
 
 GDNA=$MYREF_DIR/$(basename $GDNAURL .gz)
@@ -196,7 +198,7 @@ if [ -z $GDNA ] || [ ! -r $GDNA  ] ; then
   wget $GDNAURL
   gunzip -f $(basename $GDNAURL)
   GDNA=$MYREF_DIR/$(basename $GDNAURL .gz)
-  cd -
+  cd - > /dev/null
 fi
 
 CDNA=$MYREF_DIR/$(basename $CDNAURL .gz)
@@ -207,7 +209,7 @@ if [ -z $CDNA ] || [ ! -r $CDNA  ] ; then
   gunzip -f $(basename $CDNAURL)
   CDNA=$MYREF_DIR/$(basename $CDNAURL .gz)
   grep -c '>' $CDNA > $CDNA.cnt
-  cd -
+  cd - > /dev/null
 fi
 
 # setup the necessary genome transcriptome indexes
@@ -228,7 +230,7 @@ if [ -z $BT2_REF ] || [ ! -r $BT2_REF  ] ; then
     echo "Solution: Try deleting and reindexing the ref transcriptome."
     exit1 ; return 1
   fi
-  cd -
+  cd - > /dev/null
 fi
 
 KAL_DIR=$MYREF_DIR/kallisto
@@ -253,7 +255,7 @@ if [ -z $KAL_REF ] || [ ! -r $KAL_REF  ] ; then
     echo "Solution: Try deleting and reindexing the ref transcriptome."
     exit1 ; return 1
   fi
-  cd -
+  cd - > /dev/null
 fi
 
 STAR_DIR=$MYREF_DIR/star
@@ -277,7 +279,7 @@ if [ ! -r $STAR_DIR/SA ] || [ ! -r $STAR_DIR/SAindex ] ; then
     echo "Solution: Try deleting and reindexing the ref genome."
     exit1 ; return 1
   fi
-  cd -
+  cd - > /dev/null
 fi
 
 ##########################################################################
@@ -1144,7 +1146,7 @@ if [ $KMER -lt "31" ] ; then
     cd $KAL_DIR
     kallisto index -i $(basename $CDNA).k$KMER.idx -k $KMER $(basename $CDNA)
     for IDX in *idx ; do grep -c '>' $(basename $CDNA) > $IDX.cnt ; done
-    cd -
+    cd - > /dev/null
   fi
 else
   KMER=31
@@ -1279,7 +1281,7 @@ rnorvegicus     26913880
 scerevisiae     1644684' | grep -w $MY_ORG | awk -v f=$MEM_FACTOR '{print $2*f}')
 
   if [ $MEM_REQD -gt $MEM ] ; then
-    echo Error, analysis of $ORG data requires at least $(echo $MEM_REQD $MEM_FACTOR | awk '{print $1*$2}') kB in RAM, but there is only $MEM available.
+    echo Error, analysis of $ORG data requires at least $MEM_REQD $MEM_FACTOR kB in RAM, but there is only $MEM available.
     exit 1
   fi
 fi
@@ -1312,7 +1314,7 @@ myfunc(){
 MY_ORG=$1
 ACC_REQUEST=$2
 TMPHTML=/tmp/tmp.$RANDOM.html
-wget --no-check-certificate -r -O $TMPHTML "${ACC_REQUEST}?ORG=${MY_ORG}&Submit"
+wget --no-check-certificate -r -O $TMPHTML "${ACC_REQUEST}?ORG=${MY_ORG}&Submit" 2>&1 /dev/null
 wget --no-check-certificate -O $TMPHTML $(grep 'frame src=' $TMPHTML | cut -d '"' -f2)
 ACCESSION=$(grep 'ACCESSION=' $TMPHTML | cut -d '=' -f2)
 STAR --genomeLoad LoadAndExit --genomeDir ../ref/$MY_ORG/ensembl/star >/dev/null  2>&1
