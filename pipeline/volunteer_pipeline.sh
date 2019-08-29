@@ -14,15 +14,11 @@ shopt -s expand_aliases
 
 #handling verbosity setting
 LASTVAR=$(echo $@ | rev | cut -d ' ' -f1 | rev)
-if [ ! -z $LASTVAR ] ; then
-  alias wget='wget -q'
-  alias curl='curl -s'
-  if [ $LASTVAR == "-V" ] ; then
-    set -x
-    VERBOSE=TRUE
-    NUMVARS=$#
-    NUMVARS=$((NUMVARS-1))
-  fi
+if [ $LASTVAR == "-V" ] ; then
+  set -x
+  VERBOSE=TRUE
+  NUMVARS=$#
+  NUMVARS=$((NUMVARS-1))
 else
   alias wget='wget -q'
   alias curl='curl -s'
