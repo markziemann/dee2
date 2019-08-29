@@ -188,7 +188,7 @@ if [ -z $GTF ] || [ ! -r $GTF  ] ; then
   gunzip -f $(basename $GTFURL)
   GTF=$MYREF_DIR/$(basename $GTFURL .gz)
   grep -cw gene $GTF > $GTF.cnt
-  cd - > /dev/null
+  cd -
 fi
 
 GDNA=$MYREF_DIR/$(basename $GDNAURL .gz)
@@ -198,7 +198,7 @@ if [ -z $GDNA ] || [ ! -r $GDNA  ] ; then
   wget $GDNAURL
   gunzip -f $(basename $GDNAURL)
   GDNA=$MYREF_DIR/$(basename $GDNAURL .gz)
-  cd - > /dev/null
+  cd -
 fi
 
 CDNA=$MYREF_DIR/$(basename $CDNAURL .gz)
@@ -209,7 +209,7 @@ if [ -z $CDNA ] || [ ! -r $CDNA  ] ; then
   gunzip -f $(basename $CDNAURL)
   CDNA=$MYREF_DIR/$(basename $CDNAURL .gz)
   grep -c '>' $CDNA > $CDNA.cnt
-  cd - > /dev/null
+  cd -
 fi
 
 # setup the necessary genome transcriptome indexes
@@ -230,7 +230,7 @@ if [ -z $BT2_REF ] || [ ! -r $BT2_REF  ] ; then
     echo "Solution: Try deleting and reindexing the ref transcriptome."
     exit1 ; return 1
   fi
-  cd - > /dev/null
+  cd -
 fi
 
 KAL_DIR=$MYREF_DIR/kallisto
@@ -255,7 +255,7 @@ if [ -z $KAL_REF ] || [ ! -r $KAL_REF  ] ; then
     echo "Solution: Try deleting and reindexing the ref transcriptome."
     exit1 ; return 1
   fi
-  cd - > /dev/null
+  cd -
 fi
 
 STAR_DIR=$MYREF_DIR/star
@@ -279,7 +279,7 @@ if [ ! -r $STAR_DIR/SA ] || [ ! -r $STAR_DIR/SAindex ] ; then
     echo "Solution: Try deleting and reindexing the ref genome."
     exit1 ; return 1
   fi
-  cd - > /dev/null
+  cd -
 fi
 
 ##########################################################################
@@ -818,7 +818,6 @@ elif [ $RDS == "PE" ] ; then
         CLIP_LINE_NUM1=$((CLIP_LINE_NUM+1))
         tail -n+$CLIP_LINE_NUM1 ${SRR}_1.tmp.fastq >> ${SRR}-trimmed-pair1.fastq && rm ${SRR}_1.tmp.fastq
         tail -n+$CLIP_LINE_NUM1 ${SRR}_2.tmp.fastq >> ${SRR}-trimmed-pair2.fastq && rm ${SRR}_2.tmp.fastq
-        READ_CNT_AVAIL=$(sed -n '2~4p' ${SRR}-trimmed-pair1.fastq | wc -l)
         minion search-adapter -i ${SRR}-trimmed-pair1.fastq | tee -a $SRR.log
         minion search-adapter -i ${SRR}-trimmed-pair2.fastq | tee -a $SRR.log
       else
@@ -1147,7 +1146,7 @@ if [ $KMER -lt "31" ] ; then
     cd $KAL_DIR
     kallisto index -i $(basename $CDNA).k$KMER.idx -k $KMER $(basename $CDNA)
     for IDX in *idx ; do grep -c '>' $(basename $CDNA) > $IDX.cnt ; done
-    cd - > /dev/null
+    cd -
   fi
 else
   KMER=31
@@ -1253,7 +1252,6 @@ done
 MEM=$(echo $(free | awk '$1 ~ /Mem:/  {print $2-$3}') \
   $(free | awk '$1 ~ /Swap:/  {print $2-$3}') \
   | awk '{print $1+$2}' )
-
 NUM_CPUS=$(grep -c ^processor /proc/cpuinfo)
 CPU_SPEED=$(lscpu | grep MHz | awk '{print $NF}' | sort -k2gr)
 
@@ -1302,6 +1300,7 @@ scerevisiae	1644684' | awk -v M=$MEM -v F=$MEM_FACTOR 'M>($2*F)' | sort -k2gr | 
 
   TMPHTML=/tmp/tmp.$RANDOM.html
   wget --no-check-certificate -O $TMPHTML "$ACC_URL"
+  wget --no-check-certificate -O $TMPHTML $(grep 'frame src=' $TMPHTML | cut -d '"' -f2)
 
   #specify organism if it has not already been specified by user
   MY_ORG=$(join -1 1 -2 1 \
@@ -1316,8 +1315,8 @@ myfunc(){
 MY_ORG=$1
 ACC_REQUEST=$2
 TMPHTML=/tmp/tmp.$RANDOM.html
-wget --no-check-certificate -r -O $TMPHTML "${ACC_REQUEST}?ORG=${MY_ORG}&Submit" 2>&1 /dev/null
-wget --no-check-certificate -O $TMPHTML $(grep 'frame src=' $TMPHTML | cut -d '"' -f2) 2>&1 /dev/null
+wget --no-check-certificate -r -O $TMPHTML "${ACC_REQUEST}?ORG=${MY_ORG}&Submit"
+wget --no-check-certificate -O $TMPHTML $(grep 'frame src=' $TMPHTML | cut -d '"' -f2)
 ACCESSION=$(grep 'ACCESSION=' $TMPHTML | cut -d '=' -f2)
 STAR --genomeLoad LoadAndExit --genomeDir ../ref/$MY_ORG/ensembl/star >/dev/null  2>&1
 echo $ACCESSION
