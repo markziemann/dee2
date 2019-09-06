@@ -199,7 +199,7 @@ fi
 #Accession number workflow
 if [ -n "$ACC" -a -z "$KEY" ] ; then
   Q=`echo $ACC | sed 's/\%2C/\|/g' | sed 's/^/\(/' | sed 's/$/\)/'`
-  CNT=$(cut -f-9 $MD | egrep -wc "$Q")
+  CNT=$(cut -f-9 $MD | awk '!arr[$1]++' | egrep -wc "$Q")
 
   echo "<script type=\"text/javascript\"> function toggle(source) { checkboxes = document.getElementsByName('x'); for(var i=0, n=checkboxes.length;i<n;i++) { checkboxes[i].checked = source.checked; } } </script>"
   echo '<form action="request.sh" method="get">'
@@ -226,13 +226,13 @@ if [ -n "$ACC" -a -z "$KEY" ] ; then
     echo "<br>"
     echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
     #display all results
-    cut -f-8 $MD | egrep -w "$Q" | sort -k1 | tbl1
+    cut -f-8 $MD | egrep -w "$Q" | awk '!arr[$1]++' | sort -k1 | tbl1
     echo '</table>'
     exit
   fi
 
   echo ${CNT} datasets found. Use the checkboxes to select ones of interest.
-  cut -f-10 $MD | egrep -w "$Q" | sort -k1 | tblx
+  cut -f-10 $MD | egrep -w "$Q" | awk '!arr[$1]++' | sort -k1 | tblx
   echo '</table>'
 
   echo '<input type="submit" value="Get Counts" class="tfbutton" style="font-size : 22px;" >'
@@ -261,7 +261,7 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
   QQ=$(echo $Q | sed 's/ and /\n/gI' | tail -1)
   AWK_CMD=$(echo $Q | tr -s ' ' | sed 's#^#/#' | sed 's#AND#/ \&\& /#g' | sed 's#$#/#' )
   CMD="awk ' tolower(\$0) ~ "${AWK_CMD}" '"
-  CNT=$(eval $CMD $MD | wc -l)
+  CNT=$(eval $CMD $MD | awk '!arr[$1]++'| wc -l)
 
   if [ $CNT -eq 0 ]; then
     echo No results found
@@ -292,7 +292,7 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
     sed "s#${QQ}#x@x#I" $TMP |  egrep -io ".{0,30}x@x.{0,30}" | tr '\t' ' ' | sed "s/x@x/${QQ}/g" \
     | tr '\t' ' ' | paste - $TMP | cut -f-9 \
     | awk -F'\t' 'BEGIN{OFS=FS} {print $2,$1,$3,$4,$5,$6,$7,$8,$9}' \
-    | sort -k1 | tee -a $TMP_TSV | tbl3
+    | sort -k1 | awk '!arr[$1]++'| tee -a $TMP_TSV | tbl3
     exit
   fi
 
@@ -300,7 +300,7 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
   sed "s#${QQ}#x@x#I" $TMP |  egrep -io ".{0,30}x@x.{0,30}" | tr '\t' ' ' | sed "s/x@x/${QQ}/g" \
   | tr '\t' ' ' | paste - $TMP | cut -f-9 \
   | awk -F'\t' 'BEGIN{OFS=FS} ;{print $2,$1,$3,$4,$5,$6,$7,$8,$9}' \
-  | sort -k1 | tbl2x
+  | sort -k1 | awk '!arr[$1]++' | tbl2x
   echo '</table>'
 
   echo '<input type="submit" value="Get Counts" class="tfbutton" style="font-size : 22px;" >'
