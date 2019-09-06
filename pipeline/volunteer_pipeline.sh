@@ -818,7 +818,7 @@ elif [ $RDS == "PE" ] ; then
         CLIP_LINE_NUM1=$((CLIP_LINE_NUM+1))
         tail -n+$CLIP_LINE_NUM1 ${SRR}_1.tmp.fastq >> ${SRR}-trimmed-pair1.fastq && rm ${SRR}_1.tmp.fastq
         tail -n+$CLIP_LINE_NUM1 ${SRR}_2.tmp.fastq >> ${SRR}-trimmed-pair2.fastq && rm ${SRR}_2.tmp.fastq
-        READ_CNT_AVAIL==$(sed -n '2~4p' ${SRR}-trimmed-pair1.fastq | wc -l)
+        READ_CNT_AVAIL=$(sed -n '2~4p' ${SRR}-trimmed-pair1.fastq | wc -l)
         minion search-adapter -i ${SRR}-trimmed-pair1.fastq | tee -a $SRR.log
         minion search-adapter -i ${SRR}-trimmed-pair2.fastq | tee -a $SRR.log
       else
