@@ -340,7 +340,7 @@ EOF
     fi
     prefetch -a "/usr/local/bin/ascp|/dee2/.ascp/aspera-license" $SRR \
     || ( echo $SRR failed download with prefetch | tee -a $SRR.log ; sleep 5 ; exit1 ; return 1 )
-    mv /root/ncbi/public/sra/${SRR}.sra .
+    mv /dee2/ncbi/public/sra/${SRR}.sra .
   fi
 
 ##########################################################################
