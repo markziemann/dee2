@@ -54,7 +54,7 @@ singularity run -w -B $(pwd)/tmp:/tmp mziemann_tallyup.img
 Copy the image and tmp folder to the HPC (without root access) and test it as above.
 
 ## Running DEE2 via singularity
-unpack the image.
+download the image from the dee2 webpage [here](http://dee2.io/images/) called "sing_img.tar.bz2". Unpack the image with tar: 
 ```
 tar xf current_singularity_img.tar.gz
 ```
@@ -62,7 +62,7 @@ You will see an img file and tmp folder, these must remain in the same working d
 
 Run the test in writable mode, ensuring the /tmp directory exists in the present working directory. This will write new ssh keys and confirm the pipeline is working as expected.
 ```
-singularity run -w -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-18-xxx.img
+singularity run -w -B $(pwd)/tmp:/tmp mziemann_tallyup.img ecoli SRR057750
 ```
 
 You're now free to run the image. Here are three examples to try in a normal shell.
