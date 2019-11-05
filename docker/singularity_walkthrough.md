@@ -28,7 +28,7 @@ You'll see that there's a new .img file in the current working directory. Now ne
 
 ```
 mkdir tmp
-sudo singularity shell -w -B $(pwd)/tmp:/tmp mziemann_tallyup-2018-01-18-xxx.img
+sudo singularity shell -w -B $(pwd)/tmp:/tmp mziemann_tallyup.img
 ```
 
 Once inside the container, check disk space folder and shift /dee2 to path with storage, then check that it works, then exit. The python path modification was necessary as parallel-fastq-dump wasn't able to resolve python3.
