@@ -9,8 +9,12 @@ loadSummaryMeta(zipname)
 \arguments{
 \item{zipname}{Path to the zipfile.}
 }
+\value{
+a dataframe of summary metadata.
+}
 \description{
-This function loads the summary metadata, which are the most relevant SRA accession numbers.
+This function loads the summary metadata, which are the most relevant SRA
+accession numbers.
 }
 \examples{
 x<-loadQcMx("~/Downloads/Data.zip")
