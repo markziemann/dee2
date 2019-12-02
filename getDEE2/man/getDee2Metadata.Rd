@@ -8,6 +8,13 @@ getDee2Metadata(species, outfile = NULL, ...)
 }
 \arguments{
 \item{species}{A character string matching a species of interest.}
+
+\item{outfile}{Optional filename.}
+
+\item{...}{Additional parameters to be passed to download.file.}
+}
+\value{
+a table of metadata.
 }
 \description{
 This function fetches the short metadata for the species of interest.

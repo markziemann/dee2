@@ -9,11 +9,18 @@ Tx2Gene(x)
 \arguments{
 \item{x}{a getDEE2 object.}
 }
+\value{
+a dataframe of gene expression counts.
+}
 \description{
-This function converts Kallisto transcript-level expression estimates to gene-level estimates. Counts for each transcript are summed to get an aggregated gene level score.
+This function converts Kallisto transcript-level expression estimates to
+gene-level estimates. Counts for each transcript are summed to get an
+aggregated gene level score.
 }
 \examples{
+x<-getDEE2("celegans",c("SRR3657716","SRR3657717"))
 x<-Tx2Gene(x)
+head(x$Tx2Gene)
 }
 \keyword{Aggregate}
 \keyword{gene}

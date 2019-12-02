@@ -9,8 +9,12 @@ loadTxCounts(zipname)
 \arguments{
 \item{zipname}{Path to the zipfile.}
 }
+\value{
+a dataframe of transcript expression counts.
+}
 \description{
-This function loads Kallisto transcript level counts from a downloaded zip file.
+This function loads Kallisto transcript level counts from a downloaded zip
+file.
 }
 \examples{
 x<-loadTxCounts("~/Downloads/Data.zip")

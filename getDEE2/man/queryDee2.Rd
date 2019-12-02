@@ -9,7 +9,15 @@ queryDee2(species, SRRvec, metadata = NULL, ...)
 \arguments{
 \item{species}{A character string matching a species of interest.}
 
-\item{SRRvec}{A character string or vector thereof of SRA run accession numbers.}
+\item{SRRvec}{A character string or vector thereof of SRA run accession
+numbers.}
+
+\item{metadata}{optional R object of DEE2 metadata to query.}
+
+\item{...}{Additional parameters to be passed to download.file.}
+}
+\value{
+a list of datasets that are present and absent.
 }
 \description{
 This function sends a query to check whether a dataset is available or not.
