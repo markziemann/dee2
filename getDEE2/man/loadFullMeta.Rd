@@ -9,6 +9,9 @@ loadFullMeta(zipname)
 \arguments{
 \item{zipname}{Path to the zipfile.}
 }
+\value{
+a dataframe of full metadata.
+}
 \description{
 This function loads the full metadata, which contains many fields.
 }

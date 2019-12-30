@@ -9,8 +9,12 @@ loadGeneInfo(zipname)
 \arguments{
 \item{zipname}{Path to the zipfile.}
 }
+\value{
+a dataframe of gene information.
+}
 \description{
-This function loads gene information. This information includes gene names and lengths which is useful for downstream analysis.
+This function loads gene information. This information includes gene names
+and lengths which is useful for downstream analysis.
 }
 \examples{
 x<-loadGeneInfo("~/Downloads/Data.zip")
