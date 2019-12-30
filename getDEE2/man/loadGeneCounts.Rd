@@ -9,6 +9,9 @@ loadGeneCounts(zipname)
 \arguments{
 \item{zipname}{Path to the zipfile.}
 }
+\value{
+a dataframe of gene expression counts.
+}
 \description{
 This function loads STAR gene level counts from a downloaded zip file.
 }

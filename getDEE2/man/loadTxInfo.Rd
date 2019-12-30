@@ -9,8 +9,13 @@ loadTxInfo(zipname)
 \arguments{
 \item{zipname}{Path to the zipfile.}
 }
+\value{
+a dataframe of transcript info
+}
 \description{
-This function loads transcript information. This information includes transcript lengths, corresponding parent gene accession and gene symbol that might be useful for downstream analysis.
+This function loads transcript information. This information includes
+transcript lengths, corresponding parent gene accession and gene symbol
+that might be useful for downstream analysis.
 }
 \examples{
 x<-loadTxInfo("~/Downloads/Data.zip")

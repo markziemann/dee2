@@ -1,0 +1,194 @@
+---
+title: "getDEE2"
+author: "Mark Ziemann"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{getDEE2}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+## Background
+
+Digital Expression Explorer 2 (or DEE2 for short) is a repository of processed
+RNA-seq data in the form of counts. It was designed so that researchers could
+undertake re-analysis and meta-analysis of published RNA-seq studies quickly 
+and easily.
+
+This package provides an interface to access the expression data
+programmatically. 
+
+## Getting started
+
+```{r, install, eval = FALSE}
+if(!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("mitch")
+```
+
+```{r, lib}
+library("getDEE2")
+```
+
+## Searching for datasets of interest starting with accession numbers
+
+The first step is to download the list of accession numbers of available
+datasets with the 'getDee2Metadata' function, specifying a species name. The
+options for species currently are:
+
+* athaliana
+* celegans
+* dmelanogaster
+* drerio
+* ecoli
+* hsapiens
+* mmusculus
+* rnorvegicus
+* scerevisiae
+
+If the species name is incorrect, an error will be thrown.
+
+
+```{r, getmeta}
+mdat<-getDee2Metadata("celegans")
+head(mdat)
+```
+If we have a GEO series accession number in mind already (eg: GSE33569)
+then we can see if the datasets are present.
+
+```{r, filtermeta}
+mdat[which(mdat$GSE_accession %in% "GSE33569"),]
+```
+
+DEE2 data is centred around SRA run accessions numbers, these SRR_accessions
+can be obtained like this:
+
+```{r, getSRRs}
+mdat1<-mdat[which(mdat$GSE_accession %in% "GSE33569"),]
+SRRlist<-as.vector(mdat1$SRR_accession)
+SRRlist
+```
+
+## Fetching DEE2 data using SRA run accession numbers
+
+The general syntax for obtaining DEE2 data is this:
+
+`getDEE2(species,SRRlist,outfile="NULL")`
+
+First, the function downloads a copy of the metadata, then runs a query to make
+sure that the requested datasets are present. It then downloads the requested
+expression data as a zip archive that contains the following:
+
+1. a gene-wise count expression matrix, 
+
+2. a transcript-wise count expression matrix,
+
+3. a matrix of quality metrics, and
+
+4. a folder of run logs detailing the processing of the data including base
+quality scores, alignment rates, etc.
+
+If 'outfile' is defined, then files will be downloaded to the current working
+directory. If it is not defined, then the files are downloaded to the temporary
+directory of R and deleted immediately after use.
+
+The SRR numbers need to exactly match those in SRA.
+
+Here is an example of using the SRRlist as defined above. 
+
+```{r, example1}
+x<-getDEE2("celegans",SRRlist)
+names(x)
+head(x$GeneCounts)
+head(x$TxCounts)
+head(x$QcMx)
+head(x$GeneInfo)
+head(x$TxInfo)
+```
+
+Notice the new objects x$GeneInfo and x$TxInfo. They have information on the
+gene and transcript lengths that might be useful for calculating FPKM. Gene
+symbol information might be useful for downstream analysis. The TxInfo
+dataframe contains the relationships between the transcript and parent genes.
+There is a function to aggregate Tx counts to gene level counts called
+`Tx2Gene()`, demonstrated below:
+
+```{r, tx2gene}
+x<-Tx2Gene(x)
+names(x)
+head(x$Tx2Gene)
+```
+
+You can directly specify the SRR accessions in the command line, but be sure to
+type them correctly. In case SRR accessions are not present in the database,
+there will be a warning message.
+
+```{r, testabsent}
+x<-getDEE2("celegans",c("SRR363798","SRR363799","SRR3581689","SRR3581692"))
+```
+
+In this case the accessions SRR3581689 and SRR3581692 are A. thaliana
+accessions and therefore not present in the C. elegans accession list. The list
+of absent accessions is provided in case you need these for your records.
+
+```{r, showabsent}
+x$absent
+```
+
+## Keyword searching metadata
+
+Here I'll demonstrate two ways to query SRAdbv2 
+([Docs](https://seandavi.github.io/SRAdbV2/articles/SRAdbv2.html)).
+
+You will need to install, then load the library.
+
+*** Edit 30th May 2019: The URL hosting the API is down, meaning that queries to
+SRAdbV2 as demonstrated beloware not working. We will update when there's a
+solution to this problem. ***
+
+
+## Stand-alone functions for downloading and loading DEE2 data
+
+In case you want to download the data once, then reuse it many times, using the
+standalone scripts can be faster. Data is saved in zip format as follows:
+
+```{r, download}
+x<-getDEE2("celegans",SRRlist,outfile="DEE_count_data.zip")
+```
+
+Loading data from previously downloaded zip files is done as follows
+```{r, load}
+myGeneCounts<-loadGeneCounts("DEE_count_data.zip")
+myTxCounts<-loadTxCounts("DEE_count_data.zip")
+myQcMx<-loadQcMx("DEE_count_data.zip")
+head(myGeneCounts)
+```
+
+## Aggregating runs data
+
+In case you need to aggregate runs that are technical replicates, these can be
+aggregated easily in R.
+[This SO thread]
+(http://stackoverflow.com/questions/26046776/sum-two-columns-in-r)
+provides some examples. Here is one way:
+
+```
+x<-getDEE2("celegans",c("SRR1176644","SRR1176645") )
+gcounts<-x$GeneCounts
+head(gcounts)
+#make a new column sum of the 
+gcounts$sum<-gcounts$SRR1176644+gcounts$SRR1176645
+head(gcounts)
+```
+## Downstream analysis
+
+DEE2 data are perfectly suitable for downstream analysis with edgeR, DESeq2,
+and many other gene expression and pathway enrichment tools.
+
+## Session Info
+```{r,sessioninfo,message=FALSE}
+sessionInfo()
+```
