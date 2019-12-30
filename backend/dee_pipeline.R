@@ -11,7 +11,7 @@ library(data.table)
 library(SRAdbV2)
 library(R.utils)
 
-IPADD="118.138.234.131"
+IPADD="118.138.234.94"
 #simple rowcount function
 
 CORES=5
@@ -142,7 +142,7 @@ org=args[1]
   #Update queue on webserver
   queue_name=paste(QUEUEWD,"/",org,".queue.txt",sep="")
   write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
-  SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key ",queue_name ," ubuntu@118.138.234.131:~/Public")
+  SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key ",queue_name ," ubuntu@118.138.234.94:~/Public")
   system(SCP_COMMAND)
 
   #Update metadata on webserver
@@ -187,7 +187,7 @@ org=args[1]
         chunk<-paste(d[1:length(d)],collapse=" ")
         d<-setdiff(d,d[1:1000])
       }
-      CMD=paste('rsync -azh -e \"ssh -i  ~/.ssh/monash/cloud2.key \" ', chunk ,' ubuntu@118.138.234.131:/dee2_data/data/',org,sep="")
+      CMD=paste('rsync -azh -e \"ssh -i  ~/.ssh/monash/cloud2.key \" ', chunk ,' ubuntu@118.138.234.94:/dee2_data/data/',org,sep="")
       system(CMD)
     }
   } 
@@ -202,7 +202,7 @@ org=args[1]
   system(CMD)
 
   #upload metadata
-  SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key", paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ," ubuntu@118.138.234.131:/mnt/dee2_data/metadata")
+  SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key", paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ," ubuntu@118.138.234.94:/mnt/dee2_data/metadata")
   system(SCP_COMMAND)
 
   save.image(file = paste(org,".RData",sep=""))
@@ -215,7 +215,7 @@ org=args[1]
   x <- apply(x,2,as.character)
   x<-gsub("\r?\n|\r", " ", x)
   write.table(x,file=paste(SRADBWD,"/",org,"_metadata.tsv",sep=""),quote=F,sep="\t",row.names=F)
-  SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key ", paste(SRADBWD,"/",org,"_metadata.tsv",sep="") ," ubuntu@118.138.234.131:/mnt/dee2_data/metadata")
+  SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key ", paste(SRADBWD,"/",org,"_metadata.tsv",sep="") ," ubuntu@118.138.234.94:/mnt/dee2_data/metadata")
   system(SCP_COMMAND)
 
   save.image(file = paste(org,".RData",sep=""))
@@ -252,6 +252,6 @@ org=args[1]
 
   text( cbind(as.numeric(z[,1])+50000 ,as.numeric(z[,2])+50000 )  ,t(bb),labels=c(z[,1],z[,2]) ,cex=1.2)
   dev.off()
-  system("scp -i ~/.ssh/monash/cloud2.key dee_datasets.png ubuntu@118.138.234.131:/mnt/dee2_data/mx")
+  system("scp -i ~/.ssh/monash/cloud2.key dee_datasets.png ubuntu@118.138.234.94:/mnt/dee2_data/mx")
 
 #}
