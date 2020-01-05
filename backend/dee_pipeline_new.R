@@ -34,9 +34,9 @@ names(numgenes)<- c("athaliana", "celegans", "dmelanogaster", "drerio",
 "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae")
 numgenes=numgenes[[org]]
 
-longnames<-c("Arabidopsis thaliana","Caenorhabditis elegans","Drosophila melanogaster","Danio rerio",
-"Escherichia coli","Homo sapiens","Mus musculus","Rattus norvegicus","Saccharomyces cerevisiae")
-longname<-longnames[[which(names(species_list)==org)]]
+#longnames<-c("Arabidopsis thaliana","Caenorhabditis elegans","Drosophila melanogaster","Danio rerio",
+#"Escherichia coli","Homo sapiens","Mus musculus","Rattus norvegicus","Saccharomyces cerevisiae")
+#longname<-longnames[[which(names(species_list)==org)]]
 
 ###Set some directories
 CODEWD=getwd()
@@ -62,7 +62,7 @@ res<-read.csv(CSV,stringsAsFactors=FALSE)
 
 res<-res[order(res$Run),]
 
-accessions<-as.data.frame(cbind(res$Experiment,res$SRAStudy,res$Sample,res$Run))
+accessions<-as.data.frame(cbind(res$Experiment,res$SRA.Study,res$sample_acc,res$Run))
 colnames(accessions)=c("experiment","study","sample","run")
 
 runs<-res$Run
@@ -133,13 +133,9 @@ save.image(file = paste(org,".RData",sep=""))
 #collect QC info - this is temporary and logic will be incorporated in future
 QC_summary="BLANK"
 
-
+# xxx
 # here extract any samples that have GEO sample IDs ie GSM
-isgsm<-grepl("GSM",res$SampleName)
-isgsm[isgsm == "FALSE"] <- ""
-isgsm[isgsm == "TRUE"] <- res$SampleName[grep("GSM",res$SampleName)]
-
-res$GEO_sample<-isgsm
+# res$GEO_Accession
 
 ######################################################################
 # the problem is that the csv downloaded from SRA doesnt contain the GSE accession
@@ -161,7 +157,7 @@ if (!file.exists(GSE_FILE)) {
 gse<-read.table(GSE_FILE,stringsAsFactors=FALSE)
 colnames(gse)<-c("GEO_series","GEO_sample")
 
-resx<-merge(res,gse,by.x="GEO_sample",by.y="GEO_sample",all.x=TRUE)
+resx<-merge(res,gse,by.x="GEO_Accession",by.y="GEO_sample",all.x=TRUE)
 
 # here is a good opportunity to check that the join has worked
 res<-resx
@@ -169,7 +165,7 @@ res<-res[order(res$Run),]
 
 #extract out the important accessions in order
 ##x2<-as.data.frame(cbind(res$run.accession,QC_summary,res$experiment.accession,res$sample.accession,res$study.accession, GSE_accession, GSM_accession))
-x2<-as.data.frame(cbind(res$Run,QC_summary,res$Experiment,res$Sample,res$SRAStudy, res$GEO_series, res$GEO_sample,res$SampleName),
+x2<-as.data.frame(cbind(res$Run, QC_summary, res$Experiment, res$sample_acc, res$SRA.Study, res$GEO_series, res$GEO_Accession, res$sample_name),
 stringsAsFactors=FALSE)
 
 colnames(x2)<-c("SRR_accession","QC_summary","SRX_accession","SRS_accession",
