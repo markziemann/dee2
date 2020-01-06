@@ -1,4 +1,4 @@
-CORES=ceiling(detectCores())
+CORES=ceiling(8)
 
 rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
 
@@ -278,7 +278,7 @@ if( !file.exists(meanfile) ) {
   DOIT=1
 } else {
   MODTIME=as.numeric(difftime(Sys.time() ,file.mtime(meanfile),units="s"))
-  if (MODTIME>60*60*24*30*6) {
+  if (MODTIME>60*60*24*30*12) {
     DOIT=1
   }
 }
@@ -286,7 +286,7 @@ if( !file.exists(meanfile) ) {
 if ( DOIT==1) {
   # read in metadata
   mdat=paste("../sradb/",org,"_metadata.tsv.cut",sep="")
-  m<-read.table(mdat,header=T,sep="\t",quote="",fill=F)
+  m<-read.table(mdat,header=T,sep="\t",quote="",fill=F,stringsAsFactors=FALSE)
 
   # make a list of samples to use
   p<-m[grep("PASS",m$QC_summary),1]
@@ -297,9 +297,11 @@ if ( DOIT==1) {
 
   chunks=NULL
   for (n in 1:num_blocks) {
-    chunk<-sample(p,block_size)
-    p<-setdiff(p,chunk)
-    chunks<-c(list(chunk),chunks)
+    if (length(p) > block_size) {
+      chunk<-sample(p,block_size)
+      p<-setdiff(p,chunk)
+      chunks<-c(list(chunk),chunks)
+    }
   }
 
   chunkmean<-function(chunk) {
