@@ -51,8 +51,8 @@ if [ ! -r $WORKLIST ] ; then
   cut -f1 $TODO_NEW | shuf | sed 's/$/\t0/' > $WORKLIST
 fi
 
-#ACCESSION=$(trap - PIPE ; shuf $WORKLIST | sort -k2g | awk 'NR==1 {print $1}' )
-ACCESSION=$(sort -k2n -k1R $WORKLIST | awk 'NR==1 {print $1}' )
+#ACCESSION=$(sort -k2n -k1R $WORKLIST | awk 'NR==1 {print $1}' )
+ACCESSION=$(sort -k2n -k1 $WORKLIST | awk 'NR==1 {print $1}' )
 COUNT=$(grep -w $ACCESSION $WORKLIST | cut -f2)
 INCREMENT=$((COUNT+1))
 echo $COUNT $INCREMENT
