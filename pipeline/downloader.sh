@@ -347,9 +347,11 @@ else
 #################################################
 
   while true ; do
-    count=$(find $MYPWD/data/ecoli/ | grep -c .sra$)
+    DL=$(find $MYPWD/data/ | grep -c .sra$)
+    ALLOC=$(find $MYPWD/data/ | grep -c .fin$)
+    COUNT=$((DL-ALLOC))
 
-    if [ $count -gt 5 ] ; then
+    if [ $COUNT -gt 5 ] ; then
       sleep 10
     else
       echo Run "$count" of 1000
