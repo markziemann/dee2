@@ -4,6 +4,7 @@ echo need to increase ULIMIT for this
 #sudo sh -c "ulimit -n 1000000 && exec su $LOGNAME"
 
 for ORG in athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae ; do
+#for ORG in scerevisiae ; do
 
 FULL_METADATA=${ORG}_metadata.tsv.cut
 DEE2_ACCESSIONS=${ORG}_accessions.tsv
@@ -18,8 +19,14 @@ cut -d ' ' -f2 $DEE2_ACCESSIONS \
   CNT_SRA=$(grep -wc $SRP $FULL_METADATA )
   echo $SRP $CNT_SRA $CNT_DEE
   if [ $CNT_DEE -eq $CNT_SRA ] ; then
+
     #fetch the geo series number
-    GSE=$(grep -wm1 $SRP ${ORG}_metadata.tsv.cut | cut -f6)
+    GSE=$(grep -wm1 $SRP ${ORG}_metadata.tsv.cut | cut -f7)
+    if [ -z "$GSE" ] ; then
+      GSE="NA"
+    fi
+    echo GSE is $GSE
+
     SRP_DIR=$DIR/${SRP}_${GSE}
     if [ ! -r $SRP_DIR.zip ] ; then
       mkdir -p $SRP_DIR
@@ -79,5 +86,7 @@ cut -d ' ' -f2 $DEE2_ACCESSIONS \
 done
 
 #scp -i ~/.ssh/monash/cloud2.key $DIR ubuntu@118.138.234.131:/dee2_data/bulk
-rsync -azvh -e "ssh -i ~/.ssh/monash/cloud2.key" $DIR ubuntu@118.138.234.131:/dee2_data/bulk
+echo rsync to webserver
+IP_ADD=$(dig +short dee2.io)
+rsync -azvh -e "ssh -i ~/.ssh/monash/cloud2.key" $DIR ubuntu@${IP_ADD}:/dee2_data/bulk
 done
