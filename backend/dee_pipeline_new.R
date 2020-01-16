@@ -60,9 +60,12 @@ if (!file.exists(CSV)) {
 
 res<-read.csv(CSV,stringsAsFactors=FALSE)
 
+# remove tabs
+res<- apply(res,2,function(x)gsub('\t', ' ',x))
+
 res<-res[order(res$Run),]
 
-accessions<-as.data.frame(cbind(res$Experiment,res$SRA.Study,res$sample_acc,res$Run))
+accessions<-as.data.frame(cbind(res$Experiment,res$SRAStudy,res$Sample,res$Run))
 colnames(accessions)=c("experiment","study","sample","run")
 
 runs<-res$Run
@@ -157,7 +160,7 @@ if (!file.exists(GSE_FILE)) {
 gse<-read.table(GSE_FILE,stringsAsFactors=FALSE)
 colnames(gse)<-c("GEO_series","GEO_sample")
 
-resx<-merge(res,gse,by.x="GEO_Accession",by.y="GEO_sample",all.x=TRUE)
+resx<-merge(res,gse,by.x="SampleName",by.y="GEO_sample",all.x=TRUE)
 
 # here is a good opportunity to check that the join has worked
 res<-resx
@@ -165,11 +168,11 @@ res<-res[order(res$Run),]
 
 #extract out the important accessions in order
 ##x2<-as.data.frame(cbind(res$run.accession,QC_summary,res$experiment.accession,res$sample.accession,res$study.accession, GSE_accession, GSM_accession))
-x2<-as.data.frame(cbind(res$Run, QC_summary, res$Experiment, res$sample_acc, res$SRA.Study, res$GEO_series, res$GEO_Accession, res$sample_name),
-stringsAsFactors=FALSE)
+#x2<-as.data.frame(cbind(res$Run, QC_summary, res$Experiment, res$sample_acc, res$SRA.Study, res$GEO_series, res$GEO_Accession, res$sample_name), stringsAsFactors=FALSE)
+x2<-as.data.frame(cbind(res$Run, QC_summary, res$Experiment, res$Sample, res$SRAStudy, res$SampleName , res$GEO_series, res$LibraryName), stringsAsFactors=FALSE)
 
 colnames(x2)<-c("SRR_accession","QC_summary","SRX_accession","SRS_accession",
-"SRP_accession","GSE_accession","GSM_accession","experiment_title")
+"SRP_accession","GSE_accession","Sample_name","Library_name")
 
 # NA values replaced with blank
 x2[is.na(x2)] <- ""
@@ -245,7 +248,7 @@ DATE=date()
 HEADER=paste("Updated",DATE)
 z<-z[order(rownames(z),decreasing=T ), ,drop=F]
 par(las=2) ; par(mai=c(1,2.5,1,0.5))
-MAX=500000
+MAX=800000
 
 bb<-barplot( rbind( as.numeric(z$queued) , as.numeric(z$completed) ) ,
   names.arg=rownames(z) ,xlim=c(0,MAX), beside=T, main=HEADER, col=c("darkblue","red") ,
