@@ -53,16 +53,21 @@ fi
 
 #ACCESSION=$(sort -k2n -k1R $WORKLIST | awk 'NR==1 {print $1}' )
 ACCESSION=$(sort -k2n -k1 $WORKLIST | awk 'NR==1 {print $1}' )
-COUNT=$(grep -w $ACCESSION $WORKLIST | cut -f2)
+COUNT=$(grep -w $ACCESSION $WORKLIST | awk '{print $2}')
 INCREMENT=$((COUNT+1))
 echo $COUNT $INCREMENT
 
 TIME=$(date +%s)
 EDIT_TIME=$(stat --format "%Y" $TODO_NEW)
 DIFF=$((TIME-EDIT_TIME))
-sed -i "s/${ACCESSION}\t${COUNT}$/${ACCESSION}\t${INCREMENT}/" $WORKLIST
 
-comm -23 <(cut -f1 $TODO_NEW | sort ) <(cut -f1 $WORKLIST | sort) | sed 's/$/\t0/' >> $WORKLIST
+sed -i "s/${ACCESSION}\t${COUNT}$/${ACCESSION}\t${INCREMENT}/" $WORKLIST
+sed -i "s/${ACCESSION}$/${ACCESSION}\t${INCREMENT}/" $WORKLIST
+
+
+sudo comm -23 <(cut -f1 $TODO_NEW | sort ) <(cut -f1 $WORKLIST | sort) \
+| sed 's/$/\t0/' >> $WORKLIST
+
 RAND=$RANDOM
 grep -wFf $TODO_NEW $WORKLIST > /tmp.$RAND
 mv /tmp.$RAND $WORKLIST
