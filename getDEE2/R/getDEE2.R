@@ -32,7 +32,7 @@ getDee2Metadata<-function(species,outfile=NULL, ...){
         }
         download.file(metadataURL, destfile=metadataname, mode = "wb", ...)
         mdat<-read.table(metadataname,header=TRUE,quote="",
-        sep='\t',fill=FALSE)
+        sep='\t',fill=TRUE)
         if (is.null(outfile)){
             unlink(metadataname)
         }
