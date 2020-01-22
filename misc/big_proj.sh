@@ -12,7 +12,7 @@ DIR=big_proj/${ORG}
 if [ ! -d $DIR ] ; then mkdir -p $DIR ; fi
 
 cut -d ' ' -f2 $DEE2_ACCESSIONS \
-| sed 1d | sort | uniq -c | awk '$1>200' \
+| sed 1d | sort | uniq -c | awk '$1>50' \
 | while read line ; do
   SRP=$(echo $line | cut -d ' ' -f2)
   CNT_DEE=$(echo $line | cut -d ' ' -f1)

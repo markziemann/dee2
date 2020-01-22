@@ -63,6 +63,8 @@ res<-read.csv(CSV,stringsAsFactors=FALSE)
 # remove tabs
 res<- apply(res,2,function(x)gsub('\t', ' ',x))
 
+res<-as.data.frame(res,stringsAsFactors=FALSE)
+
 res<-res[order(res$Run),]
 
 accessions<-as.data.frame(cbind(res$Experiment,res$SRAStudy,res$Sample,res$Run))
@@ -252,7 +254,8 @@ MAX=800000
 
 bb<-barplot( rbind( as.numeric(z$queued) , as.numeric(z$completed) ) ,
   names.arg=rownames(z) ,xlim=c(0,MAX), beside=T, main=HEADER, col=c("darkblue","red") ,
-  horiz=T , las=1, cex.axis=1.3, cex.names=1.4, cex.main=1.4 )
+  horiz=T , las=1, cex.axis=1.3, cex.names=1.4, cex.main=1.4 ,
+  xlab="number of SRA runs")
 
 legend("topright", colnames(z), fill=c("darkblue","red") , cex=1.2)
 
