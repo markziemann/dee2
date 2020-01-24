@@ -1,7 +1,11 @@
 #!/bin/bash
 
-echo need to increase ULIMIT for this
-#sudo sh -c "ulimit -n 1000000 && exec su $LOGNAME"
+# ulimit issue
+if [ $(ulimit -n) -lt 1000000 ] ; then
+  echo Error: need to increase ULIMIT for this to work properly
+  echo 'sudo sh -c "ulimit -n 1000000 && exec su $LOGNAME"'
+  exit 1
+fi
 
 for ORG in athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae ; do
 #for ORG in scerevisiae ; do
@@ -88,5 +92,6 @@ done
 #scp -i ~/.ssh/monash/cloud2.key $DIR ubuntu@118.138.234.131:/dee2_data/bulk
 echo rsync to webserver
 IP_ADD=$(dig +short dee2.io)
+chmod -R 775 $DIR
 rsync -azvh -e "ssh -i ~/.ssh/monash/cloud2.key" $DIR ubuntu@${IP_ADD}:/dee2_data/bulk
 done
