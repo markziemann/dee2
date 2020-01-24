@@ -147,24 +147,37 @@ li {
 <header>
 <h1 id="content">About DEE2</h1>
 
-<p>The compendium is designed to bring biologists closer to large scale gene expression data sets.
-We have processed thousands of public RNA-seq data sets from a veriety of organisms with open-source bioinformatics tools and make them 
-freely accessible.
+<strong>Jump to:</strong> <br>
+* <a href="#mission">Mission</a> <br>
+* <a href="#whoweare">Who we are</a> <br>
+* <a href="#acknowledgements">Acknowledgements</a> <br>
+* <a href="#news">News</a> <br>
+* <a href="#dataprocessing">Data processing</a> <br>
+* <a href="#reference">Reference genome information</a> <br>
+* <a href="#metrics">QC metrics</a> <br>
+* <a href="#updateschedule">Update Schedule</a>
+
+<h2 id="mission">Our mission</h2>
+<p>The goal of DEE2 is to make large scale gene expression data sets accessible 
+to bioinformaticians, biologists and students alike. 
+We use open-source bioinformatics tools and computational resources provided by
+our academic partners to provide many thousands of public RNA-seq data sets 
+from a veriety of organisms and make them freely accessible under a 
+GNU General Public License v3.0.
 </p>
 
 <hr>
-<h2 id="content">About us</h2>
+<h2 id="whoweare">Who we are</h2>
 
-<p>The compendium is brought to you by Mark Ziemann (Deakin University) with support from the <a href="https://www.monash.edu/medicine/ccs/diabetes/research/el-osta-group" target="_blank">
-Epigenetics in Human Health and Disease Laboratory</a>  and 
-<a href="https://www.monash.edu/researchinfrastructure/eresearch" target="_blank">
-Monash eResearch Centre.</a>
- We value your feedback, so feel free to contact us by email (mark.ziemann[at]gmail.com) or raise an 
-issue on our <a href="https://github.com/markziemann/dee2/" target="_blank">  GitHub Repo</a>.
+<p>This compendium is brought to you by Dr Mark Ziemann (Deakin University) with
+support from the  <a href="https://www.monash.edu/medicine/ccs/diabetes/research/el-osta-group" target="_blank">
+Epigenetics in Human Health and Disease Laboratory</a>. We value your feedback, so 
+feel free to contact us by email (mark.ziemann[at]gmail.com) or raise an 
+issue on our <a href="https://github.com/markziemann/dee2/" target="_blank">GitHub Repo</a>.
 </p>
 
 <hr>
-<h2 id="content">Acknowledgements</h2>
+<h2 id="acknowledgements">Acknowledgements</h2>
 <p>A project of this size cannot be done by a single person or team, so we acknowledge support from the following:
 <br><br>
 <a href="https://nectar.org.au" target="_blank">Nectar Research Cloud</a>, a collaborative 
@@ -185,7 +198,27 @@ support from <a href="http://www.ncbi.nlm.nih.gov/sra"> SRA</a> and
 <hr>
 <hr>
 
-<h2 id="content">Latest News</h2>
+<h2 id="news">Latest News</h2>
+<p>9th January 2020 - Happy New Year! Here is a new <a href="http://genomespot.blogspot.com/2020/01/dee2-project-update-jan-2020.html">blog post</a> 
+describing recent updates and high priority issues for the next few months.
+<br>* Data processing - a work in progress
+<br>* Getting a new source of metadata - completed
+<br>Future areas for improvement
+<br>* The problem of studies missing runs
+<br>* Increasing queue efficiency
+<br>* Making the R package more efficient
+<br>* Website metadata search imptovements
+<br>* Call for compute resources
+</p>
+
+<p> 5th November 2019 - the webserver has had a few hiccups recently, but all is restored to normal operation.
+In the next few weeks we will be trying to complete the rest of the outstanding mouse and human datasets and then
+moving to a new source of metadata.
+</p>
+
+<p> 18th October 2019 - We suffered an unscheduled outage 16-18th Oct 2019 due to human error (sorry!) which was compounded by hardware
+issues on the Nectar cloud. All seems to be working now.
+</p>
 
 <p> 19th June 2019 - The June 2019 update to DEE2 has new datasets, new features and new challenges. 
   Highlights include new integration with Degust and iDEP and >200k new runs added for human and mouse.
@@ -196,37 +229,12 @@ support from <a href="http://www.ncbi.nlm.nih.gov/sra"> SRA</a> and
 <p> 8th April 2019 - Very proud to have DEE2 published in Gigascience. Thanks to everyone who has contributed, including reviewers who made several important suggestions. Link <a href="https://doi.org/10.1093/gigascience/giz022" taget="_blank">here</a>.
 </p>
 
-<p> 11th January 2019 - In response to feedback we are unveiling several new features:
-</p>
-<ul style="list-style-type:circle">
-  <li>&bull;Data bundles: any project with >200 runs we've collected into bundles which can be downloaded <a href="/bundles">here</a>. </li><br><br>
-  <li>&bull;Keyword searches: users can now string together multiple keywords with "and" to restrict the search results. Multiple word search terms also work now.</li><br><br>
-  <li>&bull;Metadata: Now when you perform a search with the web UI, the experiment.name from SRA is shown and hopefully this will make it easier to perform downstream analysis. Also
-              we have included full and summary metadata in each DEE2 download. The metadata are also available for download from the bulk page.</li><br><br>
-  <li>&bull;R API: previously the API code was sourced from GitHub, due to some security concerns we now have a package on github which can be installed with devtools.</li><br><br>
-  <li>&bull;You will also notice two new files in each download GeneInfo.tsv and TxInfo.tsv. These contain the gene symbols information as well as the gene and transcript lengths for FPKM calculation.
-              Importantly, the TxInfo.tsv contains the tx-->parent gene information so that transcript data can be easily aggregated to the gene level. In the R package, there is a new function called Tx2Gene 
-              which performs aggregation (sum) with a single command "x<-Tx2Gene(x)". </li><br><br>
-  <li>&bull;QC classification: We have just implemented QC thresholds to classify datasets as pass, warn or fail. More information on this can be found 
-              <a href="https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md" >here</a></li><br><br>
-  <li>&bull;Kallisto TPM: In addition to being able to calculate FPKM using the R API, you can get Kallisto TPM from the repository for individual runs. Here is an example:  
-              <a href="http://dee2.io/data/dmelanogaster/SRR1991949" target="_blank">SRR1991949</a>. The kallisto output file has the "ke.tsv.gz" suffix.</li><br><br>
-</ul>
-
-<p> 28th November 2018 - DEE2 was presented at the ABACBS2018 conference in Melbourne. See the <a href="https://doi.org/10.5281/zenodo.1561839">Poster</a>.
-</p>
-
-<p> 28th November 2018 - A guide to loading in bulk dumps had been added to my <a href="https://genomespot.blogspot.com/2018/11/using-dee2-bulk-data-dumps.html">Blog</a>. 
-</p>
-
 <a href="/news.html">More news</a>
 
 <hr>
-<h2 id="content">Data processing</h2>
-
+<h2 id="dataprocessing">Data processing</h2>
 <p>Our data processing procedure entails:
 </p>
-
 <ol>
 <li> -Download from NCBI SRA</li><br>
 <li> -Diagnose sequence format</li><br>
@@ -336,7 +344,7 @@ Below are the versions and major parameters used in the pipeline.
 
 <hr>
 <hr>
-<h2 id="content">Reference genome information</h2>
+<h2 id="reference">Reference genome information</h2>
 
 <p>The compendium relies on reference genome sequence and annotation information provided by 
 <a href="http://ensemblgenomes.org/" target="_blank" > Ensembl Genomes </a>. 
@@ -433,15 +441,14 @@ Below are the versions and major parameters used in the pipeline.
 
 
 <hr>
-<h2 id="content">About the quality metrics</h2>
+<h2 id="metrics">About the quality metrics</h2>
 <p>A description of each of the quality metrics is provided on the Gitub page <a href="https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md" >here</a>.
 </p>
 
 <hr>
-<h2 id="content">Update schedule</h2>
-
+<h2 id="updateschedule">Update schedule</h2>
 <p>We are updating the compendium fortnightly. Upon release of an updated genome build, we intend to update the data for that organism within a year, keeping a
-previously archived version for bulk download only. Gene annotation sets will not be updated windependent of the genome build.
+previously archived version for bulk download only. Gene annotation sets will not be updated independent of the genome build.
 </p>
 
 

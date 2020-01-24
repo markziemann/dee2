@@ -151,20 +151,15 @@ li {
 
 <header>
 
-<h1>Digital Expression Explorer 2
+<h1>Request@DEE2
 </h1>
 
-<p>Digital Expression Explorer 2 (DEE2) is a repository of uniformly processed RNA-seq data mined from public data obtained from <a href="http://www.ncbi.nlm.nih.gov/sra" target="_blank"> NCBI Short
-Read Archive.</a></p>
+<p>Provide an SRA project accession number (eg SRP096177) or GEO series accession
+(GSE95762) for one of the supported organisms and your email address for notification.
 
-<h2>Hosted RNA-seq data
+<h2 id="content">Select your organism
 </h2>
-
-<a href=""><IMG SRC="/images/dee_datasets.png" ></a>
-
-<h2 id="content">Select an organism of interest
-</h2>
-<form action="cgi-bin/search.sh" method="get">
+<form action="cgi-bin/newsearch.sh" method="get">
 
 <label class="container" ><strong><em>Arabidopsis thaliana</em></strong>
   <input type="radio" checked="checked" name="org"  value="athaliana">
@@ -203,25 +198,21 @@ Read Archive.</a></p>
   <span class="checkmark"></span>
 </label>
 
-<h2 id="content">Search for data sets of interest
+<h2 id="content">Specify your accession numbers
 </h2>
 
-<strong>Search accession numbers </strong> Multiple accessions can be separated by
+<strong>Request accession numbers </strong> Multiple accessions can be separated by
 commas. Try GSE63462,SRP070529,SRR401430 for <em>A. thaliana</em>.
-
 <br>
 <input type="text" name="accessionsearch"></input><input type="submit" value="Submit" class="tfbutton">
-<br><br>
-<strong>Search for keywords</strong> Case-insensitive. <br>
-Try  "ethanol" for <em>S. cerevisiae</em>.<br>
-<input type="text" name="keywordsearch"></input><input type="submit" value="Submit" class="tfbutton">
+<br>
+<strong>Provide an email address </strong>for notification.
+<br>
+<input type="text" name="emailaddress"></input><input type="submit" value="Submit" class="tfbutton">
 </form>
-<p>More sophisticated keyword searches can be done at <a href="http://www.ncbi.nlm.nih.gov/geo/" target="_blank"> 
-GEO</a> and <a href="http://www.ncbi.nlm.nih.gov/sra" target="_blank">SRA</a>, to identify studies and accession
-numbers of interest.<br><br>
-Keyword searches in mouse and human take up to a minute to complete.
+Requests may take a while depending on how many datasets and how large they are. Please ensure that the
+email address is correct and check the spam folder before contacting admins for help.
 </p>
-
 <hr>
 
 <h2>Disclaimer
@@ -242,10 +233,5 @@ giz022. <a href="https://doi.org/10.1093/gigascience/giz022" target="_blank">DOI
 </p>
 
 <hr>
-<hr>
-<script async="" src="http://www.google-analytics.com/analytics.js">
-</script>
-<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-46163202-2','auto');ga('send','pageview');
-</script> 
 </body>
 </html>
