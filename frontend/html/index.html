@@ -50,7 +50,9 @@ li {
 .button {
     background-color: #999999;
     color: white;
-    padding: 10px 25px;
+    padding: 8px 25px;
+    leading: 3;
+    line-height: 2em;
     text-decoration: none;
 #    font-size: 1.8vmax;
     cursor: pointer;
@@ -136,6 +138,10 @@ li {
 	background: white;
 }
 
+.illustration img {
+  width: 100%;
+  display: block;
+}
 </style>
 </head>
 
@@ -160,7 +166,11 @@ Read Archive.</a></p>
 <h2>Hosted RNA-seq data
 </h2>
 
-<a href=""><IMG SRC="/images/dee_datasets.png" ></a>
+<div class='section content'>
+  <div class='illustration'>
+    <img src="/images/dee_datasets.png" style='max-width: 600px'/>
+  </div>
+</div>
 
 <h2 id="content">Select an organism of interest
 </h2>
@@ -224,6 +234,10 @@ Keyword searches in mouse and human take up to a minute to complete.
 
 <hr>
 
+<p> Browse the metadata catalogue <a href="metadata" target="_blank">here</a>.
+</p>
+
+<hr>
 <h2>Disclaimer
 </h2>
 
