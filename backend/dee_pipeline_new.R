@@ -230,7 +230,7 @@ system(SCP_COMMAND)
 
 save.image(file = paste(org,".RData",sep=""))
 
-png("dee_datasets.png",width=580,height=580)
+png("dee_datasets.png",width=600,height=600)
 
 FILES1<-list.files(pattern="*queue.txt$",path="/mnt/md0/dee2/queue/",full.names=T)
 x<-as.data.frame(sapply(FILES1,rowcnt2),stringsAsFactors=FALSE)
