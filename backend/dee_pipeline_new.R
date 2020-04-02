@@ -8,7 +8,7 @@ setwd("/mnt/md0/dee2/code")
 #library(SRAdb)
 library(parallel)
 library(data.table)
-library(SRAdbV2)
+#library(SRAdbV2)
 library(R.utils)
 
 IPADD="118.138.234.94"
@@ -81,9 +81,11 @@ source("dee_pipeline_functions.R")
 unlink(list.files(DATAWD,pattern="_STARtmp",recursive=T))
 
 folders<-list.files(DATAWD,full.names=T,pattern="RR")
-fin_new<-paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "finished" , full.names = T, recursive = T),"/"),"[[",7),sep="/")
+fin_new<-paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "finished" , 
+  full.names = T, recursive = T),"/"),"[[",7),sep="/")
 fin_new<-fin_new[grep("RR",fin_new)]
-val_old<-paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "validated" , full.names = T, recursive = T),"/"),"[[",7),sep="/")
+val_old<-paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "validated" , 
+  full.names = T, recursive = T),"/"),"[[",7),sep="/")
 
 # delete folders that are not expected as they are not in known runs
 expected_folders<-paste(DATAWD,runs,sep="/")
@@ -103,7 +105,8 @@ tre<-dim( read.table(paste(DATAWD,"/rownames_tx.txt",sep=""),header=T) )[1]
 source("dee_pipeline_functions.R")
 mclapply(fin_new,check_contents,gre,tre,mc.cores=5)
 
-val<-paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "validated" , full.names = T, recursive = T),"/"),"[[",7),sep="/")
+val<-paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "validated" , 
+  full.names = T, recursive = T),"/"),"[[",7),sep="/")
 runs_done<-sapply(strsplit(val,"/"),"[[",7)
 
 av<-getmean(org)
@@ -171,16 +174,18 @@ res<-res[order(res$Run),]
 #extract out the important accessions in order
 ##x2<-as.data.frame(cbind(res$run.accession,QC_summary,res$experiment.accession,res$sample.accession,res$study.accession, GSE_accession, GSM_accession))
 #x2<-as.data.frame(cbind(res$Run, QC_summary, res$Experiment, res$sample_acc, res$SRA.Study, res$GEO_series, res$GEO_Accession, res$sample_name), stringsAsFactors=FALSE)
-x2<-as.data.frame(cbind(res$Run, QC_summary, res$Experiment, res$Sample, res$SRAStudy, res$SampleName , res$GEO_series, res$LibraryName), stringsAsFactors=FALSE)
+x2<-as.data.frame(cbind(res$Run, QC_summary, res$Experiment, res$Sample, 
+  res$SRAStudy,res$SampleName, res$GEO_series, res$LibraryName), stringsAsFactors=FALSE)
 
 colnames(x2)<-c("SRR_accession","QC_summary","SRX_accession","SRS_accession",
-"SRP_accession","GSE_accession","Sample_name","Library_name")
+  "SRP_accession","Sample_name","GEO_series","Library_name")
 
 # NA values replaced with blank
 x2[is.na(x2)] <- ""
 
 #write out the accession number info and upload to webserver
-write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.complete.tsv.cut",sep=""),quote=F,sep="\t",row.names=F)
+write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.complete.tsv.cut",sep=""),
+  quote=F,sep="\t",row.names=F)
 x2<-x2[which(x2$SRR_accession %in% runs_done),]
 
 source("dee_pipeline_functions.R")
@@ -197,7 +202,8 @@ rsync<-function(d,org) {
       chunk<-paste(d[1:length(d)],collapse=" ")
       d<-setdiff(d,d[1:1000])
     }
-    CMD=paste('rsync -azh -e \"ssh -i  ~/.ssh/monash/cloud2.key \" ', chunk ,' ubuntu@118.138.234.94:/dee2_data/data/',org,sep="")
+    CMD=paste('rsync -azh -e \"ssh -i  ~/.ssh/monash/cloud2.key \" ', 
+      chunk ,' ubuntu@118.138.234.94:/dee2_data/data/',org,sep="")
     system(CMD)
   }
 } 
@@ -205,41 +211,49 @@ d<-val
 rsync(d,org)
 
 # write metadata
-write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep=""),quote=F,sep="\t",row.names=F)
+write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep=""),
+  quote=F,sep="\t",row.names=F)
 
 #aggregate se ke and qc data
 CMD=paste("./dee_pipeline.sh",org)
 system(CMD)
 
 #upload metadata
-SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key", paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ," ubuntu@118.138.234.94:/mnt/dee2_data/metadata")
+SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key", 
+  paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ,
+    " ubuntu@118.138.234.94:/mnt/dee2_data/metadata")
 system(SCP_COMMAND)
 
 save.image(file = paste(org,".RData",sep=""))
 
 #now attach the additional metadata and upload
-x<-res[, !(colnames(res) %in% c("QC_summary","Experiment","sample_acc","SRA.Study","GEO_series","GEO_Accession"))]
+x<-res[, !(colnames(res) %in% 
+  c("QC_summary","Experiment","sample_acc","SRA.Study","GEO_series","GEO_Accession"))]
 x<-merge(x2,x,by.x="SRR_accession",by.y="Run")
 
 x<-x[which(x$SRR_accession %in% runs_done),]
 x <- apply(x,2,as.character)
 x<-gsub("\r?\n|\r", " ", x)
 write.table(x,file=paste(SRADBWD,"/",org,"_metadata.tsv",sep=""),quote=F,sep="\t",row.names=F)
-SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key ", paste(SRADBWD,"/",org,"_metadata.tsv",sep="") ," ubuntu@118.138.234.94:/mnt/dee2_data/metadata")
+SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key ", 
+  paste(SRADBWD,"/",org,"_metadata.tsv",sep="") ,
+  " ubuntu@118.138.234.94:/mnt/dee2_data/metadata")
 system(SCP_COMMAND)
 
 save.image(file = paste(org,".RData",sep=""))
 
 png("dee_datasets.png",width=600,height=600)
-
+options(bitmapType="cairo")
 FILES1<-list.files(pattern="*queue.txt$",path="/mnt/md0/dee2/queue/",full.names=T)
 x<-as.data.frame(sapply(FILES1,rowcnt2),stringsAsFactors=FALSE)
-rownames(x)=c("A. thaliana","C. elegans","D. melanogaster","D. rerio","E. coli","H. sapiens","M. musculus","R. norvegicus","S. cerevisiae")
+rownames(x)=c("A. thaliana","C. elegans","D. melanogaster","D. rerio",
+  "E. coli","H. sapiens","M. musculus","R. norvegicus","S. cerevisiae")
 colnames(x)="queued"
 
 FILES2<-list.files(pattern="*accessions.tsv$",path="/mnt/md0/dee2/sradb/",full.names=T)
 y<-as.data.frame(sapply(FILES2,rowcnt2),stringsAsFactors=FALSE)
-rownames(y)=c("A. thaliana","C. elegans","D. melanogaster","D. rerio","E. coli","H. sapiens","M. musculus","R. norvegicus","S. cerevisiae")
+rownames(y)=c("A. thaliana","C. elegans","D. melanogaster","D. rerio",
+  "E. coli","H. sapiens","M. musculus","R. norvegicus","S. cerevisiae")
 colnames(y)="completed"
 
 z<-merge(x,y,by=0)
@@ -254,11 +268,12 @@ MAX=800000
 
 bb<-barplot( rbind( as.numeric(z$queued) , as.numeric(z$completed) ) ,
   names.arg=rownames(z) ,xlim=c(0,MAX), beside=T, main=HEADER, col=c("darkblue","red") ,
-  horiz=T , las=1, cex.axis=1.3, cex.names=1.4, cex.main=1.4 ,
+  horiz=T , las=1, cex.axis=1.2, cex.names=1.4, cex.main=1.4 ,
   xlab="number of SRA runs")
 
 legend("topright", colnames(z), fill=c("darkblue","red") , cex=1.2)
 
-text( cbind(as.numeric(z[,1])+50000 ,as.numeric(z[,2])+50000 )  ,t(bb),labels=c(z[,1],z[,2]) ,cex=1.2)
+text( cbind(as.numeric(z[,1])+70000 ,as.numeric(z[,2])+70000 )  ,t(bb),labels=c(z[,1],z[,2]) ,cex=1.2)
 dev.off()
 system("scp -i ~/.ssh/monash/cloud2.key dee_datasets.png ubuntu@118.138.234.94:/mnt/dee2_data/mx")
+
