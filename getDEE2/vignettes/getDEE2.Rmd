@@ -18,7 +18,7 @@ RNA-seq data in the form of counts. It was designed so that researchers could
 undertake re-analysis and meta-analysis of published RNA-seq studies quickly 
 and easily.
 
-This package provides an interface to access the expression data
+This package provides an interface to access these expression data
 programmatically. 
 
 ## Getting started
@@ -60,14 +60,14 @@ If we have a GEO series accession number in mind already (eg: GSE33569)
 then we can see if the datasets are present.
 
 ```{r, filtermeta}
-mdat[which(mdat$GSE_accession %in% "GSE33569"),]
+mdat[which(mdat$SRP_accession %in% "SRP009256"),]
 ```
 
 DEE2 data is centred around SRA run accessions numbers, these SRR_accessions
 can be obtained like this:
 
 ```{r, getSRRs}
-mdat1<-mdat[which(mdat$GSE_accession %in% "GSE33569"),]
+mdat1<-mdat[which(mdat$SRP_accession %in% "SRP009256"),]
 SRRlist<-as.vector(mdat1$SRR_accession)
 SRRlist
 ```
@@ -137,18 +137,6 @@ of absent accessions is provided in case you need these for your records.
 ```{r, showabsent}
 x$absent
 ```
-
-## Keyword searching metadata
-
-Here I'll demonstrate two ways to query SRAdbv2 
-([Docs](https://seandavi.github.io/SRAdbV2/articles/SRAdbv2.html)).
-
-You will need to install, then load the library.
-
-*** Edit 30th May 2019: The URL hosting the API is down, meaning that queries to
-SRAdbV2 as demonstrated beloware not working. We will update when there's a
-solution to this problem. ***
-
 
 ## Stand-alone functions for downloading and loading DEE2 data
 

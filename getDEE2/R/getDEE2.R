@@ -11,7 +11,6 @@
 #' @export
 #' @examples
 #' ecoli_metadatahea<-getDee2Metadata("ecoli")
-
 getDee2Metadata<-function(species,outfile=NULL, ...){
     orgs=c("athaliana","celegans","dmelanogaster","drerio","ecoli","hsapiens",
     "mmusculus","rnorvegicus","scerevisiae")
@@ -53,7 +52,6 @@ getDee2Metadata<-function(species,outfile=NULL, ...){
 #' @export
 #' @examples
 #' x<-queryDee2("ecoli",c("SRR1067773","SRR5350513"))
-
 queryDee2<-function(species, SRRvec,metadata=NULL, ...) {
     if(is.null(metadata)){
         mdat<-getDee2Metadata(species, ...)
@@ -76,7 +74,6 @@ queryDee2<-function(species, SRRvec,metadata=NULL, ...) {
 #' @export
 #' @examples
 #' x<-loadGeneCounts("~/Downloads/Data.zip")
-
 loadGeneCounts<-function(zipname){
     CM="GeneCountMatrix.tsv"
     TF=tempfile()
@@ -99,7 +96,6 @@ loadGeneCounts<-function(zipname){
 #' @export
 #' @examples
 #' x<-loadTxCounts("~/Downloads/Data.zip")
-
 loadTxCounts<-function(zipname){
     CM="TxCountMatrix.tsv"
     TF=tempfile()
@@ -122,7 +118,6 @@ loadTxCounts<-function(zipname){
 #' @export
 #' @examples
 #' x<-loadGeneInfo("~/Downloads/Data.zip")
-
 loadGeneInfo<-function(zipname){
     CM="GeneInfo.tsv"
     TF=tempfile()
@@ -133,7 +128,6 @@ loadGeneInfo<-function(zipname){
     unlink(TF)
     return(dat)
 }
-
 
 #' Load Transcript Info
 #'
@@ -147,7 +141,6 @@ loadGeneInfo<-function(zipname){
 #' @export
 #' @examples
 #' x<-loadTxInfo("~/Downloads/Data.zip")
-
 loadTxInfo<-function(zipname){
     CM="TxInfo.tsv"
     TF=tempfile()
@@ -171,7 +164,6 @@ loadTxInfo<-function(zipname){
 #' @export
 #' @examples
 #' x<-loadQcMx("~/Downloads/Data.zip")
-
 loadQcMx<-function(zipname){
     CM="QC_Matrix.tsv"
     TF=tempfile()
@@ -196,7 +188,6 @@ loadQcMx<-function(zipname){
 #' @export
 #' @examples
 #' x<-loadQcMx("~/Downloads/Data.zip")
-
 loadSummaryMeta<-function(zipname){
     CM="MetadataSummary.tsv"
     TF=tempfile()
@@ -218,7 +209,6 @@ loadSummaryMeta<-function(zipname){
 #' @export
 #' @examples
 #' x<-loadQcMx("~/Downloads/Data.zip")
-
 loadFullMeta<-function(zipname){
     CM="MetadataFull.tsv"
     TF=tempfile()
@@ -272,7 +262,6 @@ Tx2Gene<-function(x){
 #' @export
 #' @examples
 #' x<-getDEE2("ecoli",c("SRR1613487","SRR1613488"))
-
 getDEE2<-function(species, SRRvec, outfile=NULL, metadata=NULL,
 baseURL="http://dee2.io/cgi-bin/request.sh?", ...){
     if(is.null(metadata)){
@@ -297,7 +286,6 @@ baseURL="http://dee2.io/cgi-bin/request.sh?", ...){
             }
         }
         download.file(murl, destfile=zipname, mode = "wb", ...)
-
         GeneCounts<-loadGeneCounts(zipname)
         TxCounts<-loadTxCounts(zipname)
         GeneInfo<-loadGeneInfo(zipname)
@@ -320,4 +308,3 @@ baseURL="http://dee2.io/cgi-bin/request.sh?", ...){
         return(dat)
     }
 }
-
