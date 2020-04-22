@@ -338,7 +338,7 @@ Ta7g6mGwIMXrdTQQ8fZs
 EOF
       chmod 700 $DEE_DIR/.ascp
     fi
-    prefetch -a "/usr/local/bin/ascp|/dee2/.ascp/aspera-license" $SRR \
+    prefetch -X 9999999999999 -a "/usr/local/bin/ascp|/dee2/.ascp/aspera-license" $SRR \
     || ( echo $SRR failed download with prefetch | tee -a $SRR.log ; sleep 5 ; exit1 ; return 1 )
     mv /dee2/ncbi/public/sra/${SRR}.sra .
   fi
