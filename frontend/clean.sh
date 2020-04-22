@@ -27,6 +27,8 @@ if [ ! -r started ] ; then
     git clone https://github.com/markziemann/dee2.git
   fi
 
+  PREV_REFERENCE_PIPELINE_MD5SUM="750d197f551ef3ac98f9e83f8d61ca43"
+
   REFERENCE_PIPELINE_MD5SUM=$(md5sum dee2/pipeline/volunteer_pipeline.sh | awk '{print $1}')
 
   if [ "$(ls -A ${SFTP_INCOMING})" ]; then
@@ -49,7 +51,10 @@ if [ ! -r started ] ; then
 
           #INVALID=0 means data is valid and good. 1 or higher is bad
           INVALID=0
-          if [ "$REFERENCE_PIPELINE_MD5SUM" != "$PIPELINE_MD5SUM" ] ; then INVALID=$((INVALID+1)) ; fi
+          if [ "$REFERENCE_PIPELINE_MD5SUM" != "$PIPELINE_MD5SUM" ] \
+          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM" != "$PIPELINE_MD5SUM" ] ; then
+              INVALID=$((INVALID+1))
+          fi
           unzip -t $FILE || INVALID=$((INVALID+1))
           if [ $(du -s $FILE | cut -f1) -gt 6000 ] ; then INVALID=$((INVALID+1)) ; fi
 
