@@ -5,10 +5,8 @@
 
 setwd("/mnt/md0/dee2/code")
 
-#library(SRAdb)
 library(parallel)
 library(data.table)
-#library(SRAdbV2)
 library(R.utils)
 
 IPADD="118.138.234.94"
@@ -33,10 +31,6 @@ numgenes<-c(27655,20362,13918,25903,4140,20338,22598,22250,6692)
 names(numgenes)<- c("athaliana", "celegans", "dmelanogaster", "drerio",
 "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae")
 numgenes=numgenes[[org]]
-
-#longnames<-c("Arabidopsis thaliana","Caenorhabditis elegans","Drosophila melanogaster","Danio rerio",
-#"Escherichia coli","Homo sapiens","Mus musculus","Rattus norvegicus","Saccharomyces cerevisiae")
-#longname<-longnames[[which(names(species_list)==org)]]
 
 ###Set some directories
 CODEWD=getwd()
@@ -141,7 +135,6 @@ save.image(file = paste(org,".RData",sep=""))
 #collect QC info - this is temporary and logic will be incorporated in future
 QC_summary="BLANK"
 
-# xxx
 # here extract any samples that have GEO sample IDs ie GSM
 # res$GEO_Accession
 
@@ -172,8 +165,6 @@ res<-resx
 res<-res[order(res$Run),]
 
 #extract out the important accessions in order
-##x2<-as.data.frame(cbind(res$run.accession,QC_summary,res$experiment.accession,res$sample.accession,res$study.accession, GSE_accession, GSM_accession))
-#x2<-as.data.frame(cbind(res$Run, QC_summary, res$Experiment, res$sample_acc, res$SRA.Study, res$GEO_series, res$GEO_Accession, res$sample_name), stringsAsFactors=FALSE)
 x2<-as.data.frame(cbind(res$Run, QC_summary, res$Experiment, res$Sample, 
   res$SRAStudy,res$SampleName, res$GEO_series, res$LibraryName), stringsAsFactors=FALSE)
 
@@ -189,7 +180,23 @@ write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.complete.tsv.cut",sep=""),
 x2<-x2[which(x2$SRR_accession %in% runs_done),]
 
 source("dee_pipeline_functions.R")
-x2$QC_summary<-unlist(mclapply(x2$SRR_accession , qc_analysis, org=org,mc.cores=5))
+library("parallel")
+# this line is giving some errors with mouse data - now executes in batches
+myaccessions <- x2$SRR_accession
+qc_res=NULL
+chunksize=1000
+while (length(myaccessions) > chunksize ) {
+    qc_res_part<-unlist(mclapply(myaccessions[1:chunksize], qc_analysis, org=org,
+        mc.cores=4))
+    qc_res <- c(qc_res,qc_res_part)
+    myaccessions <- myaccessions[(chunksize+1):length(myaccessions)]
+}
+
+if (length(myaccessions) > 0 ) {
+    qc_res_part<-unlist(mclapply(myaccessions, qc_analysis, org=org,mc.cores=4))
+    qc_res <- c(qc_res,qc_res_part)
+}
+x2$QC_summary <- qc_res
 
 #here we rsync files to server in chunks of 1000
 rsync<-function(d,org) {
