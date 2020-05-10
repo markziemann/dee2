@@ -5,7 +5,9 @@ rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
 qc_analysis<-function(srr,org) {
  QCFILE=paste("../data/",org,"/",srr,"/",srr,".qc",sep="")
  QCLFILE=paste("../data/",org,"/",srr,"/",srr,".qcl",sep="")
+
  q <- read.csv(QCFILE,sep=":",stringsAsFactors=FALSE,header=FALSE)
+
  q<-q[1:28,]
  #get number of genes to determine required number of reads
  NumReadsQcPass=as.numeric(as.character(q[10,2]))
