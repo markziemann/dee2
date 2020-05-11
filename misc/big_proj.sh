@@ -16,7 +16,7 @@ DIR=big_proj/${ORG}
 if [ ! -d $DIR ] ; then mkdir -p $DIR ; fi
 
 cut -d ' ' -f2 $DEE2_ACCESSIONS \
-| sed 1d | sort | uniq -c | awk '$1>50' \
+| sed 1d | sort | uniq -c | awk '$1>15' \
 | while read line ; do
   SRP=$(echo $line | cut -d ' ' -f2)
   CNT_DEE=$(echo $line | cut -d ' ' -f1)
@@ -25,7 +25,7 @@ cut -d ' ' -f2 $DEE2_ACCESSIONS \
   if [ $CNT_DEE -eq $CNT_SRA ] ; then
 
     #fetch the geo series number
-    GSE=$(grep -wm1 $SRP ${ORG}_metadata.tsv.cut | cut -f7)
+    GSE=$(grep -wm1 $SRP ${ORG}_metadata.tsv.cut | cut -f7 | grep GSE)
     if [ -z "$GSE" ] ; then
       GSE="NA"
     fi
@@ -82,7 +82,7 @@ cut -d ' ' -f2 $DEE2_ACCESSIONS \
 
       #zip up folder
       cd $DIR
-      zip -r ${SRP}_${GSE}.zip ${SRP}_${GSE}
+      zip -r ${SRP}_${GSE}.zip ${SRP}_${GSE} ../README.md
       rm -rf ${SRP}_${GSE}
       cd -
     fi
