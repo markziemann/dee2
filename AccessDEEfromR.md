@@ -81,6 +81,7 @@ If we have a GEO series accession number in mind already (eg: GSE33569) then we 
 5976      GSE33569     GSM829556
 8072      GSE33569     GSM829557
 ```
+If your GEO series of interest is not found, then try with the corresponding SRA project accession (starts with SRPXXX). These SRP numbers are generally more reliable.
 
 DEE2 data is centred around SRA run accessions numbers, these SRR_accessions can be obtained like this:
 
