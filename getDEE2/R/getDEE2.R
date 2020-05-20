@@ -31,7 +31,7 @@ getDee2Metadata<-function(species,outfile=NULL, ...){
         }
         download.file(metadataURL, destfile=metadataname, mode = "wb", ...)
         mdat<-read.table(metadataname,header=TRUE,quote="",
-        sep='\t',fill=TRUE)
+        sep='\t',fill=TRUE,comment.char = "")
         if (is.null(outfile)){
             unlink(metadataname)
         }
@@ -80,7 +80,7 @@ loadGeneCounts<-function(zipname){
     unzip(zipname, files = CM, exdir = tempdir() )
     mxname<-paste0(tempdir(),"/",CM)
     file.rename(mxname,TF)
-    dat <- read.table(TF,row.names=1,header=TRUE)
+    dat <- read.table(TF,row.names=1,header=TRUE,comment.char = "")
     unlink(TF)
     return(dat)
 }
@@ -102,7 +102,7 @@ loadTxCounts<-function(zipname){
     unzip(zipname, files = CM, exdir = tempdir() )
     mxname<-paste0(tempdir(),"/",CM)
     file.rename(mxname,TF)
-    dat <- read.table(TF,row.names=1,header=TRUE)
+    dat <- read.table(TF,row.names=1,header=TRUE,comment.char = "")
     unlink(TF)
     return(dat)
 }
@@ -124,7 +124,7 @@ loadGeneInfo<-function(zipname){
     unzip(zipname, files = CM, exdir = tempdir() )
     mxname<-paste0(tempdir(),"/",CM)
     file.rename(mxname,TF)
-    dat <- read.table(TF,row.names=1,header=TRUE)
+    dat <- read.table(TF,row.names=1,header=TRUE,comment.char = "")
     unlink(TF)
     return(dat)
 }
@@ -147,7 +147,7 @@ loadTxInfo<-function(zipname){
     unzip(zipname, files = CM, exdir = tempdir() )
     mxname<-paste0(tempdir(),"/",CM)
     file.rename(mxname,TF)
-    dat <- read.table(TF,row.names=1,header=TRUE)
+    dat <- read.table(TF,row.names=1,header=TRUE,comment.char = "")
     unlink(TF)
     return(dat)
 }
@@ -170,7 +170,7 @@ loadQcMx<-function(zipname){
     unzip(zipname, files = CM, exdir = tempdir() )
     mxname<-paste0(tempdir(),"/",CM)
     file.rename(mxname,TF)
-    dat <- read.table(TF,row.names=1,header=TRUE,fill=TRUE)
+    dat <- read.table(TF,row.names=1,header=TRUE,fill=TRUE,comment.char = "")
     unlink(TF)
     message("For more information about DEE2 QC metrics, visit
     https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md")
@@ -194,7 +194,8 @@ loadSummaryMeta<-function(zipname){
     unzip(zipname, files = CM, exdir = tempdir() )
     mxname<-paste0(tempdir(),"/",CM)
     file.rename(mxname,TF)
-    dat <- read.table(TF,row.names=1,header=TRUE,quote="",sep='\t',fill=FALSE)
+    dat <- read.table(TF,row.names=1,header=TRUE,quote="",sep='\t',
+        fill=FALSE,comment.char = "")
     unlink(TF)
     return(dat)
 }
@@ -215,7 +216,8 @@ loadFullMeta<-function(zipname){
     unzip(zipname, files = CM, exdir = tempdir() )
     mxname<-paste0(tempdir(),"/",CM)
     file.rename(mxname,TF)
-    dat <- read.table(TF,row.names=1,header=TRUE,quote="",fill=TRUE,sep='\t')
+    dat <- read.table(TF,row.names=1,header=TRUE,quote="",fill=TRUE,
+        sep='\t',comment.char = "")
     unlink(TF)
     return(dat)
 }
