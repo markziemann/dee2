@@ -18,7 +18,7 @@ Description: Digital Expression Explorer 2 (or DEE2 for short) is a repository
     to access these expression data. More information about the DEE2 project
     can be found at the project homepage (http://dee2.io) and main publication
     (https://doi.org/10.1093/gigascience/giz022).
-Depends: R (>= 4.0)
+Depends: R (>= 3.6)
 Imports: stats, utils
 Suggests: knitr, testthat
 License: GPL-3
