@@ -10,7 +10,7 @@ SRRvec <- as.vector(mdat1$SRR_accession)
 SRRvec
 
 ## Fetching DEE2 data using SRA run accession numbers
-x <- getDEE2("hsapiens", SRRvec, metadata=mdat, legacy=TRUE)
+x <- getDEE2(species="hsapiens", SRRvec = SRRvec, metadata=mdat, legacy=TRUE)
 names(x)
 head(x$GeneCounts)
 colSums(x$GeneCounts)
@@ -19,3 +19,4 @@ colSums(x$GeneCounts)
 x <- Tx2Gene(x)
 head(x$Tx2Gene)
 colSums(x$Tx2Gene)
+    
