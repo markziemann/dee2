@@ -1,13 +1,6 @@
-# Singularity guide
-This guide consists of two parts:
-
-1. running the image on HPC with slurm based scheduling, and
-
-2. creating the image if the above doesn't work
-
-
 ## Running DEE2 via singularity
-download the image from the dee2 webpage [here](http://dee2.io/images/) called "sing_img.tar.bz2".
+
+Download the image from the dee2 webpage [here](http://dee2.io/images/) called "sing_img.tar.bz2".
 Unpack the image with tar:
 
 ```
@@ -50,15 +43,18 @@ Here are three examples to try in a normal shell.
 ```
 singularity run -B $(pwd)/tmp:/tmp mziemann_tallyup.img ecoli SRR057751
 singularity run -B $(pwd)/tmp:/tmp mziemann_tallyup.img celegans
+```
 
+Here are two other examples for long-running instances.
 
 ```
 nohup run-one-constantly singularity run -B $(pwd)/tmp:/tmp mziemann_tallyup.img hsapiens
-nohup bash -c 'while true ; do singularity run -B $(pwd)/tmp:/tmp mziemann_tallyup.img ; done'
+nohup bash -c 'while true ; do singularity run -B $(pwd)/tmp:/tmp mziemann_tallyup.img ; sleep 10 ; done'
 ```
 
 Now try to schedule jobs. Below is an example sbatch file that works for me.
 Modify memory requirements and target organism as needed.
+
 ```
 #!/bin/bash
 # NOTE: To activate a SLURM option, remove the whitespace between the '#' and 'SBATCH'
