@@ -32,8 +32,7 @@ Next run this command which will run an internal test to make sure the pipeline 
 singularity run -w -B $(pwd)/tmp:/tmp mziemann_tallyup.img
 ```
 
-If you get no errors, you will be safe now to run the image.
-You're now free to run the image.
+If you get no errors, you're now free to run the image.
 When analysing another organism that isn't ecoli, be sure to use the `-w` option which will save the index for future use. 
 If you're analysing your own fastq files, the `-w` flag is required to retrieve the processed files.
 If you are processing pubic RNA-seq for the purpose of sending to dee2.io, the `-w` option is not required.
