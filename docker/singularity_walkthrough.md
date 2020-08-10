@@ -1,6 +1,6 @@
 ## Running DEE2 via singularity
 
-Download the image from the dee2 webpage [here](http://dee2.io/images/) called "sing_img.tar.bz2".
+Download the image from the dee2 webpage [here (1.6G)](http://dee2.io/images/sing_img.tar.bz2).
 Unpack the image with tar:
 
 ```
