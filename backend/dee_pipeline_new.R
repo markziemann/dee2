@@ -92,8 +92,8 @@ unalloc<-setdiff(folders,allocated)
 unlink(unalloc,recursive=TRUE)
 
 #Expected rows of se and ke files
-gre<-dim( read.table(paste(DATAWD,"/rownames_gene.txt",sep=""),header=T) )[1]
-tre<-dim( read.table(paste(DATAWD,"/rownames_tx.txt",sep=""),header=T) )[1]
+gre<-dim( read.table(paste(DATAWD,"/rownames_gene.txt",sep=""),header=TRUE, comment.char="") )[1]
+tre<-dim( read.table(paste(DATAWD,"/rownames_tx.txt",sep=""),header=TRUE, comment.char="") )[1]
 
 # run the check of new datasets
 source("dee_pipeline_functions.R")
@@ -108,7 +108,7 @@ av<-getmean(org)
 se_files<-paste( DATAWD , "/" , runs_done , "/" , runs_done , ".se.tsv.gz",sep="")
 
 corav<-function(x) {
-  xx<-read.table(x)
+  xx<-read.table(x,comment.char="")
   cor(merge(xx,av,by=0)[2:3],method="p")[1,2]
 }
 
@@ -141,9 +141,11 @@ QC_summary="BLANK"
 ######################################################################
 # the problem is that the csv downloaded from SRA doesnt contain the GSE accession
 # looking into it now
-
+# see the screenshot
 # solution for now is to download the sample data for GEO then
 # filter with a shell script
+# Here is the search strategy
+# "Saccharomyces cerevisiae"[porgn:__txid4932] AND "gsm"[Filter] AND "rna"[Sample Type]
 # sed 's/Accession: /Accession:/g;s/Series: /Series:/g' gds_result.txt \
 # |tr ' \t' '\n' | egrep '(Series:|Accession:)' | paste - - \
 # | sed 's/Series://;s/Accession://' > ecoli_geo.tsv
@@ -155,7 +157,7 @@ if (!file.exists(GSE_FILE)) {
     stop("Error: the GEO series file does not exist")
 }
 
-gse<-read.table(GSE_FILE,stringsAsFactors=FALSE)
+gse<-read.table(GSE_FILE, stringsAsFactors=FALSE, comment.char="")
 colnames(gse)<-c("GEO_series","GEO_sample")
 
 resx<-merge(res,gse,by.x="SampleName",by.y="GEO_sample",all.x=TRUE)

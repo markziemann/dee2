@@ -161,7 +161,7 @@ if( !file.exists(meanfile) ) {
 if ( DOIT==1) {
   # read in metadata
   mdat=paste("../sradb/",org,"_metadata.tsv.cut",sep="")
-  m<-read.table(mdat,header=T,sep="\t",quote="",fill=F)
+  m<-read.table(mdat,header=T,sep="\t",quote="",fill=F, comment.char="")
 
   # make a list of samples to use
   p<-m[grep("PASS",m$QC_summary),1]
@@ -189,7 +189,7 @@ if ( DOIT==1) {
   write.table(df,file=meanfile,quote=F,sep="\t")
 
 } else {
-  df<-read.table(meanfile,sep="\t",header=T,row.names=1)
+  df<-read.table(meanfile,sep="\t",header=T,row.names=1, comment.char="")
 }
 df
 }
@@ -219,7 +219,7 @@ if( !file.exists(meanfile) ) {
 if ( DOIT==1) {
   # read in metadata
   mdat=paste("../sradb/",org,"_metadata.tsv.cut",sep="")
-  m<-read.table(mdat,header=T,sep="\t",quote="",fill=F)
+  m<-read.table(mdat,header=T,sep="\t",quote="",fill=F, comment.char="")
 
   # make a list of samples to use
   p<-m[grep("PASS",m$QC_summary),1]
@@ -257,7 +257,7 @@ if ( DOIT==1) {
   gc()
 
 } else {
-  df<-read.table(meanfile,sep="\t",header=T,row.names=1)
+  df<-read.table(meanfile,sep="\t",header=T,row.names=1, comment.char="")
 }
 df
 }
@@ -286,7 +286,7 @@ if( !file.exists(meanfile) ) {
 if ( DOIT==1) {
   # read in metadata
   mdat=paste("../sradb/",org,"_metadata.tsv.cut",sep="")
-  m<-read.table(mdat,header=T,sep="\t",quote="",fill=F,stringsAsFactors=FALSE)
+  m<-read.table(mdat,header=T,sep="\t",quote="",fill=F,stringsAsFactors=FALSE, comment.char="")
 
   # make a list of samples to use
   p<-m[grep("PASS",m$QC_summary),1]
@@ -328,7 +328,7 @@ if ( DOIT==1) {
   rownames(means)=genes
   write.table(means,file=meanfile,quote=F,sep="\t")
 } else {
-  means<-read.table(meanfile,sep="\t",header=T,row.names=1)
+  means<-read.table(meanfile,sep="\t",header=T,row.names=1,comment.char="")
 }
 means
 }
