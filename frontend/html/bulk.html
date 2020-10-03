@@ -11,7 +11,7 @@
  body{
   -webkit-text-size-adjust:none;
   margin: 20px auto;
-  max-width:720px;
+  max-width:760px;
   line-height:1.6;
   font:normal normal normal 100% verdana,sans-serif;
   font-size:22px;
@@ -34,12 +34,14 @@
    font-size:20px;
    background-color:transparent;
    padding: 2px;
+   border: 1px solid black;
+   border-collapse: collapse;
   }
 
 ul {
     list-style-type: none;
     margin: 0ex;
-    padding: 0px;
+    padding: 0;
 }
 
 li {
@@ -64,10 +66,13 @@ li {
     color: white;
 }
 
+ input,text,tfbutton{
+#  font-size:3vmax;
+  font-size:150%;
 
- input{
-  font-size:2vmax;
  }
+
+
 
 /* The container */
 .container {
@@ -126,12 +131,17 @@ li {
 
 /* Style the indicator (dot/circle) */
 .container .checkmark:after {
- 	top: 9px;
-	left: 9px;
-	width: 8px;
-	height: 8px;
-	border-radius: 50%;
-	background: white;
+        top: 9px;
+        left: 9px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: white;
+}
+
+.illustration img {
+  width: 100%;
+  display: block;
 }
 
 </style>
@@ -143,6 +153,7 @@ li {
 <a href="/about.html" class="button">ABOUT</a>
 <a href="/help.html" class="button">HELP</a>
 <a href="/bulk.html" class="button">BULK DATA</a>
+<a href="/genesets.html" class="button">GENE SETS</a>
 </ul>
 
 <div id="page">
@@ -168,15 +179,11 @@ accession numbers and QC summary.
 </p>
 
 <hr>
-<p>Data processsing is still underway so some datasets may be missing. Contact us if you would like 
-specific data added, or alternatively spin up your own docker according to the 
-<a href="https://github.com/markziemann/dee2/blob/master/pipeline/README.md">guide</a>.
-<p>
 
-<hr>
-
-<p> Data for large-scale studies with &#8805;50 runs, that have been fully processed by DEE2 are 
+<p> Data for studies with more than 4 runs are 
 packaged as zip files and available <a href="/huge">here</a>.
 </p>
 
+<hr>
+<hr>
 </div>

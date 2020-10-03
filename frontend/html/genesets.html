@@ -1,0 +1,274 @@
+<!DOCTYPE html PUBLIC>
+<html xml:lang="en" lang="en">
+<link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+<head>
+	<title>Digital Expression Explorer 2</title>
+
+	<!-- menu stylesheets -->
+
+	<style type="text/css" media="screen, projection">
+
+ body{
+  -webkit-text-size-adjust:none;
+  margin: 20px auto;
+  max-width:760px;
+  line-height:1.6;
+  font:normal normal normal 100% verdana,sans-serif;
+  font-size:22px;
+  color:#3a3a3a;
+  padding:0 10px
+ }
+
+ h1,h2,h3{
+  line-height:1.2;
+  color:#406fef ;
+ }
+
+ aside,p,ul{
+  color:#3a3a3a;
+ }
+
+ table,th,tr,td{
+   line-height:1.2;
+   font-family:sans-serif;
+   font-size:20px;
+   background-color:transparent;
+   padding: 2px;
+   border: 1px solid black;
+   border-collapse: collapse;
+  }
+
+ul {
+    list-style-type: none;
+    margin: 0ex;
+    padding: 0;
+}
+
+li {
+    display: inline;
+}
+
+.button {
+    background-color: #999999;
+    color: white;
+    padding: 8px 25px;
+    leading: 3;
+    line-height: 2em;
+    text-decoration: none;
+#    font-size: 1.8vmax;
+    cursor: pointer;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+}
+
+.button:hover {
+    background-color: #406fef; /* blue */
+    color: white;
+}
+
+ input,text,tfbutton{
+#  font-size:3vmax;
+  font-size:150%;
+
+ }
+
+
+
+/* The container */
+.container {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 22px;
+    color:#3a3a3a;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Hide the browser's default radio button */
+.container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Create a custom radio button */
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: #eee;
+    border-radius: 50%;
+}
+
+/* On mouse-over, add a grey background color */
+.container:hover input ~ .checkmark {
+    background-color: #ccc;
+}
+
+/* When the radio button is checked, add a blue background */
+.container input:checked ~ .checkmark {
+    background-color: #406fef;
+}
+
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+/* Show the indicator (dot/circle) when checked */
+.container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+/* Style the indicator (dot/circle) */
+.container .checkmark:after {
+        top: 9px;
+        left: 9px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: white;
+}
+
+.illustration img {
+  width: 100%;
+  display: block;
+}
+
+</style>
+</head>
+<body>
+
+<ul>
+<a href="/index.html" class="button">HOME</a>
+<a href="/about.html" class="button">ABOUT</a>
+<a href="/help.html" class="button">HELP</a>
+<a href="/bulk.html" class="button">BULK DATA</a>
+<a href="/genesets.html" class="button">GENE SETS</a>
+</ul>
+
+<div id="page">
+<h1 id="content">DEE2 gene signatures</h1>
+
+<p><strong>**Under construction**</strong></p>
+
+<p>In addition to providing the largest publicly available set of processed RNA-seq data, we are trialing the sharing of gene signatures.
+These gene signatures have been specifically curated to help characterise human diseases including diabetes, heart disease, epilepsy and viral infection (SARS/MERS/SARS-CoV-2).
+These gene signatures are useful for enrichment analysis with tools such as <a href="https://pubmed.ncbi.nlm.nih.gov/16199517/">GSEA</a> and <a href="https://pubmed.ncbi.nlm.nih.gov/32600408/">mitch</a>.
+</p>
+
+<table style="width:100%">
+  <caption>Gene sets available</caption>
+  <tr>
+    <th>Disease focus</th>
+    <th>Number of sets</th>
+  </tr>
+  <tr>
+    <td>Epilepsy</td>
+    <td>12</td>
+  </tr>
+  <tr>
+    <td>Diabetes</td>
+    <td>129</td>
+  </tr>
+  <tr>
+    <td>Heart disease</td>
+    <td>50</td>
+  </tr>
+
+  <tr>
+    <td>SARS, MERS and SARS-CoV-2</td>
+    <td>66</td>
+  </tr>
+</table>
+
+<h2 id="content">Download</h2>
+
+<p>
+<a href="http://dee2.io/data/genesets/epilepsy_20sep.gmt">Epilepsy (20K)</a>
+</p>
+
+<p>
+<a href="http://dee2.io/data/genesets/diabetes_20sep.gmt">Diabetes (296K)</a>
+</p>
+
+<p>
+<a href="http://dee2.io/data/genesets/heartdisease_20sep.gmt">Heart disease (116K)</a>
+</p>
+
+<p>
+<a href="http://dee2.io/data/genesets/epilepsy_20sep.gmt">SARS, MERS and SARS-CoV-2 (132K)</a>
+</p>
+
+<h2 id="content">Set analysis</h2>
+
+We performed an analysis of these sets, see the data <a href="http://dee2.io/data/genesets/set_analysis.html">here</a>.
+
+<h2 id="content">Method summary</h2>
+
+<p>
+The code used was deposited to <a href="https://github.com/markziemann/dee2_gene_signatures">GitHub</a>.
+To create these gene sets, our curation team searched for GEO series with related to our main disease focuses and satisfied a number of criteria:
+</p>
+
+<p>
+1. The study is relevant to the disease.
+</p>
+<p>
+2. The study involves samples that can be compared, for example control and disease groups.
+</p>
+<p>
+4. The data is available at DEE2 and passes QC filtering. QC "FAIL" data sets are excluded.
+</p>
+<p>
+3. The experiment is replicated, that means n>2 for each condition after QC filtering.
+</p>
+<p>
+For the studies that do fit the criteria, the contrasts are defined in a markdown file related to the SRA project ID (SRP) and the SRA experiment IDs (SRXs) corresponding to the control and case datasets:
+</p>
+<p>
+<strong>
+SRP: Contrast name: Control group name; SRX(control1),SRX(control2),SRX(controlN): Case group name; 
+SRX(case1);SRX(case2),SRX(case3)
+</strong>
+</p>
+<p>
+For example:
+</p>
+<strong>
+SRP233503:Genes differentially regulated by free fatty acids in HUVECs cells:Ctrl; SRX7228895,SRX7228896,SRX7228897:FFA; SRX7228898,SRX7228899,SRX7228900
+</strong>
+</p>
+Next, the contrasts are analysed using a specially designed pipeline in R (version 4.0.2).
+In the "de_analysis" folder there are Rmd files that can be used to regenerate the gene set library for each theme.
+These Rmd files use a common set of functions for differential analysis, which are found in the "de_functions.R" file.
+First, the contrast information is parsed out so the control and case data are identified.
+Next, the gene expression count data are obtained from DEE2 using the "getDEE2" package.
+Any SRA runs with QC summary of "FAIL" are excluded.
+The remaining datasets are aggregated from runs to experiments.
+Genes with fewer than 10 reads per sample on average are excluded.
+Next we remove samples with fewer than 1000 expressed genes.
+If after this there are fewer than two replicates per group, the contrast is discarded.
+Next DESeq2 version1.28.1 was used for differential expression.
+Genes indicated as FDR<0.05 were divided into up- and down-regulated groups.
+Sets with fewer than 10 genes were discarded.
+Sets were aggregated and written as a GMT format.
+</p>
+
+<h2 id="content">Contributors</h2>
+<p>
+Aaron Kovacs, Chelsia Sritharan, Haris Lekovic and Mark Ziemann.
+If you would like to contribute, get in touch via <a href="https://github.com/markziemann/dee2_gene_signatures">GitHub</a>.
+</p>
+<hr>
+<hr>
+</div>
