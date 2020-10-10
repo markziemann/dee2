@@ -1,6 +1,6 @@
 # Incorporating DEE2 data into your R-based RNA-seq workflow
 
-Copyright, Mark Ziemann, 2018.
+Mark Ziemann, 2018.
 
 ## Table of Contents
 1. [Getting started](#getting-started)
