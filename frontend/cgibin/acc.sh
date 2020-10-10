@@ -9,7 +9,6 @@ export -f cleanit
 
 echo "Content-type: text/html"
 echo ""
-
 echo '<html>'
 echo '<head>'
 echo '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
@@ -18,7 +17,6 @@ echo '</head>'
 echo '<body>'
 # check whether ORG is known and quit if not in the list
 ORG=$(echo "$QUERY_STRING" | cleanit | tr ' ' '\n' | grep -m1 ^ORG=  | cut -d '=' -f2)
-
 ORGLIST='athaliana
 celegans
 dmelanogaster
@@ -42,37 +40,27 @@ if [ "$ORG_OK" != "1" ] ; then
 fi
 
 DATA=/usr/lib/cgi-bin/acc_data
-TODO=${DATA}/${ORG}.queue.txt
 TODO_NEW=/home/ubuntu/Public/${ORG}.queue.txt
-ALLOCATED=${DATA}/${ORG}.allocated.txt
-WORKLIST=${DATA}/${ORG}.worklist.txt
+ALLOC=${DATA}/${ORG}.alloc.txt
+SHORTLIST=${DATA}/${ORG}.shortlist.txt
 
-if [ ! -r $WORKLIST ] ; then
-  cut -f1 $TODO_NEW | shuf | sed 's/$/\t0/' > $WORKLIST
+if [ ! -r $SHORTLIST ] ; then
+  head -1000 $TODO_NEW > $SHORTLIST
+  ACCESSION=$(head -1 $SHORTLIST)
+  echo $ACCESSION > $ALLOC
+else
+  PREV=$(tail -1 $ALLOC)
+  ACCESSION=$(grep -w -A1 $PREV $SHORTLIST | tail -1)
+  echo $ACCESSION >> $ALLOC
 fi
 
-#ACCESSION=$(sort -k2n -k1R $WORKLIST | awk 'NR==1 {print $1}' )
-ACCESSION=$(sort -k2n -k1 $WORKLIST | awk 'NR==1 {print $1}' )
-COUNT=$(grep -w $ACCESSION $WORKLIST | awk '{print $2}')
-INCREMENT=$((COUNT+1))
-echo $COUNT $INCREMENT
+DIFF=$(( $(wc -l < $SHORTLIST )  - $(wc -l < $ALLOC ) ))
 
-TIME=$(date +%s)
-EDIT_TIME=$(stat --format "%Y" $TODO_NEW)
-DIFF=$((TIME-EDIT_TIME))
-
-sed -i "s/${ACCESSION}\t${COUNT}$/${ACCESSION}\t${INCREMENT}/" $WORKLIST
-sed -i "s/${ACCESSION}$/${ACCESSION}\t${INCREMENT}/" $WORKLIST
-
-
-sudo comm -23 <(cut -f1 $TODO_NEW | sort ) <(cut -f1 $WORKLIST | sort) \
-| sed 's/$/\t0/' >> $WORKLIST
-
-RAND=$RANDOM
-grep -wFf $TODO_NEW $WORKLIST > /tmp.$RAND
-mv /tmp.$RAND $WORKLIST
-
-
+if [ $DIFF -le 50 ] ; then
+  grep -w -A1000 $ACCESSION $TODO_NEW | sed 1d > $SHORTLIST
+  > $ALLOC
+  if [  $(wc -l < $SHORTLIST) -le 1 ] ; then rm $SHORTLIST ; fi
+fi
 
 echo '<br>'
 echo "ACCESSION=$ACCESSION"
@@ -81,19 +69,3 @@ echo "Thank you for your contribution!"
 echo '<br>'
 echo '</body>'
 echo '</html>'
-
-#detail joblist length for each organism
-TIME=$(date +%s)
-ACC_HTML=/var/www/html/acc.html
-EDIT_TIME=$(stat --format "%Y" $ACC_HTML)
-DIFF=$((TIME-EDIT_TIME))
-if [ "$DIFF" -gt "600" ] ; then
-  touch $ACC_HTML
-  ORGLIST="athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae"
-  for ORG in $ORGLIST ; do
-    TODO=${DATA}/${ORG}.queue.txt
-    NUMJOBS=$(wc -l < $TODO)
-    sed -i "/${ORG}/s/[0-9]//g;/${ORG}/s/()/(${NUMJOBS})/" $ACC_HTML
-  done
-fi
-
