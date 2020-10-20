@@ -1,12 +1,13 @@
-<!DOCTYPE html PUBLIC>
+<!DOCTYPE html>
+
 <html xml:lang="en" lang="en">
 <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
 <head>
-	<title>Digital Expression Explorer 2</title>
-
-	<!-- menu stylesheets -->
-
-	<style type="text/css" media="screen, projection">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Digital Expression Explorer 2
+</title>
+<style type="text/css">
 
  body{
   -webkit-text-size-adjust:none;
@@ -164,60 +165,53 @@ li {
 <p>In addition to providing the largest publicly available set of processed RNA-seq data, we are trialing the sharing of gene signatures.
 These gene signatures have been specifically curated to help characterise human diseases including diabetes, heart disease, epilepsy and viral infection (SARS/MERS/SARS-CoV-2).
 These gene signatures are useful for enrichment analysis with tools such as <a href="https://pubmed.ncbi.nlm.nih.gov/16199517/">GSEA</a> and <a href="https://pubmed.ncbi.nlm.nih.gov/32600408/">mitch</a>.
+They are in GMT format.
 </p>
 
 <table style="width:100%">
-  <caption>Gene sets available</caption>
+  <caption>Download</caption>
   <tr>
-    <th>Disease focus</th>
-    <th>Number of sets</th>
+    <th>Disease focus (Number of sets)</th>
+    <th>Gene symbols</th>
+    <th>Ensembl IDs</th>
   </tr>
   <tr>
-    <td>Epilepsy</td>
-    <td>12</td>
+    <td>Epilepsy (12)</td>
+    <td><a href="http://dee2.io/data/genesets/epilepsy_genesymbols_oct2020.gmt" download>20K</a></td>
+    <td><a href="http://dee2.io/data/genesets/epilepsy_ensemblIDs_oct2020.gmt" download>44K</a></td>
   </tr>
   <tr>
-    <td>Diabetes</td>
-    <td>129</td>
+    <td>Diabetes (129)</td>
+    <td><a href="http://dee2.io/data/genesets/diabetes_genesymbols_oct2020.gmt" download>312K</a></td>
+    <td><a href="http://dee2.io/data/genesets/diabetes_ensemblIDs_oct2020.gmt" download>716K</a></td>
   </tr>
   <tr>
-    <td>Heart disease</td>
-    <td>50</td>
+    <td>Heart disease (50)</td>
+    <td><a href="http://dee2.io/data/genesets/heartdisease_genesymbols_oct2020.gmt" download>116K</a></td>
+    <td><a href="http://dee2.io/data/genesets/heartdisease_ensemblIDs_oct2020.gmt" download>264K</a></td>
   </tr>
 
   <tr>
-    <td>SARS, MERS and SARS-CoV-2</td>
-    <td>66</td>
+    <td>SARS, MERS and SARS-CoV-2 (66)</td>
+    <td><a href="http://dee2.io/data/genesets/sarsmers_genesymbols_oct2020.gmt" download>120K</a></td>
+    <td><a href="http://dee2.io/data/genesets/sarsmers_ensemblIDs_oct2020.gmt" download>284K</a></td>
   </tr>
 </table>
 
-<h2 id="content">Download</h2>
-
-<p>
-<a href="http://dee2.io/data/genesets/epilepsy_20sep.gmt">Epilepsy (20K)</a>
-</p>
-
-<p>
-<a href="http://dee2.io/data/genesets/diabetes_20sep.gmt">Diabetes (296K)</a>
-</p>
-
-<p>
-<a href="http://dee2.io/data/genesets/heartdisease_20sep.gmt">Heart disease (116K)</a>
-</p>
-
-<p>
-<a href="http://dee2.io/data/genesets/epilepsy_20sep.gmt">SARS, MERS and SARS-CoV-2 (132K)</a>
-</p>
-
 <h2 id="content">Set analysis</h2>
 
-We performed an analysis of these sets, see the data <a href="http://dee2.io/data/genesets/set_analysis.html">here</a>.
+We performed an analysis of these sets, see the data 
+<a href="http://dee2.io/data/genesets/set_analysis.html">here</a>.
+We checked to see whether these gene sets showed unreasonably high overlap with existing sets in MsigDB so we 
+calculated Jaccard index against every set in MsigDB <a href="http://dee2.io/data/genesets/set_overlap.html">(link)</a>. The highest Jaccard score was 0.39 for a SARS-CoV-2 set with
+a set in MsigDB.
 
 <h2 id="content">Method summary</h2>
 
 <p>
 The code used was deposited to <a href="https://github.com/markziemann/dee2_gene_signatures">GitHub</a>.
-To create these gene sets, our curation team searched for GEO series with related to our main disease focuses and satisfied a number of criteria:
+To create these gene sets, our curation team searched for GEO series with related to our main disease focuses 
+and satisfied a number of criteria:
 </p>
 
 <p>
@@ -233,7 +227,8 @@ To create these gene sets, our curation team searched for GEO series with relate
 3. The experiment is replicated, that means n>2 for each condition after QC filtering.
 </p>
 <p>
-For the studies that do fit the criteria, the contrasts are defined in a markdown file related to the SRA project ID (SRP) and the SRA experiment IDs (SRXs) corresponding to the control and case datasets:
+For the studies that do fit the criteria, the contrasts are defined in a markdown file related to the SRA project 
+ID (SRP) and the SRA experiment IDs (SRXs) corresponding to the control and case datasets:
 </p>
 <p>
 <strong>
@@ -272,3 +267,5 @@ If you would like to contribute, get in touch via <a href="https://github.com/ma
 <hr>
 <hr>
 </div>
+
+
