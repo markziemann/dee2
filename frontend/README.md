@@ -28,7 +28,7 @@ This will be achieved with:
 
 - #### Install dependencies for server.py
     Using a virtual environment is normally recommended 
-    (however can be a pain to constantly activate)
+    (however can be a pain having to constantly activate it).
     
     `$pip install aiohttp`
     
