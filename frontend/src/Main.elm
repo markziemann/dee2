@@ -4,18 +4,18 @@ import Array exposing (Array)
 import Browser exposing (Document)
 import Browser.Events exposing (onKeyDown)
 import Debug
-import Elastic exposing (..)
+import Elastic exposing (serialize, parse)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Http exposing (..)
 import Info exposing (introduction)
 import Json.Decode as Decode
-import Keyboard.Event exposing (KeyboardEvent, considerKeyboardEvent, decodeKeyboardEvent)
+import Keyboard.Event exposing (KeyboardEvent, considerKeyboardEvent)
 import Nav exposing (navbar)
-import Process
-import Regex
-import Task exposing (..)
+import Process exposing (sleep)
+import Task
+import Results exposing (SearchResults, viewSearchResults)
 
 
 port consoleLog : String -> Cmd msg
@@ -28,8 +28,7 @@ type alias SearchSuggestions =
 type alias ActiveSuggestion =
     Int
 
--- Each element in the search result will be a list of key value pairs
-type alias SearchResults = List (List(String, String))
+
 
 
 type alias Model =
@@ -72,7 +71,7 @@ type Msg
 
 delay : Float -> msg -> Cmd msg
 delay time msg =
-    Process.sleep time
+    sleep time
         |> Task.andThen (always <| Task.succeed msg)
         |> Task.perform identity
 
@@ -266,6 +265,7 @@ view model =
                     ]
                     [ text "Search" ]
                 ]
+            , viewSearchResults model.searchResults
             ]
         , introduction
         ]
