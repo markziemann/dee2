@@ -95,27 +95,17 @@ unlink(unalloc,recursive=TRUE)
 gre<-dim( read.table(paste(DATAWD,"/rownames_gene.txt",sep=""),header=TRUE, comment.char="") )[1]
 tre<-dim( read.table(paste(DATAWD,"/rownames_tx.txt",sep=""),header=TRUE, comment.char="") )[1]
 
-# run the check of new datasets
+message("run the check of new datasets")
 source("dee_pipeline_functions.R")
 mclapply(fin_new,check_contents,gre,tre,mc.cores=5)
+message("done")
 
 val<-paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "validated" , 
   full.names = T, recursive = T),"/"),"[[",7),sep="/")
 runs_done<-sapply(strsplit(val,"/"),"[[",7)
 
-av<-getmean(org)
-
 se_files<-paste( DATAWD , "/" , runs_done , "/" , runs_done , ".se.tsv.gz",sep="")
 
-corav<-function(x) {
-  xx<-read.table(x,comment.char="")
-  cor(merge(xx,av,by=0)[2:3],method="p")[1,2]
-}
-
-cors<-data.frame(as.numeric(  mclapply( se_files , corav , mc.cores=5) ) )
-rownames(cors)<-sapply(strsplit(se_files,"/"),"[[",7)
-
-runs_done<-sapply(strsplit(val,"/"),"[[",7)
 print(paste(length(runs_done),"runs completed"))
 runs_todo<-base::setdiff(runs, runs_done)
 print(paste(length(runs_todo),"requeued runs"))
