@@ -20,7 +20,7 @@ This will be achieved with:
 - [Install](https://www.elastic.co/elasticsearch/?ultron=B-Stack-Trials-APJ-ANZ-Exact&gambit=Elasticsearch-install&blade=adwords-s&thor=install%20elasticsearch&gclid=CjwKCAjwoc_8BRAcEiwAzJevtU6L3dCJk-oDzUodHfZJwMW8L6nxFYBa9S6MR-LGmHewnPl4ds6oLRoCaLsQAvD_BwE) 
     Elasticsearch. The location of which may not matter in development, 
     however consideration will need to be made for production
-    ######Note: You may need to install Java
+    ###### Note: You may need to install Java
     
 - [install](https://www.python.org/) Python (>=3.6)
 - [install](https://elm-lang.org/) Elm (0.19)
