@@ -28,11 +28,15 @@ type alias SearchSuggestions =
 type alias ActiveSuggestion =
     Int
 
+-- Each element in the search result will be a list of key value pairs
+type alias SearchResults = List (List(String, String))
+
 
 type alias Model =
     { searchString : String
     , searchSuggestions : SearchSuggestions
     , activeSuggestion : Maybe Int
+    , searchResults : SearchResults
     }
 
 
@@ -41,6 +45,7 @@ init =
     ( { searchString = ""
       , searchSuggestions = Array.empty
       , activeSuggestion = Nothing
+      , searchResults = []
       }
     , Cmd.none
     )
@@ -58,21 +63,11 @@ type Key
 type Msg
     = SearchUpdate String
     | Search
-    | SearchResponse (Result Http.Error String)
+    | SearchResponse (Result Http.Error SearchResults)
     | GetSearchSuggestions String
     | GotSearchSuggestions (Result Http.Error SearchSuggestions)
     | KeyPressed Key
     | SuggestionSelected Int
-
-
-maybeSerialize result =
-    -- Just used for console logging during development
-    case result of
-        Err value ->
-            Debug.toString value
-
-        Ok value ->
-            serialize value
 
 
 delay : Float -> msg -> Cmd msg
@@ -112,17 +107,23 @@ update msg model =
                 )
 
         Search ->
+
             let
-                consoleMsg =
-                    parse model.searchString |> maybeSerialize
+                -- Elastic.Word makes no modification to the search string
+                search_string = Result.withDefault (Elastic.Word model.searchString) (parse model.searchString)
+                                |> serialize
 
                 serverQuery =
-                    get { url = "/search/" ++ consoleMsg, expect = Http.expectString SearchResponse }
+                    get { url = "/search/" ++ search_string
+                    , expect = Http.expectJson SearchResponse (Decode.list (Decode.keyValuePairs Decode.string))}
             in
-            ( model, Cmd.batch [ consoleLog consoleMsg, serverQuery ] )
+            ( model, Cmd.batch [ consoleLog search_string, serverQuery ] )
 
-        SearchResponse result ->
-            ( model, Debug.toString result |> consoleLog )
+        SearchResponse response ->
+            let
+                searchResults = Result.withDefault [] response
+            in
+            ( {model| searchResults = searchResults}, Debug.toString searchResults|> consoleLog )
 
         GetSearchSuggestions value ->
             -- This is some debounce on the search string to prevent spamming ElasticSearch with queries
