@@ -1,0 +1,58 @@
+# Ingest metadata into Elasticsearch
+import itertools
+import os
+import csv
+from elasticsearch import Elasticsearch
+from elasticsearch.helpers import bulk
+
+METADATA_DIR = os.environ['DEE2_FRONTEND_DIR']
+
+metadata_file_names = list(filter(lambda file: file.endswith('.tsv'), os.listdir(f'{METADATA_DIR}')))
+
+
+def iter_metadata_files():
+    for file_path in metadata_file_names:
+        with open(f'{METADATA_DIR}/{file_path}', encoding='utf8') as file:
+            yield file_path, iter(csv.reader(file, dialect='excel-tab'))
+
+client = Elasticsearch()
+
+SEARCH_AS_YOU_TYPE_FIELDS = ['SRR_accession', 'SRX_accession', 'SRS_accession', 'SRP_accession',
+                             'Sample_name', 'Library_name']
+
+properties = dict(
+    map(lambda field: (field, {"type": "search_as_you_type"}), SEARCH_AS_YOU_TYPE_FIELDS)
+)
+
+
+def species_name(metadata_path):
+    assert '_' in metadata_path
+    # returns all characters until an underscore
+    return ''.join(itertools.takewhile(lambda character: character != '_', metadata_path))
+
+
+def create_index(client, index_name):
+    """Creates an index in Elasticsearch if one isn't already there."""
+    return client.indices.create(
+        index=index_name,
+        ignore=400,
+        body=
+        {
+            "mappings": {
+                "properties": properties
+            }
+        }
+    )
+
+
+def actions():
+    for file_path, tsv_file in iter_metadata_files():
+        headers = next(tsv_file)
+        for row in tsv_file:
+            yield dict(zip(headers, row), **{'_index': species_name(file_path)})
+
+
+index_results = map(lambda metadata_path: create_index(client, species_name(metadata_path)), metadata_file_names)
+result = bulk(client, actions())
+
+print(result)

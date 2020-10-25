@@ -1,0 +1,9 @@
+- Elastic search
+    - C:\Program Files\Elastic\Elasticsearch\7.9.2
+    - Requires Java
+
+- Python > 3.6
+
+- Elm 0.19
+
+- Parcel

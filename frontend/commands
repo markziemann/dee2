@@ -1,0 +1,25 @@
+Run this in Powershell to delete all data in ElasticSearch, handy if you just want to rebuild
+the index's from scratch
+
+$ Invoke-WebRequest -method DELETE http://localhost:9200/_all
+
+Start ElasticSearch (windows, must be on PATH)
+
+$ elasticsearch.exe
+
+Run python server:
+
+1 - Activate virtual environment if necessary. If venv folder in project root
+
+(git-bash)
+$ . venv/Scrips/activate
+
+(windows cmd)
+$ "venv/Scripts/activate.bat"
+
+To deactivate simply
+$ deactivate
+
+Use parcel to watch for file changes and recompile
+
+$parcel watch index.html
