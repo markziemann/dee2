@@ -1,6 +1,6 @@
 port module Main exposing (..)
 
-import Array exposing (Array)
+import Array exposing (Array, isEmpty)
 import Browser exposing (Document)
 import Browser.Events exposing (onKeyDown)
 import Debug
@@ -221,13 +221,17 @@ viewSuggestions searchString suggestions active =
 
                         else
                             ""
+        show = if isEmpty suggestions then
+                            identity
+                       else
+                            (\str -> String.join " " [str, "show"])
     in
-    ul [ class "list-group" ]
+    div [class (show "dropdown") ] [div [ class (show "dropdown-menu") ]
         (List.indexedMap
             (\idx suggestion ->
                 li
                     [ String.join " "
-                        [ "list-group-item list-group-item-action"
+                        [ "dropdown-item"
                         , selector idx
                         ]
                         |> class
@@ -236,7 +240,7 @@ viewSuggestions searchString suggestions active =
                     (highlightMatchingText searchString suggestion)
             )
             (Array.toList suggestions)
-        )
+        )]
 
 
 view : Model -> Document Msg
