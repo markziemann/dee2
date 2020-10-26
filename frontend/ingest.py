@@ -5,13 +5,14 @@ import csv
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
-METADATA_DIR = os.environ['DEE2_FRONTEND_DIR']
+METADATA_DIR = os.environ['DEE2_METADATA_DIR']
 
 metadata_file_names = list(filter(lambda file: file.endswith('.tsv'), os.listdir(f'{METADATA_DIR}')))
 
 
 def iter_metadata_files():
     for file_path in metadata_file_names:
+        print(f"Indexing {file_path}")
         with open(f'{METADATA_DIR}/{file_path}', encoding='utf8') as file:
             yield file_path, iter(csv.reader(file, dialect='excel-tab'))
 

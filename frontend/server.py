@@ -21,7 +21,6 @@ def get_hits(search_results: dict) -> list:
 def get_data(hits: list) -> list:
     return list(map(lambda hit: dict.get(hit, '_source', {}), hits))
 
-
 # Remove in production
 @routes.get('/')
 async def index(request):

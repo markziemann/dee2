@@ -15,7 +15,7 @@ import Keyboard.Event exposing (KeyboardEvent, considerKeyboardEvent)
 import Nav exposing (navbar)
 import Process exposing (sleep)
 import Task
-import Results exposing (SearchResults, viewSearchResults)
+import Results exposing (SearchResults, viewSearchResults, searchResultDecoder)
 
 
 port consoleLog : String -> Cmd msg
@@ -29,14 +29,17 @@ type alias ActiveSuggestion =
     Int
 
 
-
-
 type alias Model =
     { searchString : String
     , searchSuggestions : SearchSuggestions
     , activeSuggestion : Maybe Int
     , searchResults : SearchResults
     }
+
+clearSearchSuggestions: Model -> Model
+clearSearchSuggestions model =
+    {model | searchSuggestions = Array.empty}
+
 
 
 init : ( Model, Cmd Msg )
@@ -114,9 +117,9 @@ update msg model =
 
                 serverQuery =
                     get { url = "/search/" ++ search_string
-                    , expect = Http.expectJson SearchResponse (Decode.list (Decode.keyValuePairs Decode.string))}
+                    , expect = Http.expectJson SearchResponse searchResultDecoder}
             in
-            ( model, Cmd.batch [ consoleLog search_string, serverQuery ] )
+            ( clearSearchSuggestions model, Cmd.batch [ consoleLog search_string, serverQuery ] )
 
         SearchResponse response ->
             let
