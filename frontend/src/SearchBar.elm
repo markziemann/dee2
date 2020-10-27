@@ -4,24 +4,20 @@ import Array exposing (Array)
 import Browser.Events exposing (onKeyDown)
 import Elastic as Elastic exposing (parse, serialize)
 import Http as Http exposing (get)
+import Json.Decode as Decode
 import Keyboard.Event exposing (considerKeyboardEvent)
-import SearchBarHelpers
-    exposing
-        ( clearSearchSuggestions
-        , decodeSearchSuggestions
-        , delay
-        , toKey
-        , decodeSearchResults
-        )
-import SearchBarTypes as SearchBarTypes exposing (..)
 import Result
+import SearchBarHelpers exposing (..)
+import SearchBarTypes as SearchBarTypes exposing (..)
 
 
 
 -- Allows exporting of imported types
 
+
 type alias Model =
     SearchBarTypes.Model
+
 
 type alias Msg =
     SearchBarTypes.Msg
@@ -32,6 +28,7 @@ init =
     { searchString = ""
     , searchSuggestions = Array.empty
     , activeSuggestion = Nothing
+    , suggestionsVisible = True
     , searchResults = Array.empty
     }
 
@@ -44,19 +41,16 @@ update msg model =
                 -- Don't wait to clear the suggestions if there is nothing
                 -- in the search box. Having search suggestions with an empty
                 -- searchString causes issues for the highlightMatchingText function
-                ( { model
-                    | searchString = value
-                    , activeSuggestion = Nothing
-                    , searchSuggestions = Array.empty
-                  }
+                ( { model | searchString = value }
+                    |> clearActiveSuggestion
+                    |> clearSearchSuggestions
                 , Cmd.none
                 )
 
             else
-                ( { model
-                    | searchString = value
-                    , activeSuggestion = Nothing
-                  }
+                ( { model | searchString = value }
+                    |> showSuggestions
+                    |> clearActiveSuggestion
                 , delay 1000 (GetSearchSuggestions value)
                 )
 
@@ -73,7 +67,7 @@ update msg model =
                         , expect = Http.expectJson GotHttpSearchResponse decodeSearchResults
                         }
             in
-            ( clearSearchSuggestions model, serverQuery )
+            ( model |> clearSearchSuggestions, serverQuery )
 
         GetSearchSuggestions value ->
             -- This is some debounce on the search string to prevent spamming ElasticSearch with queries
@@ -86,10 +80,13 @@ update msg model =
                 )
 
             else
-                ( model, Cmd.none )
+                ( model |> showSuggestions, Cmd.none )
 
         GotSearchSuggestions result ->
-            ( { model | searchSuggestions = Result.withDefault Array.empty result }, Cmd.none )
+            ( { model | searchSuggestions = Result.withDefault Array.empty result }
+                |> showSuggestions
+            , Cmd.none
+            )
 
         SuggestionSelected value ->
             let
@@ -101,7 +98,10 @@ update msg model =
                         Nothing ->
                             model.searchString
             in
-            ( { model | searchSuggestions = Array.empty, searchString = searchString }, Cmd.none )
+            ( { model | searchString = searchString }
+                |> clearSearchSuggestions
+            , Cmd.none
+            )
 
         KeyPressed key ->
             let
@@ -131,16 +131,23 @@ update msg model =
                     else
                         Nothing
             in
-            ( { model | activeSuggestion = activeSuggestion }, Cmd.none )
+            ( { model | activeSuggestion = activeSuggestion } |> showSuggestions
+            , Cmd.none
+            )
 
         GotHttpSearchResponse result ->
-            ({model | searchResults = Result.withDefault Array.empty result}, Cmd.none)
+            ( { model | searchResults = Result.withDefault Array.empty result }, Cmd.none )
 
         ResultClicked function ->
-            ({model | searchResults = function model.searchResults}, Cmd.none)
+            ( { model | searchResults = function model.searchResults }, Cmd.none )
 
+        ClickOutOfSuggestions ->
+            ( model |> hideSuggestions, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    onKeyDown (considerKeyboardEvent toKey)
+    Sub.batch
+        [ onKeyDown (considerKeyboardEvent toKey)
+        , Browser.Events.onClick (Decode.succeed ClickOutOfSuggestions)
+        ]

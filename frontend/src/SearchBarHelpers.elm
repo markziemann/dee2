@@ -10,9 +10,23 @@ import SearchBarTypes exposing (..)
 import Task
 import Json.Decode as Decode
 
-clearSearchSuggestions : Model -> Model
+
+clearSearchSuggestions: Model -> Model
 clearSearchSuggestions model =
     { model | searchSuggestions = Array.empty }
+
+clearActiveSuggestion: Model -> Model
+clearActiveSuggestion model =
+    { model | activeSuggestion = Nothing }
+
+
+showSuggestions: Model -> Model
+showSuggestions model =
+    { model | suggestionsVisible = True}
+
+hideSuggestions: Model -> Model
+hideSuggestions model =
+    { model | suggestionsVisible = False}
 
 
 delay : Float -> msg -> Cmd msg

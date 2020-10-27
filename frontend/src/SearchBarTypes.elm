@@ -28,6 +28,7 @@ type alias Model =
     { searchString : String
     , searchSuggestions : SearchSuggestions
     , activeSuggestion : Maybe Int
+    , suggestionsVisible: Bool
     , searchResults: SearchResults
     }
 
@@ -41,5 +42,6 @@ type Msg = SearchUpdate String
     | GotSearchSuggestions (Result Http.Error SearchSuggestions)
     | KeyPressed Key
     | SuggestionSelected Int
+    | ClickOutOfSuggestions
     | GotHttpSearchResponse (Result Http.Error SearchResults)
     | ResultClicked (SearchResults -> SearchResults)

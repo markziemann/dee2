@@ -1,11 +1,12 @@
 module SearchBarViews exposing (..)
-import SearchBarTypes exposing (..)
-import Html
-import Html.Attributes exposing (..)
-import Html exposing (..)
-import Html.Events exposing (..)
+
 import Array exposing (isEmpty)
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import SearchBarHelpers exposing (highlightMatchingText, listWrapped)
+import SearchBarTypes exposing (..)
+
 
 viewLargeSearchBar : Model -> Html Msg
 viewLargeSearchBar model =
@@ -19,7 +20,7 @@ viewLargeSearchBar model =
             , value model.searchString
             ]
             []
-        , viewSuggestions model.searchString model.searchSuggestions model.activeSuggestion
+        , viewSuggestions model
 
         -- Alternate ^^^'viewSuggestions' func with no highlighting useful to debug
         --, ul [] (Array.toList (Array.map (\str -> li [][text str]) model.searchSuggestions))
@@ -33,11 +34,12 @@ viewLargeSearchBar model =
             ]
         ]
 
-viewSuggestions : String -> SearchSuggestions -> Maybe ActiveSuggestion -> Html Msg
-viewSuggestions searchString suggestions active =
+
+viewSuggestions : Model -> Html Msg
+viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSuggestion } =
     let
         selector =
-            case active of
+            case activeSuggestion of
                 Nothing ->
                     \_ -> ""
 
@@ -50,11 +52,15 @@ viewSuggestions searchString suggestions active =
                             ""
 
         show =
-            if isEmpty suggestions then
+            if isEmpty searchSuggestions then
                 identity
 
             else
-                \str -> String.join " " [ str, "show" ]
+                (\value ->
+                    value
+                |> (\str -> [ str, "show" ])
+                |> (\strings -> if suggestionsVisible then strings else (::) "invisible" strings)
+                |> String.join " " )
     in
     div [ class (show "dropdown") ]
         [ div [ class (show "dropdown-menu") ]
@@ -70,9 +76,10 @@ viewSuggestions searchString suggestions active =
                         ]
                         (highlightMatchingText searchString suggestion)
                 )
-                (Array.toList suggestions)
+                (Array.toList searchSuggestions)
             )
         ]
+
 
 selectClickedResult : SearchResult -> List (Html.Attribute Msg)
 selectClickedResult ({ id, selected } as result) =
