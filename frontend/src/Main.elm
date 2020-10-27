@@ -1,53 +1,24 @@
 port module Main exposing (..)
-
-import Array exposing (Array, isEmpty)
 import Browser exposing (Document)
-import Browser.Events exposing (onKeyDown)
-import Debug
-import Elastic exposing (serialize, parse)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
-import Http exposing (..)
 import Info exposing (introduction)
-import Json.Decode as Decode
-import Keyboard.Event exposing (KeyboardEvent, considerKeyboardEvent)
 import Nav exposing (navbar)
-import Process exposing (sleep)
-import Task
-import Results
+import SearchBar
+import SearchBarViews exposing (..)
 
 
 port consoleLog : String -> Cmd msg
 
 
-type alias SearchSuggestions =
-    Array String
-
-
-type alias ActiveSuggestion =
-    Int
-
-
 type alias Model =
-    { searchString : String
-    , searchSuggestions : SearchSuggestions
-    , activeSuggestion : Maybe Int
-    , results : Results.Model
+    { searchBar : SearchBar.Model
     }
-
-clearSearchSuggestions: Model -> Model
-clearSearchSuggestions model =
-    {model | searchSuggestions = Array.empty}
-
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { searchString = ""
-      , searchSuggestions = Array.empty
-      , activeSuggestion = Nothing
-      , results = Results.init
+    ( { searchBar = SearchBar.init
       }
     , Cmd.none
     )
@@ -57,255 +28,45 @@ init =
 ---- UPDATE ----
 
 
-type Key
-    = ArrowUp
-    | ArrowDown
-
-
 type Msg
-    = SearchUpdate String
-    | Search
-    | GetSearchSuggestions String
-    | GotSearchSuggestions (Result Http.Error SearchSuggestions)
-    | KeyPressed Key
-    | SuggestionSelected Int
-    | GotResultsMsg Results.Msg
-
-
-
-delay : Float -> msg -> Cmd msg
-delay time msg =
-    sleep time
-        |> Task.andThen (always <| Task.succeed msg)
-        |> Task.perform identity
-
-
-decodeSearchSuggestions : Decode.Decoder SearchSuggestions
-decodeSearchSuggestions =
-    Decode.field "suggestions" (Decode.array Decode.string)
+    = GotSearchBarMsg SearchBar.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        SearchUpdate value ->
-            if value == "" then
-                -- Don't wait to clear the suggestions if there is nothing
-                -- in the search box. Having search suggestions with an empty
-                -- searchString causes issues for the highlightMatchingText function
-                ( { model
-                    | searchString = value
-                    , activeSuggestion = Nothing
-                    , searchSuggestions = Array.empty
-                  }
-                , Cmd.none
-                )
+        GotSearchBarMsg message ->
+            SearchBar.update message model.searchBar
+            |> (\(a, b) -> ({model| searchBar = a}, Cmd.map GotSearchBarMsg b))
 
-            else
-                ( { model
-                    | searchString = value
-                    , activeSuggestion = Nothing
-                  }
-                , delay 1000 (GetSearchSuggestions value)
-                )
 
-        Search ->
 
-            let
-                -- Elastic.Word makes no modification to the search string
-                search_string = Result.withDefault (Elastic.Word model.searchString) (parse model.searchString)
-                                |> serialize
-                 -- Temporary hack until search code is moved into separate module
-                toMsg message =
-                    GotResultsMsg (Results.GotHttpResults message)
-
-                serverQuery =
-                    get { url = "/search/" ++ search_string
-                    , expect = Http.expectJson toMsg Results.searchResultDecoder}
-            in
-            ( clearSearchSuggestions model, Cmd.batch [ consoleLog search_string, serverQuery ] )
-
-        GotResultsMsg message ->
-            ({model | results = (Results.update message model.results)}, Cmd.none)
-
-        GetSearchSuggestions value ->
-            -- This is some debounce on the search string to prevent spamming ElasticSearch with queries
-            if model.searchString == value then
-                ( model
-                , get
-                    { url = "/search_as_you_type/" ++ value
-                    , expect = Http.expectJson GotSearchSuggestions decodeSearchSuggestions
-                    }
-                )
-
-            else
-                ( model, Cmd.none )
-
-        GotSearchSuggestions result ->
-            ( { model | searchSuggestions = Result.withDefault Array.empty result }, Debug.toString result |> consoleLog )
-
-        KeyPressed key ->
-            let
-                activeSuggestion =
-                    if model.searchSuggestions /= Array.empty then
-                        Just
-                            (modBy (Array.length model.searchSuggestions)
-                                (case model.activeSuggestion of
-                                    Nothing ->
-                                        case key of
-                                            ArrowUp ->
-                                                Array.length model.searchSuggestions
-
-                                            ArrowDown ->
-                                                0
-
-                                    Just value ->
-                                        case key of
-                                            ArrowUp ->
-                                                value - 1
-
-                                            ArrowDown ->
-                                                value + 1
-                                )
-                            )
-
-                    else
-                        Nothing
-            in
-            ( { model | activeSuggestion = activeSuggestion }, consoleLog (Debug.toString activeSuggestion) )
-
-        SuggestionSelected value ->
-            let
-                searchString =
-                    case Array.get value model.searchSuggestions of
-                        Just string ->
-                            string
-
-                        Nothing ->
-                            model.searchString
-            in
-            ( { model | searchSuggestions = Array.empty, searchString = searchString }, consoleLog searchString )
 
 
 
 ---- VIEW ----
 
 
-highlightMatchingText : String -> String -> List (Html Msg)
-highlightMatchingText searchString suggestion =
-    -- Note splitting a string removes the split string eg.> split "a" "James" = ["J", "mes"]
-    if searchString /= "" then
-        -- Determine location of matches (Case insensitive!)
-        String.indexes (String.toLower searchString) (String.toLower suggestion)
-            -- Get List of matching characters
-            |> List.map (\idx -> String.slice idx (idx + (String.length searchString)) suggestion)
-            -- Consecutively split the suggestion on the matching strings
-            |> List.foldl (\str -> List.concatMap (\innerStr -> (String.split str innerStr))) [suggestion]
-            -- Convert each split string to NON-bold text
-            |> List.map (\t -> p [ class "d-inline" ] [ text t ])
-            -- Insert BOLD text of matching strings
-            |> List.intersperse (p [ class "d-inline font-weight-bold" ] [ text searchString ])
-
-    else
-        []
-
-
-viewSuggestions : String -> SearchSuggestions -> Maybe ActiveSuggestion -> Html Msg
-viewSuggestions searchString suggestions active =
-    let
-        selector =
-            case active of
-                Nothing ->
-                    \_ -> ""
-
-                Just value ->
-                    \idx ->
-                        if idx == value then
-                            "active"
-
-                        else
-                            ""
-        show = if isEmpty suggestions then
-                            identity
-                       else
-                            (\str -> String.join " " [str, "show"])
-    in
-    div [class (show "dropdown") ] [div [ class (show "dropdown-menu") ]
-        (List.indexedMap
-            (\idx suggestion ->
-                li
-                    [ String.join " "
-                        [ "dropdown-item"
-                        , selector idx
-                        ]
-                        |> class
-                    , onClick (SuggestionSelected idx)
-                    ]
-                    (highlightMatchingText searchString suggestion)
-            )
-            (Array.toList suggestions)
-        )]
-
-
 view : Model -> Document Msg
 view model =
+
     { title = "Digital Expression Explorer 2"
     , body =
-        [ navbar
+         [ navbar
         , div [ class "container my-5 mx-5 mx-auto" ]
-            [ input
-                [ onInput SearchUpdate
-                , attribute "aria-label" "Search"
-                , class "form-control form-control-lg"
-                , placeholder "Human epilepisy | SRP070529"
-                , type_ "search"
-                , value model.searchString
-                ]
-                []
-            , viewSuggestions model.searchString model.searchSuggestions model.activeSuggestion
-            -- Alternate ^^^'viewSuggestions' func with no highlighting useful to debug
-            --, ul [] (Array.toList (Array.map (\str -> li [][text str]) model.searchSuggestions))
-            , div [ class "d-flex justify-content-center" ]
-                [ button
-                    [ onClick Search
-                    , class "btn btn-lg btn-outline-success my-5"
-                    , type_ "button"
-                    ]
-                    [ text "Search" ]
-                ]
+            [ Html.map GotSearchBarMsg (viewLargeSearchBar model.searchBar)
+
             -- Using Html.map here is suboptimal. Will be refactoring
-            , Html.map
-                GotResultsMsg
-                (Results.viewSearchResults model.results)
+            , Html.map GotSearchBarMsg (viewSearchResults model.searchBar.searchResults)
             ]
         , introduction
         ]
     }
 
 
-toKey : KeyboardEvent -> Maybe Msg
-toKey keyboardEvent =
-    -- IF Nothing is returned the update
-    -- function is never called which simplifies
-    -- downstream logic
-    case keyboardEvent.key of
-        Just value ->
-            if value == "ArrowUp" then
-                Just (KeyPressed ArrowUp)
-
-            else if value == "ArrowDown" then
-                Just (KeyPressed ArrowDown)
-
-            else
-                Nothing
-
-        _ ->
-            Nothing
-
-
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    onKeyDown (considerKeyboardEvent toKey)
+    Sub.map GotSearchBarMsg (SearchBar.subscriptions model.searchBar)
 
 
 
