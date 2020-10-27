@@ -1,8 +1,11 @@
 module Results exposing (..)
 
+import Array exposing (Array, set)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Json.Decode as Decode
+import Html.Events exposing (onClick)
+import Json.Decode as Decode exposing (Decoder)
+import Http
 
 
 
@@ -14,39 +17,71 @@ type alias SearchData =
 
 
 type alias SearchResult =
-    { data : SearchData
+    { id : Int
+    , data : SearchData
     , selected : Bool
     }
 
 
-type alias SearchResults = List SearchResult
+type alias Model =
+    Array SearchResult
 
-listWrap a = (::) a []
 
+listWrapped a =
+    (::) a []
+
+
+init =
+    Array.empty
+
+
+searchResultDecoder : Decoder Model
 searchResultDecoder =
-    Decode.list
-        (Decode.map (\data -> SearchResult data False)
-            (Decode.keyValuePairs Decode.string)
+    Decode.list (Decode.keyValuePairs Decode.string)
+        -- Decode.map doesn't iterate (confusing!) its more like function application
+        -- it should be called apply
+        |> Decode.map Array.fromList
+        |> Decode.map (Array.indexedMap (\idx data -> SearchResult idx data False))
+
+
+type Msg
+    = GotHttpResults (Result Http.Error Model)
+    | ResultClicked (Model -> Model)
+
+
+update : Msg -> Model -> Model
+update msg model =
+    case msg of
+        ResultClicked function ->
+            function model
+
+        GotHttpResults result ->
+            Result.withDefault init result
+
+
+selectClickedResult : SearchResult -> List (Html.Attribute Msg)
+selectClickedResult ({ id, selected } as result) =
+    [ class
+        (if result.selected then
+            "table-primary"
+
+         else
+            ""
         )
+    , ResultClicked (\results -> Array.set id { result | selected = not result.selected } results)
+        |> onClick
+    ]
 
 
-highlightSelectedRow : Bool -> Html.Attribute msg
-highlightSelectedRow selected =
-    if selected then
-        class "active"
-
-    else
-        class "table-primary"
-
-
-viewSearchResults : SearchResults -> Html msg
+viewSearchResults : Model -> Html Msg
 viewSearchResults searchResults =
     searchResults
-        |> List.map
-            (\{data, selected}->
-                tr [highlightSelectedRow selected]
-                    (List.map (\( key, value ) -> td [] [ text value ]) data)
+        |> Array.map
+            (\result ->
+                tr (selectClickedResult result)
+                    (List.map (\( key, value ) -> td [] [ text value ]) result.data)
             )
+        |> Array.toList
         |> tbody []
-        |> listWrap
+        |> listWrapped
         |> table [ class "table table-hover table-sm table-bordered table-responsive" ]

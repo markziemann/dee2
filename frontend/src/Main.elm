@@ -15,7 +15,7 @@ import Keyboard.Event exposing (KeyboardEvent, considerKeyboardEvent)
 import Nav exposing (navbar)
 import Process exposing (sleep)
 import Task
-import Results exposing (SearchResults, viewSearchResults, searchResultDecoder)
+import Results
 
 
 port consoleLog : String -> Cmd msg
@@ -33,7 +33,7 @@ type alias Model =
     { searchString : String
     , searchSuggestions : SearchSuggestions
     , activeSuggestion : Maybe Int
-    , searchResults : SearchResults
+    , results : Results.Model
     }
 
 clearSearchSuggestions: Model -> Model
@@ -47,7 +47,7 @@ init =
     ( { searchString = ""
       , searchSuggestions = Array.empty
       , activeSuggestion = Nothing
-      , searchResults = []
+      , results = Results.init
       }
     , Cmd.none
     )
@@ -65,11 +65,12 @@ type Key
 type Msg
     = SearchUpdate String
     | Search
-    | SearchResponse (Result Http.Error SearchResults)
     | GetSearchSuggestions String
     | GotSearchSuggestions (Result Http.Error SearchSuggestions)
     | KeyPressed Key
     | SuggestionSelected Int
+    | GotResultsMsg Results.Msg
+
 
 
 delay : Float -> msg -> Cmd msg
@@ -114,18 +115,18 @@ update msg model =
                 -- Elastic.Word makes no modification to the search string
                 search_string = Result.withDefault (Elastic.Word model.searchString) (parse model.searchString)
                                 |> serialize
+                 -- Temporary hack until search code is moved into separate module
+                toMsg message =
+                    GotResultsMsg (Results.GotHttpResults message)
 
                 serverQuery =
                     get { url = "/search/" ++ search_string
-                    , expect = Http.expectJson SearchResponse searchResultDecoder}
+                    , expect = Http.expectJson toMsg Results.searchResultDecoder}
             in
             ( clearSearchSuggestions model, Cmd.batch [ consoleLog search_string, serverQuery ] )
 
-        SearchResponse response ->
-            let
-                searchResults = Result.withDefault [] response
-            in
-            ( {model| searchResults = searchResults}, Debug.toString searchResults|> consoleLog )
+        GotResultsMsg message ->
+            ({model | results = (Results.update message model.results)}, Cmd.none)
 
         GetSearchSuggestions value ->
             -- This is some debounce on the search string to prevent spamming ElasticSearch with queries
@@ -272,7 +273,10 @@ view model =
                     ]
                     [ text "Search" ]
                 ]
-            , viewSearchResults model.searchResults
+            -- Using Html.map here is suboptimal. Will be refactoring
+            , Html.map
+                GotResultsMsg
+                (Results.viewSearchResults model.results)
             ]
         , introduction
         ]
