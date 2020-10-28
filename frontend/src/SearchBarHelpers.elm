@@ -10,6 +10,18 @@ import SearchBarTypes exposing (..)
 import Task
 import Json.Decode as Decode
 
+setActiveSuggestion: Model -> Int -> Model
+setActiveSuggestion model value=
+     { model | activeSuggestion = Just value}
+
+
+notWaiting: Model -> Model
+notWaiting model =
+    { model | waitingForResponse = False }
+
+isWaiting: Model -> Model
+isWaiting model =
+    { model | waitingForResponse = True }
 
 clearSearchSuggestions: Model -> Model
 clearSearchSuggestions model =
@@ -76,9 +88,11 @@ decodeSearchResults =
 
 toKey : KeyboardEvent -> Maybe Msg
 toKey keyboardEvent =
-    -- IF Nothing is returned the update
+    -- If Nothing is returned the update
     -- function is never called which simplifies
     -- downstream logic
+    -- Visit: clause 5.6.2 for other keycodes
+    -- https://w3c.github.io/uievents/#dom-keyboardevent-key
     case keyboardEvent.key of
         Just value ->
             if value == "ArrowUp" then
@@ -87,8 +101,12 @@ toKey keyboardEvent =
             else if value == "ArrowDown" then
                 Just (KeyPressed ArrowDown)
 
+            else if value == "Enter" then
+                Just (KeyPressed Enter)
+
             else
                 Nothing
 
         _ ->
             Nothing
+

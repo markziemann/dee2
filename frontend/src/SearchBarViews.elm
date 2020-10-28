@@ -24,14 +24,6 @@ viewLargeSearchBar model =
 
         -- Alternate ^^^'viewSuggestions' func with no highlighting useful to debug
         --, ul [] (Array.toList (Array.map (\str -> li [][text str]) model.searchSuggestions))
-        , div [ class "d-flex justify-content-center" ]
-            [ button
-                [ onClick Search
-                , class "btn btn-lg btn-outline-success my-5"
-                , type_ "button"
-                ]
-                [ text "Search" ]
-            ]
         ]
 
 
@@ -56,11 +48,17 @@ viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSug
                 identity
 
             else
-                (\value ->
+                \value ->
                     value
-                |> (\str -> [ str, "show" ])
-                |> (\strings -> if suggestionsVisible then strings else (::) "invisible" strings)
-                |> String.join " " )
+                        |> (\str -> [ str, "show" ])
+                        |> (\strings ->
+                                if suggestionsVisible then
+                                    strings
+
+                                else
+                                    (::) "invisible" strings
+                           )
+                        |> String.join " "
     in
     div [ class (show "dropdown") ]
         [ div [ class (show "dropdown-menu") ]
@@ -90,6 +88,8 @@ selectClickedResult ({ id, selected } as result) =
          else
             ""
         )
+
+    --    Probably shouldn't be passing functions to update
     , ResultClicked (\results -> Array.set id { result | selected = not result.selected } results)
         |> onClick
     ]

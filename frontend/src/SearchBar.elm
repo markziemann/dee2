@@ -23,6 +23,14 @@ type alias Msg =
     SearchBarTypes.Msg
 
 
+
+-- Expose this Msg constructor to other modules
+
+
+searchMsg =
+    SearchBarTypes.searchMsg
+
+
 init : Model
 init =
     { searchString = ""
@@ -30,6 +38,7 @@ init =
     , activeSuggestion = Nothing
     , suggestionsVisible = True
     , searchResults = Array.empty
+    , waitingForResponse = False
     }
 
 
@@ -57,6 +66,7 @@ update msg model =
         Search ->
             let
                 -- Elastic.Word makes no modification to the search string
+                -- https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html#_simple_query_string_syntax
                 search_string =
                     Result.withDefault (Elastic.Word model.searchString) (parse model.searchString)
                         |> serialize
@@ -67,7 +77,7 @@ update msg model =
                         , expect = Http.expectJson GotHttpSearchResponse decodeSearchResults
                         }
             in
-            ( model |> clearSearchSuggestions, serverQuery )
+            ( model |> clearSearchSuggestions |> isWaiting, serverQuery )
 
         GetSearchSuggestions value ->
             -- This is some debounce on the search string to prevent spamming ElasticSearch with queries
@@ -99,50 +109,59 @@ update msg model =
                             model.searchString
             in
             ( { model | searchString = searchString }
-                |> clearSearchSuggestions
             , Cmd.none
             )
 
         KeyPressed key ->
             let
-                activeSuggestion =
-                    if model.searchSuggestions /= Array.empty then
-                        Just
-                            (modBy (Array.length model.searchSuggestions)
-                                (case model.activeSuggestion of
-                                    Nothing ->
-                                        case key of
-                                            ArrowUp ->
-                                                Array.length model.searchSuggestions
+                updateActiveSuggestion = (\value -> setActiveSuggestion model value |> showSuggestions)
 
-                                            ArrowDown ->
-                                                0
-
-                                    Just value ->
-                                        case key of
-                                            ArrowUp ->
-                                                value - 1
-
-                                            ArrowDown ->
-                                                value + 1
-                                )
-                            )
-
-                    else
-                        Nothing
+                wrapAround =
+                    \idx ->
+                        idx
+                            |> modBy (Array.length model.searchSuggestions)
+                            |> updateActiveSuggestion
             in
-            ( { model | activeSuggestion = activeSuggestion } |> showSuggestions
-            , Cmd.none
-            )
+            case ( (Array.isEmpty model.searchSuggestions), model.activeSuggestion, key ) of
+
+                ( False, Just value, Enter ) ->
+                    -- Selecting a suggestion with enter takes
+                    -- precedence over searching with enter
+                    update (SuggestionSelected value) model
+                    |> (\(mdl, cmd) -> (mdl|> hideSuggestions, cmd))
+
+                ( _, _, Enter ) ->
+                    -- search with enter
+                    update Search model
+
+                ( False, Nothing, ArrowUp ) ->
+                    (Array.length model.searchSuggestions
+                        |> updateActiveSuggestion, Cmd.none)
+
+                ( False, Nothing, ArrowDown ) ->
+                    (updateActiveSuggestion 0, Cmd.none)
+
+                ( False, Just value, ArrowUp ) ->
+                    (wrapAround (value - 1), Cmd.none)
+
+                ( False, Just value, ArrowDown ) ->
+                    (wrapAround (value + 1), Cmd.none)
+
+                (_, _, _) ->
+                    ( model, Cmd.none )
 
         GotHttpSearchResponse result ->
-            ( { model | searchResults = Result.withDefault Array.empty result }, Cmd.none )
+            ( { model | searchResults = Result.withDefault Array.empty result }
+                |> notWaiting
+            , Cmd.none
+            )
 
         ResultClicked function ->
             ( { model | searchResults = function model.searchResults }, Cmd.none )
 
         ClickOutOfSuggestions ->
             ( model |> hideSuggestions, Cmd.none )
+
 
 
 subscriptions : Model -> Sub Msg

@@ -30,11 +30,13 @@ type alias Model =
     , activeSuggestion : Maybe Int
     , suggestionsVisible: Bool
     , searchResults: SearchResults
+    , waitingForResponse: Bool
     }
 
 type Key
     = ArrowUp
     | ArrowDown
+    | Enter
 
 type Msg = SearchUpdate String
     | Search
@@ -45,3 +47,7 @@ type Msg = SearchUpdate String
     | ClickOutOfSuggestions
     | GotHttpSearchResponse (Result Http.Error SearchResults)
     | ResultClicked (SearchResults -> SearchResults)
+
+-- This allows us to export Msg constructors that other modules
+-- can call to interact with the SearchBar module
+searchMsg = Search
