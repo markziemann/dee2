@@ -82,6 +82,7 @@ update msg model =
 
 
 
+
 ---- VIEW ----
 
 
@@ -129,11 +130,13 @@ view model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ Sub.map GotSearchBarMsg (SearchBar.subscriptions model.searchBar)
-        , onKeyDown (considerKeyboardEvent (enterKey EnterKey))
-        ]
-
+    if model.page == Home then
+        Sub.batch
+            [ Sub.map GotSearchBarMsg (SearchBar.subscriptions model.searchBar)
+            , onKeyDown (considerKeyboardEvent (enterKey EnterKey))
+            ]
+    else
+        Sub.none
 
 
 ---- PROGRAM ----
