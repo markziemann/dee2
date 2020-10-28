@@ -1,6 +1,8 @@
 module SearchBarTypes exposing (..)
+
 import Array exposing (Array)
 import Http
+
 
 type alias SearchData =
     List ( String, String )
@@ -24,30 +26,25 @@ type alias SearchSuggestions =
 type alias ActiveSuggestion =
     Int
 
+
 type alias Model =
     { searchString : String
     , searchSuggestions : SearchSuggestions
     , activeSuggestion : Maybe Int
-    , suggestionsVisible: Bool
-    , searchResults: SearchResults
-    , waitingForResponse: Bool
+    , suggestionsVisible : Bool
+    , searchResults : SearchResults
+    , waitingForResponse : Bool
     }
 
-type Key
-    = ArrowUp
-    | ArrowDown
-    | Enter
 
-type Msg = SearchUpdate String
+type Msg
+    = SearchUpdate String
     | Search
     | GetSearchSuggestions String
     | GotSearchSuggestions (Result Http.Error SearchSuggestions)
-    | KeyPressed Key
+    | ArrowUp
+    | ArrowDown
     | SuggestionSelected Int
     | ClickOutOfSuggestions
     | GotHttpSearchResponse (Result Http.Error SearchResults)
     | ResultClicked (SearchResults -> SearchResults)
-
--- This allows us to export Msg constructors that other modules
--- can call to interact with the SearchBar module
-searchMsg = Search

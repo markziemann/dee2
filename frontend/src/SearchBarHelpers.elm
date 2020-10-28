@@ -3,42 +3,46 @@ module SearchBarHelpers exposing (..)
 import Array exposing (Array)
 import Html exposing (..)
 import Html.Attributes exposing (class)
-import Json.Decode exposing (Decoder, array, field, string)
+import Json.Decode as Decode exposing (Decoder, array, field, string)
 import Keyboard.Event exposing (KeyboardEvent)
 import Process exposing (sleep)
 import SearchBarTypes exposing (..)
 import Task
-import Json.Decode as Decode
-
-setActiveSuggestion: Model -> Int -> Model
-setActiveSuggestion model value=
-     { model | activeSuggestion = Just value}
 
 
-notWaiting: Model -> Model
+setActiveSuggestion : Model -> Int -> Model
+setActiveSuggestion model value =
+    { model | activeSuggestion = Just value }
+
+
+notWaiting : Model -> Model
 notWaiting model =
     { model | waitingForResponse = False }
 
-isWaiting: Model -> Model
+
+isWaiting : Model -> Model
 isWaiting model =
     { model | waitingForResponse = True }
 
-clearSearchSuggestions: Model -> Model
+
+clearSearchSuggestions : Model -> Model
 clearSearchSuggestions model =
     { model | searchSuggestions = Array.empty }
 
-clearActiveSuggestion: Model -> Model
+
+clearActiveSuggestion : Model -> Model
 clearActiveSuggestion model =
     { model | activeSuggestion = Nothing }
 
 
-showSuggestions: Model -> Model
+showSuggestions : Model -> Model
 showSuggestions model =
-    { model | suggestionsVisible = True}
+    { model | suggestionsVisible = True }
 
-hideSuggestions: Model -> Model
+
+hideSuggestions : Model -> Model
 hideSuggestions model =
-    { model | suggestionsVisible = False}
+    { model | suggestionsVisible = False }
 
 
 delay : Float -> msg -> Cmd msg
@@ -51,6 +55,11 @@ delay time msg =
 decodeSearchSuggestions : Decoder SearchSuggestions
 decodeSearchSuggestions =
     field "suggestions" (array string)
+
+
+broadCast : msg -> Cmd msg
+broadCast x =
+    Task.perform identity (Task.succeed x)
 
 
 highlightMatchingText : String -> String -> List (Html msg)
@@ -84,29 +93,26 @@ decodeSearchResults =
         |> Decode.map Array.fromList
         |> Decode.map (Array.indexedMap (\idx data -> SearchResult idx data False))
 
-
-
-toKey : KeyboardEvent -> Maybe Msg
-toKey keyboardEvent =
-    -- If Nothing is returned the update
-    -- function is never called which simplifies
-    -- downstream logic
-    -- Visit: clause 5.6.2 for other keycodes
-    -- https://w3c.github.io/uievents/#dom-keyboardevent-key
-    case keyboardEvent.key of
-        Just value ->
-            if value == "ArrowUp" then
-                Just (KeyPressed ArrowUp)
-
-            else if value == "ArrowDown" then
-                Just (KeyPressed ArrowDown)
-
-            else if value == "Enter" then
-                Just (KeyPressed Enter)
-
-            else
-                Nothing
-
-        _ ->
-            Nothing
-
+--toKey : KeyboardEvent -> Maybe Msg
+--toKey keyboardEvent =
+--    -- If Nothing is returned the update
+--    -- function is never called which simplifies
+--    -- downstream logic
+--    -- Visit: clause 5.6.2 for other keycodes
+--    -- https://w3c.github.io/uievents/#dom-keyboardevent-key
+--    case keyboardEvent.key of
+--        Just value ->
+--            if value == "ArrowUp" then
+--                Just (KeyPressed ArrowUp)
+--
+--            else if value == "ArrowDown" then
+--                Just (KeyPressed ArrowDown)
+--
+--            else if value == "Enter" then
+--                Just (KeyPressed Enter)
+--
+--            else
+--                Nothing
+--
+--        _ ->
+--            Nothing

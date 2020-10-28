@@ -1,16 +1,25 @@
 port module Main exposing (..)
 
+import Array
 import Browser exposing (Document)
+import Browser.Events exposing (onKeyDown)
 import Html exposing (..)
-import Html.Events exposing (onClick)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 import Info exposing (introduction)
+import KeyBoardHelpers exposing (enterKey)
+import Keyboard.Event exposing (KeyboardEvent, considerKeyboardEvent)
 import Nav exposing (navbar)
 import SearchBar
 import SearchBarViews exposing (..)
 
 
 port consoleLog : String -> Cmd msg
+
+
+setPage : Model -> Page -> Model
+setPage model page =
+    { model | page = page }
 
 
 type Page
@@ -36,40 +45,64 @@ init =
 
 ---- UPDATE ----
 
+
 type Msg
     = GotSearchBarMsg SearchBar.Msg
     | Search -- Message of this type will be sent to the SearchBar module
+    | EnterKey
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
-        fromSearchBar = (\( a, b ) -> ( { model | searchBar = a }, Cmd.map GotSearchBarMsg b ))
+        fromSearchBar =
+            \( mdl, cmd ) -> ( { model | searchBar = mdl }, Cmd.map GotSearchBarMsg cmd )
     in
     case msg of
         GotSearchBarMsg message ->
             SearchBar.update message model.searchBar
                 |> fromSearchBar
+
         Search ->
-            SearchBar.update SearchBar.searchMsg model.searchBar
-                |> fromSearchBar
+            let
+                ( mdl, cmd ) =
+                    SearchBar.update SearchBar.searchMsg model.searchBar
+                        |> fromSearchBar
+            in
+            ( setPage mdl SearchResults, cmd )
+
+        EnterKey ->
+            case ( Array.isEmpty model.searchBar.searchSuggestions, model.searchBar.activeSuggestion ) of
+                ( False, Just value ) ->
+                    -- Selecting a suggestion with enter takes
+                    -- precedence over searching with enter
+                    SearchBar.update (SearchBar.suggestionSelectedMsg value) model.searchBar
+                        |> fromSearchBar
+
+                ( _, _ ) ->
+                    -- search with enter
+                    SearchBar.update SearchBar.searchMsg model.searchBar
+                        |> fromSearchBar
+                        |> (\( mdl, cmd ) -> ( { mdl | page = SearchResults }, cmd ))
 
 
 
 ---- VIEW ----
 
-searchButton: Html Msg
+
+searchButton : Html Msg
 searchButton =
     div [ class "d-flex justify-content-center" ]
-                [ button
-                    [ onClick Search
-                    , class "btn btn-lg btn-outline-success my-5"
-                    , type_ "button"
-                    ]
-                    [ text "Search" ]
-                ]
+        [ button
+            [ onClick Search
+            , class "btn btn-lg btn-outline-success my-5"
+            , type_ "button"
+            ]
+            [ text "Search" ]
+        ]
 
-pageLayout: List (Html Msg) -> List (Html Msg)
+
+pageLayout : List (Html Msg) -> List (Html Msg)
 pageLayout content =
     [ navbar
     , div [ class "container my-5 mx-5 mx-auto" ] content
@@ -77,17 +110,19 @@ pageLayout content =
     ]
 
 
-
 pageView : Model -> List (Html Msg)
 pageView model =
     let
-        fromSearchBar = Html.map GotSearchBarMsg
+        fromSearchBar =
+            Html.map GotSearchBarMsg
     in
-    pageLayout <| case model.page of
-        Home ->
-            [fromSearchBar (viewLargeSearchBar model.searchBar), searchButton]
-        SearchResults ->
-            [fromSearchBar (viewSearchResults model.searchBar.searchResults)]
+    pageLayout <|
+        case model.page of
+            Home ->
+                [ fromSearchBar (viewLargeSearchBar model.searchBar), searchButton ]
+
+            SearchResults ->
+                [ fromSearchBar (viewSearchResults model.searchBar.searchResults) ]
 
 
 view : Model -> Document Msg
@@ -99,7 +134,10 @@ view model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.map GotSearchBarMsg (SearchBar.subscriptions model.searchBar)
+    Sub.batch
+        [ Sub.map GotSearchBarMsg (SearchBar.subscriptions model.searchBar)
+        , onKeyDown (considerKeyboardEvent (enterKey EnterKey))
+        ]
 
 
 

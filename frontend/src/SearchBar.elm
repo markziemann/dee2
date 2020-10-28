@@ -5,6 +5,7 @@ import Browser.Events exposing (onKeyDown)
 import Elastic as Elastic exposing (parse, serialize)
 import Http as Http exposing (get)
 import Json.Decode as Decode
+import KeyBoardHelpers exposing (arrowDown, arrowUp, orTry)
 import Keyboard.Event exposing (considerKeyboardEvent)
 import Result
 import SearchBarHelpers exposing (..)
@@ -25,11 +26,11 @@ type alias Msg =
 
 
 -- Expose this Msg constructor to other modules
-
-
 searchMsg =
-    SearchBarTypes.searchMsg
+    SearchBarTypes.Search
 
+suggestionSelectedMsg =
+    SearchBarTypes.SuggestionSelected
 
 init : Model
 init =
@@ -44,6 +45,16 @@ init =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    let
+        updateActiveSuggestion =
+            \value -> setActiveSuggestion model value |> showSuggestions
+
+        wrapAround =
+            \idx ->
+                idx
+                    |> modBy (Array.length model.searchSuggestions)
+                    |> updateActiveSuggestion
+    in
     case msg of
         SearchUpdate value ->
             if value == "" then
@@ -109,46 +120,30 @@ update msg model =
                             model.searchString
             in
             ( { model | searchString = searchString }
+                |> clearActiveSuggestion
+                |> hideSuggestions
             , Cmd.none
             )
 
-        KeyPressed key ->
-            let
-                updateActiveSuggestion = (\value -> setActiveSuggestion model value |> showSuggestions)
+        ArrowUp ->
+            case model.activeSuggestion of
+                Nothing ->
+                    ( Array.length model.searchSuggestions
+                        |> updateActiveSuggestion
+                    , Cmd.none
+                    )
 
-                wrapAround =
-                    \idx ->
-                        idx
-                            |> modBy (Array.length model.searchSuggestions)
-                            |> updateActiveSuggestion
-            in
-            case ( (Array.isEmpty model.searchSuggestions), model.activeSuggestion, key ) of
+                Just value ->
+                    ( wrapAround (value - 1), Cmd.none )
 
-                ( False, Just value, Enter ) ->
-                    -- Selecting a suggestion with enter takes
-                    -- precedence over searching with enter
-                    update (SuggestionSelected value) model
-                    |> (\(mdl, cmd) -> (mdl|> hideSuggestions, cmd))
+        ArrowDown ->
+            case model.activeSuggestion of
+                Nothing ->
+                    ( updateActiveSuggestion 0, Cmd.none )
 
-                ( _, _, Enter ) ->
-                    -- search with enter
-                    update Search model
+                Just value ->
+                    ( wrapAround (value + 1), Cmd.none )
 
-                ( False, Nothing, ArrowUp ) ->
-                    (Array.length model.searchSuggestions
-                        |> updateActiveSuggestion, Cmd.none)
-
-                ( False, Nothing, ArrowDown ) ->
-                    (updateActiveSuggestion 0, Cmd.none)
-
-                ( False, Just value, ArrowUp ) ->
-                    (wrapAround (value - 1), Cmd.none)
-
-                ( False, Just value, ArrowDown ) ->
-                    (wrapAround (value + 1), Cmd.none)
-
-                (_, _, _) ->
-                    ( model, Cmd.none )
 
         GotHttpSearchResponse result ->
             ( { model | searchResults = Result.withDefault Array.empty result }
@@ -163,10 +158,9 @@ update msg model =
             ( model |> hideSuggestions, Cmd.none )
 
 
-
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ onKeyDown (considerKeyboardEvent toKey)
+        [ onKeyDown (considerKeyboardEvent (arrowUp ArrowUp |> orTry (arrowDown ArrowDown)))
         , Browser.Events.onClick (Decode.succeed ClickOutOfSuggestions)
         ]
