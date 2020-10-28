@@ -64,12 +64,9 @@ update msg model =
                 |> fromSearchBar
 
         Search ->
-            let
-                ( mdl, cmd ) =
-                    SearchBar.update SearchBar.searchMsg model.searchBar
+             SearchBar.update SearchBar.searchMsg model.searchBar
                         |> fromSearchBar
-            in
-            ( setPage mdl SearchResults, cmd )
+                        |> (\( mdl, cmd ) -> ( setPage mdl SearchResults, cmd ))
 
         EnterKey ->
             case ( Array.isEmpty model.searchBar.searchSuggestions, model.searchBar.activeSuggestion ) of
@@ -81,9 +78,7 @@ update msg model =
 
                 ( _, _ ) ->
                     -- search with enter
-                    SearchBar.update SearchBar.searchMsg model.searchBar
-                        |> fromSearchBar
-                        |> (\( mdl, cmd ) -> ( { mdl | page = SearchResults }, cmd ))
+                   update Search model
 
 
 
