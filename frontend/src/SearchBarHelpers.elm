@@ -93,26 +93,3 @@ decodeSearchResults =
         |> Decode.map Array.fromList
         |> Decode.map (Array.indexedMap (\idx data -> SearchResult idx data False))
 
---toKey : KeyboardEvent -> Maybe Msg
---toKey keyboardEvent =
---    -- If Nothing is returned the update
---    -- function is never called which simplifies
---    -- downstream logic
---    -- Visit: clause 5.6.2 for other keycodes
---    -- https://w3c.github.io/uievents/#dom-keyboardevent-key
---    case keyboardEvent.key of
---        Just value ->
---            if value == "ArrowUp" then
---                Just (KeyPressed ArrowUp)
---
---            else if value == "ArrowDown" then
---                Just (KeyPressed ArrowDown)
---
---            else if value == "Enter" then
---                Just (KeyPressed Enter)
---
---            else
---                Nothing
---
---        _ ->
---            Nothing

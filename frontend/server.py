@@ -9,7 +9,9 @@ SEARCH_AS_YOU_TYPE_FIELDS = ['SRAStudy', 'SRR_accession', 'SRX_accession', 'SRS_
 
 SEARCH_RESULT_FILTER = ['SRAStudy', 'QC_summary'
 
-]
+                        ]
+
+
 # This is the header of the current search result page
 # ['SRA run accession', 'QC summary alttext ', 'SRA experiment accession', 'SRA sample accession',
 # 'SRA project accession', 'Sample Name / GEO sample accession', 'GEO series accession', 'Experiment name']
@@ -21,7 +23,7 @@ def get_hits(search_results: dict) -> list:
 def get_data(hits: list) -> list:
     return list(map(lambda hit: dict.get(hit, '_source', {}), hits))
 
-# Remove in production
+
 @routes.get('/')
 async def index(request):
     return web.FileResponse('./dist/index.html')
@@ -78,7 +80,8 @@ async def search(request):
 
 app = web.Application()
 app.add_routes(routes)
-
 app.add_routes([web.static('/', './dist')])
+
+
 
 web.run_app(app, host="localhost", port=8080)

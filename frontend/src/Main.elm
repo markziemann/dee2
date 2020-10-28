@@ -3,6 +3,7 @@ port module Main exposing (..)
 import Array
 import Browser exposing (Document)
 import Browser.Events exposing (onKeyDown)
+import Browser.Navigation as Nav
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -12,31 +13,92 @@ import Keyboard.Event exposing (KeyboardEvent, considerKeyboardEvent)
 import Nav exposing (navbar)
 import SearchBar
 import SearchBarViews exposing (..)
+import Url
+import Url.Parser as UrlP exposing ((</>), (<?>))
+import Url.Parser.Query as Query
 
 
 port consoleLog : String -> Cmd msg
 
 
-setPage : Model -> Page -> Model
-setPage model page =
-    { model | page = page }
+homeSlug =
+    "/"
+
+
+searchResultsSlug =
+    "SearchResults"
+
+
+routeParser : UrlP.Parser (Route -> a) a
+routeParser =
+    UrlP.oneOf
+        [ UrlP.map HomeRoute (UrlP.s homeSlug)
+        , UrlP.map SearchResultsRoute (UrlP.s searchResultsSlug <?> Query.string "q")
+        ]
+
+
+type Route
+    = HomeRoute
+    | SearchResultsRoute (Maybe String)
+
+
+type alias PageData =
+    { route : Route
+    , subscriptions : List (Sub Msg)
+    }
 
 
 type Page
-    = Home
-    | SearchResults
+    = HomePage PageData
+    | SearchResultsPage PageData
+
+
+homePage =
+    HomePage
+        { route = HomeRoute
+        , subscriptions =
+            [ Sub.map GotSearchBarMsg SearchBar.subscriptions
+            , onKeyDown (considerKeyboardEvent (enterKey EnterKey))
+            ]
+        }
+
+
+searchResultsPage : Maybe String -> Page
+searchResultsPage maybeString =
+    SearchResultsPage
+        { route = SearchResultsRoute maybeString
+        , subscriptions = []
+        }
 
 
 type alias Model =
-    { searchBar : SearchBar.Model
+    { navKey : Nav.Key
+    , url : Url.Url
+    , searchBar : SearchBar.Model
     , page : Page
     }
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( { searchBar = SearchBar.init
-      , page = Home
+determinePage : Url.Url -> Page
+determinePage url =
+    case UrlP.parse routeParser url of
+        Just page ->
+            case page of
+                HomeRoute ->
+                    homePage
+
+                SearchResultsRoute maybeString ->
+                    searchResultsPage maybeString
+        Nothing ->
+            homePage
+
+
+init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url navKey =
+    ( { navKey = navKey
+      , url = url
+      , searchBar = SearchBar.init
+      , page = determinePage url
       }
     , Cmd.none
     )
@@ -50,6 +112,14 @@ type Msg
     = GotSearchBarMsg SearchBar.Msg
     | Search -- Message of this type will be sent to the SearchBar module
     | EnterKey
+    | LinkClicked Browser.UrlRequest
+    | UrlChanged Url.Url
+
+
+requestSearch model fromSearchBar =
+    SearchBar.update SearchBar.searchMsg model.searchBar
+        |> fromSearchBar
+        |> (\( mdl, cmd ) -> ( mdl, Cmd.batch [ Nav.pushUrl model.navKey searchResultsSlug, cmd ] ))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -64,9 +134,7 @@ update msg model =
                 |> fromSearchBar
 
         Search ->
-            SearchBar.update SearchBar.searchMsg model.searchBar
-                |> fromSearchBar
-                |> (\( mdl, cmd ) -> ( setPage mdl SearchResults, cmd ))
+            requestSearch model fromSearchBar
 
         EnterKey ->
             case ( Array.isEmpty model.searchBar.searchSuggestions, model.searchBar.activeSuggestion ) of
@@ -77,8 +145,20 @@ update msg model =
                         |> fromSearchBar
 
                 ( _, _ ) ->
-                    -- search with enter
-                    update Search model
+                    requestSearch model fromSearchBar
+
+        LinkClicked urlRequest ->
+            case urlRequest of
+                Browser.Internal url ->
+                    ( model, Nav.pushUrl model.navKey (Url.toString url) )
+
+                Browser.External href ->
+                    ( model, Nav.load href )
+
+        UrlChanged url ->
+            ( { model | url = url, page = determinePage url}
+            , consoleLog (Debug.toString (UrlP.parse routeParser url))
+            )
 
 
 
@@ -113,10 +193,10 @@ pageView model =
     in
     pageLayout <|
         case model.page of
-            Home ->
+            HomePage pageData ->
                 [ fromSearchBar (viewLargeSearchBar model.searchBar), searchButton ]
 
-            SearchResults ->
+            SearchResultsPage pageData ->
                 [ fromSearchBar (viewSearchResults model.searchBar.searchResults) ]
 
 
@@ -129,14 +209,12 @@ view model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    if model.page == Home then
-        Sub.batch
-            [ Sub.map GotSearchBarMsg (SearchBar.subscriptions model.searchBar)
-            , onKeyDown (considerKeyboardEvent (enterKey EnterKey))
-            ]
+    case model.page of
+        HomePage pageData ->
+            Sub.batch pageData.subscriptions
 
-    else
-        Sub.none
+        SearchResultsPage pageData ->
+            Sub.batch pageData.subscriptions
 
 
 
@@ -145,9 +223,11 @@ subscriptions model =
 
 main : Program () Model Msg
 main =
-    Browser.document
+    Browser.application
         { view = view
-        , init = \_ -> init
+        , init = init
         , update = update
         , subscriptions = subscriptions
+        , onUrlRequest = LinkClicked
+        , onUrlChange = UrlChanged
         }

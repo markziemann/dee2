@@ -26,11 +26,15 @@ type alias Msg =
 
 
 -- Expose this Msg constructor to other modules
+
+
 searchMsg =
     SearchBarTypes.Search
 
+
 suggestionSelectedMsg =
     SearchBarTypes.SuggestionSelected
+
 
 init : Model
 init =
@@ -43,18 +47,26 @@ init =
     }
 
 
+updateActiveSuggestion model value =
+    setActiveSuggestion model value |> showSuggestions
+
+
+wrapAroundIdx : Model -> Int -> Model
+wrapAroundIdx model idx =
+    let
+        arrayLength =
+            Array.length model.searchSuggestions
+    in
+    if arrayLength > 0 then
+        modBy arrayLength idx
+            |> updateActiveSuggestion model
+
+    else
+        model
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    let
-        updateActiveSuggestion =
-            \value -> setActiveSuggestion model value |> showSuggestions
-
-        wrapAround =
-            \idx ->
-                idx
-                    |> modBy (Array.length model.searchSuggestions)
-                    |> updateActiveSuggestion
-    in
     case msg of
         SearchUpdate value ->
             if value == "" then
@@ -70,7 +82,6 @@ update msg model =
             else
                 ( { model | searchString = value }
                     |> showSuggestions
-                    |> clearActiveSuggestion
                 , delay 1000 (GetSearchSuggestions value)
                 )
 
@@ -88,7 +99,7 @@ update msg model =
                         , expect = Http.expectJson GotHttpSearchResponse decodeSearchResults
                         }
             in
-            ( model |> clearSearchSuggestions |> isWaiting, serverQuery )
+            ( model |> hideSuggestions |> isWaiting, serverQuery )
 
         GetSearchSuggestions value ->
             -- This is some debounce on the search string to prevent spamming ElasticSearch with queries
@@ -128,22 +139,20 @@ update msg model =
         ArrowUp ->
             case model.activeSuggestion of
                 Nothing ->
-                    ( Array.length model.searchSuggestions
-                        |> updateActiveSuggestion
+                    ( updateActiveSuggestion model (Array.length model.searchSuggestions)
                     , Cmd.none
                     )
 
                 Just value ->
-                    ( wrapAround (value - 1), Cmd.none )
+                    ( wrapAroundIdx model (value - 1), Cmd.none )
 
         ArrowDown ->
             case model.activeSuggestion of
                 Nothing ->
-                    ( updateActiveSuggestion 0, Cmd.none )
+                    ( updateActiveSuggestion model 0, Cmd.none )
 
                 Just value ->
-                    ( wrapAround (value + 1), Cmd.none )
-
+                    ( wrapAroundIdx model (value + 1) , Cmd.none )
 
         GotHttpSearchResponse result ->
             ( { model | searchResults = Result.withDefault Array.empty result }
@@ -158,8 +167,8 @@ update msg model =
             ( model |> hideSuggestions, Cmd.none )
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions : Sub Msg
+subscriptions =
     Sub.batch
         [ onKeyDown (considerKeyboardEvent (arrowUp ArrowUp |> orTry (arrowDown ArrowDown)))
         , Browser.Events.onClick (Decode.succeed ClickOutOfSuggestions)
