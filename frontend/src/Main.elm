@@ -89,6 +89,7 @@ determinePage url =
 
                 SearchResultsRoute maybeString ->
                     searchResultsPage maybeString
+
         Nothing ->
             homePage
 
@@ -119,7 +120,15 @@ type Msg
 requestSearch model fromSearchBar =
     SearchBar.update SearchBar.searchMsg model.searchBar
         |> fromSearchBar
-        |> (\( mdl, cmd ) -> ( mdl, Cmd.batch [ Nav.pushUrl model.navKey searchResultsSlug, cmd ] ))
+        |> (\( mdl, cmd ) ->
+                ( mdl
+                , Cmd.batch [
+                    [searchResultsSlug, model.searchBar.searchString]
+                    |> String.join "/?q="
+                    |> Nav.pushUrl model.navKey
+                , cmd ]
+                )
+           )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -156,7 +165,7 @@ update msg model =
                     ( model, Nav.load href )
 
         UrlChanged url ->
-            ( { model | url = url, page = determinePage url}
+            ( { model | url = url, page = determinePage url }
             , consoleLog (Debug.toString (UrlP.parse routeParser url))
             )
 
