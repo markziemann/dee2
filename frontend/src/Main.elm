@@ -64,9 +64,9 @@ update msg model =
                 |> fromSearchBar
 
         Search ->
-             SearchBar.update SearchBar.searchMsg model.searchBar
-                        |> fromSearchBar
-                        |> (\( mdl, cmd ) -> ( setPage mdl SearchResults, cmd ))
+            SearchBar.update SearchBar.searchMsg model.searchBar
+                |> fromSearchBar
+                |> (\( mdl, cmd ) -> ( setPage mdl SearchResults, cmd ))
 
         EnterKey ->
             case ( Array.isEmpty model.searchBar.searchSuggestions, model.searchBar.activeSuggestion ) of
@@ -78,8 +78,7 @@ update msg model =
 
                 ( _, _ ) ->
                     -- search with enter
-                   update Search model
-
+                    update Search model
 
 
 
@@ -135,8 +134,10 @@ subscriptions model =
             [ Sub.map GotSearchBarMsg (SearchBar.subscriptions model.searchBar)
             , onKeyDown (considerKeyboardEvent (enterKey EnterKey))
             ]
+
     else
         Sub.none
+
 
 
 ---- PROGRAM ----
