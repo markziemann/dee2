@@ -47,23 +47,31 @@ tableConfig =
             , Table.stringColumn "Sample" (get "Sample_name")
             , Table.stringColumn "Experiment" (get "GEO_series")
             ]
-         , customizations = tableCustomizations
+        , customizations = tableCustomizations
         }
 
-tableCustomizations: Table.Customizations SearchResult Msg
+
+tableCustomizations : Table.Customizations SearchResult Msg
 tableCustomizations =
     let
-        default = Table.defaultCustomizations
+        default =
+            Table.defaultCustomizations
     in
-       {default | tableAttrs = [ Attr.class "table table-hover table-sm table-bordered table-responsive" ]
-       , rowAttrs = selectClickedResult
-       }
+    { default
+        | tableAttrs = [ Attr.class "table table-hover table-sm table-bordered table-responsive" ]
+        , rowAttrs = selectClickedResult
+    }
+
 
 
 --# This is the header of the current search result page
 --# ['SRA run accession', 'QC summary alttext ', 'SRA experiment accession', 'SRA sample accession',
 --# 'SRA project accession', 'Sample Name / GEO sample accession', 'GEO series accession', 'Experiment name']
 
-viewSearchResults : Model -> Html Msg
-viewSearchResults { searchResultRows, resultsTableState, resultsTableQuery } =
-    Table.view tableConfig resultsTableState (Maybe.withDefault [] (Maybe.map Array.toList searchResultRows))
+
+viewSearchResults : Model -> List (Html Msg)
+viewSearchResults { searchResultRows, resultsTableState, resultsTableQuery, searchHits} =
+    [ div [ Attr.class "d-flex bg-light text-primary" ]
+        [ text "Hits: ", text (Maybe.withDefault "" (Maybe.map String.fromInt searchHits))]
+    , Table.view tableConfig resultsTableState (Maybe.withDefault [] (Maybe.map Array.toList searchResultRows))
+    ]

@@ -210,7 +210,7 @@ pageView model =
                 [ fromSearchBar (viewLargeSearchBar model.searchBar), searchButton ]
 
             SearchResultsPage pageData ->
-                [ MainViews.viewSearchResults model ]
+                MainViews.viewSearchResults model
 
 
 view : Model -> Document Msg
