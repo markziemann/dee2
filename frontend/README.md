@@ -54,3 +54,11 @@ This will be achieved with:
     `$python server.py` | `python3.6 server.py`
 
 - Navigate to `http://localhost:8080/` in your browser
+
+## Running Tests
+
+ - Install [elm-spec](https://package.elm-lang.org/packages/brian-watkins/elm-spec/latest/) 
+ 
+ - Install test runner `$npm install --save-dev elm-spec-runner
+`
+ - Run `$npx elm-spec` from dee2/frontend

@@ -1,15 +1,17 @@
 module SearchBar exposing (..)
 
 import Array exposing (Array)
-import Browser.Events exposing (onKeyDown)
+import Browser.Events exposing (onClick, onKeyDown)
 import Elastic as Elastic exposing (parse, serialize)
 import Http as Http exposing (get)
-import KeyBoardHelpers exposing (arrowDown, arrowUp, try)
+import Json.Decode as Decode
+import KeyBoardHelpers exposing (arrowDown, arrowUp, enterKey, try)
 import Keyboard.Event exposing (considerKeyboardEvent)
-import Maybe.Extra as MExtra
 import Result
 import SearchBarHelpers exposing (..)
 import SearchBarTypes as SearchBarTypes exposing (..)
+import Routes
+import Nav
 
 
 
@@ -39,6 +41,7 @@ suggestionSelectedMsg =
 init : Model
 init =
     { searchString = ""
+    , searchMode = Strict
     , searchSuggestions = Array.empty
     , activeSuggestion = Nothing
     , suggestionsVisible = True
@@ -60,7 +63,7 @@ wrapAroundIdx model idx =
         model
 
 
-onlyData : Model -> ( Model, Cmd msg, Maybe SearchResults )
+onlyData : Model -> ( Model, Cmd msg, Maybe OutMsg )
 onlyData model =
     ( model, Cmd.none, Nothing )
 
@@ -69,8 +72,14 @@ noResults =
     Nothing
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe SearchResults )
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe OutMsg )
 update msg model =
+    let
+        toOutMsg =
+            \result ->
+                Result.map (\{ hits, rows } -> OutMsg hits rows model.searchString) result
+                    |> Result.toMaybe
+    in
     case msg of
         SearchUpdate value ->
             if value == "" then
@@ -106,6 +115,18 @@ update msg model =
             in
             ( model |> hideSuggestions |> isWaiting, serverQuery, noResults )
 
+        EnterKey ->
+            case ( Array.isEmpty model.searchSuggestions, model.activeSuggestion ) of
+                ( False, Just value ) ->
+                    -- Selecting a suggestion with enter takes
+                    -- precedence over searching with enter
+                    update (SuggestionSelected value) model
+
+                -- recursive call should be avoided
+                ( _, _ ) ->
+                    update Search model
+
+        -- recursive call should be avoided
         GetSearchSuggestions value ->
             -- This is some debounce on the search string to prevent spamming ElasticSearch with queries
             if model.searchString == value then
@@ -165,7 +186,7 @@ update msg model =
         GotHttpSearchResponse result ->
             ( notWaiting model
             , Cmd.none
-            , Result.toMaybe result
+            , toOutMsg result
             )
 
         ClickOutOfSuggestions ->
@@ -175,4 +196,7 @@ update msg model =
 subscriptions : Sub Msg
 subscriptions =
     Sub.batch
-        [ onKeyDown (considerKeyboardEvent (try [ arrowUp ArrowUp, arrowDown ArrowDown ])) ]
+        [ onKeyDown (considerKeyboardEvent (try [ arrowUp ArrowUp, arrowDown ArrowDown ]))
+        , onClick (Decode.succeed ClickOutOfSuggestions)
+        , onKeyDown (considerKeyboardEvent (enterKey EnterKey))
+        ]

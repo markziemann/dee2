@@ -1,17 +1,18 @@
 module KeyBoardHelpers exposing (..)
 import Keyboard.Event exposing (KeyboardEvent)
 import Maybe.Extra as MExtra
+import Keyboard.Key as KKey
 
-keyToMsg : String -> msg -> KeyboardEvent -> Maybe msg
-keyToMsg keyCode msg keyboardEvent=
-    case keyboardEvent.key of
-        Just value ->
-            if value == keyCode then
-                Just msg
-            else
-                Nothing
-        _ ->
-            Nothing
+keyToMsg : (String, KKey.Key) -> msg -> KeyboardEvent -> Maybe msg
+keyToMsg (key, keyCode) msg keyboardEvent=
+    let
+        eventKey = Maybe.withDefault "" keyboardEvent.key
+        eventKeyCode = keyboardEvent.keyCode
+    in
+    if (key == eventKey) || (keyCode == eventKeyCode) then
+        Just msg
+    else
+        Nothing
 
 try: List (KeyboardEvent -> Maybe msg) -> KeyboardEvent -> Maybe msg
 try listeners keyboardEvent  =
@@ -19,8 +20,8 @@ try listeners keyboardEvent  =
             listeners
         |> MExtra.orList
 
-enterKey = keyToMsg "Enter"
+enterKey = keyToMsg ("Enter", KKey.Enter)
 
-arrowUp = keyToMsg "ArrowUp"
+arrowUp = keyToMsg ("ArrowUp", KKey.Up)
 
-arrowDown = keyToMsg "ArrowDown"
+arrowDown = keyToMsg ("ArrowDown", KKey.Down)

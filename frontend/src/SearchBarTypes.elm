@@ -21,6 +21,11 @@ type alias SearchResults =
     , rows : Array SearchResult
     }
 
+type alias OutMsg =
+    { hits : Int
+    , rows : Array SearchResult
+    , searchString : String
+    }
 
 type alias SearchSuggestions =
     Array String
@@ -29,9 +34,13 @@ type alias SearchSuggestions =
 type alias ActiveSuggestion =
     Int
 
+type SearchMode
+    = Strict
+    | Fuzzy
 
 type alias Model =
     { searchString : String
+    , searchMode: SearchMode
     , searchSuggestions : SearchSuggestions
     , activeSuggestion : Maybe Int
     , suggestionsVisible : Bool
@@ -46,6 +55,7 @@ type Msg
     | GotSearchSuggestions (Result Http.Error SearchSuggestions)
     | ArrowUp
     | ArrowDown
+    | EnterKey
     | SuggestionSelected Int
     | ClickOutOfSuggestions
     | GotHttpSearchResponse (Result Http.Error SearchResults)

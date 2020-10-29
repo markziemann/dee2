@@ -3,16 +3,16 @@ module MainViews exposing (..)
 import Array
 import Dict
 import Html exposing (..)
-import Html.Attributes as Attr
+import Html.Attributes exposing (..)
 import Html.Events as Events
 import MainTypes exposing (..)
 import SearchBarTypes exposing (SearchResult, SearchResults)
 import Table
-
+import Html.Events exposing (onClick)
 
 selectClickedResult : SearchResult -> List (Html.Attribute Msg)
 selectClickedResult result =
-    [ Attr.class
+    [ class
         (if result.selected then
             "table-primary"
 
@@ -58,7 +58,7 @@ tableCustomizations =
             Table.defaultCustomizations
     in
     { default
-        | tableAttrs = [ Attr.class "table table-hover table-sm table-bordered table-responsive" ]
+        | tableAttrs = [ class "table table-hover table-sm table-bordered table-responsive-md" ]
         , rowAttrs = selectClickedResult
     }
 
@@ -71,7 +71,7 @@ tableCustomizations =
 
 viewSearchResults : Model -> List (Html Msg)
 viewSearchResults { searchResultRows, resultsTableState, resultsTableQuery, searchHits} =
-    [ div [ Attr.class "d-flex bg-light text-primary" ]
+    [ div [ class "d-flex bg-light text-primary" ]
         [ text "Hits: ", text (Maybe.withDefault "" (Maybe.map String.fromInt searchHits))]
     , Table.view tableConfig resultsTableState (Maybe.withDefault [] (Maybe.map Array.toList searchResultRows))
     ]

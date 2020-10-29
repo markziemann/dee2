@@ -15,9 +15,10 @@ viewLargeSearchBar model =
             [ onInput SearchUpdate
             , attribute "aria-label" "Search"
             , class "form-control form-control-lg"
-            , placeholder "e.g Human epilepisy | SRP070529"
+            , placeholder "e.g. Human epilepisy | SRP070529"
             , type_ "search"
             , value model.searchString
+            , id "search-bar"
             ]
             [text model.searchString]
         , viewSuggestions model
@@ -79,4 +80,28 @@ viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSug
         ]
 
 
+viewSearchButton : Html Msg
+viewSearchButton =
+    div [ class "d-flex justify-content-center" ]
+        [ div [ class "btn-group my-5" ]
+            [ button
+                [ onClick Search
+                , class "btn btn-lg btn-outline-success"
+                , type_ "button"
+                ]
+                [ text "Search" ]
+            , button
+                [ class "btn btn-success dropdown-toggle dropdown-toggle-split"
+                , attribute "data-toggle" "dropdown"
+                , attribute "aria-haspopup" "true"
+                --, attribute "aria-expanded" "true" -- changes
+                ]
+                []
+            , div
+                [ class "dropdown-menu"
+                , attribute "x-placement" "bottom-start"
+                ]
+                [ a [] [ text "Hello world" ] ]
+            ]
+        ]
 

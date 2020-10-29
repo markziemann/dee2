@@ -7,23 +7,15 @@ import SearchBarTypes
 import Table
 import Url
 import Array
+import Routes
 
-
-type Route
-    = HomeRoute
-    | SearchResultsRoute (Maybe String)
-
-
-type Page
-    = HomePage Route
-    | SearchResultsPage Route
 
 
 type alias Model =
     { navKey : Nav.Key
     , url : Url.Url
     , searchBar : SearchBar.Model
-    , page : Page
+    , page : Routes.Page
     , searchHits: Maybe Int
     , searchResultRows : Maybe (Array.Array SearchBarTypes.SearchResult)
     , resultsTableState : Table.State
@@ -33,8 +25,6 @@ type alias Model =
 
 type Msg
     = GotSearchBarMsg SearchBar.Msg
-    | Search -- Message of this type will be sent to the SearchBar module
-    | EnterKey
     | LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
     | ResultClicked SearchBarTypes.SearchResult

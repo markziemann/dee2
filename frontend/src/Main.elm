@@ -6,63 +6,25 @@ import Browser.Events exposing (onKeyDown)
 import Browser.Navigation as Nav
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
 import Info exposing (introduction)
 import KeyBoardHelpers exposing (arrowDown, arrowUp, enterKey, try)
 import Keyboard.Event exposing (KeyboardEvent, considerKeyboardEvent)
 import MainTypes exposing (..)
-import MainViews
+import MainViews exposing (viewSearchResults)
 import Nav exposing (navbar)
 import SearchBar
 import SearchBarTypes
 import SearchBarViews exposing (..)
 import Table
 import Url
-import Url.Parser as UrlP exposing ((</>), (<?>))
-import Url.Parser.Query as Query
+import Routes
+
 
 
 port consoleLog : String -> Cmd msg
 
 
-homeSlug =
-    "/"
 
-
-searchResultsSlug =
-    "SearchResults"
-
-
-routeParser : UrlP.Parser (Route -> a) a
-routeParser =
-    UrlP.oneOf
-        [ UrlP.map HomeRoute (UrlP.s homeSlug)
-        , UrlP.map SearchResultsRoute (UrlP.s searchResultsSlug <?> Query.string "q")
-        ]
-
-
-homePage =
-    HomePage HomeRoute
-
-
-searchResultsPage : Maybe String -> Page
-searchResultsPage maybeString =
-    SearchResultsPage (SearchResultsRoute maybeString)
-
-
-determinePage : Url.Url -> Page
-determinePage url =
-    case UrlP.parse routeParser url of
-        Just page ->
-            case page of
-                HomeRoute ->
-                    homePage
-
-                SearchResultsRoute maybeString ->
-                    searchResultsPage maybeString
-
-        Nothing ->
-            homePage
 
 
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -70,7 +32,7 @@ init flags url navKey =
     ( { navKey = navKey
       , url = url
       , searchBar = SearchBar.init
-      , page = determinePage url
+      , page = Routes.determinePage url
       , searchHits = Nothing
       , searchResultRows = Nothing
       , resultsTableState = Table.initialSort "id"
@@ -90,7 +52,7 @@ requestSearch model fromSearchBar =
         |> (\( mdl, cmd ) ->
                 ( mdl
                 , Cmd.batch
-                    [ [ searchResultsSlug, model.searchBar.searchString ]
+                    [ [ Routes.searchResultsSlug, model.searchBar.searchString ]
                         |> String.join "/?q="
                         |> Nav.pushUrl model.navKey
                     , cmd
@@ -99,9 +61,21 @@ requestSearch model fromSearchBar =
            )
 
 
-updateSearchData : Model -> SearchBarTypes.SearchResults -> Model
-updateSearchData model searchResults =
-    { model | searchHits = Just searchResults.hits, searchResultRows = Just searchResults.rows }
+updateSearchData : Model -> SearchBarTypes.OutMsg -> Model
+updateSearchData model outMsg =
+    { model
+    | searchHits = Just outMsg.hits
+    , searchResultRows = Just outMsg.rows
+    }
+
+updateUrl: Nav.Key -> Cmd msg -> SearchBarTypes.OutMsg -> Cmd msg
+updateUrl navKey cmd outMsg =
+    Cmd.batch
+    [ cmd
+    , [ Routes.searchResultsSlug, outMsg.searchString]
+        |> String.join "/?q="
+        |> Nav.pushUrl navKey
+    ]
 
 
 maybeUpdate : (Model -> a -> Model) -> Maybe a -> Model -> Model
@@ -113,6 +87,15 @@ maybeUpdate updateFunc maybe model =
         Nothing ->
             model
 
+maybeAddCommand: (Cmd msg -> a -> Cmd msg) -> Maybe a -> Cmd msg -> Cmd msg
+maybeAddCommand addCommandFunc maybe cmd =
+    case maybe of
+        Just value ->
+            addCommandFunc cmd value
+        Nothing ->
+            cmd
+
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -120,27 +103,13 @@ update msg model =
         fromSearchBar =
             \( mdl, cmd, searchResults ) ->
                 ( { model | searchBar = mdl } |> maybeUpdate updateSearchData searchResults
-                , Cmd.map GotSearchBarMsg cmd
+                , Cmd.map GotSearchBarMsg cmd |> maybeAddCommand (updateUrl model.navKey) searchResults
                 )
     in
     case msg of
         GotSearchBarMsg message ->
             SearchBar.update message model.searchBar
                 |> fromSearchBar
-
-        Search ->
-            requestSearch model fromSearchBar
-
-        EnterKey ->
-            case ( Array.isEmpty model.searchBar.searchSuggestions, model.searchBar.activeSuggestion ) of
-                ( False, Just value ) ->
-                    -- Selecting a suggestion with enter takes
-                    -- precedence over searching with enter
-                    SearchBar.update (SearchBar.suggestionSelectedMsg value) model.searchBar
-                        |> fromSearchBar
-
-                ( _, _ ) ->
-                    requestSearch model fromSearchBar
 
         ResultClicked result ->
             let
@@ -169,25 +138,15 @@ update msg model =
                     ( model, Nav.load href )
 
         UrlChanged url ->
-            ( { model | url = url, page = determinePage url }
+            ( { model | url = url, page = Routes.determinePage url }
             , Cmd.none
             )
 
 
 
+
 ---- VIEW ----
 
-
-searchButton : Html Msg
-searchButton =
-    div [ class "d-flex justify-content-center" ]
-        [ button
-            [ onClick Search
-            , class "btn btn-lg btn-outline-success my-5"
-            , type_ "button"
-            ]
-            [ text "Search" ]
-        ]
 
 
 pageLayout : List (Html Msg) -> List (Html Msg)
@@ -206,10 +165,10 @@ pageView model =
     in
     pageLayout <|
         case model.page of
-            HomePage pageData ->
-                [ fromSearchBar (viewLargeSearchBar model.searchBar), searchButton ]
+            Routes.HomePage pageData ->
+                List.map fromSearchBar [(viewLargeSearchBar model.searchBar), viewSearchButton]
 
-            SearchResultsPage pageData ->
+            Routes.SearchResultsPage pageData ->
                 MainViews.viewSearchResults model
 
 
@@ -223,13 +182,13 @@ view model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model.page of
-        HomePage route ->
+        Routes.HomePage route ->
             Sub.batch
                 [ Sub.map GotSearchBarMsg SearchBar.subscriptions
-                , onKeyDown (considerKeyboardEvent (enterKey EnterKey))
+
                 ]
 
-        SearchResultsPage route ->
+        Routes.SearchResultsPage route ->
             Sub.none
 
 
