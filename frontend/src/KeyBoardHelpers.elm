@@ -1,5 +1,6 @@
 module KeyBoardHelpers exposing (..)
 import Keyboard.Event exposing (KeyboardEvent)
+import Maybe.Extra as MExtra
 
 keyToMsg : String -> msg -> KeyboardEvent -> Maybe msg
 keyToMsg keyCode msg keyboardEvent=
@@ -12,22 +13,11 @@ keyToMsg keyCode msg keyboardEvent=
         _ ->
             Nothing
 
--- onKeyDown (considerKeyboardEvent ((arrowUp ArrowUp) |> orTy (arrowDown ArrowDown)))
-
-orTry: (KeyboardEvent -> Maybe msg) -> (KeyboardEvent -> Maybe msg) -> KeyboardEvent -> Maybe msg
-orTry key1 key2 keyBoardEvent=
-    case key1 keyBoardEvent of
-        Just value ->
-            Just value
-        Nothing ->
-            case key2 keyBoardEvent of
-                Just value ->
-                    Just value
-                Nothing ->
-                    Nothing
-
-
-
+try: List (KeyboardEvent -> Maybe msg) -> KeyboardEvent -> Maybe msg
+try listeners keyboardEvent  =
+        List.map (\func -> func keyboardEvent)
+            listeners
+        |> MExtra.orList
 
 enterKey = keyToMsg "Enter"
 

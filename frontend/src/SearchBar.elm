@@ -5,8 +5,9 @@ import Browser.Events exposing (onKeyDown)
 import Elastic as Elastic exposing (parse, serialize)
 import Http as Http exposing (get)
 import Json.Decode as Decode
-import KeyBoardHelpers exposing (arrowDown, arrowUp, orTry)
+import KeyBoardHelpers exposing (arrowDown, arrowUp, try)
 import Keyboard.Event exposing (considerKeyboardEvent)
+import Maybe.Extra as MExtra
 import Result
 import SearchBarHelpers exposing (..)
 import SearchBarTypes as SearchBarTypes exposing (..)
@@ -44,10 +45,6 @@ init =
     , suggestionsVisible = True
     , waitingForResponse = False
     }
-
-
-updateActiveSuggestion model value =
-    updateActiveSuggestion model value |> showSuggestions
 
 
 wrapAroundIdx : Model -> Int -> Model
@@ -147,10 +144,12 @@ update msg model =
                 )
 
         ArrowUp ->
+            --onlyData model
             case model.activeSuggestion of
                 Nothing ->
-                    onlyData
-                        (updateActiveSuggestion model (Array.length model.searchSuggestions))
+                    updateActiveSuggestion model (Array.length model.searchSuggestions)
+                        |> showSuggestions
+                        |> onlyData
 
                 Just value ->
                     onlyData (wrapAroundIdx model (value - 1))
@@ -158,7 +157,9 @@ update msg model =
         ArrowDown ->
             case model.activeSuggestion of
                 Nothing ->
-                    onlyData (updateActiveSuggestion model 0)
+                    (updateActiveSuggestion model 0)
+                        |> showSuggestions
+                        |> onlyData
 
                 Just value ->
                     onlyData (wrapAroundIdx model (value + 1))
@@ -180,6 +181,11 @@ update msg model =
 subscriptions : Sub Msg
 subscriptions =
     Sub.batch
-        [ onKeyDown (considerKeyboardEvent (arrowUp ArrowUp |> orTry (arrowDown ArrowDown)))
-        , Browser.Events.onClick (Decode.succeed ClickOutOfSuggestions)
-        ]
+        [ onKeyDown (considerKeyboardEvent (try [ arrowUp ArrowUp, arrowDown ArrowDown ])) ]
+
+
+
+--[ onKeyDown (considerKeyboardEvent (arrowDown ArrowDown))
+--, Browser.Events.onClick (Decode.succeed ClickOutOfSuggestions)
+--]
+--[]

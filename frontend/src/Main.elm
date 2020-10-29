@@ -8,7 +8,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Info exposing (introduction)
-import KeyBoardHelpers exposing (enterKey)
+import KeyBoardHelpers exposing (arrowDown, arrowUp, enterKey, try)
 import Keyboard.Event exposing (KeyboardEvent, considerKeyboardEvent)
 import MainTypes exposing (..)
 import MainViews
@@ -42,21 +42,12 @@ routeParser =
 
 
 homePage =
-    HomePage
-        { route = HomeRoute
-        , subscriptions =
-            [ Sub.map GotSearchBarMsg SearchBar.subscriptions
-            , onKeyDown (considerKeyboardEvent (enterKey EnterKey))
-            ]
-        }
+    HomePage HomeRoute
 
 
 searchResultsPage : Maybe String -> Page
 searchResultsPage maybeString =
-    SearchResultsPage
-        { route = SearchResultsRoute maybeString
-        , subscriptions = []
-        }
+    SearchResultsPage (SearchResultsRoute maybeString)
 
 
 determinePage : Url.Url -> Page
@@ -127,7 +118,7 @@ update msg model =
     let
         fromSearchBar =
             \( mdl, cmd, searchResults ) ->
-                ( { model | searchBar = mdl } |> (maybeUpdate updateResults searchResults)
+                ( { model | searchBar = mdl } |> maybeUpdate updateResults searchResults
                 , Cmd.map GotSearchBarMsg cmd
                 )
     in
@@ -230,11 +221,14 @@ view model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model.page of
-        HomePage pageData ->
-            Sub.batch pageData.subscriptions
+        HomePage route ->
+            Sub.batch
+                [ Sub.map GotSearchBarMsg SearchBar.subscriptions
+                , onKeyDown (considerKeyboardEvent (enterKey EnterKey))
+                ]
 
-        SearchResultsPage pageData ->
-            Sub.batch pageData.subscriptions
+        SearchResultsPage route ->
+            Sub.none
 
 
 

@@ -4,22 +4,18 @@ import Browser exposing (Document)
 import Browser.Navigation as Nav
 import SearchBar
 import SearchBarTypes
-import Url
 import Table
+import Url
+
 
 type Route
     = HomeRoute
     | SearchResultsRoute (Maybe String)
 
-type alias PageData =
-    { route : Route
-    , subscriptions : List (Sub Msg)
-    }
-
 
 type Page
-    = HomePage PageData
-    | SearchResultsPage PageData
+    = HomePage Route
+    | SearchResultsPage Route
 
 
 type alias Model =
@@ -28,9 +24,10 @@ type alias Model =
     , searchBar : SearchBar.Model
     , page : Page
     , searchResults : SearchBarTypes.SearchResults
-    , resultsTableState: Table.State
-    , resultsTableQuery: String
+    , resultsTableState : Table.State
+    , resultsTableQuery : String
     }
+
 
 type Msg
     = GotSearchBarMsg SearchBar.Msg
@@ -41,5 +38,3 @@ type Msg
     | ResultClicked SearchBarTypes.SearchResult
     | SetResultsTableQuery String
     | SetResultsTableState Table.State
-
-
