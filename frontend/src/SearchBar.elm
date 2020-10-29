@@ -4,7 +4,6 @@ import Array exposing (Array)
 import Browser.Events exposing (onKeyDown)
 import Elastic as Elastic exposing (parse, serialize)
 import Http as Http exposing (get)
-import Json.Decode as Decode
 import KeyBoardHelpers exposing (arrowDown, arrowUp, try)
 import Keyboard.Event exposing (considerKeyboardEvent)
 import Maybe.Extra as MExtra
@@ -156,7 +155,7 @@ update msg model =
         ArrowDown ->
             case model.activeSuggestion of
                 Nothing ->
-                    (updateActiveSuggestion model 0)
+                    updateActiveSuggestion model 0
                         |> showSuggestions
                         |> onlyData
 
@@ -164,13 +163,9 @@ update msg model =
                     onlyData (wrapAroundIdx model (value + 1))
 
         GotHttpSearchResponse result ->
-            let
-                searchResults =
-                    Result.withDefault Array.empty result
-            in
             ( notWaiting model
             , Cmd.none
-            , Just searchResults
+            , Result.toMaybe result
             )
 
         ClickOutOfSuggestions ->

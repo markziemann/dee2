@@ -1,11 +1,12 @@
 module SearchBarTypes exposing (..)
 
 import Array exposing (Array)
-import Http
 import Dict
+import Http
+
 
 type alias SearchData =
-    (Dict.Dict String String)
+    Dict.Dict String String
 
 
 type alias SearchResult =
@@ -16,7 +17,9 @@ type alias SearchResult =
 
 
 type alias SearchResults =
-    Array SearchResult
+    { hits : Int
+    , rows : Array SearchResult
+    }
 
 
 type alias SearchSuggestions =

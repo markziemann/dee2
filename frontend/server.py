@@ -7,14 +7,6 @@ routes = web.RouteTableDef()
 SEARCH_AS_YOU_TYPE_FIELDS = ['SRAStudy', 'SRR_accession', 'SRX_accession', 'SRS_accession', 'SRP_accession',
                              'Sample_name', 'Library_name', 'ScientificName']
 
-SEARCH_RESULT_FILTER = ['SRAStudy', 'QC_summary'
-
-                        ]
-
-
-# This is the header of the current search result page
-# ['SRA run accession', 'QC summary alttext ', 'SRA experiment accession', 'SRA sample accession',
-# 'SRA project accession', 'Sample Name / GEO sample accession', 'GEO series accession', 'Experiment name']
 
 def get_hits(search_results: dict) -> list:
     return dict.get(search_results, 'hits', {}).get('hits', [])
@@ -22,6 +14,10 @@ def get_hits(search_results: dict) -> list:
 
 def get_data(hits: list) -> list:
     return list(map(lambda hit: dict.get(hit, '_source', {}), hits))
+
+
+def get_hit_count(search_results: dict) -> int:
+    return dict.get(search_results, 'hits', {}).get('total', {}).get('value', 0)
 
 
 @routes.get('/')
@@ -41,7 +37,9 @@ async def search(request):
          # "_source": SEARCH_AS_YOU_TYPE_FIELDS,
          }
     )
-    return web.json_response(get_data(get_hits(search_response)))
+    search_hits = get_hit_count(search_response)
+    search_results = get_data(get_hits(search_response))
+    return web.json_response({'hits': search_hits, 'rows': search_results})
 
 
 def extract_relevant_terms(search_response, search_string):
@@ -81,7 +79,5 @@ async def search(request):
 app = web.Application()
 app.add_routes(routes)
 app.add_routes([web.static('/', './dist')])
-
-
 
 web.run_app(app, host="localhost", port=8080)

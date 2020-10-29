@@ -6,6 +6,7 @@ import SearchBar
 import SearchBarTypes
 import Table
 import Url
+import Array
 
 
 type Route
@@ -23,7 +24,8 @@ type alias Model =
     , url : Url.Url
     , searchBar : SearchBar.Model
     , page : Page
-    , searchResults : SearchBarTypes.SearchResults
+    , searchHits: Maybe Int
+    , searchResultRows : Maybe (Array.Array SearchBarTypes.SearchResult)
     , resultsTableState : Table.State
     , resultsTableQuery : String
     }

@@ -71,7 +71,8 @@ init flags url navKey =
       , url = url
       , searchBar = SearchBar.init
       , page = determinePage url
-      , searchResults = Array.empty
+      , searchHits = Nothing
+      , searchResultRows = Nothing
       , resultsTableState = Table.initialSort "id"
       , resultsTableQuery = ""
       }
@@ -98,9 +99,9 @@ requestSearch model fromSearchBar =
            )
 
 
-updateResults : Model -> SearchBarTypes.SearchResults -> Model
-updateResults model searchResults =
-    { model | searchResults = searchResults }
+updateSearchData : Model -> SearchBarTypes.SearchResults -> Model
+updateSearchData model searchResults =
+    { model | searchHits = Just searchResults.hits, searchResultRows = Just searchResults.rows }
 
 
 maybeUpdate : (Model -> a -> Model) -> Maybe a -> Model -> Model
@@ -118,7 +119,7 @@ update msg model =
     let
         fromSearchBar =
             \( mdl, cmd, searchResults ) ->
-                ( { model | searchBar = mdl } |> maybeUpdate updateResults searchResults
+                ( { model | searchBar = mdl } |> maybeUpdate updateSearchData searchResults
                 , Cmd.map GotSearchBarMsg cmd
                 )
     in
@@ -143,10 +144,11 @@ update msg model =
 
         ResultClicked result ->
             let
-                searchResults =
-                    Array.set result.id { result | selected = not result.selected } model.searchResults
+                searchResultRows =
+                    Maybe.map (Array.set result.id { result | selected = not result.selected })
+                        model.searchResultRows
             in
-            ( { model | searchResults = searchResults }, Cmd.none )
+            ( { model | searchResultRows = searchResultRows }, Cmd.none )
 
         SetResultsTableQuery resultsTableQuery ->
             ( { model | resultsTableQuery = resultsTableQuery }

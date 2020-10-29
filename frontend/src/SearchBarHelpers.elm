@@ -57,11 +57,6 @@ decodeSearchSuggestions =
     field "suggestions" (array string)
 
 
-broadCast : msg -> Cmd msg
-broadCast x =
-    Task.perform identity (Task.succeed x)
-
-
 highlightMatchingText : String -> String -> List (Html msg)
 highlightMatchingText searchString suggestion =
     -- Note splitting a string removes the split string eg.> split "a" "James" = ["J", "mes"]
@@ -81,12 +76,15 @@ highlightMatchingText searchString suggestion =
         []
 
 
-
 decodeSearchResults : Decoder SearchResults
 decodeSearchResults =
-    Decode.list (Decode.dict Decode.string)
-        -- Decode.map doesn't iterate (confusing!) its more like function application
-        -- it should be called apply
-        |> Decode.map Array.fromList
-        |> Decode.map (Array.indexedMap (\idx data -> SearchResult idx data False))
-
+    Decode.map2 SearchResults
+        (field "hits" Decode.int)
+        (field "rows"
+            (Decode.list (Decode.dict Decode.string)
+                -- Decode.map doesn't iterate (confusing!) its more like function application
+                -- it should be called apply
+                |> Decode.map Array.fromList
+                |> Decode.map (Array.indexedMap (\idx data -> SearchResult idx data False))
+            )
+        )

@@ -81,5 +81,5 @@ tableConfig =
 --# 'SRA project accession', 'Sample Name / GEO sample accession', 'GEO series accession', 'Experiment name']
 
 viewSearchResults : Model -> Html Msg
-viewSearchResults { searchResults, resultsTableState, resultsTableQuery } =
-    Table.view tableConfig resultsTableState (Array.toList searchResults)
+viewSearchResults { searchResultRows, resultsTableState, resultsTableQuery } =
+    Table.view tableConfig resultsTableState (Maybe.withDefault [] (Maybe.map Array.toList searchResultRows))
