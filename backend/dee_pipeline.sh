@@ -57,7 +57,7 @@ echo "fix permissions"
 ####
 perm775(){
 ACC=$1
-chmod 774 $ACC
+chmod 775 $ACC
 }
 export -f perm775
 parallel -j$CORES perm775 :::: $MD.tmp
