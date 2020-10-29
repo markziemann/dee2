@@ -5,6 +5,7 @@ import Browser.Navigation as Nav
 import SearchBar
 import SearchBarTypes
 import Url
+import Table
 
 type Route
     = HomeRoute
@@ -27,6 +28,8 @@ type alias Model =
     , searchBar : SearchBar.Model
     , page : Page
     , searchResults : SearchBarTypes.SearchResults
+    , resultsTableState: Table.State
+    , resultsTableQuery: String
     }
 
 type Msg
@@ -36,5 +39,7 @@ type Msg
     | LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
     | ResultClicked SearchBarTypes.SearchResult
+    | SetResultsTableQuery String
+    | SetResultsTableState Table.State
 
 

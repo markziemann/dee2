@@ -4,7 +4,7 @@ import Array exposing (isEmpty)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import SearchBarHelpers exposing (highlightMatchingText, listWrapped)
+import SearchBarHelpers exposing (highlightMatchingText)
 import SearchBarTypes exposing (..)
 
 

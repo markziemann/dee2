@@ -10,8 +10,8 @@ import SearchBarTypes exposing (..)
 import Task
 
 
-setActiveSuggestion : Model -> Int -> Model
-setActiveSuggestion model value =
+updateActiveSuggestion : Model -> Int -> Model
+updateActiveSuggestion model value =
     { model | activeSuggestion = Just value }
 
 
@@ -81,13 +81,10 @@ highlightMatchingText searchString suggestion =
         []
 
 
-listWrapped a =
-    (::) a []
-
 
 decodeSearchResults : Decoder SearchResults
 decodeSearchResults =
-    Decode.list (Decode.keyValuePairs Decode.string)
+    Decode.list (Decode.dict Decode.string)
         -- Decode.map doesn't iterate (confusing!) its more like function application
         -- it should be called apply
         |> Decode.map Array.fromList

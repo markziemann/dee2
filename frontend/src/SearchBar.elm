@@ -47,7 +47,7 @@ init =
 
 
 updateActiveSuggestion model value =
-    setActiveSuggestion model value |> showSuggestions
+    updateActiveSuggestion model value |> showSuggestions
 
 
 wrapAroundIdx : Model -> Int -> Model
@@ -64,21 +64,16 @@ wrapAroundIdx model idx =
         model
 
 
-onlyData : Model -> ( Model, Cmd msg, Array.Array a )
+onlyData : Model -> ( Model, Cmd msg, Maybe SearchResults )
 onlyData model =
-    ( model, Cmd.none, Array.empty )
+    ( model, Cmd.none, Nothing )
 
 
 noResults =
-    Array.empty
+    Nothing
 
 
-
--- Using SearchResults instead of Maybe SearchResults to simplify
--- Downstream logic. Dunno if this is the best approach?
-
-
-update : Msg -> Model -> ( Model, Cmd Msg, SearchResults )
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe SearchResults )
 update msg model =
     case msg of
         SearchUpdate value ->
@@ -158,15 +153,15 @@ update msg model =
                         (updateActiveSuggestion model (Array.length model.searchSuggestions))
 
                 Just value ->
-                    onlyData ( wrapAroundIdx model (value - 1))
+                    onlyData (wrapAroundIdx model (value - 1))
 
         ArrowDown ->
             case model.activeSuggestion of
                 Nothing ->
-                    onlyData ( updateActiveSuggestion model 0)
+                    onlyData (updateActiveSuggestion model 0)
 
                 Just value ->
-                    onlyData ( wrapAroundIdx model (value + 1))
+                    onlyData (wrapAroundIdx model (value + 1))
 
         GotHttpSearchResponse result ->
             let
@@ -175,10 +170,8 @@ update msg model =
             in
             ( notWaiting model
             , Cmd.none
-            , searchResults
+            , Just searchResults
             )
-
-
 
         ClickOutOfSuggestions ->
             onlyData (hideSuggestions model)

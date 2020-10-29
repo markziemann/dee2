@@ -38,7 +38,7 @@ async def search(request):
                                            "fields": SEARCH_AS_YOU_TYPE_FIELDS,
                                            }
                    },
-         "_source": SEARCH_AS_YOU_TYPE_FIELDS,
+         # "_source": SEARCH_AS_YOU_TYPE_FIELDS,
          }
     )
     return web.json_response(get_data(get_hits(search_response)))

@@ -2,10 +2,10 @@ module SearchBarTypes exposing (..)
 
 import Array exposing (Array)
 import Http
-
+import Dict
 
 type alias SearchData =
-    List ( String, String )
+    (Dict.Dict String String)
 
 
 type alias SearchResult =

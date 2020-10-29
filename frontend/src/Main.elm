@@ -10,15 +10,16 @@ import Html.Events exposing (onClick)
 import Info exposing (introduction)
 import KeyBoardHelpers exposing (enterKey)
 import Keyboard.Event exposing (KeyboardEvent, considerKeyboardEvent)
+import MainTypes exposing (..)
+import MainViews
 import Nav exposing (navbar)
 import SearchBar
 import SearchBarTypes
 import SearchBarViews exposing (..)
+import Table
 import Url
 import Url.Parser as UrlP exposing ((</>), (<?>))
 import Url.Parser.Query as Query
-import MainTypes exposing (..)
-import MainViews
 
 
 port consoleLog : String -> Cmd msg
@@ -40,11 +41,6 @@ routeParser =
         ]
 
 
-
-
-
-
-
 homePage =
     HomePage
         { route = HomeRoute
@@ -61,9 +57,6 @@ searchResultsPage maybeString =
         { route = SearchResultsRoute maybeString
         , subscriptions = []
         }
-
-
-
 
 
 determinePage : Url.Url -> Page
@@ -88,6 +81,8 @@ init flags url navKey =
       , searchBar = SearchBar.init
       , page = determinePage url
       , searchResults = Array.empty
+      , resultsTableState = Table.initialSort "id"
+      , resultsTableQuery = ""
       }
     , Cmd.none
     )
@@ -95,9 +90,6 @@ init flags url navKey =
 
 
 ---- UPDATE ----
-
-
-
 
 
 requestSearch model fromSearchBar =
@@ -115,12 +107,27 @@ requestSearch model fromSearchBar =
            )
 
 
+updateResults : Model -> SearchBarTypes.SearchResults -> Model
+updateResults model searchResults =
+    { model | searchResults = searchResults }
+
+
+maybeUpdate : (Model -> a -> Model) -> Maybe a -> Model -> Model
+maybeUpdate updateFunc maybe model =
+    case maybe of
+        Just value ->
+            updateFunc model value
+
+        Nothing ->
+            model
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         fromSearchBar =
             \( mdl, cmd, searchResults ) ->
-                ( { model | searchBar = mdl, searchResults = searchResults }
+                ( { model | searchBar = mdl } |> (maybeUpdate updateResults searchResults)
                 , Cmd.map GotSearchBarMsg cmd
                 )
     in
@@ -146,10 +153,19 @@ update msg model =
         ResultClicked result ->
             let
                 searchResults =
-                    Array.set result.id {result| selected = not result.selected} model.searchResults
+                    Array.set result.id { result | selected = not result.selected } model.searchResults
             in
-            ( { model | searchResults = searchResults}, Cmd.none )
+            ( { model | searchResults = searchResults }, Cmd.none )
 
+        SetResultsTableQuery resultsTableQuery ->
+            ( { model | resultsTableQuery = resultsTableQuery }
+            , Cmd.none
+            )
+
+        SetResultsTableState resultsTableState ->
+            ( { model | resultsTableState = resultsTableState }
+            , Cmd.none
+            )
 
         LinkClicked urlRequest ->
             case urlRequest of
@@ -201,7 +217,7 @@ pageView model =
                 [ fromSearchBar (viewLargeSearchBar model.searchBar), searchButton ]
 
             SearchResultsPage pageData ->
-                [ (MainViews.viewSearchResults model.searchResults) ]
+                [ MainViews.viewSearchResults model ]
 
 
 view : Model -> Document Msg

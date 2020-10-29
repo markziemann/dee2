@@ -8,6 +8,7 @@
         "direct": {
             "Gizra/elm-keyboard-event": "1.0.1",
             "allo-media/elm-es-simple-query-string": "4.0.0",
+            "billstclair/elm-sortable-table": "1.2.0",
             "elm/browser": "1.0.2",
             "elm/core": "1.0.5",
             "elm/html": "1.0.0",
