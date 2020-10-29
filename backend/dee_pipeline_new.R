@@ -190,6 +190,14 @@ if (length(myaccessions) > 0 ) {
 }
 x2$QC_summary <- qc_res
 
+# write metadata
+write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep=""),
+  quote=F,sep="\t",row.names=F)
+
+#aggregate se ke and qc data
+CMD=paste("./dee_pipeline.sh",org)
+system(CMD)
+
 #here we rsync files to server in chunks of 1000
 rsync<-function(d,org) {
   while ( length(d)>0 ) {
@@ -201,21 +209,17 @@ rsync<-function(d,org) {
       chunk<-paste(d[1:length(d)],collapse=" ")
       d<-setdiff(d,d[1:1000])
     }
-    CMD=paste('rsync -azh -e \"ssh -i  ~/.ssh/monash/cloud2.key \" ', 
+    CMD=paste('rsync -azh -e \"ssh -i  ~/.ssh/monash/cloud2.key \" ',
       chunk ,' ubuntu@118.138.234.94:/dee2_data/data/',org,sep="")
     system(CMD)
   }
-} 
+}
 d<-val
 rsync(d,org)
 
-# write metadata
-write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep=""),
-  quote=F,sep="\t",row.names=F)
-
-#aggregate se ke and qc data
-CMD=paste("./dee_pipeline.sh",org)
-system(CMD)
+#delete *e.tsv.gz
+CMD2=paste('ssh -i ~/.ssh/monash/cloud2.key ubuntu@118.138.234.94 "find /dee2_data/data/',org,' | grep e.tsv.gz | parallel -j1 rm {}"',sep="")
+system(CMD2)
 
 #upload metadata
 SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key", 
