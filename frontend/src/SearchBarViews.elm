@@ -15,7 +15,7 @@ viewLargeSearchBar model =
             [ onInput SearchUpdate
             , attribute "aria-label" "Search"
             , class "form-control form-control-lg"
-            , placeholder "Human epilepisy | SRP070529"
+            , placeholder "e.g Human epilepisy | SRP070529"
             , type_ "search"
             , value model.searchString
             ]

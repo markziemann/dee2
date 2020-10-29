@@ -170,7 +170,7 @@ update msg model =
 
         UrlChanged url ->
             ( { model | url = url, page = determinePage url }
-            , consoleLog (Debug.toString (UrlP.parse routeParser url))
+            , Cmd.none
             )
 
 

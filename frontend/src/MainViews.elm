@@ -19,35 +19,8 @@ selectClickedResult result =
          else
             ""
         )
-
-    --    Probably shouldn't be passing functions to update
-    , ResultClicked result
-        |> Events.onClick
+    , Events.onClick (ResultClicked result)
     ]
-
-
-listWrapped a =
-    (::) a []
-
-
-
---viewSearchResults : SearchResults -> Html Msg
---viewSearchResults searchResults =
---    searchResults
---        |> Array.map
---            (\result ->
---                tr (selectClickedResult result)
---                    (List.map (\( key, value ) -> td [] [ text value ]) result.data)
---            )
---        |> Array.toList
---        |> tbody []
---        |> listWrapped
---        |> table [ Attr.class "table table-hover table-sm table-bordered table-responsive" ]
---type alias SearchResult =
---    { id : Int
---    , data : SearchData -- Array (Dict String String)
---    , selected : Bool
---    }
 
 
 get : String -> SearchResult -> String
@@ -61,7 +34,7 @@ tableConfig =
         getId =
             .id >> String.fromInt
     in
-    Table.config
+    Table.customConfig
         { toId = getId
         , toMsg = SetResultsTableState
         , columns =
@@ -74,7 +47,18 @@ tableConfig =
             , Table.stringColumn "Sample" (get "Sample_name")
             , Table.stringColumn "Experiment" (get "GEO_series")
             ]
+         , customizations = tableCustomizations
         }
+
+tableCustomizations: Table.Customizations SearchResult Msg
+tableCustomizations =
+    let
+        default = Table.defaultCustomizations
+    in
+       {default | tableAttrs = [ Attr.class "table table-hover table-sm table-bordered table-responsive" ]
+       , rowAttrs = selectClickedResult
+       }
+
 
 --# This is the header of the current search result page
 --# ['SRA run accession', 'QC summary alttext ', 'SRA experiment accession', 'SRA sample accession',
