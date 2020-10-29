@@ -144,7 +144,6 @@ update msg model =
                 )
 
         ArrowUp ->
-            --onlyData model
             case model.activeSuggestion of
                 Nothing ->
                     updateActiveSuggestion model (Array.length model.searchSuggestions)
@@ -182,10 +181,3 @@ subscriptions : Sub Msg
 subscriptions =
     Sub.batch
         [ onKeyDown (considerKeyboardEvent (try [ arrowUp ArrowUp, arrowDown ArrowDown ])) ]
-
-
-
---[ onKeyDown (considerKeyboardEvent (arrowDown ArrowDown))
---, Browser.Events.onClick (Decode.succeed ClickOutOfSuggestions)
---]
---[]
