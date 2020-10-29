@@ -42,7 +42,6 @@ init =
     , searchSuggestions = Array.empty
     , activeSuggestion = Nothing
     , suggestionsVisible = True
-    , searchResults = Array.empty
     , waitingForResponse = False
     }
 
@@ -65,7 +64,21 @@ wrapAroundIdx model idx =
         model
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+onlyData : Model -> ( Model, Cmd msg, Array.Array a )
+onlyData model =
+    ( model, Cmd.none, Array.empty )
+
+
+noResults =
+    Array.empty
+
+
+
+-- Using SearchResults instead of Maybe SearchResults to simplify
+-- Downstream logic. Dunno if this is the best approach?
+
+
+update : Msg -> Model -> ( Model, Cmd Msg, SearchResults )
 update msg model =
     case msg of
         SearchUpdate value ->
@@ -73,16 +86,17 @@ update msg model =
                 -- Don't wait to clear the suggestions if there is nothing
                 -- in the search box. Having search suggestions with an empty
                 -- searchString causes issues for the highlightMatchingText function
-                ( { model | searchString = value }
-                    |> clearActiveSuggestion
-                    |> clearSearchSuggestions
-                , Cmd.none
-                )
+                onlyData
+                    ({ model | searchString = value }
+                        |> clearActiveSuggestion
+                        |> clearSearchSuggestions
+                    )
 
             else
                 ( { model | searchString = value }
                     |> showSuggestions
                 , delay 1000 (GetSearchSuggestions value)
+                , noResults
                 )
 
         Search ->
@@ -99,7 +113,7 @@ update msg model =
                         , expect = Http.expectJson GotHttpSearchResponse decodeSearchResults
                         }
             in
-            ( model |> hideSuggestions |> isWaiting, serverQuery )
+            ( model |> hideSuggestions |> isWaiting, serverQuery, noResults )
 
         GetSearchSuggestions value ->
             -- This is some debounce on the search string to prevent spamming ElasticSearch with queries
@@ -109,16 +123,17 @@ update msg model =
                     { url = "/search_as_you_type/" ++ value
                     , expect = Http.expectJson GotSearchSuggestions decodeSearchSuggestions
                     }
+                , noResults
                 )
 
             else
-                ( model |> showSuggestions, Cmd.none )
+                onlyData (showSuggestions model)
 
         GotSearchSuggestions result ->
-            ( { model | searchSuggestions = Result.withDefault Array.empty result }
-                |> showSuggestions
-            , Cmd.none
-            )
+            onlyData
+                ({ model | searchSuggestions = Result.withDefault Array.empty result }
+                    |> showSuggestions
+                )
 
         SuggestionSelected value ->
             let
@@ -130,41 +145,43 @@ update msg model =
                         Nothing ->
                             model.searchString
             in
-            ( { model | searchString = searchString }
-                |> clearActiveSuggestion
-                |> hideSuggestions
-            , Cmd.none
-            )
+            onlyData
+                ({ model | searchString = searchString }
+                    |> clearActiveSuggestion
+                    |> hideSuggestions
+                )
 
         ArrowUp ->
             case model.activeSuggestion of
                 Nothing ->
-                    ( updateActiveSuggestion model (Array.length model.searchSuggestions)
-                    , Cmd.none
-                    )
+                    onlyData
+                        (updateActiveSuggestion model (Array.length model.searchSuggestions))
 
                 Just value ->
-                    ( wrapAroundIdx model (value - 1), Cmd.none )
+                    onlyData ( wrapAroundIdx model (value - 1))
 
         ArrowDown ->
             case model.activeSuggestion of
                 Nothing ->
-                    ( updateActiveSuggestion model 0, Cmd.none )
+                    onlyData ( updateActiveSuggestion model 0)
 
                 Just value ->
-                    ( wrapAroundIdx model (value + 1) , Cmd.none )
+                    onlyData ( wrapAroundIdx model (value + 1))
 
         GotHttpSearchResponse result ->
-            ( { model | searchResults = Result.withDefault Array.empty result }
-                |> notWaiting
+            let
+                searchResults =
+                    Result.withDefault Array.empty result
+            in
+            ( notWaiting model
             , Cmd.none
+            , searchResults
             )
 
-        ResultClicked function ->
-            ( { model | searchResults = function model.searchResults }, Cmd.none )
+
 
         ClickOutOfSuggestions ->
-            ( model |> hideSuggestions, Cmd.none )
+            onlyData (hideSuggestions model)
 
 
 subscriptions : Sub Msg

@@ -32,7 +32,6 @@ type alias Model =
     , searchSuggestions : SearchSuggestions
     , activeSuggestion : Maybe Int
     , suggestionsVisible : Bool
-    , searchResults : SearchResults
     , waitingForResponse : Bool
     }
 
@@ -47,4 +46,3 @@ type Msg
     | SuggestionSelected Int
     | ClickOutOfSuggestions
     | GotHttpSearchResponse (Result Http.Error SearchResults)
-    | ResultClicked (SearchResults -> SearchResults)

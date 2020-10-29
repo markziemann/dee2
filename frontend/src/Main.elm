@@ -12,10 +12,13 @@ import KeyBoardHelpers exposing (enterKey)
 import Keyboard.Event exposing (KeyboardEvent, considerKeyboardEvent)
 import Nav exposing (navbar)
 import SearchBar
+import SearchBarTypes
 import SearchBarViews exposing (..)
 import Url
 import Url.Parser as UrlP exposing ((</>), (<?>))
 import Url.Parser.Query as Query
+import MainTypes exposing (..)
+import MainViews
 
 
 port consoleLog : String -> Cmd msg
@@ -37,20 +40,9 @@ routeParser =
         ]
 
 
-type Route
-    = HomeRoute
-    | SearchResultsRoute (Maybe String)
 
 
-type alias PageData =
-    { route : Route
-    , subscriptions : List (Sub Msg)
-    }
 
-
-type Page
-    = HomePage PageData
-    | SearchResultsPage PageData
 
 
 homePage =
@@ -71,12 +63,7 @@ searchResultsPage maybeString =
         }
 
 
-type alias Model =
-    { navKey : Nav.Key
-    , url : Url.Url
-    , searchBar : SearchBar.Model
-    , page : Page
-    }
+
 
 
 determinePage : Url.Url -> Page
@@ -100,6 +87,7 @@ init flags url navKey =
       , url = url
       , searchBar = SearchBar.init
       , page = determinePage url
+      , searchResults = Array.empty
       }
     , Cmd.none
     )
@@ -109,12 +97,7 @@ init flags url navKey =
 ---- UPDATE ----
 
 
-type Msg
-    = GotSearchBarMsg SearchBar.Msg
-    | Search -- Message of this type will be sent to the SearchBar module
-    | EnterKey
-    | LinkClicked Browser.UrlRequest
-    | UrlChanged Url.Url
+
 
 
 requestSearch model fromSearchBar =
@@ -122,11 +105,12 @@ requestSearch model fromSearchBar =
         |> fromSearchBar
         |> (\( mdl, cmd ) ->
                 ( mdl
-                , Cmd.batch [
-                    [searchResultsSlug, model.searchBar.searchString]
-                    |> String.join "/?q="
-                    |> Nav.pushUrl model.navKey
-                , cmd ]
+                , Cmd.batch
+                    [ [ searchResultsSlug, model.searchBar.searchString ]
+                        |> String.join "/?q="
+                        |> Nav.pushUrl model.navKey
+                    , cmd
+                    ]
                 )
            )
 
@@ -135,7 +119,10 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         fromSearchBar =
-            \( mdl, cmd ) -> ( { model | searchBar = mdl }, Cmd.map GotSearchBarMsg cmd )
+            \( mdl, cmd, searchResults ) ->
+                ( { model | searchBar = mdl, searchResults = searchResults }
+                , Cmd.map GotSearchBarMsg cmd
+                )
     in
     case msg of
         GotSearchBarMsg message ->
@@ -155,6 +142,14 @@ update msg model =
 
                 ( _, _ ) ->
                     requestSearch model fromSearchBar
+
+        ResultClicked result ->
+            let
+                searchResults =
+                    Array.set result.id {result| selected = not result.selected} model.searchResults
+            in
+            ( { model | searchResults = searchResults}, Cmd.none )
+
 
         LinkClicked urlRequest ->
             case urlRequest of
@@ -206,7 +201,7 @@ pageView model =
                 [ fromSearchBar (viewLargeSearchBar model.searchBar), searchButton ]
 
             SearchResultsPage pageData ->
-                [ fromSearchBar (viewSearchResults model.searchBar.searchResults) ]
+                [ (MainViews.viewSearchResults model.searchResults) ]
 
 
 view : Model -> Document Msg

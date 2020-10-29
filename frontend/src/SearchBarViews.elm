@@ -19,7 +19,7 @@ viewLargeSearchBar model =
             , type_ "search"
             , value model.searchString
             ]
-            []
+            [text model.searchString]
         , viewSuggestions model
 
         -- Alternate ^^^'viewSuggestions' func with no highlighting useful to debug
@@ -79,31 +79,4 @@ viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSug
         ]
 
 
-selectClickedResult : SearchResult -> List (Html.Attribute Msg)
-selectClickedResult ({ id, selected } as result) =
-    [ class
-        (if result.selected then
-            "table-primary"
 
-         else
-            ""
-        )
-
-    --    Probably shouldn't be passing functions to update
-    , ResultClicked (\results -> Array.set id { result | selected = not result.selected } results)
-        |> onClick
-    ]
-
-
-viewSearchResults : SearchResults -> Html Msg
-viewSearchResults searchResults =
-    searchResults
-        |> Array.map
-            (\result ->
-                tr (selectClickedResult result)
-                    (List.map (\( key, value ) -> td [] [ text value ]) result.data)
-            )
-        |> Array.toList
-        |> tbody []
-        |> listWrapped
-        |> table [ class "table table-hover table-sm table-bordered table-responsive" ]
