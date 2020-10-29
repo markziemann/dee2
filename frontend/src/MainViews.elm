@@ -58,7 +58,7 @@ tableCustomizations =
             Table.defaultCustomizations
     in
     { default
-        | tableAttrs = [ Attr.class "table table-hover table-sm table-bordered table-responsive" ]
+        | tableAttrs = [ Attr.class "table table-hover table-sm table-bordered table-responsive-md" ]
         , rowAttrs = selectClickedResult
     }
 
