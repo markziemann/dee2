@@ -81,7 +81,8 @@ viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSug
 viewSearchButton : SearchMode -> Html Msg
 viewSearchButton searchMode =
     let
-        checkedWhen = (\mode -> mode == searchMode)
+        defaultWhen =
+            \mode -> mode == searchMode
     in
     div [ class "d-flex justify-content-center" ]
         [ div [ class "btn-group dropright my-5" ]
@@ -106,29 +107,35 @@ viewSearchButton searchMode =
                 ]
                 [ div [ class "mx-3" ]
                     [ h6 [ class "dropdown-header" ] [ text "Search Mode" ]
-                    , radioButton "strict-mode" "search-mode" "Strict" (checkedWhen Strict)
-                    , radioButton "strict-mode" "search-mode" "Strict" (checkedWhen Fuzzy)
+                    , radioButton "strict-mode" "search-mode" "Strict" (defaultWhen Strict) StrictSelected
+                    , radioButton "fuzzy-mode" "search-mode" "Fuzzy" (defaultWhen Fuzzy) FuzzySelected
                     ]
                 ]
             ]
         ]
 
 
-radioButton : String -> String -> String -> Bool -> Msg -> Html Msg
+defaultOption : Bool -> List (Html.Attribute msg)-> List (Html.Attribute msg)
+defaultOption checked attributes =
+    if checked then
+       List.append attributes [(attribute "checked" "")]
+
+    else
+        attributes
+
+
+radioButton : String -> String -> String -> Bool -> msg -> Html msg
 radioButton idValue nameValue textLabel checked msg =
-    let
-        checkedString =
-            BExtra.ifElse "checked" "" checked
-    in
     div [ class "form-check" ]
         [ input
-            [ onClick msg
-            , attribute "checked" checkedString
-            , id idValue
-            , class "form-check-input"
-            , type_ "radio"
-            , name nameValue
-            ]
+            (defaultOption checked <|
+                [ onClick msg
+                , id idValue
+                , class "form-check-input"
+                , type_ "radio"
+                , name nameValue
+                ]
+            )
             []
         , label [ class "form-check-label", for nameValue ] [ text textLabel ]
         ]
