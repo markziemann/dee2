@@ -56,6 +56,8 @@ type Msg
     | ArrowUp
     | ArrowDown
     | EnterKey
+    | StrictSelected
+    | FuzzySelected
     | SuggestionSelected Int
     | ClickOutOfSuggestions
     | GotHttpSearchResponse (Result Http.Error SearchResults)

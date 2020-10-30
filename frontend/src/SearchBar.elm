@@ -183,6 +183,12 @@ update msg model =
                 Just value ->
                     onlyData (wrapAroundIdx model (value + 1))
 
+        StrictSelected ->
+            onlyData {model| searchMode = Strict}
+
+        FuzzySelected ->
+            onlyData {model| searchMode = Fuzzy}
+
         GotHttpSearchResponse result ->
             ( notWaiting model
             , Cmd.none

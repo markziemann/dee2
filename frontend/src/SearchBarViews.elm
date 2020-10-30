@@ -1,6 +1,7 @@
 module SearchBarViews exposing (..)
 
 import Array exposing (isEmpty)
+import Bool.Extra as BExtra
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -20,11 +21,8 @@ viewLargeSearchBar model =
             , value model.searchString
             , id "search-bar"
             ]
-            [text model.searchString]
+            [ text model.searchString ]
         , viewSuggestions model
-
-        -- Alternate ^^^'viewSuggestions' func with no highlighting useful to debug
-        --, ul [] (Array.toList (Array.map (\str -> li [][text str]) model.searchSuggestions))
         ]
 
 
@@ -80,10 +78,13 @@ viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSug
         ]
 
 
-viewSearchButton : Html Msg
-viewSearchButton =
+viewSearchButton : SearchMode -> Html Msg
+viewSearchButton searchMode =
+    let
+        checkedWhen = (\mode -> mode == searchMode)
+    in
     div [ class "d-flex justify-content-center" ]
-        [ div [ class "btn-group my-5" ]
+        [ div [ class "btn-group dropright my-5" ]
             [ button
                 [ onClick Search
                 , class "btn btn-lg btn-outline-success"
@@ -94,14 +95,40 @@ viewSearchButton =
                 [ class "btn btn-success dropdown-toggle dropdown-toggle-split"
                 , attribute "data-toggle" "dropdown"
                 , attribute "aria-haspopup" "true"
+
                 --, attribute "aria-expanded" "true" -- changes
                 ]
                 []
             , div
                 [ class "dropdown-menu"
-                , attribute "x-placement" "bottom-start"
+
+                --, attribute "x-placement" "bottom-start"
                 ]
-                [ a [] [ text "Hello world" ] ]
+                [ div [ class "mx-3" ]
+                    [ h6 [ class "dropdown-header" ] [ text "Search Mode" ]
+                    , radioButton "strict-mode" "search-mode" "Strict" (checkedWhen Strict)
+                    , radioButton "strict-mode" "search-mode" "Strict" (checkedWhen Fuzzy)
+                    ]
+                ]
             ]
         ]
 
+
+radioButton : String -> String -> String -> Bool -> Msg -> Html Msg
+radioButton idValue nameValue textLabel checked msg =
+    let
+        checkedString =
+            BExtra.ifElse "checked" "" checked
+    in
+    div [ class "form-check" ]
+        [ input
+            [ onClick msg
+            , attribute "checked" checkedString
+            , id idValue
+            , class "form-check-input"
+            , type_ "radio"
+            , name nameValue
+            ]
+            []
+        , label [ class "form-check-label", for nameValue ] [ text textLabel ]
+        ]

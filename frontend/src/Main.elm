@@ -12,19 +12,15 @@ import Keyboard.Event exposing (KeyboardEvent, considerKeyboardEvent)
 import MainTypes exposing (..)
 import MainViews exposing (viewSearchResults)
 import Nav exposing (navbar)
+import Routes
 import SearchBar
 import SearchBarTypes
 import SearchBarViews exposing (..)
 import Table
 import Url
-import Routes
-
 
 
 port consoleLog : String -> Cmd msg
-
-
-
 
 
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -64,18 +60,19 @@ requestSearch model fromSearchBar =
 updateSearchData : Model -> SearchBarTypes.OutMsg -> Model
 updateSearchData model outMsg =
     { model
-    | searchHits = Just outMsg.hits
-    , searchResultRows = Just outMsg.rows
+        | searchHits = Just outMsg.hits
+        , searchResultRows = Just outMsg.rows
     }
 
-updateUrl: Nav.Key -> Cmd msg -> SearchBarTypes.OutMsg -> Cmd msg
+
+updateUrl : Nav.Key -> Cmd msg -> SearchBarTypes.OutMsg -> Cmd msg
 updateUrl navKey cmd outMsg =
     Cmd.batch
-    [ cmd
-    , [ Routes.searchResultsSlug, outMsg.searchString]
-        |> String.join "/?q="
-        |> Nav.pushUrl navKey
-    ]
+        [ cmd
+        , [ Routes.searchResultsSlug, outMsg.searchString ]
+            |> String.join "/?q="
+            |> Nav.pushUrl navKey
+        ]
 
 
 maybeUpdate : (Model -> a -> Model) -> Maybe a -> Model -> Model
@@ -87,14 +84,15 @@ maybeUpdate updateFunc maybe model =
         Nothing ->
             model
 
-maybeAddCommand: (Cmd msg -> a -> Cmd msg) -> Maybe a -> Cmd msg -> Cmd msg
+
+maybeAddCommand : (Cmd msg -> a -> Cmd msg) -> Maybe a -> Cmd msg -> Cmd msg
 maybeAddCommand addCommandFunc maybe cmd =
     case maybe of
         Just value ->
             addCommandFunc cmd value
+
         Nothing ->
             cmd
-
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -144,9 +142,7 @@ update msg model =
 
 
 
-
 ---- VIEW ----
-
 
 
 pageLayout : List (Html Msg) -> List (Html Msg)
@@ -166,7 +162,10 @@ pageView model =
     pageLayout <|
         case model.page of
             Routes.HomePage pageData ->
-                List.map fromSearchBar [(viewLargeSearchBar model.searchBar), viewSearchButton]
+                List.map fromSearchBar
+                    [ viewLargeSearchBar model.searchBar
+                    , viewSearchButton model.searchBar.searchMode
+                    ]
 
             Routes.SearchResultsPage pageData ->
                 MainViews.viewSearchResults model
@@ -185,7 +184,6 @@ subscriptions model =
         Routes.HomePage route ->
             Sub.batch
                 [ Sub.map GotSearchBarMsg SearchBar.subscriptions
-
                 ]
 
         Routes.SearchResultsPage route ->
