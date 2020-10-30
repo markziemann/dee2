@@ -25,7 +25,7 @@ async def index(request):
     return web.FileResponse('./dist/index.html')
 
 
-@routes.get('/search/{search_string}')
+@routes.get('/simple_query_search/{search_string}')
 async def search(request):
     """Seach using Elasticsearch simple_query_string API"""
     search_response = await client.search(
@@ -36,6 +36,23 @@ async def search(request):
                    },
          # "_source": SEARCH_AS_YOU_TYPE_FIELDS,
          }
+    )
+    search_hits = get_hit_count(search_response)
+    search_results = get_data(get_hits(search_response))
+    return web.json_response({'hits': search_hits, 'rows': search_results})
+
+
+@routes.get('/fuzzy_search/{search_string}')
+async def search(request):
+    """Seach using Elasticsearch simple_query_string API"""
+    search_response = await client.search(
+        {"query": {
+            "multi_match": {
+                "query": f"{request.match_info['search_string']}",
+                "fields": SEARCH_AS_YOU_TYPE_FIELDS,
+                "fuzziness": "AUTO"
+            }
+        }}
     )
     search_hits = get_hit_count(search_response)
     search_results = get_data(get_hits(search_response))

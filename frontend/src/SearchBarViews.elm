@@ -5,6 +5,7 @@ import Bool.Extra as BExtra
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.Events.Extra as EEvents
 import SearchBarHelpers exposing (highlightMatchingText)
 import SearchBarTypes exposing (..)
 
@@ -78,12 +79,8 @@ viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSug
         ]
 
 
-viewSearchButton : SearchMode -> Html Msg
-viewSearchButton searchMode =
-    let
-        defaultWhen =
-            \mode -> mode == searchMode
-    in
+viewSearchButton : Html Msg
+viewSearchButton =
     div [ class "d-flex justify-content-center" ]
         [ div [ class "btn-group dropright my-5" ]
             [ button
@@ -92,50 +89,35 @@ viewSearchButton searchMode =
                 , type_ "button"
                 ]
                 [ text "Search" ]
-            , button
-                [ class "btn btn-success dropdown-toggle dropdown-toggle-split"
-                , attribute "data-toggle" "dropdown"
-                , attribute "aria-haspopup" "true"
-
-                --, attribute "aria-expanded" "true" -- changes
-                ]
-                []
-            , div
-                [ class "dropdown-menu"
-
-                --, attribute "x-placement" "bottom-start"
-                ]
-                [ div [ class "mx-3" ]
-                    [ h6 [ class "dropdown-header" ] [ text "Search Mode" ]
-                    , radioButton "strict-mode" "search-mode" "Strict" (defaultWhen Strict) StrictSelected
-                    , radioButton "fuzzy-mode" "search-mode" "Fuzzy" (defaultWhen Fuzzy) FuzzySelected
-                    ]
-                ]
             ]
         ]
 
 
-defaultOption : Bool -> List (Html.Attribute msg)-> List (Html.Attribute msg)
-defaultOption checked attributes =
-    if checked then
-       List.append attributes [(attribute "checked" "")]
-
-    else
-        attributes
-
-
-radioButton : String -> String -> String -> Bool -> msg -> Html msg
-radioButton idValue nameValue textLabel checked msg =
-    div [ class "form-check" ]
-        [ input
-            (defaultOption checked <|
-                [ onClick msg
-                , id idValue
+viewSearchModeSelector : SearchMode -> Html Msg
+viewSearchModeSelector searchMode =
+    div [ class "d-sm-flex justify-content-center my-4" ]
+        [ div [ class "form-check mx-2" ]
+            [ input
+                [ onInput StrictSelected
                 , class "form-check-input"
                 , type_ "radio"
-                , name nameValue
+                , name "search-mode"
+                , checked <| BExtra.ifElse True False (searchMode == Strict)
+                , id "simple-query-string"
                 ]
-            )
-            []
-        , label [ class "form-check-label", for nameValue ] [ text textLabel ]
+                []
+            , label [ class "form-check-label", for "simple-query-string" ] [ text "Simple Query String" ]
+            ]
+        , div [ class "form-check mx-2" ]
+            [ input
+                [ onInput FuzzySelected
+                , class "form-check-input"
+                , type_ "radio"
+                , name "search-mode"
+                , checked <| BExtra.ifElse True False (searchMode == Fuzzy)
+                , id "fuzzy-text"
+                ]
+                []
+            , label [ class "form-check-label", for "fuzzy-text" ] [ text "Fuzzy Text Search" ]
+            ]
         ]

@@ -164,7 +164,8 @@ pageView model =
             Routes.HomePage pageData ->
                 List.map fromSearchBar
                     [ viewLargeSearchBar model.searchBar
-                    , viewSearchButton model.searchBar.searchMode
+                    , viewSearchModeSelector model.searchBar.searchMode
+                    , viewSearchButton
                     ]
 
             Routes.SearchResultsPage pageData ->

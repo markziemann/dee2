@@ -1,12 +1,9 @@
-- Some suggested searches don't return anything
 - Remove white space around search query
 
 - Should we make the exact Elastic search Http query available for reference?
+    - Yes, need to implement
 
 - How should we limit results? Should search results be downloadable if it's huge?
+    - pagination to limit results
+    - Yes, need a download option
 
-- Which fields match to the current search result headings?
-
-# This is the header of the current search result page
-# ['SRA run accession', 'QC summary alttext ', 'SRA experiment accession', 'SRA sample accession',
-# 'SRA project accession', 'Sample Name / GEO sample accession', 'GEO series accession', 'Experiment name']

@@ -103,13 +103,19 @@ update msg model =
             let
                 -- Elastic.Word makes no modification to the search string
                 -- https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html#_simple_query_string_syntax
-                search_string =
-                    Result.withDefault (Elastic.Word model.searchString) (parse model.searchString)
-                        |> serialize
+                (route, search_string) =
+                    case model.searchMode of
+                        Strict ->
+                            ( "/simple_query_search/"
+                            , Result.withDefault (Elastic.Word model.searchString) (parse model.searchString)
+                                |> serialize
+                            )
+                        Fuzzy ->
+                            ("/fuzzy_search/", model.searchString)
 
                 serverQuery =
                     get
-                        { url = "/search/" ++ search_string
+                        { url = route ++ search_string
                         , expect = Http.expectJson GotHttpSearchResponse decodeSearchResults
                         }
             in
@@ -183,10 +189,10 @@ update msg model =
                 Just value ->
                     onlyData (wrapAroundIdx model (value + 1))
 
-        StrictSelected ->
+        StrictSelected string ->
             onlyData {model| searchMode = Strict}
 
-        FuzzySelected ->
+        FuzzySelected string ->
             onlyData {model| searchMode = Fuzzy}
 
         GotHttpSearchResponse result ->
