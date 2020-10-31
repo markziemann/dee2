@@ -203,8 +203,3 @@ subscriptions =
         , onClick (Decode.succeed ClickOutOfSuggestions)
         ]
 
-
-keyDecoder : (String -> Msg) -> Decode.Decoder Msg
-keyDecoder tagger =
-    Decode.field "key" Decode.string
-        |> Decode.map tagger
