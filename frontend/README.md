@@ -63,7 +63,7 @@ This will be achieved with:
 `
  - Run `$npx elm-spec` from dee2/frontend
     ###### Note: Dependencies in  `specs/elm.json` must
-    ###### include all the dependencies in `elm.json'
+    ###### include all the dependencies in `elm.json`
 
 ## Other Useful Commands
 
