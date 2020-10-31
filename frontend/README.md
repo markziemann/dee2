@@ -55,7 +55,7 @@ This will be achieved with:
 
 - Navigate to `http://localhost:8080/` in your browser
 
-## Running Tests
+# Running Tests
 
  - Install [elm-spec](https://package.elm-lang.org/packages/brian-watkins/elm-spec/latest/) 
  
