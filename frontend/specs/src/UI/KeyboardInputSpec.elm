@@ -1,6 +1,7 @@
 module UI.KeyboardInputSpec exposing (main)
 
 import Array
+import Extra exposing (equals)
 import Json.Encode
 import Main
 import MainTypes
@@ -17,7 +18,6 @@ import Spec.Observer as Observer
 import Spec.Setup as Setup
 import Spec.Step
 import Spec.Time as Time
-import Extra
 
 
 enterKeyPressSpec : Spec.Spec MainTypes.Model MainTypes.Msg
@@ -31,43 +31,39 @@ enterKeyPressSpec =
                     |> Setup.withSubscriptions Main.subscriptions
                 )
                 |> Spec.when "Search String is entered and arrow keys select suggestion and enter is pressed"
-                    [
-
-                     Markup.target << document
-                    , Event.trigger "keydown" <| Json.Encode.object [ ( "key", Json.Encode.string "ArrowUp" ) ]
-
-                    --, Spec.Command.send (Spec.Command.fake (MainTypes.GotSearchBarMsg SearchBarTypes.EnterKey))
+                    [ Markup.target << by [ id "search-bar" ]
+                    , Event.input "This should equal 3"
+                    , Markup.target << document
+                    , arrowDownPressed
+                    , arrowDownPressed
+                    , arrowDownPressed
+                    , arrowDownPressed
+                    , arrowUpPressed -- 4-1 = 3
+                    , enterPressed
                     ]
                 |> Spec.it "selects the active suggestion"
-                    (Observer.observeModel (.searchBar >> .test)
-                        |> Spec.expect (Extra.equals True)
+                    (Markup.observeElement
+                        |> Markup.query << by [id "search-bar"]
+                        |> Spec.expect(Claim.isSomethingWhere <| Markup.text <| equals "3")
                     )
             )
         ]
 
 
-
---upArrowPressed =
---    Json.Encode.object [ ( "keyCode", Json.Encode.int 38 ) ]
---        |> Event.trigger "keydown"
+arrowUpPressed =
+    keyPressed "ArrowUp"
 
 
-upArrowPressed : Spec.Step.Context model -> Spec.Step.Command msg
-upArrowPressed =
-    Json.Encode.object [ ( "key", Json.Encode.string "ArrowUp" ) ]
-        |> Event.trigger "keypress"
-
-
-keyPressEvent : String -> Spec.Step.Context model -> Spec.Step.Command msg
-keyPressEvent char =
-    Json.Encode.object
-        [ ( "key", Json.Encode.string char )
-        ]
-        |> Event.trigger "keypress"
+arrowDownPressed =
+    keyPressed "ArrowDown"
 
 
 enterPressed =
-    Json.Encode.object [ ( "keyCode", Json.Encode.int 13 ) ]
+    keyPressed "Enter"
+
+
+keyPressed key =
+    Json.Encode.object [ ( "key", Json.Encode.string key ) ]
         |> Event.trigger "keydown"
 
 
