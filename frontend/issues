@@ -1,9 +1,2 @@
-- Remove white space around search query
 
-- Should we make the exact Elastic search Http query available for reference?
-    - Yes, need to implement
-
-- How should we limit results? Should search results be downloadable if it's huge?
-    - pagination to limit results
-    - Yes, need a download option
 

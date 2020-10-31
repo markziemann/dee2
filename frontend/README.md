@@ -49,7 +49,7 @@ This will be achieved with:
     `$parcel watch index.html`
     
 - #### Run the python server
-    Note: Activate the virtual environmet if using one
+    ###### Note: Activate the virtual environmet if using one
     
     `$python server.py` | `python3.6 server.py`
 
@@ -62,3 +62,43 @@ This will be achieved with:
  - Install test runner `$npm install --save-dev elm-spec-runner
 `
  - Run `$npx elm-spec` from dee2/frontend
+    ###### Note: Dependencies in  `specs/elm.json` must
+    include all the dependencies in `elm.json'
+
+## Other Useful Commands
+
+#### Drop/Delete all indices in Elasticsearch
+
+Windows Powershell
+    
+    $Invoke-WebRequest -method DELETE http://localhost:9200/_all
+
+#### Start ElasticSearch (windows)
+###### (must be on PATH)
+
+    $elasticsearch.exe
+
+#### Activate virtual environment (venv).
+
+###### git-bash
+   
+    $. venv/Scrips/activate
+
+######(windows cmd)
+    $"venv/Scripts/activate.bat"
+
+#### Deactivate virtual environment (venv).
+    $ deactivate
+    
+# Features under development
+
+- Make Elasticsearch Http query available for reference.
+
+- Search results should be limited by pagination and results per page
+rather than the default 10
+
+- Search results should be downloadable with format options (tsv, csv, xls, ...)
+
+- Filter results on species
+
+- Nav url should be sharable and replicate search query
