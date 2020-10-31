@@ -7,6 +7,7 @@
     "elm-version": "0.19.1",
     "dependencies": {
         "direct": {
+            "Chadtech/elm-bool-extra": "2.4.2",
             "Gizra/elm-keyboard-event": "1.0.1",
             "SwiftsNamesake/proper-keyboard": "4.0.0",
             "allo-media/elm-es-simple-query-string": "4.0.0",
@@ -18,6 +19,7 @@
             "elm/http": "2.0.0",
             "elm/json": "1.1.3",
             "elm/url": "1.0.0",
+            "elm-community/html-extra": "3.4.0",
             "elm-community/maybe-extra": "5.2.0"
         },
         "indirect": {

@@ -4,11 +4,11 @@ import Array
 import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events as Events
+import Html.Events as Events exposing (onClick)
 import MainTypes exposing (..)
 import SearchBarTypes exposing (SearchResult, SearchResults)
 import Table
-import Html.Events exposing (onClick)
+
 
 selectClickedResult : SearchResult -> List (Html.Attribute Msg)
 selectClickedResult result =
@@ -63,15 +63,9 @@ tableCustomizations =
     }
 
 
-
---# This is the header of the current search result page
---# ['SRA run accession', 'QC summary alttext ', 'SRA experiment accession', 'SRA sample accession',
---# 'SRA project accession', 'Sample Name / GEO sample accession', 'GEO series accession', 'Experiment name']
-
-
 viewSearchResults : Model -> List (Html Msg)
-viewSearchResults { searchResultRows, resultsTableState, resultsTableQuery, searchHits} =
+viewSearchResults { searchResultRows, resultsTableState, resultsTableQuery, searchHits } =
     [ div [ class "d-flex bg-light text-primary" ]
-        [ text "Hits: ", text (Maybe.withDefault "" (Maybe.map String.fromInt searchHits))]
+        [ text "Hits: ", text (Maybe.withDefault "" (Maybe.map String.fromInt searchHits)) ]
     , Table.view tableConfig resultsTableState (Maybe.withDefault [] (Maybe.map Array.toList searchResultRows))
     ]

@@ -5,17 +5,10 @@ import Browser.Events exposing (onClick, onKeyDown)
 import Elastic as Elastic exposing (parse, serialize)
 import Http as Http exposing (get)
 import Json.Decode as Decode
-import KeyBoardHelpers exposing (arrowDown, arrowUp, enterKey, try)
-import Keyboard.Event exposing (considerKeyboardEvent)
+import KeyBoardHelpers exposing (arrowDown, arrowUp, enter)
 import Result
 import SearchBarHelpers exposing (..)
 import SearchBarTypes as SearchBarTypes exposing (..)
-import Routes
-import Nav
-
-
-
--- Allows exporting of imported types
 
 
 type alias Model =
@@ -26,18 +19,6 @@ type alias Msg =
     SearchBarTypes.Msg
 
 
-
--- Expose this Msg constructor to other modules
-
-
-searchMsg =
-    SearchBarTypes.Search
-
-
-suggestionSelectedMsg =
-    SearchBarTypes.SuggestionSelected
-
-
 init : Model
 init =
     { searchString = ""
@@ -46,6 +27,7 @@ init =
     , activeSuggestion = Nothing
     , suggestionsVisible = True
     , waitingForResponse = False
+    , test = False
     }
 
 
@@ -76,8 +58,8 @@ update : Msg -> Model -> ( Model, Cmd Msg, Maybe OutMsg )
 update msg model =
     let
         toOutMsg =
-            \result ->
-                Result.map (\{ hits, rows } -> OutMsg hits rows model.searchString) result
+            \searchResults ->
+                Result.map (\{ hits, rows } -> OutMsg hits rows model.searchString) searchResults
                     |> Result.toMaybe
     in
     case msg of
@@ -103,15 +85,16 @@ update msg model =
             let
                 -- Elastic.Word makes no modification to the search string
                 -- https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html#_simple_query_string_syntax
-                (route, search_string) =
+                ( route, search_string ) =
                     case model.searchMode of
                         Strict ->
                             ( "/simple_query_search/"
                             , Result.withDefault (Elastic.Word model.searchString) (parse model.searchString)
                                 |> serialize
                             )
+
                         Fuzzy ->
-                            ("/fuzzy_search/", model.searchString)
+                            ( "/fuzzy_search/", model.searchString )
 
                 serverQuery =
                     get
@@ -169,6 +152,9 @@ update msg model =
                     |> hideSuggestions
                 )
 
+        Test ->
+            ( { model | test = True }, Cmd.none, Nothing )
+
         ArrowUp ->
             case model.activeSuggestion of
                 Nothing ->
@@ -190,10 +176,10 @@ update msg model =
                     onlyData (wrapAroundIdx model (value + 1))
 
         StrictSelected string ->
-            onlyData {model| searchMode = Strict}
+            onlyData { model | searchMode = Strict }
 
         FuzzySelected string ->
-            onlyData {model| searchMode = Fuzzy}
+            onlyData { model | searchMode = Fuzzy }
 
         GotHttpSearchResponse result ->
             ( notWaiting model
@@ -208,7 +194,17 @@ update msg model =
 subscriptions : Sub Msg
 subscriptions =
     Sub.batch
-        [ onKeyDown (considerKeyboardEvent (try [ arrowUp ArrowUp, arrowDown ArrowDown ]))
+        [ onKeyDown <|
+            Decode.oneOf
+                [ enter EnterKey
+                , arrowUp ArrowUp
+                , arrowDown ArrowDown
+                ]
         , onClick (Decode.succeed ClickOutOfSuggestions)
-        , onKeyDown (considerKeyboardEvent (enterKey EnterKey))
         ]
+
+
+keyDecoder : (String -> Msg) -> Decode.Decoder Msg
+keyDecoder tagger =
+    Decode.field "key" Decode.string
+        |> Decode.map tagger

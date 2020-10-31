@@ -1,27 +1,31 @@
 module KeyBoardHelpers exposing (..)
-import Keyboard.Event exposing (KeyboardEvent)
-import Maybe.Extra as MExtra
-import Keyboard.Key as KKey
 
-keyToMsg : (String, KKey.Key) -> msg -> KeyboardEvent -> Maybe msg
-keyToMsg (key, keyCode) msg keyboardEvent=
-    let
-        eventKey = Maybe.withDefault "" keyboardEvent.key
-        eventKeyCode = keyboardEvent.keyCode
-    in
-    if (key == eventKey) || (keyCode == eventKeyCode) then
-        Just msg
-    else
-        Nothing
+import Json.Decode exposing (..)
 
-try: List (KeyboardEvent -> Maybe msg) -> KeyboardEvent -> Maybe msg
-try listeners keyboardEvent  =
-        List.map (\func -> func keyboardEvent)
-            listeners
-        |> MExtra.orList
 
-enterKey = keyToMsg ("Enter", KKey.Enter)
+arrowUp =
+    maybeKeyEvent "ArrowUp"
 
-arrowUp = keyToMsg ("ArrowUp", KKey.Up)
 
-arrowDown = keyToMsg ("ArrowDown", KKey.Down)
+arrowDown =
+    maybeKeyEvent "ArrowDown"
+
+
+enter =
+    maybeKeyEvent "Enter"
+
+
+maybeKeyEvent : String -> msg -> Decoder msg
+maybeKeyEvent str msg =
+    andThen
+        (\result ->
+            case result == str of
+                True ->
+                    succeed msg
+
+                False ->
+                    fail "Ignoring keyboard event"
+        )
+        (field "key" string)
+
+

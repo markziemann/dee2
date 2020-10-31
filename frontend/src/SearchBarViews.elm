@@ -47,7 +47,7 @@ viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSug
             if isEmpty searchSuggestions then
                 identity
 
-            else
+            else -- This code is terrible! what were you thinking???
                 \value ->
                     value
                         |> (\str -> [ str, "show" ])
@@ -95,8 +95,8 @@ viewSearchButton =
 
 viewSearchModeSelector : SearchMode -> Html Msg
 viewSearchModeSelector searchMode =
-    div [ class "d-sm-flex justify-content-center my-4" ]
-        [ div [ class "form-check mx-2" ]
+    div [ class "d-sm-flex justify-content-center" ]
+        [ div [ class "form-check mx-2 my-4" ]
             [ input
                 [ onInput StrictSelected
                 , class "form-check-input"
@@ -108,7 +108,7 @@ viewSearchModeSelector searchMode =
                 []
             , label [ class "form-check-label", for "simple-query-string" ] [ text "Simple Query String" ]
             ]
-        , div [ class "form-check mx-2" ]
+        , div [ class "form-check mx-2 my-4" ]
             [ input
                 [ onInput FuzzySelected
                 , class "form-check-input"

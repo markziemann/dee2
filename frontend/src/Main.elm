@@ -2,13 +2,10 @@ port module Main exposing (..)
 
 import Array
 import Browser exposing (Document)
-import Browser.Events exposing (onKeyDown)
 import Browser.Navigation as Nav
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Info exposing (introduction)
-import KeyBoardHelpers exposing (arrowDown, arrowUp, enterKey, try)
-import Keyboard.Event exposing (KeyboardEvent, considerKeyboardEvent)
 import MainTypes exposing (..)
 import MainViews exposing (viewSearchResults)
 import Nav exposing (navbar)
@@ -41,20 +38,6 @@ init flags url navKey =
 
 ---- UPDATE ----
 
-
-requestSearch model fromSearchBar =
-    SearchBar.update SearchBar.searchMsg model.searchBar
-        |> fromSearchBar
-        |> (\( mdl, cmd ) ->
-                ( mdl
-                , Cmd.batch
-                    [ [ Routes.searchResultsSlug, model.searchBar.searchString ]
-                        |> String.join "/?q="
-                        |> Nav.pushUrl model.navKey
-                    , cmd
-                    ]
-                )
-           )
 
 
 updateSearchData : Model -> SearchBarTypes.OutMsg -> Model
@@ -169,7 +152,7 @@ pageView model =
                     ]
 
             Routes.SearchResultsPage pageData ->
-                MainViews.viewSearchResults model
+                viewSearchResults model
 
 
 view : Model -> Document Msg
