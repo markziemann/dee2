@@ -125,6 +125,8 @@ update msg model =
 
 
 
+
+
 ---- VIEW ----
 
 
@@ -167,7 +169,7 @@ subscriptions model =
     case model.page of
         Routes.HomePage route ->
             Sub.batch
-                [ Sub.map GotSearchBarMsg SearchBar.subscriptions
+                [ Sub.map GotSearchBarMsg <| SearchBar.subscriptions model.searchBar
                 ]
 
         Routes.SearchResultsPage route ->

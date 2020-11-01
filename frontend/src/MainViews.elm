@@ -39,6 +39,7 @@ tableConfig =
         , toMsg = SetResultsTableState
         , columns =
             [ Table.stringColumn "Row" getId
+            , Table.stringColumn "Species" (get "species")
             , Table.stringColumn "SRA Run" (get "SRR_accession")
             , Table.stringColumn "QC summary" (get "QC_summary")
             , Table.stringColumn "SRA experiment" (get "SRX_accession")
@@ -68,4 +69,5 @@ viewSearchResults { searchResultRows, resultsTableState, resultsTableQuery, sear
     [ div [ class "d-flex bg-light text-primary" ]
         [ text "Hits: ", text (Maybe.withDefault "" (Maybe.map String.fromInt searchHits)) ]
     , Table.view tableConfig resultsTableState (Maybe.withDefault [] (Maybe.map Array.toList searchResultRows))
+    , button [ class "btn btn-outline-primary" ] [text "download"]
     ]

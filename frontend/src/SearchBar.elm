@@ -191,15 +191,20 @@ update msg model =
             onlyData (hideSuggestions model)
 
 
-subscriptions : Sub Msg
-subscriptions =
-    Sub.batch
-        [ onKeyDown <|
-            Decode.oneOf
-                [ enter EnterKey
-                , arrowUp ArrowUp
-                , arrowDown ArrowDown
-                ]
-        , onClick (Decode.succeed ClickOutOfSuggestions)
-        ]
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    [ onKeyDown <|
+        Decode.oneOf
+            [ enter EnterKey
+            , arrowUp ArrowUp
+            , arrowDown ArrowDown
+            ]
+    ]
+        |> (\subs ->
+                if model.suggestionsVisible then
+                    List.append [(onClick <| Decode.succeed ClickOutOfSuggestions)] subs
 
+                else
+                    subs
+           )
+        |> Sub.batch

@@ -12,8 +12,18 @@ def get_hits(search_results: dict) -> list:
     return dict.get(search_results, 'hits', {}).get('hits', [])
 
 
+def extract_species_and_data(hit):
+    try:
+        data = hit['_source']
+        data.update({"species": hit['_index']})
+    except KeyError:
+        return {}
+    else:
+        return data
+
+
 def get_data(hits: list) -> list:
-    return list(map(lambda hit: dict.get(hit, '_source', {}), hits))
+    return list(map(extract_species_and_data, hits))
 
 
 def get_hit_count(search_results: dict) -> int:
