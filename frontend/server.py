@@ -34,6 +34,11 @@ def get_hit_count(search_results: dict) -> int:
 async def index(request):
     return web.FileResponse('./dist/index.html')
 
+@routes.get(r'/download/')
+async def download(request):
+    print(request)
+    return web.FileResponse('./static/Data.zip')
+
 
 @routes.get('/simple_query_search/{search_string}')
 async def search(request):

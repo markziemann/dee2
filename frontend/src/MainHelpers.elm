@@ -1,19 +1,28 @@
 module MainHelpers exposing (..)
 
 import Array
-import Dict
-import Http
-import MainTypes exposing (..)
+import Dict exposing (Dict)
+import Dict.Extra as DExtra
 import Maybe.Extra as MExtra
 import SearchBarTypes
+import Url.Builder
 
 
-extractSelectedRows : Array.Array SearchBarTypes.SearchResult -> String
+getKeyValue dict =
+    case ( Dict.get "species" dict, Dict.get "SRR_accession" dict ) of
+        ( Just key, Just value ) ->
+            Just ( key, value )
+
+        ( _, _ ) ->
+            Nothing
+
+
+extractSelectedRows : Array.Array SearchBarTypes.SearchResult -> List Url.Builder.QueryParameter
 extractSelectedRows rows =
     Array.map
         (\row ->
             if row.selected then
-                List.map (\key -> Dict.get key row.data) ["SRR_accession"]
+                getKeyValue row.data
 
             else
                 Nothing
@@ -21,8 +30,11 @@ extractSelectedRows rows =
         rows
         |> Array.toList
         |> MExtra.values
-        |> String.join ","
+        |> DExtra.fromListDedupe (\a b -> a ++ "," ++ b)
+        |> Dict.toList
+        |> List.map (\( a, b ) -> Url.Builder.string a b)
 
 
-generateDownloadUrl selectedResults =
-
+queryString : Maybe (Array.Array SearchBarTypes.SearchResult) -> String
+queryString maybeRows =
+    MExtra.unwrap "" (extractSelectedRows >> Url.Builder.toQuery) maybeRows

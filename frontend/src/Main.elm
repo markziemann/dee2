@@ -5,7 +5,10 @@ import Browser exposing (Document)
 import Browser.Navigation as Nav
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Http
 import Info exposing (introduction)
+import Json.Encode as Encode
+import MainHelpers exposing (extractSelectedRows)
 import MainTypes exposing (..)
 import MainViews exposing (viewSearchResults)
 import Nav exposing (navbar)
@@ -15,7 +18,8 @@ import SearchBarTypes
 import SearchBarViews exposing (..)
 import Table
 import Url
-
+import Bytes
+import Bytes.Decode as BDecode
 
 port consoleLog : String -> Cmd msg
 
@@ -37,7 +41,6 @@ init flags url navKey =
 
 
 ---- UPDATE ----
-
 
 
 updateSearchData : Model -> SearchBarTypes.OutMsg -> Model
@@ -86,6 +89,9 @@ update msg model =
                 ( { model | searchBar = mdl } |> maybeUpdate updateSearchData searchResults
                 , Cmd.map GotSearchBarMsg cmd |> maybeAddCommand (updateUrl model.navKey) searchResults
                 )
+
+        noOp =
+            ( model, Cmd.none )
     in
     case msg of
         GotSearchBarMsg message ->
@@ -110,6 +116,8 @@ update msg model =
             , Cmd.none
             )
 
+
+
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
@@ -122,8 +130,6 @@ update msg model =
             ( { model | url = url, page = Routes.determinePage url }
             , Cmd.none
             )
-
-
 
 
 

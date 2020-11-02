@@ -8,7 +8,7 @@ import Table
 import Url
 import Array
 import Routes
-
+import Bytes
 
 
 type alias Model =

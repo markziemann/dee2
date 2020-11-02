@@ -5,9 +5,11 @@ import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events as Events exposing (onClick)
+import MainHelpers exposing (queryString)
 import MainTypes exposing (..)
 import SearchBarTypes exposing (SearchResult, SearchResults)
 import Table
+import Url.Builder as UBuilder
 
 
 selectClickedResult : SearchResult -> List (Html.Attribute Msg)
@@ -69,5 +71,10 @@ viewSearchResults { searchResultRows, resultsTableState, resultsTableQuery, sear
     [ div [ class "d-flex bg-light text-primary" ]
         [ text "Hits: ", text (Maybe.withDefault "" (Maybe.map String.fromInt searchHits)) ]
     , Table.view tableConfig resultsTableState (Maybe.withDefault [] (Maybe.map Array.toList searchResultRows))
-    , button [ class "btn btn-outline-primary" ] [text "download"]
+    , a
+        [ class "btn btn-outline-primary"
+        , href <| "/download/" ++ (queryString searchResultRows)
+        , attribute "download" "data.zip"
+        ]
+        [ text "download" ]
     ]
