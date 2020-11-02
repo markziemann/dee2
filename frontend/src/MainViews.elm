@@ -9,7 +9,6 @@ import MainHelpers exposing (queryString)
 import MainTypes exposing (..)
 import SearchBarTypes exposing (SearchResult, SearchResults)
 import Table
-import Url.Builder as UBuilder
 
 
 selectClickedResult : SearchResult -> List (Html.Attribute Msg)
@@ -21,6 +20,7 @@ selectClickedResult result =
          else
             ""
         )
+    , style "cursor" "pointer" -- First place not using bootstrap for style?
     , Events.onClick (ResultClicked result)
     ]
 
@@ -66,14 +66,27 @@ tableCustomizations =
     }
 
 
+hideWhenTrue : String -> Bool -> String
+hideWhenTrue classString true =
+    if true then
+        String.join " " [ classString, "invisible" ]
+
+    else
+        classString
+
+
+noResultsSelected maybeRows =
+    List.all identity <| Array.toList <| Array.map (.selected >> not)  <| Maybe.withDefault Array.empty maybeRows
+
+
 viewSearchResults : Model -> List (Html Msg)
 viewSearchResults { searchResultRows, resultsTableState, resultsTableQuery, searchHits } =
     [ div [ class "d-flex bg-light text-primary" ]
         [ text "Hits: ", text (Maybe.withDefault "" (Maybe.map String.fromInt searchHits)) ]
     , Table.view tableConfig resultsTableState (Maybe.withDefault [] (Maybe.map Array.toList searchResultRows))
     , a
-        [ class "btn btn-outline-primary"
-        , href <| "/download/" ++ (queryString searchResultRows)
+        [ hideWhenTrue "btn btn-outline-primary" (noResultsSelected searchResultRows) |> class
+        , href <| "/download/" ++ queryString searchResultRows
         , attribute "download" "data.zip"
         ]
         [ text "download" ]
