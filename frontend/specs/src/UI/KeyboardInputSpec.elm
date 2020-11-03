@@ -23,7 +23,7 @@ import Spec.Time as Time
 enterKeyPressSpec : Spec.Spec MainTypes.Model MainTypes.Msg
 enterKeyPressSpec =
     describe "Enter key press selects active search suggestion"
-        [ Spec.scenario "Search suggestions are visibale and a selection has been activated"
+        [ Spec.scenario "Search suggestions are visible and a selection has been activated"
             (Spec.given
                 (Setup.initForApplication (wrapMock mockSearchSuggestions (Main.init ()))
                     |> Setup.withDocument Main.view
