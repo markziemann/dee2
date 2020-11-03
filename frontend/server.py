@@ -1,3 +1,7 @@
+import io
+import zipfile
+
+import aiohttp
 from aiohttp import web
 from elasticsearch import AsyncElasticsearch
 
@@ -34,10 +38,29 @@ def get_hit_count(search_results: dict) -> int:
 async def index(request):
     return web.FileResponse('./dist/index.html')
 
+
 @routes.get(r'/download/')
 async def download(request):
-    print(request)
-    return web.FileResponse('./static/Data.zip')
+    resp = web.StreamResponse()
+    resp.content_type = 'application/zip'
+    resp.enable_chunked_encoding()
+    await resp.prepare(request)
+    zip_files = []
+    params = request.query.items()
+    async with aiohttp.ClientSession() as session:
+        for key, value in params:
+            async with session.get('http://dee2.io/cgi-bin/request.sh', params={'org': key, 'x': value}) as response:
+                zip_files.append((key, await response.read()))
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
+        for (species, data) in zip_files:
+            with zipfile.ZipFile(io.BytesIO(data)) as zf:
+                for file_name in zf.namelist():
+                    zip_file.writestr(f"{species}/{file_name}", zf.open(file_name).read())
+
+    await resp.write(zip_buffer.getvalue())
+    await resp.write_eof()
 
 
 @routes.get('/simple_query_search/{search_string}')
