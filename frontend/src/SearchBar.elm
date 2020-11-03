@@ -27,7 +27,6 @@ init =
     , activeSuggestion = Nothing
     , suggestionsVisible = True
     , waitingForResponse = False
-    , test = False
     }
 
 
@@ -151,9 +150,6 @@ update msg model =
                     |> clearActiveSuggestion
                     |> hideSuggestions
                 )
-
-        Test ->
-            ( { model | test = True }, Cmd.none, Nothing )
 
         ArrowUp ->
             case model.activeSuggestion of

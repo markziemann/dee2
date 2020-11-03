@@ -5,21 +5,18 @@ import Browser exposing (Document)
 import Browser.Navigation as Nav
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Http
 import Info exposing (introduction)
-import Json.Encode as Encode
-import MainHelpers exposing (extractSelectedRows)
 import MainTypes exposing (..)
 import MainViews exposing (viewSearchResults)
 import Nav exposing (navbar)
 import Routes
 import SearchBar
+import SearchBarHelpers exposing (delay)
 import SearchBarTypes
 import SearchBarViews exposing (..)
 import Table
 import Url
-import Bytes
-import Bytes.Decode as BDecode
+
 
 port consoleLog : String -> Cmd msg
 
@@ -34,6 +31,7 @@ init flags url navKey =
       , searchResultRows = Nothing
       , resultsTableState = Table.initialSort "id"
       , resultsTableQuery = ""
+      , downloading = False
       }
     , Cmd.none
     )
@@ -116,7 +114,11 @@ update msg model =
             , Cmd.none
             )
 
+        DownloadRequested ->
+            ( { model | downloading = True }, delay 5000 DownloadButtonReset )
 
+        DownloadButtonReset ->
+            ( { model | downloading = False }, Cmd.none )
 
         LinkClicked urlRequest ->
             case urlRequest of

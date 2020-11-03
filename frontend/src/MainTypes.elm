@@ -20,6 +20,7 @@ type alias Model =
     , searchResultRows : Maybe (Array.Array SearchBarTypes.SearchResult)
     , resultsTableState : Table.State
     , resultsTableQuery : String
+    , downloading: Bool
     }
 
 
@@ -30,3 +31,5 @@ type Msg
     | ResultClicked SearchBarTypes.SearchResult
     | SetResultsTableQuery String
     | SetResultsTableState Table.State
+    | DownloadRequested
+    | DownloadButtonReset

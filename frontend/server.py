@@ -1,3 +1,4 @@
+import asyncio
 import io
 import zipfile
 
@@ -58,6 +59,7 @@ async def download(request):
             with zipfile.ZipFile(io.BytesIO(data)) as zf:
                 for file_name in zf.namelist():
                     zip_file.writestr(f"{species}/{file_name}", zf.open(file_name).read())
+                    await asyncio.sleep(.0)
 
     await resp.write(zip_buffer.getvalue())
     await resp.write_eof()

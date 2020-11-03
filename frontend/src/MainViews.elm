@@ -48,7 +48,8 @@ tableConfig =
             , Table.stringColumn "SRA sample" (get "SRS_accession")
             , Table.stringColumn "SRA project" (get "SRP_accession")
             , Table.stringColumn "Sample" (get "Sample_name")
-            , Table.stringColumn "Experiment" (get "GEO_series")
+            , Table.stringColumn "Experiment" (get "Library_name")
+            --GEO_series
             ]
         , customizations = tableCustomizations
         }
@@ -76,18 +77,40 @@ hideWhenTrue classString true =
 
 
 noResultsSelected maybeRows =
-    List.all identity <| Array.toList <| Array.map (.selected >> not)  <| Maybe.withDefault Array.empty maybeRows
+    List.all identity <| Array.toList <| Array.map (.selected >> not) <| Maybe.withDefault Array.empty maybeRows
+
+
+buttonOrSpinner : Bool -> Maybe (Array.Array SearchResult) -> Html Msg
+buttonOrSpinner downloading rows =
+    if not downloading then
+        a
+            [ hideWhenTrue "btn btn-outline-primary btn-block" (noResultsSelected rows) |> class
+            , href <| "/download/" ++ queryString rows
+            , attribute "download" "data.zip"
+            , onClick DownloadRequested
+            ]
+            [ text "download" ]
+
+    else
+        button
+            [ class "btn btn-primary btn-block"
+            , attribute "type" "button"
+            , attribute "disabled" "disabled"
+            ]
+            [ span
+                [ class "spinner-border spinner-border-sm mr-2"
+                , attribute "role" "status"
+                , attribute "aria-hidden" "true"
+                ]
+                []
+            , text "Loading..."
+            ]
 
 
 viewSearchResults : Model -> List (Html Msg)
-viewSearchResults { searchResultRows, resultsTableState, resultsTableQuery, searchHits } =
+viewSearchResults ({ searchResultRows, resultsTableState, resultsTableQuery, searchHits } as model) =
     [ div [ class "d-flex bg-light text-primary" ]
         [ text "Hits: ", text (Maybe.withDefault "" (Maybe.map String.fromInt searchHits)) ]
     , Table.view tableConfig resultsTableState (Maybe.withDefault [] (Maybe.map Array.toList searchResultRows))
-    , a
-        [ hideWhenTrue "btn btn-outline-primary" (noResultsSelected searchResultRows) |> class
-        , href <| "/download/" ++ queryString searchResultRows
-        , attribute "download" "data.zip"
-        ]
-        [ text "download" ]
+    , div [class "btn-group"] [buttonOrSpinner model.downloading searchResultRows]
     ]
