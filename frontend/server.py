@@ -40,7 +40,7 @@ async def index(request):
     return web.FileResponse('./dist/index.html')
 
 
-@routes.get(r'/download/')
+@routes.get('/download/')
 async def download(request):
     resp = web.StreamResponse()
     resp.content_type = 'application/zip'
@@ -53,6 +53,7 @@ async def download(request):
             async with session.get('http://dee2.io/cgi-bin/request.sh', params={'org': key, 'x': value}) as response:
                 zip_files.append((key, await response.read()))
 
+    # TODO: limit runs
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
         for (species, data) in zip_files:

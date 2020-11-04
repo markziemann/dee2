@@ -48,7 +48,7 @@ tableConfig =
             , Table.stringColumn "SRA sample" (get "SRS_accession")
             , Table.stringColumn "SRA project" (get "SRP_accession")
             , Table.stringColumn "Sample" (get "Sample_name")
-            , Table.stringColumn "Experiment" (get "Library_name")
+            , Table.stringColumn "Experiment" (get "GEO_series")
             --GEO_series
             ]
         , customizations = tableCustomizations
