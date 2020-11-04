@@ -1,13 +1,14 @@
 # Ingest metadata into Elasticsearch
+import csv
 import itertools
 import os
-import csv
+from shared_config import SEARCH_AS_YOU_TYPE_FIELDS
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
 METADATA_DIR = os.environ['DEE2_METADATA_DIR']
 
-metadata_file_names = list(filter(lambda file: file.endswith('.tsv'), os.listdir(f'{METADATA_DIR}')))
+metadata_file_names = list(filter(lambda file: file.endswith('.cut'), os.listdir(f'{METADATA_DIR}')))
 
 
 def iter_metadata_files():
@@ -16,10 +17,8 @@ def iter_metadata_files():
         with open(f'{METADATA_DIR}/{file_path}', encoding='utf8') as file:
             yield file_path, iter(csv.reader(file, dialect='excel-tab'))
 
-client = Elasticsearch()
 
-SEARCH_AS_YOU_TYPE_FIELDS = ['SRR_accession', 'SRX_accession', 'SRS_accession', 'SRP_accession',
-                             'Sample_name', 'Library_name']
+client = Elasticsearch()
 
 properties = dict(
     map(lambda field: (field, {"type": "search_as_you_type"}), SEARCH_AS_YOU_TYPE_FIELDS)

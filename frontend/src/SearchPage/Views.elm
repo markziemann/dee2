@@ -1,13 +1,12 @@
-module SearchBarViews exposing (..)
+module SearchPage.Views exposing (..)
 
 import Array exposing (isEmpty)
 import Bool.Extra as BExtra
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Html.Events.Extra as EEvents
-import SearchBarHelpers exposing (highlightMatchingText)
-import SearchBarTypes exposing (..)
+import SearchPage.Helpers exposing (highlightMatchingText)
+import SearchPage.Types exposing (..)
 
 
 viewLargeSearchBar : Model -> Html Msg

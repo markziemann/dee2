@@ -6,15 +6,16 @@ import Browser.Navigation as Nav
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Info exposing (introduction)
-import MainTypes exposing (..)
-import MainViews exposing (viewSearchResults)
 import Nav exposing (navbar)
+import ResultsPage.Helpers exposing (updateSearchData)
+import ResultsPage.Main as RPMain
+import ResultsPage.Views exposing (viewSearchResults)
 import Routes
-import SearchBar
-import SearchBarHelpers exposing (delay)
-import SearchBarTypes
-import SearchBarViews exposing (..)
+import SearchPage.Main as SPMain
+import SearchPage.Types
+import SearchPage.Views exposing (viewLargeSearchBar, viewSearchButton, viewSearchModeSelector)
 import Table
+import Types exposing (..)
 import Url
 
 
@@ -25,13 +26,9 @@ init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url navKey =
     ( { navKey = navKey
       , url = url
-      , searchBar = SearchBar.init
+      , searchPage = SPMain.init
+      , resultsPage = RPMain.init
       , page = Routes.determinePage url
-      , searchHits = Nothing
-      , searchResultRows = Nothing
-      , resultsTableState = Table.initialSort "id"
-      , resultsTableQuery = ""
-      , downloading = False
       }
     , Cmd.none
     )
@@ -41,15 +38,7 @@ init flags url navKey =
 ---- UPDATE ----
 
 
-updateSearchData : Model -> SearchBarTypes.OutMsg -> Model
-updateSearchData model outMsg =
-    { model
-        | searchHits = Just outMsg.hits
-        , searchResultRows = Just outMsg.rows
-    }
-
-
-updateUrl : Nav.Key -> Cmd msg -> SearchBarTypes.OutMsg -> Cmd msg
+updateUrl : Nav.Key -> Cmd msg -> SearchPage.Types.OutMsg -> Cmd msg
 updateUrl navKey cmd outMsg =
     Cmd.batch
         [ cmd
@@ -59,7 +48,7 @@ updateUrl navKey cmd outMsg =
         ]
 
 
-maybeUpdate : (Model -> a -> Model) -> Maybe a -> Model -> Model
+maybeUpdate : (model -> a -> model) -> Maybe a -> model -> model
 maybeUpdate updateFunc maybe model =
     case maybe of
         Just value ->
@@ -84,41 +73,30 @@ update msg model =
     let
         fromSearchBar =
             \( mdl, cmd, searchResults ) ->
-                ( { model | searchBar = mdl } |> maybeUpdate updateSearchData searchResults
-                , Cmd.map GotSearchBarMsg cmd |> maybeAddCommand (updateUrl model.navKey) searchResults
+                ( { model
+                    | searchPage = mdl
+                    , resultsPage = maybeUpdate updateSearchData searchResults model.resultsPage
+                  }
+                , Cmd.map GotSearchPageMsg cmd |> maybeAddCommand (updateUrl model.navKey) searchResults
+                )
+
+        fromResultsPage =
+            \(mdl, cmd) ->
+                ({model | resultsPage = mdl}
+                , Cmd.map GotResultsPageMsg cmd
                 )
 
         noOp =
             ( model, Cmd.none )
     in
     case msg of
-        GotSearchBarMsg message ->
-            SearchBar.update message model.searchBar
+        GotSearchPageMsg message ->
+            SPMain.update message model.searchPage
                 |> fromSearchBar
 
-        ResultClicked result ->
-            let
-                searchResultRows =
-                    Maybe.map (Array.set result.id { result | selected = not result.selected })
-                        model.searchResultRows
-            in
-            ( { model | searchResultRows = searchResultRows }, Cmd.none )
-
-        SetResultsTableQuery resultsTableQuery ->
-            ( { model | resultsTableQuery = resultsTableQuery }
-            , Cmd.none
-            )
-
-        SetResultsTableState resultsTableState ->
-            ( { model | resultsTableState = resultsTableState }
-            , Cmd.none
-            )
-
-        DownloadRequested ->
-            ( { model | downloading = True }, delay 5000 DownloadButtonReset )
-
-        DownloadButtonReset ->
-            ( { model | downloading = False }, Cmd.none )
+        GotResultsPageMsg message ->
+            RPMain.update message model.resultsPage
+                |> fromResultsPage
 
         LinkClicked urlRequest ->
             case urlRequest of
@@ -149,20 +127,24 @@ pageLayout content =
 pageView : Model -> List (Html Msg)
 pageView model =
     let
-        fromSearchBar =
-            Html.map GotSearchBarMsg
+        fromSearchPage =
+            List.map (Html.map GotSearchPageMsg)
+
+        fromResultsPage =
+            List.map (Html.map GotResultsPageMsg)
     in
     pageLayout <|
         case model.page of
             Routes.HomePage pageData ->
-                List.map fromSearchBar
-                    [ viewLargeSearchBar model.searchBar
-                    , viewSearchModeSelector model.searchBar.searchMode
+                fromSearchPage
+                    [ viewLargeSearchBar model.searchPage
+                    , viewSearchModeSelector model.searchPage.searchMode
                     , viewSearchButton
                     ]
 
             Routes.SearchResultsPage pageData ->
-                viewSearchResults model
+                fromResultsPage
+                    (viewSearchResults model.resultsPage)
 
 
 view : Model -> Document Msg
@@ -177,7 +159,7 @@ subscriptions model =
     case model.page of
         Routes.HomePage route ->
             Sub.batch
-                [ Sub.map GotSearchBarMsg <| SearchBar.subscriptions model.searchBar
+                [ Sub.map GotSearchPageMsg <| SPMain.subscriptions model.searchPage
                 ]
 
         Routes.SearchResultsPage route ->

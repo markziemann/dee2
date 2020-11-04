@@ -1,13 +1,13 @@
-module MainViews exposing (..)
+module ResultsPage.Views exposing (..)
 
 import Array
 import Dict
+import Helpers exposing (queryString)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events as Events exposing (onClick)
-import MainHelpers exposing (queryString)
-import MainTypes exposing (..)
-import SearchBarTypes exposing (SearchResult, SearchResults)
+import ResultsPage.Types exposing (..)
+import SearchPage.Types exposing (SearchResult, SearchResults)
 import Table
 
 
@@ -49,6 +49,7 @@ tableConfig =
             , Table.stringColumn "SRA project" (get "SRP_accession")
             , Table.stringColumn "Sample" (get "Sample_name")
             , Table.stringColumn "Experiment" (get "GEO_series")
+
             --GEO_series
             ]
         , customizations = tableCustomizations
@@ -112,5 +113,5 @@ viewSearchResults ({ searchResultRows, resultsTableState, resultsTableQuery, sea
     [ div [ class "d-flex bg-light text-primary" ]
         [ text "Hits: ", text (Maybe.withDefault "" (Maybe.map String.fromInt searchHits)) ]
     , Table.view tableConfig resultsTableState (Maybe.withDefault [] (Maybe.map Array.toList searchResultRows))
-    , div [class "btn-group"] [buttonOrSpinner model.downloading searchResultRows]
+    , div [ class "btn-group" ] [ buttonOrSpinner model.downloading searchResultRows ]
     ]

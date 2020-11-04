@@ -4,10 +4,10 @@ import Array
 import Extra exposing (equals)
 import Json.Encode
 import Main
-import MainTypes
+import Types
 import Process
 import Runner
-import SearchBarTypes
+import SearchPageTypes
 import Spec exposing (..)
 import Spec.Claim as Claim
 import Spec.Command
@@ -20,7 +20,7 @@ import Spec.Step
 import Spec.Time as Time
 
 
-enterKeyPressSpec : Spec.Spec MainTypes.Model MainTypes.Msg
+enterKeyPressSpec : Spec.Spec Types.Model Types.Msg
 enterKeyPressSpec =
     describe "Enter key press selects active search suggestion"
         [ Spec.scenario "Search suggestions are visible and a selection has been activated"
@@ -68,7 +68,7 @@ keyPressed key =
 
 
 type alias ModelCmdMsg =
-    ( MainTypes.Model, Cmd MainTypes.Msg )
+    ( Types.Model, Cmd Types.Msg )
 
 
 wrapMock :
@@ -80,16 +80,16 @@ wrapMock func init =
         func (init url key)
 
 
-mockSearchSuggestions : ( MainTypes.Model, Cmd MainTypes.Msg ) -> ( MainTypes.Model, Cmd MainTypes.Msg )
+mockSearchSuggestions : ( Types.Model, Cmd Types.Msg ) -> ( Types.Model, Cmd Types.Msg )
 mockSearchSuggestions ( model, cmd ) =
     let
         searchBar =
-            model.searchBar
+            model.searchPage
 
         newSearchBar =
             { searchBar | searchSuggestions = Array.fromList [ "1", "2", "3", "4" ] }
     in
-    ( { model | searchBar = newSearchBar }, cmd )
+    ( { model | searchPage = newSearchBar }, cmd )
 
 
 main =

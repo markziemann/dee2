@@ -1,10 +1,10 @@
-module MainHelpers exposing (..)
+module Helpers exposing (..)
 
 import Array
 import Dict exposing (Dict)
 import Dict.Extra as DExtra
 import Maybe.Extra as MExtra
-import SearchBarTypes
+import SearchPage.Types
 import Url.Builder
 
 
@@ -17,7 +17,7 @@ getKeyValue dict =
             Nothing
 
 
-extractSelectedRows : Array.Array SearchBarTypes.SearchResult -> List Url.Builder.QueryParameter
+extractSelectedRows : Array.Array SearchPage.Types.SearchResult -> List Url.Builder.QueryParameter
 extractSelectedRows rows =
     Array.map
         (\row ->
@@ -35,6 +35,6 @@ extractSelectedRows rows =
         |> List.map (\( a, b ) -> Url.Builder.string a b)
 
 
-queryString : Maybe (Array.Array SearchBarTypes.SearchResult) -> String
+queryString : Maybe (Array.Array SearchPage.Types.SearchResult) -> String
 queryString maybeRows =
     MExtra.unwrap "" (extractSelectedRows >> Url.Builder.toQuery) maybeRows

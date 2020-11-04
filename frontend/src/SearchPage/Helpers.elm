@@ -1,4 +1,4 @@
-module SearchBarHelpers exposing (..)
+module SearchPage.Helpers exposing (..)
 
 import Array exposing (Array)
 import Html exposing (..)
@@ -6,7 +6,7 @@ import Html.Attributes exposing (class)
 import Json.Decode as Decode exposing (Decoder, array, field, string)
 import Keyboard.Event exposing (KeyboardEvent)
 import Process exposing (sleep)
-import SearchBarTypes exposing (..)
+import SearchPage.Types exposing (..)
 import Task
 
 

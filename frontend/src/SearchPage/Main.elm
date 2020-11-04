@@ -1,4 +1,4 @@
-module SearchBar exposing (..)
+module SearchPage.Main exposing (..)
 
 import Array exposing (Array)
 import Browser.Events exposing (onClick, onKeyDown)
@@ -7,8 +7,8 @@ import Http as Http exposing (get)
 import Json.Decode as Decode
 import KeyBoardHelpers exposing (arrowDown, arrowUp, enter)
 import Result
-import SearchBarHelpers exposing (..)
-import SearchBarTypes as SearchBarTypes exposing (..)
+import SearchPage.Helpers exposing (..)
+import SearchPage.Types as SearchBarTypes exposing (..)
 
 
 type alias Model =

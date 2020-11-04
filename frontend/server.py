@@ -6,11 +6,10 @@ import aiohttp
 from aiohttp import web
 from elasticsearch import AsyncElasticsearch
 
+from shared_config import SEARCH_AS_YOU_TYPE_FIELDS
+
 client = AsyncElasticsearch()
 routes = web.RouteTableDef()
-
-SEARCH_AS_YOU_TYPE_FIELDS = ['SRAStudy', 'SRR_accession', 'SRX_accession', 'SRS_accession', 'SRP_accession',
-                             'Sample_name', 'Library_name', 'ScientificName']
 
 
 def get_hits(search_results: dict) -> list:

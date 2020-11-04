@@ -1,4 +1,4 @@
-module SearchBarTypes exposing (..)
+module SearchPage.Types exposing (..)
 
 import Array exposing (Array)
 import Dict
