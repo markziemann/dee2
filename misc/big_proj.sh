@@ -16,7 +16,7 @@ DIR=big_proj/${ORG}
 if [ ! -d $DIR ] ; then mkdir -p $DIR ; fi
 
 cut -d ' ' -f2 $DEE2_ACCESSIONS \
-| sed 1d | sort | uniq -c | awk '$1>15' \
+| sed 1d | sort | uniq -c | awk '$1>5' \
 | while read line ; do
   SRP=$(echo $line | cut -d ' ' -f2)
   CNT_DEE=$(echo $line | cut -d ' ' -f1)
@@ -93,5 +93,5 @@ done
 echo rsync to webserver
 IP_ADD=$(dig +short dee2.io)
 chmod -R 775 $DIR
-rsync -azvh -e "ssh -i ~/.ssh/monash/cloud2.key" $DIR ubuntu@${IP_ADD}:/dee2_data/bulk
+rsync  --delete -azvh -e "ssh -i ~/.ssh/monash/cloud2.key" $DIR ubuntu@${IP_ADD}:/dee2_data/bulk
 done

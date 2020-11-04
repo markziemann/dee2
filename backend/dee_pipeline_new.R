@@ -135,7 +135,7 @@ QC_summary="BLANK"
 # solution for now is to download the sample data for GEO then
 # filter with a shell script
 # Here is the search strategy
-# "Saccharomyces cerevisiae"[porgn:__txid4932] AND "gsm"[Filter] AND "rna"[Sample Type]
+# (("gsm"[Filter] AND "Saccharomyces cerevisiae"[porgn:__txid4932])) AND "high throughput sequencing"[Platform Technology Type] 
 # sed 's/Accession: /Accession:/g;s/Series: /Series:/g' gds_result.txt \
 # |tr ' \t' '\n' | egrep '(Series:|Accession:)' | paste - - \
 # | sed 's/Series://;s/Accession://' > ecoli_geo.tsv
