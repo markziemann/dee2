@@ -1,6 +1,7 @@
 module ResultsPage.Views exposing (..)
 
 import Array
+import Bool.Extra
 import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -8,6 +9,7 @@ import Html.Events as Events exposing (onClick)
 import ResultsPage.Helpers exposing (queryString)
 import ResultsPage.Types exposing (..)
 import SearchPage.Types exposing (SearchResult, SearchResults)
+import Set
 import Table exposing (HtmlDetails, Status)
 
 
@@ -15,17 +17,23 @@ type alias SelectedResult =
     ( Int, ( String, String ) )
 
 
-selectClickedResult : SelectedResults -> SearchResult -> List (Html.Attribute Msg)
-selectClickedResult selectedResults result =
-    [ class
-        (if Dict.member result.id selectedResults then
-            "table-primary"
+highlightRowIfTrue style true =
+    Bool.Extra.ifElse style "" true
 
-         else
-            ""
-        )
+
+selectClickedResult : (SearchResult -> Msg) -> SelectedResults -> SearchResult -> List (Html.Attribute Msg)
+selectClickedResult msg selectedResults searchResult =
+    [ class (highlightRowIfTrue "table-primary" <| Dict.member searchResult.id selectedResults)
     , style "cursor" "pointer" -- First place not using bootstrap for style?
-    , Events.onClick (ResultClicked result)
+    , Events.onClick (msg searchResult)
+    ]
+
+
+stageResultForRemoval : (Int -> Msg) -> ResultsPendingRemoval -> SelectedResult -> List (Html.Attribute Msg)
+stageResultForRemoval msg resultsPendingRemoval ( id, ( _, _ ) ) =
+    [ class (highlightRowIfTrue "table-danger" <| Set.member id resultsPendingRemoval)
+    , style "cursor" "pointer" -- First place not using bootstrap for style?
+    , Events.onClick (msg id)
     ]
 
 
@@ -66,13 +74,13 @@ resultsTable selectedResults =
                     [ class "table table-hover table-sm table-bordered table-responsive-xl"
                     , style "table-layout" "fixed" -- Prevents table going wider than parent element
                     ]
-                , rowAttrs = selectClickedResult selectedResults
+                , rowAttrs = selectClickedResult ResultClicked selectedResults
             }
         }
 
 
-selectedTable : Table.Config SelectedResult Msg
-selectedTable =
+selectedTable : ResultsPendingRemoval -> Table.Config SelectedResult Msg
+selectedTable resultsPendingRemoval =
     Table.customConfig
         { toId = Tuple.first >> String.fromInt
         , toMsg = SetSelectedResultsTableState
@@ -83,9 +91,8 @@ selectedTable =
             ]
         , customizations =
             { defaultTable
-                | tableAttrs =
-                    [ class "table table-sm table-bordered"
-                    ]
+                | tableAttrs = [ class "table table-hover table-sm table-bordered" ]
+                , rowAttrs = stageResultForRemoval SelectedResultClicked resultsPendingRemoval
             }
         }
 
@@ -138,14 +145,21 @@ viewSearchResults ({ searchResultRows, resultsTableState, resultsTableQuery, sea
                 (Maybe.withDefault [] (Maybe.map Array.toList searchResultRows))
             ]
         , div [ class "col-xl-2" ]
-            [ div [class "sticky-top"]
+            [ div [ class "sticky-top" ]
                 [ div [ class "bg-light text-primary" ]
                     [ text <| "Selected: " ++ (Dict.size model.selectedResults |> String.fromInt) ]
                 , Table.view
-                    selectedTable
+                    (selectedTable model.resultsPendingRemoval)
                     model.selectedResultsTableState
                     (Dict.toList model.selectedResults)
-                , div [ class "btn-group mb-4" ] [ buttonOrSpinner model.downloading model.selectedResults ]
+                , div []
+                    [ buttonOrSpinner model.downloading model.selectedResults
+                    , button
+                        [ hideWhenTrue "btn btn-outline-danger btn-block" (Set.isEmpty model.resultsPendingRemoval) |> class
+                        , onClick RemoveStagedSelections
+                        ]
+                        [ text "Remove" ]
+                    ]
                 ]
             ]
         ]

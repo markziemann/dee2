@@ -5,10 +5,14 @@ import Dict
 import SearchPage.Types
 import SharedTypes
 import Table
-
+import Set
 
 type alias SelectedResults =
     Dict.Dict Int ( String, String )
+
+
+type alias ResultsPendingRemoval =
+    Set.Set Int
 
 
 type alias Model =
@@ -20,12 +24,15 @@ type alias Model =
     , selectedResultsTableState : Table.State
     , downloading : Bool
     , selectedResults : SelectedResults
+    , resultsPendingRemoval : ResultsPendingRemoval
     , paginationOffset : SharedTypes.PaginationOffset
     }
 
 
 type Msg
     = ResultClicked SearchPage.Types.SearchResult
+    | RemoveStagedSelections
+    | SelectedResultClicked Int
     | SetResultsTableQuery String
     | SetResultsTableState Table.State
     | SetSelectedResultsTableQuery String

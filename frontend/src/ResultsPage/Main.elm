@@ -1,10 +1,12 @@
 module ResultsPage.Main exposing (..)
 
 import Dict
+import Dict.Extra as DExtra
 import Maybe.Extra as MExtra
 import ResultsPage.Helpers exposing (stageResultForDownload)
 import ResultsPage.Types exposing (..)
 import SearchPage.Helpers exposing (delay)
+import Set
 import Table
 
 
@@ -18,6 +20,7 @@ init =
     , selectedResultsTableState = Table.initialSort "id"
     , downloading = False
     , selectedResults = Dict.empty
+    , resultsPendingRemoval = Set.empty
     , paginationOffset =
         { perPage = 20
         , offset = 0
@@ -48,6 +51,26 @@ update msg model =
                                 (\value -> Dict.insert result.id value model.selectedResults)
                                 (stageResultForDownload result)
                     }
+
+        SelectedResultClicked id ->
+            if Set.member id model.resultsPendingRemoval then
+                onlyData { model | resultsPendingRemoval = Set.remove id model.resultsPendingRemoval }
+
+            else
+                onlyData { model | resultsPendingRemoval = Set.insert id model.resultsPendingRemoval }
+
+        RemoveStagedSelections ->
+            onlyData
+                { model
+                    | selectedResults =
+                        DExtra.removeMany
+                            (Set.intersect
+                                (Set.fromList <| Dict.keys model.selectedResults)
+                                model.resultsPendingRemoval
+                            )
+                            model.selectedResults
+                    , resultsPendingRemoval = Set.empty
+                }
 
         SetResultsTableQuery resultsTableQuery ->
             onlyData { model | resultsTableQuery = resultsTableQuery }
