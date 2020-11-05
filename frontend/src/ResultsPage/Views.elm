@@ -71,8 +71,9 @@ resultsTable selectedResults =
         , customizations =
             { defaultTable
                 | tableAttrs =
-                    [ class "table table-hover table-sm table-bordered table-responsive-xl"
+                    [ class "table table-hover table-sm table-bordered table-responsive-lg"
                     , style "table-layout" "fixed" -- Prevents table going wider than parent element
+                    , style "font-size" "clamp(12px, 4vw, 14px)"
                     ]
                 , rowAttrs = selectClickedResult ResultClicked selectedResults
             }
@@ -91,7 +92,11 @@ selectedTable resultsPendingRemoval =
             ]
         , customizations =
             { defaultTable
-                | tableAttrs = [ class "table table-hover table-sm table-bordered" ]
+                | tableAttrs =
+                    [ class "table table-hover table-sm table-bordered"
+                    , style "table-layout" "fixed" -- Prevents table going wider than parent element
+                    , style "font-size" "clamp(12px, 4vw, 14px)"
+                    ]
                 , rowAttrs = stageResultForRemoval SelectedResultClicked resultsPendingRemoval
             }
         }
@@ -136,7 +141,7 @@ buttonOrSpinner downloading rows =
 viewSearchResults : Model -> List (Html Msg)
 viewSearchResults ({ searchResultRows, resultsTableState, resultsTableQuery, searchHits } as model) =
     [ div [ class "row" ]
-        [ div [ class "col-xl-10" ]
+        [ div [ class "col-xl-9" ]
             [ div [ class "bg-light text-primary" ]
                 [ text "Hits: ", text (Maybe.withDefault "" (Maybe.map String.fromInt searchHits)) ]
             , Table.view
@@ -144,7 +149,7 @@ viewSearchResults ({ searchResultRows, resultsTableState, resultsTableQuery, sea
                 resultsTableState
                 (Maybe.withDefault [] (Maybe.map Array.toList searchResultRows))
             ]
-        , div [ class "col-xl-2" ]
+        , div [ class "col-xl-3" ]
             [ div [ class "sticky-top" ]
                 [ div [ class "bg-light text-primary" ]
                     [ text <| "Selected: " ++ (Dict.size model.selectedResults |> String.fromInt) ]

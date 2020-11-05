@@ -41,6 +41,7 @@ update msg model =
                 onlyData
                     { model
                         | selectedResults = Dict.remove result.id model.selectedResults
+                        , resultsPendingRemoval = Set.remove result.id model.resultsPendingRemoval
                     }
 
             else

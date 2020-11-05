@@ -116,7 +116,7 @@ update msg model =
 pageLayout : List (Html Msg) -> List (Html Msg)
 pageLayout content =
     [ navbar
-    , div [ class "d-flex justify-content-center" ] [ div [ class "container my-5 no-gutters" ] content ]
+    , div [ class "container my-5 mx-auto" ] content
     , introduction
     ]
 
