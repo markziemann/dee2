@@ -17,6 +17,7 @@ import SearchPage.Views exposing (viewLargeSearchBar, viewSearchButton, viewSear
 import Table
 import Types exposing (..)
 import Url
+import Url.Builder as UBuilder
 
 
 port consoleLog : String -> Cmd msg
@@ -42,8 +43,7 @@ updateUrl : Nav.Key -> Cmd msg -> SearchPage.Types.SearchOutMsg -> Cmd msg
 updateUrl navKey cmd outMsg =
     Cmd.batch
         [ cmd
-        , [ Routes.searchResultsSlug, outMsg.searchString ]
-            |> String.join "/?q="
+        , UBuilder.absolute [ Routes.searchResultsSlug ] [ UBuilder.string "q" outMsg.searchString ]
             |> Nav.pushUrl navKey
         ]
 
@@ -81,7 +81,7 @@ update msg model =
                 )
 
         fromResultsPage =
-            \( mdl, cmd, maybeResultsOutMsg) ->
+            \( mdl, cmd, maybeResultsOutMsg ) ->
                 ( { model | resultsPage = mdl }
                 , Cmd.map GotResultsPageMsg cmd
                 )
@@ -116,7 +116,7 @@ update msg model =
 pageLayout : List (Html Msg) -> List (Html Msg)
 pageLayout content =
     [ navbar
-    , div [class "d-flex justify-content-center"] [div [ class "container my-5 no-gutters" ] content]
+    , div [ class "d-flex justify-content-center" ] [ div [ class "container my-5 no-gutters" ] content ]
     , introduction
     ]
 

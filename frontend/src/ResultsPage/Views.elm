@@ -136,15 +136,17 @@ viewSearchResults ({ searchResultRows, resultsTableState, resultsTableQuery, sea
                 (resultsTable model.selectedResults)
                 resultsTableState
                 (Maybe.withDefault [] (Maybe.map Array.toList searchResultRows))
-            , div [ class "btn-group mb-4" ] [ buttonOrSpinner model.downloading model.selectedResults ]
             ]
         , div [ class "col-xl-2" ]
-            [ div [ class "bg-light text-primary" ]
-                [ text <| "Selected: " ++ (Dict.size model.selectedResults |> String.fromInt) ]
-            , Table.view
-                selectedTable
-                model.selectedResultsTableState
-                (Dict.toList model.selectedResults)
+            [ div [class "sticky-top"]
+                [ div [ class "bg-light text-primary" ]
+                    [ text <| "Selected: " ++ (Dict.size model.selectedResults |> String.fromInt) ]
+                , Table.view
+                    selectedTable
+                    model.selectedResultsTableState
+                    (Dict.toList model.selectedResults)
+                , div [ class "btn-group mb-4" ] [ buttonOrSpinner model.downloading model.selectedResults ]
+                ]
             ]
         ]
     ]
