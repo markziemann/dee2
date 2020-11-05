@@ -47,7 +47,7 @@ viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSug
             if isEmpty searchSuggestions then
                 identity
 
-            else -- This code is terrible! what were you thinking???
+            else
                 \value ->
                     value
                         |> (\str -> [ str, "show" ])
