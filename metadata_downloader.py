@@ -2,8 +2,9 @@ import asyncio
 
 from aiohttp.client import ClientSession
 from lxml import etree
-from functools import partial
+
 URL = "http://dee2.io/metadata/"
+
 
 async def downloader(session, url_dest):
     while True:
@@ -31,8 +32,6 @@ async def run(url, destination):
         print("Completed!")
 
 
-responses = []
-
 loop = asyncio.get_event_loop()
 
 
@@ -40,5 +39,6 @@ async def generate_download_urls(url, session):
     response = await session.get(url)
     tree = etree.fromstring(await response.read(), etree.HTMLParser())
     return [element.text for element in tree.xpath("/html/body/table/tr[position()>4]/td[2]/a")]
+
 
 loop.run_until_complete(run(URL, "./metadata"))

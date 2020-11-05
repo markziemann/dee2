@@ -1,6 +1,8 @@
 module ResultsPage.Main exposing (..)
 
-import Array
+import Dict
+import Maybe.Extra as MExtra
+import ResultsPage.Helpers exposing (stageResultForDownload)
 import ResultsPage.Types exposing (..)
 import SearchPage.Helpers exposing (delay)
 import Table
@@ -10,35 +12,57 @@ init : Model
 init =
     { searchHits = Nothing
     , searchResultRows = Nothing
-    , resultsTableState = Table.initialSort "id"
     , resultsTableQuery = ""
+    , resultsTableState = Table.initialSort "id"
+    , selectedResultsTableQuery = ""
+    , selectedResultsTableState = Table.initialSort "id"
     , downloading = False
+    , selectedResults = Dict.empty
+    , paginationOffset =
+        { perPage = 20
+        , offset = 0
+        }
     }
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+onlyData : Model -> ( Model, Cmd msg, Maybe OutMsg )
+onlyData model =
+    ( model, Cmd.none, Nothing )
+
+
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe OutMsg )
 update msg model =
     case msg of
         ResultClicked result ->
-            let
-                searchResultRows =
-                    Maybe.map (Array.set result.id { result | selected = not result.selected })
-                        model.searchResultRows
-            in
-            ( { model | searchResultRows = searchResultRows }, Cmd.none )
+            if Dict.member result.id model.selectedResults then
+                onlyData
+                    { model
+                        | selectedResults = Dict.remove result.id model.selectedResults
+                    }
+
+            else
+                onlyData
+                    { model
+                        | selectedResults =
+                            MExtra.unwrap model.selectedResults
+                                (\value -> Dict.insert result.id value model.selectedResults)
+                                (stageResultForDownload result)
+                    }
 
         SetResultsTableQuery resultsTableQuery ->
-            ( { model | resultsTableQuery = resultsTableQuery }
-            , Cmd.none
-            )
+            onlyData { model | resultsTableQuery = resultsTableQuery }
 
         SetResultsTableState resultsTableState ->
-            ( { model | resultsTableState = resultsTableState }
-            , Cmd.none
-            )
+            onlyData { model | resultsTableState = resultsTableState }
+
+        SetSelectedResultsTableQuery selectedResultsTableQuery ->
+            onlyData { model | selectedResultsTableQuery = selectedResultsTableQuery }
+
+        SetSelectedResultsTableState selectedResultsTableState ->
+            onlyData { model | selectedResultsTableState = selectedResultsTableState }
 
         DownloadRequested ->
-            ( { model | downloading = True }, delay 5000 DownloadButtonReset )
+            ( { model | downloading = True }, delay 5000 DownloadButtonReset, Nothing )
 
         DownloadButtonReset ->
-            ( { model | downloading = False }, Cmd.none )
+            onlyData { model | downloading = False }

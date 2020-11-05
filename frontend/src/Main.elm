@@ -38,7 +38,7 @@ init flags url navKey =
 ---- UPDATE ----
 
 
-updateUrl : Nav.Key -> Cmd msg -> SearchPage.Types.OutMsg -> Cmd msg
+updateUrl : Nav.Key -> Cmd msg -> SearchPage.Types.SearchOutMsg -> Cmd msg
 updateUrl navKey cmd outMsg =
     Cmd.batch
         [ cmd
@@ -72,22 +72,19 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         fromSearchBar =
-            \( mdl, cmd, searchResults ) ->
+            \( mdl, cmd, maybeSearchOutMsg ) ->
                 ( { model
                     | searchPage = mdl
-                    , resultsPage = maybeUpdate updateSearchData searchResults model.resultsPage
+                    , resultsPage = maybeUpdate updateSearchData maybeSearchOutMsg model.resultsPage
                   }
-                , Cmd.map GotSearchPageMsg cmd |> maybeAddCommand (updateUrl model.navKey) searchResults
+                , Cmd.map GotSearchPageMsg cmd |> maybeAddCommand (updateUrl model.navKey) maybeSearchOutMsg
                 )
 
         fromResultsPage =
-            \(mdl, cmd) ->
-                ({model | resultsPage = mdl}
+            \( mdl, cmd, maybeResultsOutMsg) ->
+                ( { model | resultsPage = mdl }
                 , Cmd.map GotResultsPageMsg cmd
                 )
-
-        noOp =
-            ( model, Cmd.none )
     in
     case msg of
         GotSearchPageMsg message ->
@@ -119,7 +116,7 @@ update msg model =
 pageLayout : List (Html Msg) -> List (Html Msg)
 pageLayout content =
     [ navbar
-    , div [ class "container my-5 mx-5 mx-auto" ] content
+    , div [class "d-flex justify-content-center"] [div [ class "container my-5 no-gutters" ] content]
     , introduction
     ]
 

@@ -6,7 +6,7 @@ import Html.Attributes exposing (..)
 
 navbar =
     nav [ class "navbar navbar-expand-lg navbar-light bg-light" ]
-        [ a [ class "navbar-brand text-primary", href "#" ]
+        [ a [ class "navbar-brand text-primary", href "/" ]
             [ text "Digital Expression Explorer 2" ]
         , button
             [ attribute "aria-controls" "navbarSupportedContent"

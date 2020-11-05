@@ -2,19 +2,23 @@ module ResultsPage.Views exposing (..)
 
 import Array
 import Dict
-import Helpers exposing (queryString)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events as Events exposing (onClick)
+import ResultsPage.Helpers exposing (queryString)
 import ResultsPage.Types exposing (..)
 import SearchPage.Types exposing (SearchResult, SearchResults)
-import Table
+import Table exposing (HtmlDetails, Status)
 
 
-selectClickedResult : SearchResult -> List (Html.Attribute Msg)
-selectClickedResult result =
+type alias SelectedResult =
+    ( Int, ( String, String ) )
+
+
+selectClickedResult : SelectedResults -> SearchResult -> List (Html.Attribute Msg)
+selectClickedResult selectedResults result =
     [ class
-        (if result.selected then
+        (if Dict.member result.id selectedResults then
             "table-primary"
 
          else
@@ -30,12 +34,16 @@ get key searchResult =
     Maybe.withDefault "" (Dict.get key searchResult.data)
 
 
-tableConfig : Table.Config SearchResult Msg
-tableConfig =
-    let
-        getId =
-            .id >> String.fromInt
-    in
+getId =
+    .id >> String.fromInt
+
+
+defaultTable =
+    Table.defaultCustomizations
+
+
+resultsTable : SelectedResults -> Table.Config SearchResult Msg
+resultsTable selectedResults =
     Table.customConfig
         { toId = getId
         , toMsg = SetResultsTableState
@@ -52,20 +60,34 @@ tableConfig =
 
             --GEO_series
             ]
-        , customizations = tableCustomizations
+        , customizations =
+            { defaultTable
+                | tableAttrs =
+                    [ class "table table-hover table-sm table-bordered table-responsive-xl"
+                    , style "table-layout" "fixed" -- Prevents table going wider than parent element
+                    ]
+                , rowAttrs = selectClickedResult selectedResults
+            }
         }
 
 
-tableCustomizations : Table.Customizations SearchResult Msg
-tableCustomizations =
-    let
-        default =
-            Table.defaultCustomizations
-    in
-    { default
-        | tableAttrs = [ class "table table-hover table-sm table-bordered table-responsive-md" ]
-        , rowAttrs = selectClickedResult
-    }
+selectedTable : Table.Config SelectedResult Msg
+selectedTable =
+    Table.customConfig
+        { toId = Tuple.first >> String.fromInt
+        , toMsg = SetSelectedResultsTableState
+        , columns =
+            [ Table.intColumn "Row" Tuple.first
+            , Table.stringColumn "Species" (Tuple.second >> Tuple.first)
+            , Table.stringColumn "SRA" (Tuple.second >> Tuple.second)
+            ]
+        , customizations =
+            { defaultTable
+                | tableAttrs =
+                    [ class "table table-sm table-bordered"
+                    ]
+            }
+        }
 
 
 hideWhenTrue : String -> Bool -> String
@@ -77,15 +99,11 @@ hideWhenTrue classString true =
         classString
 
 
-noResultsSelected maybeRows =
-    List.all identity <| Array.toList <| Array.map (.selected >> not) <| Maybe.withDefault Array.empty maybeRows
-
-
-buttonOrSpinner : Bool -> Maybe (Array.Array SearchResult) -> Html Msg
+buttonOrSpinner : Bool -> SelectedResults -> Html Msg
 buttonOrSpinner downloading rows =
     if not downloading then
         a
-            [ hideWhenTrue "btn btn-outline-primary btn-block" (noResultsSelected rows) |> class
+            [ hideWhenTrue "btn btn-outline-primary btn-block" (Dict.isEmpty rows) |> class
             , href <| "/download/" ++ queryString rows
             , attribute "download" "data.zip"
             , onClick DownloadRequested
@@ -110,8 +128,23 @@ buttonOrSpinner downloading rows =
 
 viewSearchResults : Model -> List (Html Msg)
 viewSearchResults ({ searchResultRows, resultsTableState, resultsTableQuery, searchHits } as model) =
-    [ div [ class "d-flex bg-light text-primary" ]
-        [ text "Hits: ", text (Maybe.withDefault "" (Maybe.map String.fromInt searchHits)) ]
-    , Table.view tableConfig resultsTableState (Maybe.withDefault [] (Maybe.map Array.toList searchResultRows))
-    , div [ class "btn-group" ] [ buttonOrSpinner model.downloading searchResultRows ]
+    [ div [ class "row" ]
+        [ div [ class "col-xl-10" ]
+            [ div [ class "bg-light text-primary" ]
+                [ text "Hits: ", text (Maybe.withDefault "" (Maybe.map String.fromInt searchHits)) ]
+            , Table.view
+                (resultsTable model.selectedResults)
+                resultsTableState
+                (Maybe.withDefault [] (Maybe.map Array.toList searchResultRows))
+            , div [ class "btn-group mb-4" ] [ buttonOrSpinner model.downloading model.selectedResults ]
+            ]
+        , div [ class "col-xl-2" ]
+            [ div [ class "bg-light text-primary" ]
+                [ text <| "Selected: " ++ (Dict.size model.selectedResults |> String.fromInt) ]
+            , Table.view
+                selectedTable
+                model.selectedResultsTableState
+                (Dict.toList model.selectedResults)
+            ]
+        ]
     ]

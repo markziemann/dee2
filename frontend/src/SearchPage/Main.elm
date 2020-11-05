@@ -44,7 +44,7 @@ wrapAroundIdx model idx =
         model
 
 
-onlyData : Model -> ( Model, Cmd msg, Maybe OutMsg )
+onlyData : Model -> ( Model, Cmd msg, Maybe SearchOutMsg )
 onlyData model =
     ( model, Cmd.none, Nothing )
 
@@ -52,13 +52,12 @@ onlyData model =
 noResults =
     Nothing
 
-
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe OutMsg )
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe SearchOutMsg )
 update msg model =
     let
         toOutMsg =
             \searchResults ->
-                Result.map (\{ hits, rows } -> OutMsg hits rows model.searchString) searchResults
+                Result.map (\{ hits, rows } -> SearchOutMsg hits rows model.searchString) searchResults
                     |> Result.toMaybe
     in
     case msg of
@@ -80,7 +79,7 @@ update msg model =
                 , noResults
                 )
 
-        Search ->
+        Search maybePaginationOffset->
             let
                 -- Elastic.Word makes no modification to the search string
                 -- https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html#_simple_query_string_syntax
@@ -112,7 +111,7 @@ update msg model =
 
                 -- recursive call should be avoided
                 ( _, _ ) ->
-                    update Search model
+                    update defaultSearch model
 
         -- recursive call should be avoided
         GetSearchSuggestions value ->

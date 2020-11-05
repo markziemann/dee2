@@ -5,7 +5,7 @@ import Bool.Extra as BExtra
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import SearchPage.Helpers exposing (highlightMatchingText)
+import SearchPage.Helpers exposing (highlightMatchingText, defaultSearch)
 import SearchPage.Types exposing (..)
 
 
@@ -83,7 +83,7 @@ viewSearchButton =
     div [ class "d-flex justify-content-center" ]
         [ div [ class "btn-group dropright my-5" ]
             [ button
-                [ onClick Search
+                [ onClick defaultSearch
                 , class "btn btn-lg btn-outline-success"
                 , type_ "button"
                 ]

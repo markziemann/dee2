@@ -3,7 +3,7 @@ module SearchPage.Types exposing (..)
 import Array exposing (Array)
 import Dict
 import Http
-
+import SharedTypes
 
 type alias SearchData =
     Dict.Dict String String
@@ -21,7 +21,7 @@ type alias SearchResults =
     , rows : Array SearchResult
     }
 
-type alias OutMsg =
+type alias SearchOutMsg =
     { hits : Int
     , rows : Array SearchResult
     , searchString : String
@@ -50,7 +50,7 @@ type alias Model =
 
 type Msg
     = SearchUpdate String
-    | Search
+    | Search (Maybe SharedTypes.PaginationOffset)
     | GetSearchSuggestions String
     | GotSearchSuggestions (Result Http.Error SearchSuggestions)
     | ArrowUp

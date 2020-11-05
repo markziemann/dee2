@@ -10,6 +10,10 @@ import SearchPage.Types exposing (..)
 import Task
 
 
+defaultSearch =
+    Search Nothing
+
+
 updateActiveSuggestion : Model -> Int -> Model
 updateActiveSuggestion model value =
     { model | activeSuggestion = Just value }
