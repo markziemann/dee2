@@ -1,19 +1,49 @@
 module ResultsPage.Helpers exposing (..)
 
-import Array
 import Dict exposing (Dict)
 import Dict.Extra as DExtra
-import Maybe.Extra as MExtra
 import ResultsPage.Types exposing (..)
 import SearchPage.Types
 import Url.Builder
+import Bool.Extra as BExtra
+import SearchPage.Types exposing (SearchResult)
+import Table
+
+hideWhenTrue : String -> Bool -> String
+hideWhenTrue classString true =
+    BExtra.ifElse
+        (String.join " " [ classString, "invisible" ])
+        classString
+        true
+
+disableWhenTrue : String -> Bool -> String
+disableWhenTrue classString true =
+    BExtra.ifElse
+        (String.join " " [ classString, "disabled" ])
+        classString
+        true
+
+get : String -> SearchResult -> String
+get key searchResult =
+    Maybe.withDefault "" (Dict.get key searchResult.data)
 
 
-updateSearchData : Model -> SearchPage.Types.SearchOutMsg -> Model
+getId =
+    .id >> String.fromInt
+
+
+defaultTable =
+    Table.defaultCustomizations
+
+highlightRowIfTrue style true =
+    BExtra.ifElse style "" true
+
+updateSearchData : Model -> SearchPage.Types.OutMsg -> Model
 updateSearchData model outMsg =
     { model
         | searchHits = Just outMsg.hits
         , searchResultRows = Just outMsg.rows
+        , paginationOffset = outMsg.paginationOffset
     }
 
 

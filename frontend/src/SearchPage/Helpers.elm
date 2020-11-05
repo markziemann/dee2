@@ -4,14 +4,10 @@ import Array exposing (Array)
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Json.Decode as Decode exposing (Decoder, array, field, string)
-import Keyboard.Event exposing (KeyboardEvent)
 import Process exposing (sleep)
 import SearchPage.Types exposing (..)
 import Task
-
-
-defaultSearch =
-    Search Nothing
+import SharedTypes
 
 
 updateActiveSuggestion : Model -> Int -> Model
@@ -80,8 +76,8 @@ highlightMatchingText searchString suggestion =
         []
 
 
-decodeSearchResults : Decoder SearchResults
-decodeSearchResults =
+decodeSearchResults : SharedTypes.PaginationOffset -> Decoder SearchResults
+decodeSearchResults ({offset} as paginationOffset)=
     Decode.map2 SearchResults
         (field "hits" Decode.int)
         (field "rows"
@@ -89,6 +85,6 @@ decodeSearchResults =
                 -- Decode.map doesn't iterate (confusing!) its more like function application
                 -- it should be called apply
                 |> Decode.map Array.fromList
-                |> Decode.map (Array.indexedMap (\idx data -> SearchResult idx data False))
+                |> Decode.map (Array.indexedMap (\idx data -> SearchResult (idx + offset) data False))
             )
         )

@@ -5,6 +5,7 @@ import Dict
 import Http
 import SharedTypes
 
+
 type alias SearchData =
     Dict.Dict String String
 
@@ -21,11 +22,14 @@ type alias SearchResults =
     , rows : Array SearchResult
     }
 
-type alias SearchOutMsg =
+
+type alias OutMsg =
     { hits : Int
     , rows : Array SearchResult
     , searchString : String
+    , paginationOffset : SharedTypes.PaginationOffset
     }
+
 
 type alias SearchSuggestions =
     Array String
@@ -34,13 +38,15 @@ type alias SearchSuggestions =
 type alias ActiveSuggestion =
     Int
 
+
 type SearchMode
     = Strict
     | Fuzzy
 
+
 type alias Model =
     { searchString : String
-    , searchMode: SearchMode
+    , searchMode : SearchMode
     , searchSuggestions : SearchSuggestions
     , activeSuggestion : Maybe Int
     , suggestionsVisible : Bool
@@ -50,7 +56,7 @@ type alias Model =
 
 type Msg
     = SearchUpdate String
-    | Search (Maybe SharedTypes.PaginationOffset)
+    | Search SharedTypes.PaginationOffset
     | GetSearchSuggestions String
     | GotSearchSuggestions (Result Http.Error SearchSuggestions)
     | ArrowUp
@@ -60,4 +66,4 @@ type Msg
     | FuzzySelected String
     | SuggestionSelected Int
     | ClickOutOfSuggestions
-    | GotHttpSearchResponse (Result Http.Error SearchResults)
+    | GotHttpSearchResponse SharedTypes.PaginationOffset (Result Http.Error SearchResults)

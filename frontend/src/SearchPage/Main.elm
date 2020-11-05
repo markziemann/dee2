@@ -7,16 +7,15 @@ import Http as Http exposing (get)
 import Json.Decode as Decode
 import KeyBoardHelpers exposing (arrowDown, arrowUp, enter)
 import Result
+import Routes
 import SearchPage.Helpers exposing (..)
-import SearchPage.Types as SearchBarTypes exposing (..)
+import SearchPage.Types exposing (..)
+import SharedTypes
+import Url.Builder as UB
 
 
-type alias Model =
-    SearchBarTypes.Model
-
-
-type alias Msg =
-    SearchBarTypes.Msg
+search =
+    Search
 
 
 init : Model
@@ -44,7 +43,7 @@ wrapAroundIdx model idx =
         model
 
 
-onlyData : Model -> ( Model, Cmd msg, Maybe SearchOutMsg )
+onlyData : Model -> ( Model, Cmd msg, Maybe OutMsg )
 onlyData model =
     ( model, Cmd.none, Nothing )
 
@@ -52,12 +51,13 @@ onlyData model =
 noResults =
     Nothing
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe SearchOutMsg )
+
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe OutMsg )
 update msg model =
     let
         toOutMsg =
-            \searchResults ->
-                Result.map (\{ hits, rows } -> SearchOutMsg hits rows model.searchString) searchResults
+            \paginationOffset searchResults ->
+                Result.map (\{ hits, rows } -> OutMsg hits rows model.searchString paginationOffset) searchResults
                     |> Result.toMaybe
     in
     case msg of
@@ -79,7 +79,7 @@ update msg model =
                 , noResults
                 )
 
-        Search maybePaginationOffset->
+        Search paginationOffset ->
             let
                 -- Elastic.Word makes no modification to the search string
                 -- https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html#_simple_query_string_syntax
@@ -94,10 +94,18 @@ update msg model =
                         Fuzzy ->
                             ( "/fuzzy_search/", model.searchString )
 
+                url =
+                    route
+                        ++ (UB.toQuery <| Routes.searchResultParams search_string paginationOffset)
+                        |> Debug.log "URL:"
+
                 serverQuery =
                     get
-                        { url = route ++ search_string
-                        , expect = Http.expectJson GotHttpSearchResponse decodeSearchResults
+                        { url = url
+                        , expect =
+                            Http.expectJson
+                                (GotHttpSearchResponse paginationOffset)
+                                (decodeSearchResults paginationOffset)
                         }
             in
             ( model |> hideSuggestions |> isWaiting, serverQuery, noResults )
@@ -111,7 +119,7 @@ update msg model =
 
                 -- recursive call should be avoided
                 ( _, _ ) ->
-                    update defaultSearch model
+                    update (Search <| SharedTypes.PaginationOffset 20 0) model
 
         -- recursive call should be avoided
         GetSearchSuggestions value ->
@@ -176,10 +184,10 @@ update msg model =
         FuzzySelected string ->
             onlyData { model | searchMode = Fuzzy }
 
-        GotHttpSearchResponse result ->
+        GotHttpSearchResponse paginationOffset result ->
             ( notWaiting model
             , Cmd.none
-            , toOutMsg result
+            , toOutMsg paginationOffset result
             )
 
         ClickOutOfSuggestions ->
@@ -197,7 +205,7 @@ subscriptions model =
     ]
         |> (\subs ->
                 if model.suggestionsVisible then
-                    List.append [(onClick <| Decode.succeed ClickOutOfSuggestions)] subs
+                    List.append [ onClick <| Decode.succeed ClickOutOfSuggestions ] subs
 
                 else
                     subs

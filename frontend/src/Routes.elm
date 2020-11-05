@@ -1,11 +1,15 @@
 module Routes exposing (..)
+
+import SharedTypes
 import Url
-import Url.Parser as UrlP exposing ((</>), (<?>))
+import Url.Builder as UB exposing (QueryParameter)
+import Url.Parser as UP exposing ((</>), (<?>))
 import Url.Parser.Query as Query
+
 
 type Route
     = HomeRoute
-    | SearchResultsRoute (Maybe String)
+    | SearchResultsRoute (Maybe String) (Maybe String) (Maybe String)
 
 
 type Page
@@ -18,36 +22,49 @@ homeSlug =
 
 
 searchResultsSlug =
-    "SearchResults"
+    "Search"
 
 
-routeParser : UrlP.Parser (Route -> a) a
+routeParser : UP.Parser (Route -> a) a
 routeParser =
-    UrlP.oneOf
-        [ UrlP.map HomeRoute (UrlP.s homeSlug)
-        , UrlP.map SearchResultsRoute (UrlP.s searchResultsSlug <?> Query.string "q")
+    UP.oneOf
+        [ UP.map HomeRoute (UP.s homeSlug)
+        , UP.map SearchResultsRoute
+            (UP.s searchResultsSlug
+                <?> Query.string "searchString"
+                <?> Query.string "perPage"
+                <?> Query.string "offset"
+            )
         ]
+
+
+searchResultsRoute : String -> SharedTypes.PaginationOffset -> String
+searchResultsRoute searchString =
+    (UB.absolute [ searchResultsSlug ]) << (searchResultParams searchString)
+
+
+searchResultParams : String -> SharedTypes.PaginationOffset -> List QueryParameter
+searchResultParams searchString { perPage, offset } =
+    [ UB.string "searchString" searchString
+    , UB.string "perPage" <| String.fromInt perPage
+    , UB.string "offset" <| String.fromInt offset
+    ]
 
 
 homePage =
     HomePage HomeRoute
 
 
-searchResultsPage : Maybe String -> Page
-searchResultsPage maybeString =
-    SearchResultsPage (SearchResultsRoute maybeString)
-
-
 determinePage : Url.Url -> Page
 determinePage url =
-    case UrlP.parse routeParser url of
+    case UP.parse routeParser url of
         Just page ->
             case page of
                 HomeRoute ->
                     homePage
 
-                SearchResultsRoute maybeString ->
-                    searchResultsPage maybeString
+                SearchResultsRoute _ _ _ ->
+                    SearchResultsPage page
 
         Nothing ->
             homePage

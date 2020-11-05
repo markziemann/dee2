@@ -1,6 +1,5 @@
 port module Main exposing (..)
 
-import Array
 import Browser exposing (Document)
 import Browser.Navigation as Nav
 import Html exposing (..)
@@ -14,10 +13,9 @@ import Routes
 import SearchPage.Main as SPMain
 import SearchPage.Types
 import SearchPage.Views exposing (viewLargeSearchBar, viewSearchButton, viewSearchModeSelector)
-import Table
+import SharedTypes exposing (PaginationOffset)
 import Types exposing (..)
 import Url
-import Url.Builder as UBuilder
 
 
 port consoleLog : String -> Cmd msg
@@ -30,20 +28,29 @@ init flags url navKey =
       , searchPage = SPMain.init
       , resultsPage = RPMain.init
       , page = Routes.determinePage url
+      , defaultPaginationOffset = PaginationOffset 20 0
       }
     , Cmd.none
     )
+
+
+resetModel : Model -> Model
+resetModel model =
+    { model
+        | searchPage = SPMain.init
+        , resultsPage = RPMain.init
+    }
 
 
 
 ---- UPDATE ----
 
 
-updateUrl : Nav.Key -> Cmd msg -> SearchPage.Types.SearchOutMsg -> Cmd msg
+updateUrl : Nav.Key -> Cmd msg -> SearchPage.Types.OutMsg -> Cmd msg
 updateUrl navKey cmd outMsg =
     Cmd.batch
         [ cmd
-        , UBuilder.absolute [ Routes.searchResultsSlug ] [ UBuilder.string "q" outMsg.searchString ]
+        , Routes.searchResultsRoute outMsg.searchString outMsg.paginationOffset
             |> Nav.pushUrl navKey
         ]
 
@@ -72,19 +79,27 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         fromSearchBar =
-            \( mdl, cmd, maybeSearchOutMsg ) ->
+            \( mdl, cmd, maybeOutMsg ) ->
                 ( { model
                     | searchPage = mdl
-                    , resultsPage = maybeUpdate updateSearchData maybeSearchOutMsg model.resultsPage
+                    , resultsPage = maybeUpdate updateSearchData maybeOutMsg model.resultsPage
                   }
-                , Cmd.map GotSearchPageMsg cmd |> maybeAddCommand (updateUrl model.navKey) maybeSearchOutMsg
+                , Cmd.map GotSearchPageMsg cmd |> maybeAddCommand (updateUrl model.navKey) maybeOutMsg
                 )
 
         fromResultsPage =
-            \( mdl, cmd, maybeResultsOutMsg ) ->
-                ( { model | resultsPage = mdl }
-                , Cmd.map GotResultsPageMsg cmd
-                )
+            \( mdl, cmd, maybeOutMsg ) ->
+                case maybeOutMsg of
+                    Just pagination ->
+                        update (RequestResultsPage pagination) { model | resultsPage = mdl }
+                            |> (\( m, c ) -> ( m, Cmd.batch [ c, Cmd.map GotResultsPageMsg cmd ] ))
+
+                    Nothing ->
+                        ( { model
+                            | resultsPage = mdl
+                          }
+                        , Cmd.map GotResultsPageMsg cmd
+                        )
     in
     case msg of
         GotSearchPageMsg message ->
@@ -95,6 +110,10 @@ update msg model =
             RPMain.update message model.resultsPage
                 |> fromResultsPage
 
+        RequestResultsPage pagination ->
+            SPMain.update (SPMain.search pagination) model.searchPage
+                |> fromSearchBar
+
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
@@ -104,9 +123,14 @@ update msg model =
                     ( model, Nav.load href )
 
         UrlChanged url ->
-            ( { model | url = url, page = Routes.determinePage url }
-            , Cmd.none
-            )
+            let
+                newModel = { model | url = url, page = Routes.determinePage url }
+            in
+            case Routes.determinePage url of
+                Routes.HomePage route ->
+                    (resetModel newModel, Cmd.none)
+                _ ->
+                    (newModel, Cmd.none)
 
 
 
@@ -136,7 +160,7 @@ pageView model =
                 fromSearchPage
                     [ viewLargeSearchBar model.searchPage
                     , viewSearchModeSelector model.searchPage.searchMode
-                    , viewSearchButton
+                    , viewSearchButton model.defaultPaginationOffset
                     ]
 
             Routes.SearchResultsPage pageData ->

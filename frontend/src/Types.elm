@@ -4,6 +4,7 @@ import Browser exposing (Document)
 import Browser.Navigation as Nav
 import ResultsPage.Types
 import SearchPage.Types
+import SharedTypes
 import Url
 import Routes
 
@@ -14,6 +15,7 @@ type alias Model =
     , searchPage : SearchPage.Types.Model
     , resultsPage : ResultsPage.Types.Model
     , page : Routes.Page
+    , defaultPaginationOffset : SharedTypes.PaginationOffset
     }
 
 
@@ -22,3 +24,4 @@ type Msg
     | GotResultsPageMsg ResultsPage.Types.Msg
     | LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
+    | RequestResultsPage SharedTypes.PaginationOffset

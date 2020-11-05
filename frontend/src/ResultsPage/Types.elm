@@ -3,9 +3,14 @@ module ResultsPage.Types exposing (..)
 import Array
 import Dict
 import SearchPage.Types
+import Set
 import SharedTypes
 import Table
-import Set
+
+
+type alias SelectedResult =
+    ( Int, ( String, String ) )
+
 
 type alias SelectedResults =
     Dict.Dict Int ( String, String )
@@ -15,9 +20,13 @@ type alias ResultsPendingRemoval =
     Set.Set Int
 
 
+type alias ResultRows =
+    Array.Array SearchPage.Types.SearchResult
+
+
 type alias Model =
     { searchHits : Maybe Int
-    , searchResultRows : Maybe (Array.Array SearchPage.Types.SearchResult)
+    , searchResultRows : Maybe ResultRows
     , resultsTableQuery : String
     , resultsTableState : Table.State
     , selectedResultsTableQuery : String
@@ -39,7 +48,8 @@ type Msg
     | SetSelectedResultsTableState Table.State
     | DownloadRequested
     | DownloadButtonReset
+    | PageRequest SharedTypes.PaginationOffset
 
 
-type OutMsg
-    = RequestNextPage SharedTypes.PaginationOffset
+type alias OutMsg =
+    Maybe SharedTypes.PaginationOffset

@@ -28,12 +28,12 @@ init =
     }
 
 
-onlyData : Model -> ( Model, Cmd msg, Maybe OutMsg )
+onlyData : Model -> ( Model, Cmd msg, OutMsg)
 onlyData model =
-    ( model, Cmd.none, Nothing )
+    ( model, Cmd.none, Nothing)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe OutMsg )
+update : Msg -> Model -> ( Model, Cmd Msg, OutMsg)
 update msg model =
     case msg of
         ResultClicked result ->
@@ -72,6 +72,9 @@ update msg model =
                             model.selectedResults
                     , resultsPendingRemoval = Set.empty
                 }
+
+        PageRequest paginationOffset ->
+            ( model, Cmd.none, Just paginationOffset)
 
         SetResultsTableQuery resultsTableQuery ->
             onlyData { model | resultsTableQuery = resultsTableQuery }

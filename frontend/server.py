@@ -5,7 +5,6 @@ import zipfile
 import aiohttp
 from aiohttp import web
 from elasticsearch import AsyncElasticsearch
-
 from shared_config import SEARCH_AS_YOU_TYPE_FIELDS
 
 client = AsyncElasticsearch()
@@ -65,11 +64,14 @@ async def download(request):
     await resp.write_eof()
 
 
-@routes.get('/simple_query_search/{search_string}')
+# /simple_query_search/?searchString=a&perPage=20&offset=0"
+@routes.get('/simple_query_search/')
 async def search(request):
     """Seach using Elasticsearch simple_query_string API"""
     search_response = await client.search(
-        {"query": {"simple_query_string": {"query": f"{request.match_info['search_string']}",
+        {"from": request.query['offset'],
+         "size": request.query['perPage'],
+         "query": {"simple_query_string": {"query": f"{request.query['searchString']}",
                                            "analyze_wildcard": "true",
                                            "fields": SEARCH_AS_YOU_TYPE_FIELDS,
                                            }
@@ -82,13 +84,15 @@ async def search(request):
     return web.json_response({'hits': search_hits, 'rows': search_results})
 
 
-@routes.get('/fuzzy_search/{search_string}')
+@routes.get('/fuzzy_search/')
 async def search(request):
     """Seach using Elasticsearch simple_query_string API"""
     search_response = await client.search(
-        {"query": {
+        {"from": request.query['offset'],
+         "size": request.query['perPage'],
+            "query": {
             "multi_match": {
-                "query": f"{request.match_info['search_string']}",
+                "query": f"{request.query['searchString']}",
                 "fields": SEARCH_AS_YOU_TYPE_FIELDS,
                 "fuzziness": "AUTO"
             }

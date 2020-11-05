@@ -5,8 +5,9 @@ import Bool.Extra as BExtra
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import SearchPage.Helpers exposing (highlightMatchingText, defaultSearch)
+import SearchPage.Helpers exposing (highlightMatchingText)
 import SearchPage.Types exposing (..)
+import SharedTypes
 
 
 viewLargeSearchBar : Model -> Html Msg
@@ -78,12 +79,12 @@ viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSug
         ]
 
 
-viewSearchButton : Html Msg
-viewSearchButton =
+viewSearchButton : SharedTypes.PaginationOffset ->  Html Msg
+viewSearchButton paginationOffset =
     div [ class "d-flex justify-content-center" ]
         [ div [ class "btn-group dropright my-5" ]
             [ button
-                [ onClick defaultSearch
+                [ onClick <| Search paginationOffset
                 , class "btn btn-lg btn-outline-success"
                 , type_ "button"
                 ]

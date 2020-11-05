@@ -1,24 +1,18 @@
 module ResultsPage.Views exposing (..)
 
 import Array
-import Bool.Extra
+import Bool.Extra as BE
+import Maybe.Extra as ME
 import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events as Events exposing (onClick)
-import ResultsPage.Helpers exposing (queryString)
+import ResultsPage.Helpers exposing (..)
 import ResultsPage.Types exposing (..)
 import SearchPage.Types exposing (SearchResult, SearchResults)
 import Set
+import SharedTypes exposing (PaginationOffset)
 import Table exposing (HtmlDetails, Status)
-
-
-type alias SelectedResult =
-    ( Int, ( String, String ) )
-
-
-highlightRowIfTrue style true =
-    Bool.Extra.ifElse style "" true
 
 
 selectClickedResult : (SearchResult -> Msg) -> SelectedResults -> SearchResult -> List (Html.Attribute Msg)
@@ -37,19 +31,6 @@ stageResultForRemoval msg resultsPendingRemoval ( id, ( _, _ ) ) =
     ]
 
 
-get : String -> SearchResult -> String
-get key searchResult =
-    Maybe.withDefault "" (Dict.get key searchResult.data)
-
-
-getId =
-    .id >> String.fromInt
-
-
-defaultTable =
-    Table.defaultCustomizations
-
-
 resultsTable : SelectedResults -> Table.Config SearchResult Msg
 resultsTable selectedResults =
     Table.customConfig
@@ -65,8 +46,6 @@ resultsTable selectedResults =
             , Table.stringColumn "SRA project" (get "SRP_accession")
             , Table.stringColumn "Sample" (get "Sample_name")
             , Table.stringColumn "Experiment" (get "GEO_series")
-
-            --GEO_series
             ]
         , customizations =
             { defaultTable
@@ -102,15 +81,6 @@ selectedTable resultsPendingRemoval =
         }
 
 
-hideWhenTrue : String -> Bool -> String
-hideWhenTrue classString true =
-    if true then
-        String.join " " [ classString, "invisible" ]
-
-    else
-        classString
-
-
 buttonOrSpinner : Bool -> SelectedResults -> Html Msg
 buttonOrSpinner downloading rows =
     if not downloading then
@@ -138,6 +108,49 @@ buttonOrSpinner downloading rows =
             ]
 
 
+pageSelector disable page label =
+    li [ class (disableWhenTrue "page-item" disable) ]
+        [ button [ onClick (PageRequest page), class "page-link", attribute "tabindex" (BE.ifElse "-1" "0" disable) ]
+            [ text label ]
+        ]
+
+
+pagination : SharedTypes.PaginationOffset -> Maybe ResultRows -> Html Msg
+pagination ({ perPage, offset } as paginationOffset) maybeResultRows =
+    let
+        previousButton =
+            if offset < perPage then
+                pageSelector
+                    True
+                    paginationOffset
+                    "Previous"
+
+            else
+                pageSelector False (PaginationOffset perPage <| offset - perPage) "Previous"
+
+        resultRows = ME.unwrap Array.empty identity maybeResultRows
+
+        nextButton =
+            if Array.length resultRows < perPage then
+                pageSelector
+                    True
+                    paginationOffset
+                    "Next"
+
+            else
+                pageSelector
+                    False
+                    (PaginationOffset perPage <| offset + perPage)
+                    "Next"
+    in
+    nav [ attribute "aria-label" "Page navigation" ]
+        [ ul [ class "pagination justify-content-end" ]
+            [ previousButton
+            , nextButton
+            ]
+        ]
+
+
 viewSearchResults : Model -> List (Html Msg)
 viewSearchResults ({ searchResultRows, resultsTableState, resultsTableQuery, searchHits } as model) =
     [ div [ class "row" ]
@@ -148,6 +161,7 @@ viewSearchResults ({ searchResultRows, resultsTableState, resultsTableQuery, sea
                 (resultsTable model.selectedResults)
                 resultsTableState
                 (Maybe.withDefault [] (Maybe.map Array.toList searchResultRows))
+            , pagination model.paginationOffset model.searchResultRows
             ]
         , div [ class "col-xl-3" ]
             [ div [ class "sticky-top" ]
@@ -160,7 +174,10 @@ viewSearchResults ({ searchResultRows, resultsTableState, resultsTableQuery, sea
                 , div []
                     [ buttonOrSpinner model.downloading model.selectedResults
                     , button
-                        [ hideWhenTrue "btn btn-outline-danger btn-block" (Set.isEmpty model.resultsPendingRemoval) |> class
+                        [ hideWhenTrue
+                            "btn btn-outline-danger btn-block"
+                            (Set.isEmpty model.resultsPendingRemoval)
+                            |> class
                         , onClick RemoveStagedSelections
                         ]
                         [ text "Remove" ]
