@@ -33,7 +33,7 @@ def get_hit_count(search_results: dict) -> int:
     return dict.get(search_results, 'hits', {}).get('total', {}).get('value', 0)
 
 
-@routes.get('/')
+@routes.get('/example')
 async def index(request):
     return web.FileResponse('./dist/index.html')
 

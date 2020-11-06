@@ -1,4 +1,4 @@
-port module Main exposing (..)
+module Main exposing (..)
 
 import Browser exposing (Document)
 import Browser.Navigation as Nav
@@ -16,9 +16,6 @@ import SearchPage.Views exposing (viewLargeSearchBar, viewSearchButton, viewSear
 import SharedTypes exposing (PaginationOffset)
 import Types exposing (..)
 import Url
-
-
-port consoleLog : String -> Cmd msg
 
 
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )

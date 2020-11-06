@@ -3,5 +3,6 @@
     "elm-hot": "^1.1.5",
     "elm-spec-runner": "^2.1.3",
     "node-elm-compiler": "^5.0.5"
-  }
+  },
+  "dependencies": {}
 }

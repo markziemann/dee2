@@ -97,7 +97,6 @@ update msg model =
                 url =
                     route
                         ++ (UB.toQuery <| Routes.searchResultParams search_string paginationOffset)
-                        |> Debug.log "URL:"
 
                 serverQuery =
                     get
