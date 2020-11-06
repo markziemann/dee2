@@ -32,6 +32,8 @@ This will be achieved with:
     
     `$pip install aiohttp`
     
+    `pip install aiohttp-devtools` - For auto reloading
+    
     `$pip install elasticsearch`
     
 - #### Run Elasticsearch
