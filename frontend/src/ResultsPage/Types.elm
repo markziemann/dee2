@@ -4,7 +4,8 @@ import Array
 import Dict
 import SearchPage.Types
 import Set
-import SharedTypes
+import SharedTypes exposing (WebData)
+import SearchPage.Types exposing (SearchResults)
 import Table
 
 
@@ -25,8 +26,7 @@ type alias ResultRows =
 
 
 type alias Model =
-    { searchHits : Maybe Int
-    , searchResultRows : Maybe ResultRows
+    { searchResults : WebData SearchResults
     , resultsTableQuery : String
     , resultsTableState : Table.State
     , selectedResultsTableQuery : String

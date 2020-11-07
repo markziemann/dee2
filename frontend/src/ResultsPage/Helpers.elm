@@ -41,8 +41,7 @@ highlightRowIfTrue style true =
 updateSearchData : Model -> SearchPage.Types.OutMsg -> Model
 updateSearchData model outMsg =
     { model
-        | searchHits = Just outMsg.hits
-        , searchResultRows = Just outMsg.rows
+        | searchResults = outMsg.searchResults
         , paginationOffset = outMsg.paginationOffset
     }
 

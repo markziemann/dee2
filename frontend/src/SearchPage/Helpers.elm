@@ -6,8 +6,38 @@ import Html.Attributes exposing (class)
 import Json.Decode as Decode exposing (Decoder, array, field, string)
 import Process exposing (sleep)
 import SearchPage.Types exposing (..)
+import SharedTypes exposing (RemoteData(..), WebData)
 import Task
-import SharedTypes
+
+
+getWebDataIndex : Int -> WebData (Array.Array a) -> Maybe a
+getWebDataIndex index webData =
+    case webData of
+        Success array ->
+            Array.get index array
+
+        _ ->
+            Nothing
+
+
+lengthWebData : WebData (Array.Array a) -> Maybe Int
+lengthWebData webData =
+    case webData of
+        Success array ->
+            Just (Array.length array)
+
+        _ ->
+            Nothing
+
+
+emptyWebData : WebData (Array.Array a) -> Bool
+emptyWebData webData =
+    case webData of
+        Success array ->
+            Array.isEmpty array
+
+        _ ->
+            False
 
 
 updateActiveSuggestion : Model -> Int -> Model
@@ -15,19 +45,9 @@ updateActiveSuggestion model value =
     { model | activeSuggestion = Just value }
 
 
-notWaiting : Model -> Model
-notWaiting model =
-    { model | waitingForResponse = False }
-
-
-isWaiting : Model -> Model
-isWaiting model =
-    { model | waitingForResponse = True }
-
-
 clearSearchSuggestions : Model -> Model
 clearSearchSuggestions model =
-    { model | searchSuggestions = Array.empty }
+    { model | searchSuggestions = NotAsked }
 
 
 clearActiveSuggestion : Model -> Model
@@ -57,6 +77,21 @@ decodeSearchSuggestions =
     field "suggestions" (array string)
 
 
+suggestionHighlightFunc : Maybe Int -> (Int -> String)
+suggestionHighlightFunc maybeActiveSuggestion =
+    case maybeActiveSuggestion of
+        Nothing ->
+            \_ -> ""
+
+        Just value ->
+            \idx ->
+                if idx == value then
+                    "active"
+
+                else
+                    ""
+
+
 highlightMatchingText : String -> String -> List (Html msg)
 highlightMatchingText searchString suggestion =
     -- Note splitting a string removes the split string eg.> split "a" "James" = ["J", "mes"]
@@ -77,7 +112,7 @@ highlightMatchingText searchString suggestion =
 
 
 decodeSearchResults : SharedTypes.PaginationOffset -> Decoder SearchResults
-decodeSearchResults ({offset} as paginationOffset)=
+decodeSearchResults ({ offset } as paginationOffset) =
     Decode.map2 SearchResults
         (field "hits" Decode.int)
         (field "rows"

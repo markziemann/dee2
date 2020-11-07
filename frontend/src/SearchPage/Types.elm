@@ -3,7 +3,7 @@ module SearchPage.Types exposing (..)
 import Array exposing (Array)
 import Dict
 import Http
-import SharedTypes
+import SharedTypes exposing (PaginationOffset, WebData)
 
 
 type alias SearchData =
@@ -24,8 +24,7 @@ type alias SearchResults =
 
 
 type alias OutMsg =
-    { hits : Int
-    , rows : Array SearchResult
+    { searchResults: WebData SearchResults
     , searchMode : SearchMode
     , searchString : String
     , paginationOffset : SharedTypes.PaginationOffset
@@ -48,10 +47,9 @@ type SearchMode
 type alias Model =
     { searchString : String
     , searchMode : SearchMode
-    , searchSuggestions : SearchSuggestions
+    , searchSuggestions : WebData SearchSuggestions
     , activeSuggestion : Maybe Int
     , suggestionsVisible : Bool
-    , waitingForResponse : Bool
     }
 
 
@@ -59,7 +57,7 @@ type Msg
     = SearchUpdate String
     | Search SearchMode String SharedTypes.PaginationOffset
     | GetSearchSuggestions String
-    | GotSearchSuggestions (Result Http.Error SearchSuggestions)
+    | GotSearchSuggestions (WebData SearchSuggestions)
     | ArrowUp
     | ArrowDown
     | EnterKey
@@ -67,4 +65,4 @@ type Msg
     | FuzzySelected String
     | SuggestionSelected Int
     | ClickOutOfSuggestions
-    | GotHttpSearchResponse SharedTypes.PaginationOffset (Result Http.Error SearchResults)
+    | GotHttpSearchResponse SharedTypes.PaginationOffset (WebData SearchResults)

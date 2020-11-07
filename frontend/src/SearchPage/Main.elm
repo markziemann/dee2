@@ -10,7 +10,7 @@ import Result
 import Routes
 import SearchPage.Helpers exposing (..)
 import SearchPage.Types exposing (..)
-import SharedTypes
+import SharedTypes exposing (RemoteData(..), toWebData)
 import Url.Builder as UB
 
 
@@ -22,25 +22,19 @@ init : Model
 init =
     { searchString = ""
     , searchMode = Strict
-    , searchSuggestions = Array.empty
+    , searchSuggestions = NotAsked
     , activeSuggestion = Nothing
     , suggestionsVisible = True
-    , waitingForResponse = False
     }
 
 
-wrapAroundIdx : Model -> Int -> Model
-wrapAroundIdx model idx =
-    let
-        arrayLength =
-            Array.length model.searchSuggestions
-    in
-    if arrayLength > 0 then
-        modBy arrayLength idx
-            |> updateActiveSuggestion model
+wrapAroundIdx : Int -> Int -> Int
+wrapAroundIdx lengthSearchSuggestions idx =
+    if lengthSearchSuggestions > 0 then
+        modBy lengthSearchSuggestions idx
 
     else
-        model
+        lengthSearchSuggestions
 
 
 onlyData : Model -> ( Model, Cmd msg, Maybe OutMsg )
@@ -55,20 +49,17 @@ noResults =
 update : Msg -> Model -> ( Model, Cmd Msg, Maybe OutMsg )
 update msg model =
     let
+        noChange =
+            ( model, Cmd.none, Nothing )
+
         toOutMsg =
             \paginationOffset searchResults ->
-                Result.map
-                    (\{ hits, rows } ->
-                        -- OutMsg
-                        { hits = hits
-                        , rows = rows
-                        , searchMode = model.searchMode
-                        , searchString = model.searchString
-                        , paginationOffset = paginationOffset
-                        }
-                    )
-                    searchResults
-                    |> Result.toMaybe
+                -- OutMsg
+                { searchResults = searchResults
+                , searchMode = model.searchMode
+                , searchString = model.searchString
+                , paginationOffset = paginationOffset
+                }
     in
     case msg of
         SearchUpdate value ->
@@ -115,19 +106,18 @@ update msg model =
                         { url = url
                         , expect =
                             Http.expectJson
-                                (GotHttpSearchResponse paginationOffset)
+                                (GotHttpSearchResponse paginationOffset << toWebData)
                                 (decodeSearchResults paginationOffset)
                         }
             in
             ( { model | searchString = searchString }
                 |> hideSuggestions
-                |> isWaiting
             , serverQuery
             , noResults
             )
 
         EnterKey ->
-            case ( Array.isEmpty model.searchSuggestions, model.activeSuggestion ) of
+            case ( emptyWebData model.searchSuggestions, model.activeSuggestion ) of
                 ( False, Just value ) ->
                     -- Selecting a suggestion with enter takes
                     -- precedence over searching with enter
@@ -144,7 +134,7 @@ update msg model =
                 ( model
                 , get
                     { url = "api/search_as_you_type/" ++ value
-                    , expect = Http.expectJson GotSearchSuggestions decodeSearchSuggestions
+                    , expect = Http.expectJson (GotSearchSuggestions << toWebData) decodeSearchSuggestions
                     }
                 , noResults
                 )
@@ -152,47 +142,51 @@ update msg model =
             else
                 onlyData (showSuggestions model)
 
-        GotSearchSuggestions result ->
+        GotSearchSuggestions webData ->
             onlyData
-                ({ model | searchSuggestions = Result.withDefault Array.empty result }
+                ({ model | searchSuggestions = webData }
                     |> showSuggestions
                 )
 
-        SuggestionSelected value ->
-            let
-                searchString =
-                    case Array.get value model.searchSuggestions of
-                        Just string ->
-                            string
+        SuggestionSelected index ->
+            case getWebDataIndex index model.searchSuggestions of
+                Just suggestion ->
+                    onlyData
+                        ({ model | searchString = suggestion }
+                            |> clearActiveSuggestion
+                            |> hideSuggestions
+                        )
 
-                        Nothing ->
-                            model.searchString
-            in
-            onlyData
-                ({ model | searchString = searchString }
-                    |> clearActiveSuggestion
-                    |> hideSuggestions
-                )
+                Nothing ->
+                    onlyData model
 
         ArrowUp ->
-            case model.activeSuggestion of
-                Nothing ->
-                    updateActiveSuggestion model (Array.length model.searchSuggestions)
+            case ( model.activeSuggestion, lengthWebData model.searchSuggestions ) of
+                ( Nothing, Just length ) ->
+                    updateActiveSuggestion model length
                         |> showSuggestions
                         |> onlyData
 
-                Just value ->
-                    onlyData (wrapAroundIdx model (value - 1))
+                ( Just value, Just length ) ->
+                    updateActiveSuggestion model (wrapAroundIdx length (value - 1))
+                        |> onlyData
+
+                ( _, _ ) ->
+                    noChange
 
         ArrowDown ->
-            case model.activeSuggestion of
-                Nothing ->
+            case ( model.activeSuggestion, lengthWebData model.searchSuggestions ) of
+                ( Nothing, Just length ) ->
                     updateActiveSuggestion model 0
                         |> showSuggestions
                         |> onlyData
 
-                Just value ->
-                    onlyData (wrapAroundIdx model (value + 1))
+                ( Just value, Just length ) ->
+                    updateActiveSuggestion model (wrapAroundIdx length (value + 1))
+                        |> onlyData
+
+                ( _, _ ) ->
+                    noChange
 
         StrictSelected string ->
             onlyData { model | searchMode = Strict }
@@ -200,10 +194,10 @@ update msg model =
         FuzzySelected string ->
             onlyData { model | searchMode = Fuzzy }
 
-        GotHttpSearchResponse paginationOffset result ->
-            ( notWaiting model
+        GotHttpSearchResponse paginationOffset webData ->
+            ( model
             , Cmd.none
-            , toOutMsg paginationOffset result
+            , Just <| toOutMsg paginationOffset webData
             )
 
         ClickOutOfSuggestions ->

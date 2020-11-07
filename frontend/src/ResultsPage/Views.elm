@@ -2,16 +2,17 @@ module ResultsPage.Views exposing (..)
 
 import Array
 import Bool.Extra as BE
-import Maybe.Extra as ME
 import Dict
+import Helpers exposing (errorToString)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events as Events exposing (onClick)
+import Maybe.Extra as ME
 import ResultsPage.Helpers exposing (..)
 import ResultsPage.Types exposing (..)
 import SearchPage.Types exposing (SearchResult, SearchResults)
 import Set
-import SharedTypes exposing (PaginationOffset)
+import SharedTypes exposing (PaginationOffset, RemoteData(..), WebData, unwrapWebData)
 import Table exposing (HtmlDetails, Status)
 
 
@@ -115,8 +116,8 @@ pageSelector disable page label =
         ]
 
 
-pagination : SharedTypes.PaginationOffset -> Maybe ResultRows -> Html Msg
-pagination ({ perPage, offset } as paginationOffset) maybeResultRows =
+pagination : SharedTypes.PaginationOffset -> Int -> Html Msg
+pagination ({ perPage, offset } as paginationOffset) hits =
     let
         previousButton =
             if offset < perPage then
@@ -128,10 +129,9 @@ pagination ({ perPage, offset } as paginationOffset) maybeResultRows =
             else
                 pageSelector False (PaginationOffset perPage <| offset - perPage) "Previous"
 
-        resultRows = ME.unwrap Array.empty identity maybeResultRows
 
         nextButton =
-            if Array.length resultRows < perPage then
+            if hits < perPage then
                 pageSelector
                     True
                     paginationOffset
@@ -151,17 +151,36 @@ pagination ({ perPage, offset } as paginationOffset) maybeResultRows =
         ]
 
 
+viewSearchResultHits : WebData SearchResults -> Html Msg
+viewSearchResultHits searchResults =
+    case searchResults of
+        Success results ->
+            text <| "Hits: " ++ String.fromInt results.hits
+
+        Failure err ->
+            text <| errorToString err
+
+        NotAsked ->
+            text "Waiting for user"
+
+        Loading ->
+            div [ class "spinner-border spinner-border-sm", attribute "role" "status" ]
+                [ span [ class "sr-only" ]
+                    [ text "Loading..." ]
+                ]
+
+
 viewSearchResults : Model -> List (Html Msg)
-viewSearchResults ({ searchResultRows, resultsTableState, resultsTableQuery, searchHits } as model) =
+viewSearchResults ({resultsTableState, resultsTableQuery} as model) =
     [ div [ class "row" ]
         [ div [ class "col-xl-9" ]
             [ div [ class "bg-light text-primary" ]
-                [ text "Hits: ", text (Maybe.withDefault "" (Maybe.map String.fromInt searchHits)) ]
+                [viewSearchResultHits model.searchResults]
             , Table.view
                 (resultsTable model.selectedResults)
                 resultsTableState
-                (Maybe.withDefault [] (Maybe.map Array.toList searchResultRows))
-            , pagination model.paginationOffset model.searchResultRows
+                (unwrapWebData [] (.rows >> Array.toList) model.searchResults)
+            , pagination model.paginationOffset (unwrapWebData 0 .hits model.searchResults)
             ]
         , div [ class "col-xl-3" ]
             [ div [ class "sticky-top" ]

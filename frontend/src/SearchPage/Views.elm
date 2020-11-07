@@ -2,12 +2,13 @@ module SearchPage.Views exposing (..)
 
 import Array exposing (isEmpty)
 import Bool.Extra as BExtra
+import Helpers exposing (errorToString)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import SearchPage.Helpers exposing (highlightMatchingText)
+import SearchPage.Helpers exposing (highlightMatchingText, suggestionHighlightFunc)
 import SearchPage.Types exposing (..)
-import SharedTypes
+import SharedTypes exposing (RemoteData(..))
 
 
 viewLargeSearchBar : Model -> Html Msg
@@ -30,53 +31,45 @@ viewLargeSearchBar model =
 viewSuggestions : Model -> Html Msg
 viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSuggestion } =
     let
-        selector =
-            case activeSuggestion of
-                Nothing ->
-                    \_ -> ""
+        highlight =
+            suggestionHighlightFunc activeSuggestion
 
-                Just value ->
-                    \idx ->
-                        if idx == value then
-                            "active"
-
-                        else
-                            ""
-
-        show =
-            if isEmpty searchSuggestions then
-                identity
-
-            else
-                \value ->
-                    value
-                        |> (\str -> [ str, "show" ])
-                        |> (\strings ->
-                                if suggestionsVisible then
-                                    strings
-
-                                else
-                                    (::) "invisible" strings
-                           )
-                        |> String.join " "
+        dropdown =
+            \items -> div [ class "dropdown show" ] items
     in
-    div [ class (show "dropdown") ]
-        [ div [ class (show "dropdown-menu") ]
-            (List.indexedMap
+    case searchSuggestions of
+        Success suggestions ->
+            List.indexedMap
                 (\idx suggestion ->
                     li
                         [ String.join " "
                             [ "dropdown-item"
-                            , selector idx
+                            , highlight idx
                             ]
                             |> class
                         , onClick (SuggestionSelected idx)
                         ]
                         (highlightMatchingText searchString suggestion)
                 )
-                (Array.toList searchSuggestions)
-            )
-        ]
+                (Array.toList suggestions)
+                |> dropdown
+
+        Failure err ->
+            [ text <| errorToString err ]
+            |> dropdown
+        NotAsked ->
+            div [ class "dropdown" ] []
+
+        Loading ->
+            [ span
+                [ class "spinner-border spinner-border-sm mr-2"
+                , attribute "role" "status"
+                , attribute "aria-hidden" "true"
+                ]
+                []
+            , text "Loading..."
+            ]
+            |> dropdown
 
 
 viewSearchButton : Model -> SharedTypes.PaginationOffset -> Html Msg

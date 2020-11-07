@@ -8,12 +8,11 @@ import ResultsPage.Types exposing (..)
 import SearchPage.Helpers exposing (delay)
 import Set
 import Table
-
+import SharedTypes exposing (RemoteData(..))
 
 init : Model
 init =
-    { searchHits = Nothing
-    , searchResultRows = Nothing
+    { searchResults = NotAsked
     , resultsTableQuery = ""
     , resultsTableState = Table.initialSort "id"
     , selectedResultsTableQuery = ""
