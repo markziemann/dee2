@@ -22,12 +22,14 @@ init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url navKey =
     let
 
+        route = Routes.determinePage url
+
         model =
             { navKey = navKey
             , url = url
             , searchPage = SPMain.init
             , resultsPage = RPMain.init
-            , route = Routes.determinePage url
+            , route = route
             , defaultPaginationOffset = PaginationOffset 20 0
             }
     in

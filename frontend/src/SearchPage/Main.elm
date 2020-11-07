@@ -60,12 +60,12 @@ update msg model =
                 Result.map
                     (\{ hits, rows } ->
                         -- OutMsg
-                            { hits = hits
-                            , rows = rows
-                            , searchMode = model.searchMode
-                            , searchString = model.searchString
-                            , paginationOffset = paginationOffset
-                            }
+                        { hits = hits
+                        , rows = rows
+                        , searchMode = model.searchMode
+                        , searchString = model.searchString
+                        , paginationOffset = paginationOffset
+                        }
                     )
                     searchResults
                     |> Result.toMaybe
@@ -119,7 +119,12 @@ update msg model =
                                 (decodeSearchResults paginationOffset)
                         }
             in
-            ( model |> hideSuggestions |> isWaiting, serverQuery, noResults )
+            ( { model | searchString = searchString }
+                |> hideSuggestions
+                |> isWaiting
+            , serverQuery
+            , noResults
+            )
 
         EnterKey ->
             case ( Array.isEmpty model.searchSuggestions, model.activeSuggestion ) of
