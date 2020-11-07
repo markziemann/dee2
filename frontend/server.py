@@ -45,13 +45,18 @@ async def download(request):
     resp.enable_chunked_encoding()
     await resp.prepare(request)
     zip_files = []
+
     params = request.query.items()
+    if len(params) > 100:
+        # TODO: provide a nice error msg
+        return
+
     async with aiohttp.ClientSession() as session:
         for key, value in params:
             async with session.get('http://dee2.io/cgi-bin/request.sh', params={'org': key, 'x': value}) as response:
                 zip_files.append((key, await response.read()))
 
-    # TODO: limit runs
+
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
         for (species, data) in zip_files:
