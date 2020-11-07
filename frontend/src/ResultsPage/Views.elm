@@ -86,7 +86,7 @@ buttonOrSpinner downloading rows =
     if not downloading then
         a
             [ hideWhenTrue "btn btn-outline-primary btn-block" (Dict.isEmpty rows) |> class
-            , href <| "/download/" ++ queryString rows
+            , href <| "api/download/" ++ queryString rows
             , attribute "download" "data.zip"
             , onClick DownloadRequested
             ]

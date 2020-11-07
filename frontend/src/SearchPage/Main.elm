@@ -86,13 +86,13 @@ update msg model =
                 ( route, search_string ) =
                     case model.searchMode of
                         Strict ->
-                            ( "/simple_query_search/"
+                            ( "api/simple_query_search/"
                             , Result.withDefault (Elastic.Word model.searchString) (parse model.searchString)
                                 |> serialize
                             )
 
                         Fuzzy ->
-                            ( "/fuzzy_search/", model.searchString )
+                            ( "api/fuzzy_search/", model.searchString )
 
                 url =
                     route
@@ -126,7 +126,7 @@ update msg model =
             if model.searchString == value then
                 ( model
                 , get
-                    { url = "/search_as_you_type/" ++ value
+                    { url = "api/search_as_you_type/" ++ value
                     , expect = Http.expectJson GotSearchSuggestions decodeSearchSuggestions
                     }
                 , noResults

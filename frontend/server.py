@@ -33,12 +33,12 @@ def get_hit_count(search_results: dict) -> int:
     return dict.get(search_results, 'hits', {}).get('total', {}).get('value', 0)
 
 
-@routes.get('/example')
+@routes.get('/')
 async def index(request):
     return web.FileResponse('./dist/index.html')
 
 
-@routes.get('/download/')
+@routes.get('/api/download/')
 async def download(request):
     resp = web.StreamResponse()
     resp.content_type = 'application/zip'
@@ -65,7 +65,7 @@ async def download(request):
 
 
 # /simple_query_search/?searchString=a&perPage=20&offset=0"
-@routes.get('/simple_query_search/')
+@routes.get('/api/simple_query_search/')
 async def search(request):
     """Seach using Elasticsearch simple_query_string API"""
     search_response = await client.search(
@@ -84,7 +84,7 @@ async def search(request):
     return web.json_response({'hits': search_hits, 'rows': search_results})
 
 
-@routes.get('/fuzzy_search/')
+@routes.get('/api/fuzzy_search/')
 async def search(request):
     """Seach using Elasticsearch simple_query_string API"""
     search_response = await client.search(
@@ -114,7 +114,7 @@ def extract_relevant_terms(search_response, search_string):
     return list(relevant_terms)
 
 
-@routes.get('/search_as_you_type/{search_string}')
+@routes.get('/api/search_as_you_type/{search_string}')
 async def search(request):
     search_string = request.match_info['search_string']
     return web.json_response({"suggestions":
