@@ -64,11 +64,11 @@ viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSug
                 |> dropdown
 
         Failure err ->
-            [ div [ class "text-warning" ] [ text <| errorToString err ] ]
+            [ div [ class "text-warning px-2" ] [ text <| errorToString err ] ]
                 |> dropdown
 
         NotAsked ->
-            dropdown []
+            div [][]
 
         Loading ->
             [ span
