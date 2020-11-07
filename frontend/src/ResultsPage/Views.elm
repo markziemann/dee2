@@ -129,7 +129,6 @@ pagination ({ perPage, offset } as paginationOffset) hits =
             else
                 pageSelector False (PaginationOffset perPage <| offset - perPage) "Previous"
 
-
         nextButton =
             if hits < perPage then
                 pageSelector
@@ -158,7 +157,7 @@ viewSearchResultHits searchResults =
             text <| "Hits: " ++ String.fromInt results.hits
 
         Failure err ->
-            text <| errorToString err
+            div [ class "text-warning" ] [ text <| errorToString err ]
 
         NotAsked ->
             text "Waiting for user"
@@ -171,11 +170,11 @@ viewSearchResultHits searchResults =
 
 
 viewSearchResults : Model -> List (Html Msg)
-viewSearchResults ({resultsTableState, resultsTableQuery} as model) =
+viewSearchResults ({ resultsTableState, resultsTableQuery } as model) =
     [ div [ class "row" ]
         [ div [ class "col-xl-9" ]
             [ div [ class "bg-light text-primary" ]
-                [viewSearchResultHits model.searchResults]
+                [ viewSearchResultHits model.searchResults ]
             , Table.view
                 (resultsTable model.selectedResults)
                 resultsTableState
