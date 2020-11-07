@@ -105,3 +105,33 @@ rather than the default 10
 - Filter results on species
 
 - Nav url should be sharable and replicate search query
+
+# Deploy to production staging area 
+
+##Install elastic search per instructions:
+
+https://www.elastic.co/guide/en/elasticsearch/reference/current/starting-elasticsearch.html
+
+   - Take note to install the version with only apache license 
+   - Use the correct start up instruction for systemd/init 
+   
+## Clone this repo
+    $ git clone https://github.com/markziemann/dee2
+ 
+- Checkout improved_search branch
+
+    `$ git checkout improved_search`
+    
+- Install python dependencies
+
+    `$ pip3 install aiohttp`
+    
+    `$ pip3 install elasticsearch`
+    
+- Install Elm build tools 
+    
+    `$ npm install parcel-bundler`
+    
+- Build project in production mode
+
+    `$ parcel build improved_search.html`
