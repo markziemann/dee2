@@ -26,6 +26,7 @@ type alias SearchResults =
 type alias OutMsg =
     { hits : Int
     , rows : Array SearchResult
+    , searchMode : SearchMode
     , searchString : String
     , paginationOffset : SharedTypes.PaginationOffset
     }
@@ -56,7 +57,7 @@ type alias Model =
 
 type Msg
     = SearchUpdate String
-    | Search SharedTypes.PaginationOffset
+    | Search SearchMode String SharedTypes.PaginationOffset
     | GetSearchSuggestions String
     | GotSearchSuggestions (Result Http.Error SearchSuggestions)
     | ArrowUp

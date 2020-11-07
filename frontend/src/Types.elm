@@ -3,10 +3,10 @@ module Types exposing (..)
 import Browser exposing (Document)
 import Browser.Navigation as Nav
 import ResultsPage.Types
+import Routes
 import SearchPage.Types
 import SharedTypes
 import Url
-import Routes
 
 
 type alias Model =
@@ -14,7 +14,7 @@ type alias Model =
     , url : Url.Url
     , searchPage : SearchPage.Types.Model
     , resultsPage : ResultsPage.Types.Model
-    , page : Routes.Page
+    , route : Routes.Route
     , defaultPaginationOffset : SharedTypes.PaginationOffset
     }
 
@@ -24,4 +24,4 @@ type Msg
     | GotResultsPageMsg ResultsPage.Types.Msg
     | LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
-    | RequestResultsPage SharedTypes.PaginationOffset
+    | RequestSearch SearchPage.Types.SearchMode String SharedTypes.PaginationOffset

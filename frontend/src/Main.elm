@@ -20,15 +20,23 @@ import Url
 
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url navKey =
-    ( { navKey = navKey
-      , url = url
-      , searchPage = SPMain.init
-      , resultsPage = RPMain.init
-      , page = Routes.determinePage url
-      , defaultPaginationOffset = PaginationOffset 20 0
-      }
-    , Cmd.none
-    )
+    let
+
+        model =
+            { navKey = navKey
+            , url = url
+            , searchPage = SPMain.init
+            , resultsPage = RPMain.init
+            , route = Routes.determinePage url
+            , defaultPaginationOffset = PaginationOffset 20 0
+            }
+    in
+    --case model.route of
+    --    Routes.SearchRoute { searchMode, searchString, paginationOffset } ->
+    --        update (RequestSearch searchMode searchString paginationOffset) model
+    --
+    --    _ ->
+            ( model, Cmd.none )
 
 
 resetModel : Model -> Model
@@ -47,7 +55,7 @@ updateUrl : Nav.Key -> Cmd msg -> SearchPage.Types.OutMsg -> Cmd msg
 updateUrl navKey cmd outMsg =
     Cmd.batch
         [ cmd
-        , Routes.searchResultsRoute outMsg.searchString outMsg.paginationOffset
+        , Routes.searchResultsRoute outMsg.searchMode outMsg.searchString outMsg.paginationOffset
             |> Nav.pushUrl navKey
         ]
 
@@ -88,7 +96,13 @@ update msg model =
             \( mdl, cmd, maybeOutMsg ) ->
                 case maybeOutMsg of
                     Just pagination ->
-                        update (RequestResultsPage pagination) { model | resultsPage = mdl }
+                        update
+                            (RequestSearch
+                                model.searchPage.searchMode
+                                model.searchPage.searchString
+                                pagination
+                            )
+                            { model | resultsPage = mdl }
                             |> (\( m, c ) -> ( m, Cmd.batch [ c, Cmd.map GotResultsPageMsg cmd ] ))
 
                     Nothing ->
@@ -107,8 +121,10 @@ update msg model =
             RPMain.update message model.resultsPage
                 |> fromResultsPage
 
-        RequestResultsPage pagination ->
-            SPMain.update (SPMain.search pagination) model.searchPage
+        RequestSearch searchMode searchString pagination ->
+            SPMain.update
+                (SPMain.search searchMode searchString pagination)
+                model.searchPage
                 |> fromSearchBar
 
         LinkClicked urlRequest ->
@@ -121,13 +137,15 @@ update msg model =
 
         UrlChanged url ->
             let
-                newModel = { model | url = url, page = Routes.determinePage url }
+                newModel =
+                    { model | url = url, route = Routes.determinePage url }
             in
             case Routes.determinePage url of
-                Routes.HomePage route ->
-                    (resetModel newModel, Cmd.none)
+                Routes.HomeRoute ->
+                    ( resetModel newModel, Cmd.none )
+
                 _ ->
-                    (newModel, Cmd.none)
+                    ( newModel, Cmd.none )
 
 
 
@@ -152,17 +170,22 @@ pageView model =
             List.map (Html.map GotResultsPageMsg)
     in
     pageLayout <|
-        case model.page of
-            Routes.HomePage pageData ->
+        case model.route of
+            Routes.HomeRoute ->
                 fromSearchPage
                     [ viewLargeSearchBar model.searchPage
                     , viewSearchModeSelector model.searchPage.searchMode
-                    , viewSearchButton model.defaultPaginationOffset
+                    , viewSearchButton
+                        model.searchPage
+                        model.defaultPaginationOffset
                     ]
 
-            Routes.SearchResultsPage pageData ->
+            Routes.SearchRoute { searchString, paginationOffset } ->
                 fromResultsPage
                     (viewSearchResults model.resultsPage)
+
+            Routes.Unknown ->
+                [text "Hmm... I don't recognise that url."]
 
 
 view : Model -> Document Msg
@@ -174,14 +197,17 @@ view model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    case model.page of
-        Routes.HomePage route ->
+    case model.route of
+        Routes.HomeRoute ->
             Sub.batch
                 [ Sub.map GotSearchPageMsg <| SPMain.subscriptions model.searchPage
                 ]
 
-        Routes.SearchResultsPage route ->
+        Routes.SearchRoute _ ->
             Sub.none
+
+        Routes.Unknown ->
+            subscriptions { model | route = Routes.HomeRoute }
 
 
 

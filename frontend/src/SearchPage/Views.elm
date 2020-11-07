@@ -79,12 +79,12 @@ viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSug
         ]
 
 
-viewSearchButton : SharedTypes.PaginationOffset ->  Html Msg
-viewSearchButton paginationOffset =
+viewSearchButton : Model -> SharedTypes.PaginationOffset -> Html Msg
+viewSearchButton model paginationOffset =
     div [ class "d-flex justify-content-center" ]
         [ div [ class "btn-group dropright my-5" ]
             [ button
-                [ onClick <| Search paginationOffset
+                [ onClick <| Search model.searchMode model.searchString paginationOffset
                 , class "btn btn-lg btn-outline-success"
                 , type_ "button"
                 ]

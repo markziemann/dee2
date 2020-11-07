@@ -57,7 +57,17 @@ update msg model =
     let
         toOutMsg =
             \paginationOffset searchResults ->
-                Result.map (\{ hits, rows } -> OutMsg hits rows model.searchString paginationOffset) searchResults
+                Result.map
+                    (\{ hits, rows } ->
+                        -- OutMsg
+                            { hits = hits
+                            , rows = rows
+                            , searchMode = model.searchMode
+                            , searchString = model.searchString
+                            , paginationOffset = paginationOffset
+                            }
+                    )
+                    searchResults
                     |> Result.toMaybe
     in
     case msg of
@@ -79,24 +89,26 @@ update msg model =
                 , noResults
                 )
 
-        Search paginationOffset ->
+        Search searchMode searchString paginationOffset ->
             let
                 -- Elastic.Word makes no modification to the search string
                 -- https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html#_simple_query_string_syntax
                 ( route, search_string ) =
-                    case model.searchMode of
+                    case searchMode of
                         Strict ->
                             ( "api/simple_query_search/"
-                            , Result.withDefault (Elastic.Word model.searchString) (parse model.searchString)
+                            , Result.withDefault (Elastic.Word searchString) (parse searchString)
                                 |> serialize
                             )
 
                         Fuzzy ->
-                            ( "api/fuzzy_search/", model.searchString )
+                            ( "api/fuzzy_search/", searchString )
 
                 url =
                     route
-                        ++ (UB.toQuery <| Routes.searchResultParams search_string paginationOffset)
+                        ++ (Routes.searchResultParams searchMode search_string paginationOffset
+                                |> UB.toQuery
+                           )
 
                 serverQuery =
                     get
@@ -118,7 +130,7 @@ update msg model =
 
                 -- recursive call should be avoided
                 ( _, _ ) ->
-                    update (Search <| SharedTypes.PaginationOffset 20 0) model
+                    update (Search model.searchMode model.searchString <| SharedTypes.PaginationOffset 20 0) model
 
         -- recursive call should be avoided
         GetSearchSuggestions value ->

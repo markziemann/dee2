@@ -1,5 +1,7 @@
 module Routes exposing (..)
 
+import Maybe.Extra as ME
+import SearchPage.Types exposing (SearchMode(..))
 import SharedTypes
 import Url
 import Url.Builder as UB exposing (QueryParameter)
@@ -9,12 +11,12 @@ import Url.Parser.Query as Query
 
 type Route
     = HomeRoute
-    | SearchResultsRoute (Maybe String) (Maybe String) (Maybe String)
-
-
-type Page
-    = HomePage Route
-    | SearchResultsPage Route
+    | SearchRoute
+        { searchMode : SearchMode
+        , searchString : String
+        , paginationOffset : SharedTypes.PaginationOffset
+        }
+    | Unknown
 
 
 homeSlug =
@@ -25,12 +27,48 @@ searchResultsSlug =
     "Search"
 
 
+parseSearchMode : Maybe String -> Maybe SearchMode
+parseSearchMode maybeSearchMode =
+    case maybeSearchMode of
+        Just "Strict" ->
+            Just Strict
+
+        Just "Fuzzy" ->
+            Just Fuzzy
+
+        _ ->
+            Nothing
+
+
+
+parseSearchResultRoute : Maybe String -> Maybe String -> Maybe String -> Maybe String -> Route
+parseSearchResultRoute maybeSearchMode maybeSearchString maybePerPage maybeOffset =
+    case
+        ( parseSearchMode maybeSearchMode
+        , maybeSearchString
+        , Maybe.map2 SharedTypes.PaginationOffset
+            (Maybe.andThen String.toInt maybePerPage)
+            (Maybe.andThen String.toInt maybeOffset)
+        )
+    of
+        ( Just searchMode, Just searchString, Just paginationOffset ) ->
+            SearchRoute
+                { searchMode = searchMode
+                , searchString = searchString
+                , paginationOffset = paginationOffset
+                }
+
+        ( _, _, _ ) ->
+            Unknown
+
+
 routeParser : UP.Parser (Route -> a) a
 routeParser =
     UP.oneOf
-        [ UP.map HomeRoute (UP.s homeSlug)
-        , UP.map SearchResultsRoute
+        [ UP.map HomeRoute UP.top
+        , UP.map parseSearchResultRoute
             (UP.s searchResultsSlug
+                <?> Query.string "searchMode"
                 <?> Query.string "searchString"
                 <?> Query.string "perPage"
                 <?> Query.string "offset"
@@ -38,33 +76,31 @@ routeParser =
         ]
 
 
-searchResultsRoute : String -> SharedTypes.PaginationOffset -> String
-searchResultsRoute searchString =
-    (UB.absolute [ searchResultsSlug ]) << (searchResultParams searchString)
+searchResultsRoute : SearchMode -> String -> SharedTypes.PaginationOffset -> String
+searchResultsRoute searchMode searchString =
+    UB.absolute [ searchResultsSlug ] << searchResultParams searchMode searchString
 
 
-searchResultParams : String -> SharedTypes.PaginationOffset -> List QueryParameter
-searchResultParams searchString { perPage, offset } =
-    [ UB.string "searchString" searchString
+searchResultParams : SearchMode -> String -> SharedTypes.PaginationOffset -> List QueryParameter
+searchResultParams searchMode searchString { perPage, offset } =
+    let
+        searchModeString =
+            case searchMode of
+                Strict ->
+                    "Strict"
+
+                Fuzzy ->
+                    "Fuzzy"
+    in
+    [ UB.string "searchMode" searchModeString
+    , UB.string "searchString" searchString
     , UB.string "perPage" <| String.fromInt perPage
     , UB.string "offset" <| String.fromInt offset
     ]
 
 
-homePage =
-    HomePage HomeRoute
-
-
-determinePage : Url.Url -> Page
+determinePage : Url.Url -> Route
 determinePage url =
-    case UP.parse routeParser url of
-        Just page ->
-            case page of
-                HomeRoute ->
-                    homePage
-
-                SearchResultsRoute _ _ _ ->
-                    SearchResultsPage page
-
-        Nothing ->
-            homePage
+    UP.parse routeParser url
+        |> Debug.log "A"
+        |> ME.unwrap Unknown identity
