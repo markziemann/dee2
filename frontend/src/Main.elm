@@ -31,11 +31,11 @@ init flags url navKey =
             , defaultPaginationOffset = PaginationOffset 20 0
             }
     in
-    --case model.route of
-    --    Routes.SearchRoute { searchMode, searchString, paginationOffset } ->
-    --        update (RequestSearch searchMode searchString paginationOffset) model
-    --
-    --    _ ->
+    case model.route of
+        Routes.SearchRoute { searchMode, searchString, paginationOffset } ->
+            update (RequestSearch searchMode searchString paginationOffset) model
+
+        _ ->
             ( model, Cmd.none )
 
 
