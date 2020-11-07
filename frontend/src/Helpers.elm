@@ -21,8 +21,11 @@ errorToString error =
         BadStatus 400 ->
             "Verify your information and try again"
 
+        BadStatus 503 ->
+            "Service Unavailable"
+
         BadStatus _ ->
-            "Unknown error"
+            "Unknown Error"
 
         BadBody errorMessage ->
             errorMessage

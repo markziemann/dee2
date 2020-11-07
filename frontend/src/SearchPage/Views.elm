@@ -34,8 +34,17 @@ viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSug
         highlight =
             suggestionHighlightFunc activeSuggestion
 
+        classString =
+            if suggestionsVisible then
+                "show"
+
+            else
+                "invisible"
+
         dropdown =
-            \items -> div [ class "dropdown show" ] items
+            \items ->
+                div [ class <| "dropdown " ++ classString ]
+                    [ div [ class <| "dropdown-menu " ++ classString ] items ]
     in
     case searchSuggestions of
         Success suggestions ->
@@ -55,10 +64,11 @@ viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSug
                 |> dropdown
 
         Failure err ->
-            [ text <| errorToString err ]
-            |> dropdown
+            [ div [ class "text-warning" ] [ text <| errorToString err ] ]
+                |> dropdown
+
         NotAsked ->
-            div [ class "dropdown" ] []
+            dropdown []
 
         Loading ->
             [ span
@@ -69,7 +79,7 @@ viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSug
                 []
             , text "Loading..."
             ]
-            |> dropdown
+                |> dropdown
 
 
 viewSearchButton : Model -> SharedTypes.PaginationOffset -> Html Msg
