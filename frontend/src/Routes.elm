@@ -61,7 +61,7 @@ parseSearchResultRoute maybeSearchMode maybeSearchString maybePerPage maybeOffse
 routeParser : UP.Parser (Route -> a) a
 routeParser =
     UP.oneOf
-        [ UP.map HomeRoute UP.top
+        [ UP.map HomeRoute <| UP.oneOf [UP.top, UP.s "improved_search"]
         , UP.map parseSearchResultRoute
             (UP.s searchResultsSlug
                 <?> Query.string "searchMode"
