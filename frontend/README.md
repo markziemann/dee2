@@ -115,7 +115,8 @@ https://www.elastic.co/guide/en/elasticsearch/reference/current/starting-elastic
    - Take note to install the version with only apache license 
    - Use the correct start up instruction for systemd/init 
    
-## Clone this repo
+
+## Build static source files
     $ git clone https://github.com/markziemann/dee2
  
 - Checkout improved_search branch
@@ -134,4 +135,32 @@ https://www.elastic.co/guide/en/elasticsearch/reference/current/starting-elastic
     
 - Build project in production mode
 
-    `$ parcel build improved_search.html`
+    `~/dee2/frontend$ parcel build improved_search.html`
+    
+- Copy generated static files into `/var/www/html`
+    ###### assuming you cloned the git repo to your home directory
+    `~/dee2/frontend$ sudo cp -r ~/dee2/frontend/dist/. /var/www/html`
+
+###### You can git pull, parcel build and copy updated code as necessary
+
+## Index DEE2 metadata into ElasticSearch
+
+-   Ensure Elastic search is running (and configured to start as a service)
+
+-   Set DEE2_METADATA_DIR environment variable
+    ###### assuming you cloned the git repo to your home directory
+    ```
+    $ DEE2_METADATA_DIR=~/dee2/metadata
+    $ export DEE2_METADATA_DIR
+    ```
+    
+- Index the metadata
+    
+    `~/dee2/frontend$ python3 ingest.py`
+    
+## Run the python server
+
+    ~/dee2/frontend$ python3 server.py
+    
+    
+## Enable the site in Apache ...

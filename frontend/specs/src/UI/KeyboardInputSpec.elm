@@ -7,7 +7,7 @@ import Main
 import Types
 import Process
 import Runner
-import SearchPageTypes
+import SearchPage.Types
 import Spec exposing (..)
 import Spec.Claim as Claim
 import Spec.Command
