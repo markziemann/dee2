@@ -19,10 +19,6 @@ type Route
     | Unknown
 
 
-homeSlug =
-    "/"
-
-
 searchResultsSlug =
     "Search"
 
@@ -102,5 +98,4 @@ searchResultParams searchMode searchString { perPage, offset } =
 determinePage : Url.Url -> Route
 determinePage url =
     UP.parse routeParser url
-        |> Debug.log "A"
         |> ME.unwrap Unknown identity
