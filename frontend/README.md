@@ -99,9 +99,6 @@ Windows Powershell
 
 - Make Elasticsearch Http query available for reference.
 
-- Search results should be limited by pagination and results per page
-rather than the default 10
-
 - Search results should be downloadable with format options (tsv, csv, xls, ...)
 
 - Filter results on species
