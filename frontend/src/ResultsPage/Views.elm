@@ -121,6 +121,7 @@ pagination ({ perPage, offset } as paginationOffset) hits =
     let
         previousButton =
             if offset < perPage then
+                -- Disabled state
                 pageSelector
                     True
                     paginationOffset
@@ -130,7 +131,8 @@ pagination ({ perPage, offset } as paginationOffset) hits =
                 pageSelector False (PaginationOffset perPage <| offset - perPage) "Previous"
 
         nextButton =
-            if hits < perPage then
+            --Disabled state
+            if (hits - offset) <= perPage then
                 pageSelector
                     True
                     paginationOffset
