@@ -106,8 +106,6 @@ rather than the default 10
 
 - Filter results on species
 
-- Nav url should be sharable and replicate search query
-
 # Deploy to production staging area 
 
 ## Install elastic search per instructions:
@@ -119,6 +117,33 @@ https://www.elastic.co/guide/en/elasticsearch/reference/current/starting-elastic
    - Take note to install the version with only apache license
    - Use the correct start up instruction for systemd/init 
    
+   ### Quick run down
+   
+   Download and install the public signing key
+   
+   `wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -`
+   
+   Add ElasticSearch to package list (This is for the Apache 2.0 license version)
+   
+   `echo "deb https://artifacts.elastic.co/packages/oss-7.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-7.x.list`
+   
+   Install with
+   
+   `sudo apt-get update && sudo apt-get install elasticsearch`
+   
+   Run as a service (systemd)
+   
+   `sudo /bin/systemctl daemon-reload
+    sudo /bin/systemctl enable elasticsearch.service`
+    
+   Start and Stop with
+   
+   `sudo systemctl start elasticsearch.service
+    sudo systemctl stop elasticsearch.service`
+   
+   Additional configuration:
+   
+   https://www.elastic.co/guide/en/elasticsearch/reference/current/important-settings.html
 
 ## Build static source files
     $ git clone https://github.com/markziemann/dee2
