@@ -1,14 +1,22 @@
-module ResultsPage.Main exposing (..)
+port module ResultsPage.Main exposing (..)
 
 import Dict
 import Dict.Extra as DExtra
+import Json.Decode as Decode
 import Maybe.Extra as MExtra
 import ResultsPage.Helpers exposing (stageResultForDownload)
 import ResultsPage.Types exposing (..)
 import SearchPage.Helpers exposing (delay)
 import Set
-import Table
 import SharedTypes exposing (RemoteData(..))
+import Table
+
+
+port isElementTextTruncated : (Int,  Decode.Value) -> Cmd msg
+
+
+port receiveIdElement : ((Int, Bool) -> msg) -> Sub msg
+
 
 init : Model
 init =
@@ -27,12 +35,12 @@ init =
     }
 
 
-onlyData : Model -> ( Model, Cmd msg, OutMsg)
+onlyData : Model -> ( Model, Cmd msg, OutMsg )
 onlyData model =
-    ( model, Cmd.none, Nothing)
+    ( model, Cmd.none, Nothing )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, OutMsg)
+update : Msg -> Model -> ( Model, Cmd Msg, OutMsg )
 update msg model =
     case msg of
         ResultClicked result ->
@@ -73,7 +81,7 @@ update msg model =
                 }
 
         PageRequest paginationOffset ->
-            ( model, Cmd.none, Just paginationOffset)
+            ( model, Cmd.none, Just paginationOffset )
 
         SetResultsTableQuery resultsTableQuery ->
             onlyData { model | resultsTableQuery = resultsTableQuery }
@@ -92,3 +100,19 @@ update msg model =
 
         DownloadButtonReset ->
             onlyData { model | downloading = False }
+
+        ReceiveElementTruncatedStatus (resultId, status)->
+            let
+                test =
+                    Debug.log "" status
+            in
+            onlyData model
+
+        ShowToggleTip id value->
+            ( model
+            , isElementTextTruncated (id, value)
+            , Nothing
+            )
+
+subscriptions =
+    receiveIdElement ReceiveElementTruncatedStatus

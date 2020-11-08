@@ -18,7 +18,7 @@ import Table exposing (HtmlDetails, Status)
 
 selectClickedResult : (SearchResult -> Msg) -> SelectedResults -> SearchResult -> List (Html.Attribute Msg)
 selectClickedResult msg selectedResults searchResult =
-    [ class (highlightRowIfTrue "table-primary" <| Dict.member searchResult.id selectedResults)
+    [ class  (highlightRowIfTrue "table-primary" <| Dict.member searchResult.id selectedResults)
     , style "cursor" "pointer" -- First place not using bootstrap for style?
     , Events.onClick (msg searchResult)
     ]
@@ -41,7 +41,7 @@ resultsTable selectedResults =
             [ Table.stringColumn "Row" getId
             , Table.stringColumn "Species" (get "species")
             , Table.stringColumn "SRA Run" (get "SRR_accession")
-            , Table.stringColumn "QC summary" (get "QC_summary")
+            , noOverflowColumn "QC summary" (\data -> (data.id, get "QC_summary" data))
             , Table.stringColumn "SRA experiment" (get "SRX_accession")
             , Table.stringColumn "SRA sample" (get "SRS_accession")
             , Table.stringColumn "SRA project" (get "SRP_accession")

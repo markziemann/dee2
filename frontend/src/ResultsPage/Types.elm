@@ -7,7 +7,7 @@ import Set
 import SharedTypes exposing (WebData)
 import SearchPage.Types exposing (SearchResults)
 import Table
-
+import Json.Decode
 
 type alias SelectedResult =
     ( Int, ( String, String ) )
@@ -49,6 +49,8 @@ type Msg
     | DownloadRequested
     | DownloadButtonReset
     | PageRequest SharedTypes.PaginationOffset
+    | ShowToggleTip Int Json.Decode.Value
+    | ReceiveElementTruncatedStatus (Int, Bool)
 
 
 type alias OutMsg =
