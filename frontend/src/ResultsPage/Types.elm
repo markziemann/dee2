@@ -49,8 +49,7 @@ type Msg
     | DownloadRequested
     | DownloadButtonReset
     | PageRequest SharedTypes.PaginationOffset
-    | ShowToggleTip Int Json.Decode.Value
-    | ReceiveElementTruncatedStatus (Int, Bool)
+    | ShowToggleTip Int
 
 
 type alias OutMsg =

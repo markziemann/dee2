@@ -28,9 +28,7 @@ truncatedToolTip toValues data =
             toValues data
     in
     Table.HtmlDetails
-        [ --class "text-truncate"
-          style "overflow" "hidden"
-        , style "text-overflow" "ellipsis"
+        [ class "text-truncate"
         , on "mouseenter" (maybeShowToggleTip id)
         ]
         [ text string ]
@@ -38,18 +36,14 @@ truncatedToolTip toValues data =
 
 maybeShowToggleTip : Int -> Decoder Msg
 maybeShowToggleTip id =
-    Decode.map (ShowToggleTip id) (Decode.field "target" Decode.value)
-
-
-
---Decode.map2 (\offsetWidth scrollWidth -> offsetWidth < scrollWidth)
---    (Decode.at ["target", "offsetWidth"] Decode.int)
---    (Decode.at ["target", "scrollWidth"] Decode.int)
---    |> Decode.andThen
---        (BExtra.ifElse
---            (Decode.succeed ShowToggleTip )
---            (Decode.fail "Text not truncated")
---        )
+    Decode.map2 (\offsetWidth scrollWidth -> offsetWidth < scrollWidth)
+        (Decode.at [ "target", "offsetWidth" ] Decode.float)
+        (Decode.at [ "target", "scrollWidth" ] Decode.float)
+        |> Decode.andThen
+            (BExtra.ifElse
+                (Decode.succeed (ShowToggleTip id))
+                (Decode.fail "Text not truncated")
+            )
 
 
 hideWhenTrue : String -> Bool -> String

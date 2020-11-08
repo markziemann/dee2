@@ -1,8 +1,7 @@
-port module ResultsPage.Main exposing (..)
+module ResultsPage.Main exposing (..)
 
 import Dict
 import Dict.Extra as DExtra
-import Json.Decode as Decode
 import Maybe.Extra as MExtra
 import ResultsPage.Helpers exposing (stageResultForDownload)
 import ResultsPage.Types exposing (..)
@@ -10,12 +9,6 @@ import SearchPage.Helpers exposing (delay)
 import Set
 import SharedTypes exposing (RemoteData(..))
 import Table
-
-
-port isElementTextTruncated : (Int,  Decode.Value) -> Cmd msg
-
-
-port receiveIdElement : ((Int, Bool) -> msg) -> Sub msg
 
 
 init : Model
@@ -101,18 +94,13 @@ update msg model =
         DownloadButtonReset ->
             onlyData { model | downloading = False }
 
-        ReceiveElementTruncatedStatus (resultId, status)->
-            let
-                test =
-                    Debug.log "" status
-            in
+
+        ShowToggleTip id ->
+            --Currently this not  implemented. What needs to happen is when Toggle tip can be
+            --shown (this case) we need to add flag in the table row data which will be passed
+            --onto the noOverFlow column configuration which will render a button to display the
+            --tool tip. The toggle tip it's self needs to be created as well. I'm thinking a
+            --bootstrap dropdown. Or maybe a footer along the bottom of the page? Dunno
             onlyData model
 
-        ShowToggleTip id value->
-            ( model
-            , isElementTextTruncated (id, value)
-            , Nothing
-            )
 
-subscriptions =
-    receiveIdElement ReceiveElementTruncatedStatus

@@ -5,19 +5,16 @@ import Extra exposing (equals)
 import Json.Encode
 import Main
 import Types
-import Process
 import Runner
 import SearchPage.Types
 import Spec exposing (..)
 import Spec.Claim as Claim
-import Spec.Command
 import Spec.Markup as Markup
 import Spec.Markup.Event as Event
 import Spec.Markup.Selector exposing (..)
-import Spec.Observer as Observer
 import Spec.Setup as Setup
-import Spec.Step
-import Spec.Time as Time
+
+import SharedTypes exposing (RemoteData(..))
 
 
 enterKeyPressSpec : Spec.Spec Types.Model Types.Msg
@@ -87,7 +84,7 @@ mockSearchSuggestions ( model, cmd ) =
             model.searchPage
 
         newSearchBar =
-            { searchBar | searchSuggestions = Array.fromList [ "1", "2", "3", "4" ] }
+            { searchBar | searchSuggestions =  Success <| Array.fromList [ "1", "2", "3", "4" ]}
     in
     ( { model | searchPage = newSearchBar }, cmd )
 

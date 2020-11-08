@@ -45,7 +45,7 @@ resultsTable selectedResults =
             , Table.stringColumn "SRA experiment" (get "SRX_accession")
             , Table.stringColumn "SRA sample" (get "SRS_accession")
             , Table.stringColumn "SRA project" (get "SRP_accession")
-            , Table.stringColumn "Sample" (get "Sample_name")
+            , noOverflowColumn "Sample" (\data -> (data.id, get "Sample_name" data))
             , Table.stringColumn "Experiment" (get "GEO_series")
             ]
         , customizations =

@@ -206,7 +206,7 @@ subscriptions model =
                 ]
 
         Routes.SearchRoute _ ->
-            Sub.map GotResultsPageMsg <| RPMain.subscriptions
+            Sub.none
 
         Routes.Unknown ->
             subscriptions { model | route = Routes.HomeRoute }
