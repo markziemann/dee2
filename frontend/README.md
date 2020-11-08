@@ -118,15 +118,15 @@ https://www.elastic.co/guide/en/elasticsearch/reference/current/starting-elastic
    
    Download and install the public signing key
    
-   `wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -`
+   `$ wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -`
    
    Add ElasticSearch to package list (This is for the Apache 2.0 license version)
    
-   `echo "deb https://artifacts.elastic.co/packages/oss-7.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-7.x.list`
+   `$ echo "deb https://artifacts.elastic.co/packages/oss-7.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-7.x.list`
    
    Install with
    
-   `sudo apt-get update && sudo apt-get install elasticsearch`
+   `$ sudo apt-get update && sudo apt-get install elasticsearch`
    
    Run as a service (systemd)
    
