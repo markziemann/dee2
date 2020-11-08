@@ -130,16 +130,16 @@ https://www.elastic.co/guide/en/elasticsearch/reference/current/starting-elastic
    
    Run as a service (systemd)
    
-    ```Bash
-    sudo /bin/systemctl daemon-reload
-    sudo /bin/systemctl enable elasticsearch.service
-    ```
+   ```
+    $ sudo /bin/systemctl daemon-reload
+    $ sudo /bin/systemctl enable elasticsearch.service
+   ```
     
    Start and Stop with
    
-   ```Bash
-    sudo systemctl start elasticsearch.service
-    sudo systemctl stop elasticsearch.service
+   ```
+   $ sudo systemctl start elasticsearch.service
+   $ sudo systemctl stop elasticsearch.service
    ```
    Additional configuration:
    
