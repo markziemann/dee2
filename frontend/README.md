@@ -57,7 +57,7 @@ This will be achieved with:
 
 - Navigate to `http://localhost:8080/` in your browser
 
-## To Uninstall Elm packages is recommend to use [elm-json](https://github.com/zwilias/elm-json#removing-dependencies-elm-json-uninstall)
+## To Uninstall Elm packages it is recommend to use [elm-json](https://github.com/zwilias/elm-json#removing-dependencies-elm-json-uninstall)
 
 # Running Tests
 
