@@ -161,10 +161,7 @@ viewSearchResultHits searchResults =
         Failure err ->
             div [ class "text-warning" ] [ text <| errorToString err ]
 
-        NotAsked ->
-            text "Waiting for user"
-
-        Loading ->
+        _ -> 
             div [ class "spinner-border spinner-border-sm", attribute "role" "status" ]
                 [ span [ class "sr-only" ]
                     [ text "Loading..." ]
