@@ -130,13 +130,13 @@ cut -f-2 $USRDIR/GeneInfo.tsv | tr '\t' '_' \
 cp $LOGS $LOGDIR
 cd $USRDIR
 
-TOKEN=$(curl -b cookies.txt -c cookies.txt 'http://degust.erc.monash.edu/upload' | sort | grep 'name="authenticity_token"' | cut -d '"' -f8)
+TOKEN=$(curl -b cookies.txt -c cookies.txt 'https://degust.erc.monash.edu/upload' | sort | grep 'name="authenticity_token"' | cut -d '"' -f8)
 #echo "TOKEN $TOKEN"
 #echo "<br>"
-curl -b cookies.txt -v -L 'http://degust.erc.monash.edu/upload' -F "authenticity_token=$TOKEN" -F "filename=@/$PWD/GeneCountMatrix.tsv" 2> tmp \
+curl -b cookies.txt -v -L 'https://degust.erc.monash.edu/upload' -F "authenticity_token=$TOKEN" -F "filename=@/$PWD/GeneCountMatrix.tsv" 2> tmp \
 | grep -v 'front-loader.gif'
 
-URL=$(grep -m1 'http://degust.erc.monash.edu/degust/compare.html?code=' tmp | cut -d ' ' -f3)
+URL=$(grep -m1 'https://degust.erc.monash.edu/degust/compare.html?code=' tmp | cut -d ' ' -f3)
 echo "Sending your GeneCountMatrix.tsv to Degust."
 echo "Here is your Degust <a href=$URL target=\"_blank\"> link</a>. It will open a new tab."
 echo "<br><br>"
