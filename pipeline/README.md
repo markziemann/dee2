@@ -13,9 +13,14 @@ Here are some of the key features:
  * Ability to process own fastq files as well as those from SRA
 
 ## How it works
-The DEE2 pipeline uses containers (Docker and Singularity) to enhance ease of use, portability and reproducibility. This means the DEE2 pipeline can be run reproducibly across different environments, making it amenable to distributed computing. The user can provide a species and SRA run accession numbers to be processed, and this data will be immediately available to the user when completed. Data is also uploaded to our server by sftp and after sanitation, will be available to other users via the frontend (still under construction). If users don't provide accession numbers, then they will receive accessions from the current queue via html request. If the user doesn't specify a species, then one is selected based on the memory available. 
+The DEE2 pipeline uses containers (Docker and Singularity) to enhance ease of use, portability and reproducibility.
+This means the DEE2 pipeline can be run reproducibly across different environments, making it amenable to distributed computing.
+The user can provide a species and SRA run accession numbers to be processed, and this data will be immediately available to the user when completed.
+Data is also uploaded to our server by sftp and after sanitation, will be available to other users via the frontend (still under construction).
+If users don't provide accession numbers, then they will receive accessions from the current queue via html request.
 
 ## Before starting check system requirements
+
 So far this has only been tested on linux but will probably work for any system with sufficient resources capable of running Docker.
 
 Minimum 8GB RAM available. Use the "free" command:
@@ -26,39 +31,9 @@ Minimum 32GB of data storage available for Docker. Use the "df" command to check
 
 `df -h /var`
 
-If you need to change the default Docker data to another location with >32GB free, follow these steps (works for Ubuntu 16.04): 
+## Quick start guide for docker users
 
-1) Create a config file for docker data storage
-
-`sudo nano /etc/systemd/system/docker.service.d/docker-storage.conf`
-
-2) Paste in the following to the new file, substituting "/path/to/data/" with the location you'd like to run the image:
-
-```
-[Service]
-ExecStart=
-ExecStart=/usr/bin/dockerd -H fd:// --data-root="/path/to/data/"
-```
-3) Restart the docker service
-
-`sudo systemctl daemon-reload ; sudo systemctl restart docker`
-
-4) Confirm that the change in location has occurred.
-
-`docker info|grep "Docker Root Dir"`
-
-## Quick start guide for docker users (Singularity users see this guide [link](https://github.com/markziemann/dee2/blob/master/notes/singularity_walkthrough.md))
-Install docker
-
-`sudo apt install docker.io`
-
-Add user to docker group
-
-`sudo usermod -aG docker $(whoami)`
-
-Log out and log back in or use the below command
-
-`exec su -l $(whoami)`
+If Docker is not intalled, visit [Docker.com](https://www.docker.com/get-started) and follow the instructions.
 
 Now pull image
 
@@ -77,6 +52,7 @@ Return the data directory from the container to the host filesystem
 `docker cp $(docker ps -alq):/dee2/data/ .`
 
 ## Donating compute time
+
 If you have a species of interest
 
 `docker run mziemann/tallyup celegans`
@@ -93,4 +69,6 @@ If you want to keep one container running contantly, try the 'run-one' utility
 
 `nohup run-one-constantly docker run mziemann/tallyup mmusculus &`
 
-## Contributions and issue reports are welcome
+## Running into problems?
+
+Raise an issue and we will try to resolve it.
