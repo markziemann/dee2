@@ -13,7 +13,6 @@ type alias SearchData =
 type alias SearchResult =
     { id : Int
     , data : SearchData
-    , selected : Bool
     }
 
 

@@ -120,6 +120,6 @@ decodeSearchResults ({ offset } as paginationOffset) =
                 -- Decode.map doesn't iterate (confusing!) its more like function application
                 -- it should be called apply
                 |> Decode.map Array.fromList
-                |> Decode.map (Array.indexedMap (\idx data -> SearchResult (idx + offset) data False))
+                |> Decode.map (Array.indexedMap (\idx data -> SearchResult (idx + offset) data))
             )
         )

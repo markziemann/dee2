@@ -142,7 +142,7 @@ update msg model =
                 newModel =
                     { model | url = url, route = Routes.determinePage url }
             in
-            case Routes.determinePage url of
+            case newModel.route of
                 Routes.HomeRoute ->
                     ( resetModel newModel, Cmd.none )
 
