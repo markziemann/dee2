@@ -53,7 +53,9 @@ async def download(request):
 
     async with aiohttp.ClientSession() as session:
         for key, value in params:
-            async with session.get('http://dee2.io/cgi-bin/request.sh', params={'org': key, 'x': value}) as response:
+            # Split up the request params into a MultiDict
+            params = [('org', key)] + [('x', srr) for srr in value.split(',')]
+            async with session.get('http://dee2.io/cgi-bin/request.sh', params=params) as response:
                 zip_files.append((key, await response.read()))
 
 
