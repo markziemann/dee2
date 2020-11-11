@@ -2,7 +2,6 @@ module Helpers exposing (..)
 
 import Http exposing (Error(..))
 
-
 errorToString : Http.Error -> String
 errorToString error =
     case error of

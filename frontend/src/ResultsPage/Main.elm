@@ -28,12 +28,12 @@ init =
     }
 
 
-onlyData : Model -> ( Model, Cmd msg, OutMsg )
+onlyData : Model -> ( Model, Cmd msg, Maybe OutMsg )
 onlyData model =
     ( model, Cmd.none, Nothing )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, OutMsg )
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe OutMsg )
 update msg model =
     case msg of
         ResultClicked result ->

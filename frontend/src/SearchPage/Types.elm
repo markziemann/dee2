@@ -2,9 +2,10 @@ module SearchPage.Types exposing (..)
 
 import Array exposing (Array)
 import Dict
-import Http
 import SharedTypes exposing (PaginationOffset, WebData)
 
+type SearchParameters
+    = SearchParameters SearchMode String SharedTypes.PaginationOffset
 
 type alias SearchData =
     Dict.Dict String String
@@ -24,9 +25,7 @@ type alias SearchResults =
 
 type alias OutMsg =
     { searchResults: WebData SearchResults
-    , searchMode : SearchMode
-    , searchString : String
-    , paginationOffset : SharedTypes.PaginationOffset
+    , searchParameters: SearchParameters
     }
 
 
@@ -46,6 +45,7 @@ type SearchMode
 type alias Model =
     { searchString : String
     , searchMode : SearchMode
+    , defaultPaginationOffset: PaginationOffset
     , searchSuggestions : WebData SearchSuggestions
     , activeSuggestion : Maybe Int
     , suggestionsVisible : Bool
@@ -54,7 +54,7 @@ type alias Model =
 
 type Msg
     = SearchUpdate String
-    | Search SearchMode String SharedTypes.PaginationOffset
+    | Search SearchParameters
     | GetSearchSuggestions String
     | GotSearchSuggestions (WebData SearchSuggestions)
     | ArrowUp

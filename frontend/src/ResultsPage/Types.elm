@@ -2,12 +2,11 @@ module ResultsPage.Types exposing (..)
 
 import Array
 import Dict
-import SearchPage.Types
+import SearchPage.Types exposing (SearchResults)
 import Set
 import SharedTypes exposing (WebData)
-import SearchPage.Types exposing (SearchResults)
 import Table
-import Json.Decode
+
 
 type alias SelectedResult =
     ( Int, ( String, String ) )
@@ -53,4 +52,4 @@ type Msg
 
 
 type alias OutMsg =
-    Maybe SharedTypes.PaginationOffset
+    SharedTypes.PaginationOffset

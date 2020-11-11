@@ -2,11 +2,14 @@ module Nav exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Types exposing (..)
+import Html.Events exposing (onClick)
 
 
 navbar =
     nav [ class "navbar navbar-expand-lg navbar-light bg-light" ]
-        [ a [ class "navbar-brand text-primary", href "/" ]
+        [ button [ class "btn btn-link navbar-brand text-primary", onClick HomeReset
+        ]
             [ text "Digital Expression Explorer 2" ]
         --, button
         --    [ attribute "aria-controls" "navbarSupportedContent"

@@ -7,7 +7,6 @@ import Helpers exposing (errorToString)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events as Events exposing (onClick)
-import Maybe.Extra as ME
 import ResultsPage.Helpers exposing (..)
 import ResultsPage.Types exposing (..)
 import SearchPage.Types exposing (SearchResult, SearchResults)
@@ -168,8 +167,8 @@ viewSearchResultHits searchResults =
                 ]
 
 
-viewSearchResults : Model -> List (Html Msg)
-viewSearchResults ({ resultsTableState, resultsTableQuery } as model) =
+viewSearchResults : Model -> PaginationOffset -> List (Html Msg)
+viewSearchResults ({ resultsTableState, resultsTableQuery } as model) paginationOffset =
     [ div [ class "row" ]
         [ div [ class "col-xl-9" ]
             [ div [ class "bg-light text-primary" ]
@@ -178,7 +177,7 @@ viewSearchResults ({ resultsTableState, resultsTableQuery } as model) =
                 (resultsTable model.selectedResults)
                 resultsTableState
                 (unwrapWebData [] (.rows >> Array.toList) model.searchResults)
-            , pagination model.paginationOffset (unwrapWebData 0 .hits model.searchResults)
+            , pagination paginationOffset (unwrapWebData 0 .hits model.searchResults)
             ]
         , div [ class "col-xl-3" ]
             [ div [ class "sticky-top" ]

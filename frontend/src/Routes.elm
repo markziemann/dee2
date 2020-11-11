@@ -1,7 +1,7 @@
 module Routes exposing (..)
 
 import Maybe.Extra as ME
-import SearchPage.Types exposing (SearchMode(..))
+import SearchPage.Types exposing (SearchMode(..), SearchParameters(..))
 import SharedTypes
 import Url
 import Url.Builder as UB exposing (QueryParameter)
@@ -11,11 +11,7 @@ import Url.Parser.Query as Query
 
 type Route
     = HomeRoute
-    | SearchRoute
-        { searchMode : SearchMode
-        , searchString : String
-        , paginationOffset : SharedTypes.PaginationOffset
-        }
+    | SearchRoute SearchParameters
     | Unknown
 
 
@@ -36,7 +32,6 @@ parseSearchMode maybeSearchMode =
             Nothing
 
 
-
 parseSearchResultRoute : Maybe String -> Maybe String -> Maybe String -> Maybe String -> Route
 parseSearchResultRoute maybeSearchMode maybeSearchString maybePerPage maybeOffset =
     case
@@ -48,11 +43,8 @@ parseSearchResultRoute maybeSearchMode maybeSearchString maybePerPage maybeOffse
         )
     of
         ( Just searchMode, Just searchString, Just paginationOffset ) ->
-            SearchRoute
-                { searchMode = searchMode
-                , searchString = searchString
-                , paginationOffset = paginationOffset
-                }
+            SearchRoute <|
+                SearchParameters searchMode searchString paginationOffset
 
         ( _, _, _ ) ->
             Unknown
@@ -61,7 +53,7 @@ parseSearchResultRoute maybeSearchMode maybeSearchString maybePerPage maybeOffse
 routeParser : UP.Parser (Route -> a) a
 routeParser =
     UP.oneOf
-        [ UP.map HomeRoute <| UP.oneOf [UP.top, UP.s "improved_search"]
+        [ UP.map HomeRoute <| UP.oneOf [ UP.top, UP.s "improved_search" ]
         , UP.map parseSearchResultRoute
             (UP.s searchResultsSlug
                 <?> Query.string "searchMode"
@@ -72,13 +64,13 @@ routeParser =
         ]
 
 
-searchResultsRoute : SearchMode -> String -> SharedTypes.PaginationOffset -> String
-searchResultsRoute searchMode searchString =
-    UB.absolute [ searchResultsSlug ] << searchResultParams searchMode searchString
+searchResultsRoute : SearchParameters -> String
+searchResultsRoute searchUrlParameters =
+    UB.absolute [ searchResultsSlug ] <| searchResultParams searchUrlParameters
 
 
-searchResultParams : SearchMode -> String -> SharedTypes.PaginationOffset -> List QueryParameter
-searchResultParams searchMode searchString { perPage, offset } =
+searchResultParams : SearchParameters -> List QueryParameter
+searchResultParams (SearchParameters searchMode searchString paginationOffset) =
     let
         searchModeString =
             case searchMode of
@@ -90,8 +82,8 @@ searchResultParams searchMode searchString { perPage, offset } =
     in
     [ UB.string "searchMode" searchModeString
     , UB.string "searchString" searchString
-    , UB.string "perPage" <| String.fromInt perPage
-    , UB.string "offset" <| String.fromInt offset
+    , UB.string "perPage" <| String.fromInt paginationOffset.perPage
+    , UB.string "offset" <| String.fromInt paginationOffset.offset
     ]
 
 

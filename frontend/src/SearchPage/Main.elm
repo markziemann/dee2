@@ -1,6 +1,5 @@
 module SearchPage.Main exposing (..)
 
-import Array exposing (Array)
 import Browser.Events exposing (onClick, onKeyDown)
 import Elastic as Elastic exposing (parse, serialize)
 import Http as Http exposing (get)
@@ -10,7 +9,7 @@ import Result
 import Routes
 import SearchPage.Helpers exposing (..)
 import SearchPage.Types exposing (..)
-import SharedTypes exposing (RemoteData(..), toWebData)
+import SharedTypes exposing (PaginationOffset, RemoteData(..), toWebData)
 import Url.Builder as UB
 
 
@@ -24,7 +23,8 @@ init =
     , searchMode = Strict
     , searchSuggestions = NotAsked
     , activeSuggestion = Nothing
-    , suggestionsVisible = True
+    , suggestionsVisible = False
+    , defaultPaginationOffset = PaginationOffset 20 0
     }
 
 
@@ -56,9 +56,11 @@ update msg model =
             \paginationOffset searchResults ->
                 -- OutMsg
                 { searchResults = searchResults
-                , searchMode = model.searchMode
-                , searchString = model.searchString
-                , paginationOffset = paginationOffset
+                , searchParameters =
+                    SearchParameters
+                        model.searchMode
+                        model.searchString
+                        paginationOffset
                 }
     in
     case msg of
@@ -80,7 +82,7 @@ update msg model =
                 , noResults
                 )
 
-        Search searchMode searchString paginationOffset ->
+        Search ((SearchParameters searchMode searchString paginationOffset) as params) ->
             let
                 -- Elastic.Word makes no modification to the search string
                 -- https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html#_simple_query_string_syntax
@@ -97,7 +99,7 @@ update msg model =
 
                 url =
                     route
-                        ++ (Routes.searchResultParams searchMode search_string paginationOffset
+                        ++ (Routes.searchResultParams params
                                 |> UB.toQuery
                            )
 
@@ -125,7 +127,7 @@ update msg model =
 
                 -- recursive call should be avoided
                 ( _, _ ) ->
-                    update (Search model.searchMode model.searchString <| SharedTypes.PaginationOffset 20 0) model
+                    update (Search <| defaultSearchParameters model) model
 
         -- recursive call should be avoided
         GetSearchSuggestions value ->

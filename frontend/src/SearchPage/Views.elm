@@ -6,7 +6,13 @@ import Helpers exposing (errorToString)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import SearchPage.Helpers exposing (highlightMatchingText, suggestionHighlightFunc)
+import SearchPage.Helpers
+    exposing
+        ( defaultSearchParameters
+        , highlightMatchingText
+        , suggestionHighlightFunc
+        , withPagination
+        )
 import SearchPage.Types exposing (..)
 import SharedTypes exposing (RemoteData(..))
 
@@ -68,7 +74,7 @@ viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSug
                 |> dropdown
 
         NotAsked ->
-            div [][]
+            div [] []
 
         Loading ->
             [ span
@@ -82,12 +88,14 @@ viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSug
                 |> dropdown
 
 
-viewSearchButton : Model -> SharedTypes.PaginationOffset -> Html Msg
-viewSearchButton model paginationOffset =
+viewSearchButton : Model -> Html Msg
+viewSearchButton model =
     div [ class "d-flex justify-content-center" ]
         [ div [ class "btn-group dropright my-5" ]
             [ button
-                [ onClick <| Search model.searchMode model.searchString paginationOffset
+                [ (defaultSearchParameters model)
+                    |> Search
+                    |> onClick
                 , class "btn btn-lg btn-outline-success"
                 , type_ "button"
                 ]

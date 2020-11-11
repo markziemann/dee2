@@ -6,7 +6,7 @@ import Html.Attributes exposing (class)
 import Json.Decode as Decode exposing (Decoder, array, field, string)
 import Process exposing (sleep)
 import SearchPage.Types exposing (..)
-import SharedTypes exposing (RemoteData(..), WebData)
+import SharedTypes exposing (PaginationOffset, RemoteData(..), WebData)
 import Task
 
 
@@ -123,3 +123,13 @@ decodeSearchResults ({ offset } as paginationOffset) =
                 |> Decode.map (Array.indexedMap (\idx data -> SearchResult (idx + offset) data))
             )
         )
+
+
+defaultSearchParameters : Model -> SearchParameters
+defaultSearchParameters model =
+    SearchParameters model.searchMode model.searchString model.defaultPaginationOffset
+
+
+withPagination : SearchParameters -> PaginationOffset -> SearchParameters
+withPagination (SearchParameters searchMode searchString _) paginationOffset =
+    SearchParameters searchMode searchString paginationOffset
