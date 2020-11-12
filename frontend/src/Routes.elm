@@ -11,7 +11,7 @@ import Url.Parser.Query as Query
 
 type Route
     = HomeRoute
-    | SearchRoute SearchParameters
+    | ResultsRoute SearchParameters
     | Unknown
 
 
@@ -43,7 +43,7 @@ parseSearchResultRoute maybeSearchMode maybeSearchString maybePerPage maybeOffse
         )
     of
         ( Just searchMode, Just searchString, Just paginationOffset ) ->
-            SearchRoute <|
+            ResultsRoute <|
                 SearchParameters searchMode searchString paginationOffset
 
         ( _, _, _ ) ->

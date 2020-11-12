@@ -43,8 +43,7 @@ type SearchMode
 
 
 type alias Model =
-    { searchString : String
-    , searchMode : SearchMode
+    { searchParameters : SearchParameters
     , defaultPaginationOffset: PaginationOffset
     , searchSuggestions : WebData SearchSuggestions
     , activeSuggestion : Maybe Int

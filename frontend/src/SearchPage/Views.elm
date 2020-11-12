@@ -6,13 +6,7 @@ import Helpers exposing (errorToString)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import SearchPage.Helpers
-    exposing
-        ( defaultSearchParameters
-        , highlightMatchingText
-        , suggestionHighlightFunc
-        , withPagination
-        )
+import SearchPage.Helpers exposing (getSearchString, highlightMatchingText, suggestionHighlightFunc, withPagination)
 import SearchPage.Types exposing (..)
 import SharedTypes exposing (RemoteData(..))
 
@@ -26,16 +20,16 @@ viewLargeSearchBar model =
             , class "form-control form-control-lg"
             , placeholder "e.g. Human epilepisy | SRP070529"
             , type_ "search"
-            , value model.searchString
+            , value <| getSearchString model.searchParameters
             , id "search-bar"
             ]
-            [ text model.searchString ]
+            [ text <| getSearchString model.searchParameters ]
         , viewSuggestions model
         ]
 
 
 viewSuggestions : Model -> Html Msg
-viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSuggestion } =
+viewSuggestions { suggestionsVisible, searchParameters, searchSuggestions, activeSuggestion } =
     let
         highlight =
             suggestionHighlightFunc activeSuggestion
@@ -64,7 +58,7 @@ viewSuggestions { suggestionsVisible, searchString, searchSuggestions, activeSug
                             |> class
                         , onClick (SuggestionSelected idx)
                         ]
-                        (highlightMatchingText searchString suggestion)
+                        (highlightMatchingText (getSearchString searchParameters) suggestion)
                 )
                 (Array.toList suggestions)
                 |> dropdown
@@ -93,9 +87,7 @@ viewSearchButton model =
     div [ class "d-flex justify-content-center" ]
         [ div [ class "btn-group dropright my-5" ]
             [ button
-                [ (defaultSearchParameters model)
-                    |> Search
-                    |> onClick
+                [ onClick <| Search model.searchParameters
                 , class "btn btn-lg btn-outline-success"
                 , type_ "button"
                 ]

@@ -19,12 +19,15 @@ search =
 
 init : Model
 init =
-    { searchString = ""
-    , searchMode = Strict
+    let
+        defaultPaginationOffset =
+            PaginationOffset 20 0
+    in
+    { searchParameters = SearchParameters Strict "" defaultPaginationOffset
     , searchSuggestions = NotAsked
     , activeSuggestion = Nothing
     , suggestionsVisible = False
-    , defaultPaginationOffset = PaginationOffset 20 0
+    , defaultPaginationOffset = defaultPaginationOffset
     }
 
 
@@ -56,29 +59,28 @@ update msg model =
             \paginationOffset searchResults ->
                 -- OutMsg
                 { searchResults = searchResults
-                , searchParameters =
-                    SearchParameters
-                        model.searchMode
-                        model.searchString
-                        paginationOffset
+                , searchParameters = withPagination paginationOffset model.searchParameters
                 }
+
+        updateSearchString = \searchString ->
+            { model | searchParameters = withSearchString searchString model.searchParameters }
     in
     case msg of
-        SearchUpdate value ->
-            if value == "" then
+        SearchUpdate searchString ->
+            if searchString == "" then
                 -- Don't wait to clear the suggestions if there is nothing
                 -- in the search box. Having search suggestions with an empty
                 -- searchString causes issues for the highlightMatchingText function
                 onlyData
-                    ({ model | searchString = value }
+                    (updateSearchString searchString
                         |> clearActiveSuggestion
                         |> clearSearchSuggestions
                     )
 
             else
-                ( { model | searchString = value }
+                ( updateSearchString searchString
                     |> showSuggestions
-                , delay 1000 (GetSearchSuggestions value)
+                , delay 1000 (GetSearchSuggestions searchString)
                 , noResults
                 )
 
@@ -112,10 +114,10 @@ update msg model =
                                 (decodeSearchResults paginationOffset)
                         }
             in
-            ( { model | searchString = searchString }
+            ( updateSearchString searchString
                 |> hideSuggestions
             , serverQuery
-            , noResults
+            , Just <| OutMsg Loading params
             )
 
         EnterKey ->
@@ -127,12 +129,12 @@ update msg model =
 
                 -- recursive call should be avoided
                 ( _, _ ) ->
-                    update (Search <| defaultSearchParameters model) model
+                    update (Search model.searchParameters) model
 
         -- recursive call should be avoided
         GetSearchSuggestions value ->
             -- This is some debounce on the search string to prevent spamming ElasticSearch with queries
-            if model.searchString == value then
+            if getSearchString model.searchParameters  == value then
                 ( model
                 , get
                     { url = "api/search_as_you_type/" ++ value
@@ -154,7 +156,7 @@ update msg model =
             case getWebDataIndex index model.searchSuggestions of
                 Just suggestion ->
                     onlyData
-                        ({ model | searchString = suggestion }
+                        (updateSearchString suggestion
                             |> clearActiveSuggestion
                             |> hideSuggestions
                         )
@@ -191,10 +193,10 @@ update msg model =
                     noChange
 
         StrictSelected string ->
-            onlyData { model | searchMode = Strict }
+            onlyData { model | searchParameters = withSearchMode Strict model.searchParameters }
 
         FuzzySelected string ->
-            onlyData { model | searchMode = Fuzzy }
+            onlyData { model | searchParameters = withSearchMode Fuzzy model.searchParameters }
 
         GotHttpSearchResponse paginationOffset webData ->
             ( model

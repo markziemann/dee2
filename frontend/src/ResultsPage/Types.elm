@@ -2,7 +2,7 @@ module ResultsPage.Types exposing (..)
 
 import Array
 import Dict
-import SearchPage.Types exposing (SearchResults)
+import SearchPage.Types exposing (SearchParameters, SearchResults)
 import Set
 import SharedTypes exposing (WebData)
 import Table
@@ -26,6 +26,7 @@ type alias ResultRows =
 
 type alias Model =
     { searchResults : WebData SearchResults
+    , searchParameters: Maybe SearchParameters
     , resultsTableQuery : String
     , resultsTableState : Table.State
     , selectedResultsTableQuery : String
@@ -33,7 +34,7 @@ type alias Model =
     , downloading : Bool
     , selectedResults : SelectedResults
     , resultsPendingRemoval : ResultsPendingRemoval
-    , paginationOffset : SharedTypes.PaginationOffset
+
     }
 
 
@@ -50,6 +51,3 @@ type Msg
     | PageRequest SharedTypes.PaginationOffset
     | ShowToggleTip Int
 
-
-type alias OutMsg =
-    SharedTypes.PaginationOffset

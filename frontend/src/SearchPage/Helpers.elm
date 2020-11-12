@@ -125,11 +125,31 @@ decodeSearchResults ({ offset } as paginationOffset) =
         )
 
 
-defaultSearchParameters : Model -> SearchParameters
-defaultSearchParameters model =
-    SearchParameters model.searchMode model.searchString model.defaultPaginationOffset
-
-
-withPagination : SearchParameters -> PaginationOffset -> SearchParameters
-withPagination (SearchParameters searchMode searchString _) paginationOffset =
+withPagination : PaginationOffset -> SearchParameters -> SearchParameters
+withPagination paginationOffset (SearchParameters searchMode searchString _) =
     SearchParameters searchMode searchString paginationOffset
+
+
+withSearchString : String -> SearchParameters -> SearchParameters
+withSearchString searchString (SearchParameters searchMode _ paginationOffset) =
+    SearchParameters searchMode searchString paginationOffset
+
+
+withSearchMode : SearchMode -> SearchParameters -> SearchParameters
+withSearchMode searchMode (SearchParameters _ searchString paginationOffset) =
+    SearchParameters searchMode searchString paginationOffset
+
+
+getSearchString : SearchParameters -> String
+getSearchString (SearchParameters _ searchString _) =
+    searchString
+
+
+getSearchMode : SearchParameters -> SearchMode
+getSearchMode (SearchParameters searchMode _ _) =
+    searchMode
+
+
+sameModeAndString : SearchParameters -> SearchParameters -> Bool
+sameModeAndString (SearchParameters modeA stringA _) (SearchParameters modeB stringB _) =
+    modeA == modeB && stringA == stringB

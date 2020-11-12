@@ -9,7 +9,6 @@ import Html.Events exposing (on)
 import Json.Decode as Decode exposing (Decoder)
 import ResultsPage.Types exposing (..)
 import SearchPage.Types exposing (SearchResult, SearchResults)
-import SharedTypes exposing (WebData)
 import Table
 import Url.Builder
 
@@ -79,12 +78,6 @@ defaultTable =
 highlightRowIfTrue style true =
     BExtra.ifElse style "" true
 
-
-updateSearchData : Model -> SearchPage.Types.OutMsg-> Model
-updateSearchData model outMsg =
-    { model
-        | searchResults = outMsg.searchResults
-    }
 
 
 stageResultForDownload : SearchPage.Types.SearchResult -> Maybe ( String, String )

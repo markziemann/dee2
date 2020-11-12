@@ -6,14 +6,16 @@ import Maybe.Extra as MExtra
 import ResultsPage.Helpers exposing (stageResultForDownload)
 import ResultsPage.Types exposing (..)
 import SearchPage.Helpers exposing (delay)
+import SearchPage.Types exposing (SearchParameters, SearchResults)
 import Set
-import SharedTypes exposing (RemoteData(..))
+import SharedTypes exposing (PaginationOffset, RemoteData(..), WebData)
 import Table
 
 
-init : Model
-init =
-    { searchResults = NotAsked
+init : WebData SearchResults -> Maybe SearchParameters -> Model
+init searchResults maybeSearchParameters =
+    { searchResults = searchResults
+    , searchParameters = maybeSearchParameters
     , resultsTableQuery = ""
     , resultsTableState = Table.initialSort "id"
     , selectedResultsTableQuery = ""
@@ -21,19 +23,15 @@ init =
     , downloading = False
     , selectedResults = Dict.empty
     , resultsPendingRemoval = Set.empty
-    , paginationOffset =
-        { perPage = 20
-        , offset = 0
-        }
     }
 
 
-onlyData : Model -> ( Model, Cmd msg, Maybe OutMsg )
+onlyData : Model -> ( Model, Cmd msg, Maybe SharedTypes.PaginationOffset )
 onlyData model =
     ( model, Cmd.none, Nothing )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe OutMsg )
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe SharedTypes.PaginationOffset )
 update msg model =
     case msg of
         ResultClicked result ->
@@ -94,7 +92,6 @@ update msg model =
         DownloadButtonReset ->
             onlyData { model | downloading = False }
 
-
         ShowToggleTip id ->
             --Currently this not  implemented. What needs to happen is when Toggle tip can be
             --shown (this case) we need to add flag in the table row data which will be passed
@@ -102,5 +99,3 @@ update msg model =
             --tool tip. The toggle tip it's self needs to be created as well. I'm thinking a
             --bootstrap dropdown. Or maybe a footer along the bottom of the page? Dunno
             onlyData model
-
-
