@@ -138,6 +138,10 @@ getSearchMode (SearchParameters searchMode _ _) =
     searchMode
 
 
-sameModeAndString : SearchParameters -> SearchParameters -> Bool
-sameModeAndString (SearchParameters modeA stringA _) (SearchParameters modeB stringB _) =
-    modeA == modeB && stringA == stringB
+differentSearch : Maybe SearchParameters -> SearchParameters -> Bool
+differentSearch maybeSearchParameters (SearchParameters modeB stringB _) =
+    case maybeSearchParameters of
+        Just (SearchParameters modeA stringA _) ->
+            modeA /= modeB || stringA /= stringB
+        Nothing ->
+            False

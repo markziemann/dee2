@@ -7,15 +7,15 @@ import Maybe.Extra as MExtra
 import ResultsPage.Helpers exposing (stageResultForDownload)
 import ResultsPage.Types exposing (..)
 import Routes
-import SearchPage.Helpers exposing (delay, withPagination)
+import SearchPage.Helpers exposing (delay, differentSearch, withPagination)
 import SearchPage.Types exposing (SearchParameters, SearchResults)
 import Set
 import SharedTypes exposing (PaginationOffset, RemoteData(..), WebData)
 import Table
 
 
-init : Nav.Key -> WebData SearchResults -> Maybe SearchParameters -> Model
-init navKey searchResults maybeSearchParameters =
+init : Nav.Key -> Maybe SearchParameters -> WebData SearchResults ->  Model
+init navKey  maybeSearchParameters searchResults =
     { navKey = navKey
     , searchResults = searchResults
     , searchParameters = maybeSearchParameters
@@ -27,6 +27,13 @@ init navKey searchResults maybeSearchParameters =
     , selectedResults = Dict.empty
     , resultsPendingRemoval = Set.empty
     }
+
+gotNewSearchResults: Model -> SearchParameters ->  WebData SearchResults -> Model
+gotNewSearchResults model searchParameters searchResults =
+    if differentSearch model.searchParameters searchParameters then
+         init model.navKey (Just searchParameters) searchResults
+    else
+        {model | searchParameters = Just searchParameters,  searchResults = searchResults}
 
 
 onlyData : Model -> ( Model, Cmd msg)

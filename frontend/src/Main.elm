@@ -8,19 +8,18 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
 import Info exposing (introduction)
-import Maybe.Extra
 import Nav exposing (navbar)
-import ResultsPage.Main as RPMain
-import ResultsPage.Types
+import ResultsPage.Main as RPMain exposing (gotNewSearchResults)
 import ResultsPage.Views exposing (viewSearchResults)
 import Routes
-import SearchPage.Helpers exposing (getSearchMode, sameModeAndString, withPagination)
+import SearchPage.Helpers exposing (getSearchMode)
 import SearchPage.Main as SPMain
 import SearchPage.Types exposing (SearchMode(..), SearchParameters(..))
 import SearchPage.Views exposing (viewLargeSearchBar, viewSearchButton, viewSearchModeSelector)
 import SharedTypes exposing (PaginationOffset, RemoteData(..), toWebData)
 import Types exposing (..)
 import Url
+import Url.Builder
 
 
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -33,7 +32,7 @@ init flags url navKey =
             { navKey = navKey
             , url = url
             , searchPage = SPMain.init navKey
-            , resultsPage = RPMain.init navKey NotAsked Nothing
+            , resultsPage = RPMain.init navKey Nothing NotAsked
             , route = route
             }
     in
@@ -52,6 +51,14 @@ init flags url navKey =
 search : SearchParameters -> Cmd Msg
 search (SearchParameters searchMode searchString paginationOffset) =
     let
+        endPoint =
+            case searchMode of
+                Strict ->
+                    "api/simple_query_search/"
+
+                Fuzzy ->
+                    "api/fuzzy_search/"
+
         parsedSearchString =
             case searchMode of
                 Strict ->
@@ -66,7 +73,7 @@ search (SearchParameters searchMode searchString paginationOffset) =
             SearchParameters searchMode parsedSearchString paginationOffset
     in
     Http.get
-        { url = Routes.searchResultsRoute parsedParameters
+        { url = endPoint ++ (Url.Builder.toQuery <| Routes.searchResultParams parsedParameters)
         , expect =
             Http.expectJson
                 (GotHttpSearchResponse parsedParameters << toWebData)
@@ -102,24 +109,29 @@ update msg model =
                 Browser.External href ->
                     ( model, Nav.load href )
 
-        GotHttpSearchResponse searchParameters webData ->
-            ( model, Cmd.none )
+        GotHttpSearchResponse searchParameters webDataSearchResults ->
+            ( { model | resultsPage = gotNewSearchResults model.resultsPage searchParameters webDataSearchResults }
+            , Cmd.none
+            )
 
         UrlChanged url ->
             let
                 route =
                     Routes.determinePage url
 
-                default =
-                    \cmd ->
-                        ( { model | url = url, route = route }, cmd )
+                newModel =
+                    { model | url = url, route = route }
             in
             case route of
                 Routes.ResultsRoute searchParameters ->
-                    default <| search searchParameters
+                    ( { newModel
+                        | resultsPage = gotNewSearchResults model.resultsPage searchParameters Loading
+                      }
+                    , search searchParameters
+                    )
 
                 _ ->
-                    default Cmd.none
+                    ( newModel, Cmd.none )
 
 
 

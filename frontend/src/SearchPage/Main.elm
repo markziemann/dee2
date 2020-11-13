@@ -97,7 +97,7 @@ update msg model =
         GetSearchSuggestions ((SearchParameters _ searchString _) as searchParameters) ->
             -- This is some debounce on the search string to prevent spamming ElasticSearch with queries
             if model.searchParameters == searchParameters then
-                ( model
+                ( model |> showSuggestions
                 , get
                     { url = "api/search_as_you_type/" ++ searchString
                     , expect = Http.expectJson (GotSearchSuggestions << toWebData) decodeSearchSuggestions

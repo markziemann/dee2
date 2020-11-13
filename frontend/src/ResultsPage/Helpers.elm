@@ -8,9 +8,10 @@ import Html.Attributes exposing (class, style, title)
 import Html.Events exposing (on)
 import Json.Decode as Decode exposing (Decoder)
 import ResultsPage.Types exposing (..)
-import SearchPage.Types exposing (SearchResult, SearchResults)
+import SearchPage.Types exposing (SearchParameters, SearchResult, SearchResults)
 import Table
 import Url.Builder
+
 
 
 noOverflowColumn : String -> (data -> ( Int, String )) -> Table.Column data Msg

@@ -38,6 +38,9 @@ errorToString error =
         BadStatus 400 ->
             "Verify your information and try again"
 
+        BadStatus 404 ->
+            "Failed to find resource"
+
         BadStatus 503 ->
             "Service Unavailable"
 
