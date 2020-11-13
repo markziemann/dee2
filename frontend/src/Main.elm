@@ -105,7 +105,7 @@ update msg model =
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
-                    Debug.log "Second" ( model, Nav.pushUrl model.navKey (Url.toString url) )
+                    ( model, Nav.pushUrl model.navKey (Url.toString url) )
 
                 Browser.External href ->
                     ( model, Nav.load href )
