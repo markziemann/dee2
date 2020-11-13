@@ -10,6 +10,7 @@ import Http
 import Info exposing (introduction)
 import Nav exposing (navbar)
 import ResultsPage.Main as RPMain exposing (gotNewSearchResults)
+import ResultsPage.Types exposing (MaybeExpired(..))
 import ResultsPage.Views exposing (viewSearchResults)
 import Routes
 import SearchPage.Helpers exposing (getSearchMode)
@@ -32,7 +33,7 @@ init flags url navKey =
             { navKey = navKey
             , url = url
             , searchPage = SPMain.init navKey
-            , resultsPage = RPMain.init navKey Nothing NotAsked
+            , resultsPage = RPMain.init navKey Nothing (Current NotAsked)
             , route = route
             }
     in
@@ -123,6 +124,11 @@ update msg model =
                     { model | url = url, route = route }
             in
             case route of
+                -- Any page that is associated with a url should be handled in this case statement.
+                -- While it is possible to handle this logic else where in the code base
+                -- doing so will be trouble for handling browser forward and backward
+                -- events. Therefor any action that needs to change the page should simply
+                -- push a new url which will be caught and handled here!
                 Routes.ResultsRoute searchParameters ->
                     ( { newModel
                         | resultsPage = gotNewSearchResults model.resultsPage searchParameters Loading

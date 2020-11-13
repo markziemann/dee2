@@ -12,6 +12,20 @@ import SearchPage.Types exposing (SearchParameters, SearchResult, SearchResults)
 import Table
 import Url.Builder
 
+maybeExpiredData: MaybeExpired a -> a
+maybeExpiredData maybeExpired =
+    case maybeExpired of
+        Current a -> a
+        Expired a -> a
+
+
+expired : MaybeExpired a -> MaybeExpired a
+expired maybeExpired =
+    case maybeExpired of
+        Current a ->
+            Expired a
+        _ ->
+            maybeExpired
 
 
 noOverflowColumn : String -> (data -> ( Int, String )) -> Table.Column data Msg
@@ -78,7 +92,6 @@ defaultTable =
 
 highlightRowIfTrue style true =
     BExtra.ifElse style "" true
-
 
 
 stageResultForDownload : SearchPage.Types.SearchResult -> Maybe ( String, String )

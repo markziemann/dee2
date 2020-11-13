@@ -4,7 +4,7 @@ import Browser.Navigation as Nav
 import Dict
 import Dict.Extra as DExtra
 import Maybe.Extra as MExtra
-import ResultsPage.Helpers exposing (stageResultForDownload)
+import ResultsPage.Helpers exposing (expired, stageResultForDownload)
 import ResultsPage.Types exposing (..)
 import Routes
 import SearchPage.Helpers exposing (delay, differentSearch)
@@ -14,7 +14,8 @@ import SharedTypes exposing (PaginationOffset, RemoteData(..), WebData)
 import Table
 
 
-init : Nav.Key -> Maybe SearchParameters -> WebData SearchResults ->  Model
+
+init : Nav.Key -> Maybe SearchParameters -> MaybeExpired (WebData SearchResults) ->  Model
 init navKey  maybeSearchParameters searchResults =
     { navKey = navKey
     , searchResults = searchResults
@@ -31,9 +32,13 @@ init navKey  maybeSearchParameters searchResults =
 gotNewSearchResults: Model -> SearchParameters ->  WebData SearchResults -> Model
 gotNewSearchResults model searchParameters searchResults =
     if differentSearch model.searchParameters searchParameters then
-         init model.navKey (Just searchParameters) searchResults
+         init model.navKey (Just searchParameters) (Current searchResults)
     else
-        {model | searchParameters = Just searchParameters,  searchResults = searchResults}
+        case searchResults of
+            Loading ->
+                {model | searchParameters = Just searchParameters,  searchResults = (expired model.searchResults)}
+            _ ->
+               {model | searchParameters = Just searchParameters,  searchResults = (Current searchResults)}
 
 
 onlyData : Model -> ( Model, Cmd msg)

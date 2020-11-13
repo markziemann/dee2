@@ -173,17 +173,21 @@ viewSearchResultHits searchResults =
 
 viewSearchResults : Model -> PaginationOffset -> List (Html Msg)
 viewSearchResults ({ resultsTableState, resultsTableQuery } as model) paginationOffset =
+    let
+        maybeExpiredSearchResults =
+            maybeExpiredData model.searchResults
+    in
     case model.searchParameters of
         Just searchParameters ->
             [ div [ class "row" ]
                 [ div [ class "col-xl-9" ]
                     [ div [ class "bg-light text-primary" ]
-                        [ viewSearchResultHits model.searchResults ]
+                        [ viewSearchResultHits maybeExpiredSearchResults ]
                     , Table.view
                         (resultsTable model.selectedResults)
                         resultsTableState
-                        (unwrapWebData [] (.rows >> Array.toList) model.searchResults)
-                    , pagination searchParameters paginationOffset (unwrapWebData 0 .hits model.searchResults)
+                        (unwrapWebData [] (.rows >> Array.toList) maybeExpiredSearchResults)
+                    , pagination searchParameters paginationOffset (unwrapWebData 0 .hits maybeExpiredSearchResults)
                     ]
                 , div [ class "col-xl-3" ]
                     [ div [ class "sticky-top" ]

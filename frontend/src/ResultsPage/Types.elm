@@ -24,10 +24,13 @@ type alias ResultsPendingRemoval =
 type alias ResultRows =
     Array.Array SearchPage.Types.SearchResult
 
+type MaybeExpired a
+    = Current a
+    | Expired a
 
 type alias Model =
     { navKey : Nav.Key
-    , searchResults : WebData SearchResults
+    , searchResults : MaybeExpired (WebData SearchResults)
     , searchParameters: Maybe SearchParameters
     , resultsTableQuery : String
     , resultsTableState : Table.State
