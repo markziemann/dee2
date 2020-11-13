@@ -1,29 +1,28 @@
 module SearchPage.Main exposing (..)
 
 import Browser.Events exposing (onClick, onKeyDown)
-import Elastic as Elastic exposing (parse, serialize)
+import Browser.Navigation as Nav
 import Http as Http exposing (get)
 import Json.Decode as Decode
 import KeyBoardHelpers exposing (arrowDown, arrowUp, enter)
-import Result
 import Routes
 import SearchPage.Helpers exposing (..)
 import SearchPage.Types exposing (..)
 import SharedTypes exposing (PaginationOffset, RemoteData(..), toWebData)
-import Url.Builder as UB
 
 
 search =
     Search
 
 
-init : Model
-init =
+init : Nav.Key -> Model
+init navKey =
     let
         defaultPaginationOffset =
             PaginationOffset 20 0
     in
-    { searchParameters = SearchParameters Strict "" defaultPaginationOffset
+    { navKey = navKey
+    , searchParameters = SearchParameters Strict "" defaultPaginationOffset
     , searchSuggestions = NotAsked
     , activeSuggestion = Nothing
     , suggestionsVisible = False
@@ -40,84 +39,47 @@ wrapAroundIdx lengthSearchSuggestions idx =
         lengthSearchSuggestions
 
 
-onlyData : Model -> ( Model, Cmd msg, Maybe OutMsg )
+onlyData : Model -> ( Model, Cmd msg )
 onlyData model =
-    ( model, Cmd.none, Nothing )
+    ( model, Cmd.none )
 
 
 noResults =
     Nothing
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe OutMsg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         noChange =
-            ( model, Cmd.none, Nothing )
-
-        toOutMsg =
-            \paginationOffset searchResults ->
-                -- OutMsg
-                { searchResults = searchResults
-                , searchParameters = withPagination paginationOffset model.searchParameters
-                }
-
-        updateSearchString = \searchString ->
-            { model | searchParameters = withSearchString searchString model.searchParameters }
+            ( model, Cmd.none )
     in
     case msg of
         SearchUpdate searchString ->
+            let
+                newSearchParameters =
+                    withSearchString searchString model.searchParameters
+            in
             if searchString == "" then
                 -- Don't wait to clear the suggestions if there is nothing
                 -- in the search box. Having search suggestions with an empty
                 -- searchString causes issues for the highlightMatchingText function
                 onlyData
-                    (updateSearchString searchString
+                    ({ model | searchParameters = newSearchParameters }
                         |> clearActiveSuggestion
                         |> clearSearchSuggestions
                     )
 
             else
-                ( updateSearchString searchString
+                ( { model | searchParameters = newSearchParameters }
                     |> showSuggestions
-                , delay 1000 (GetSearchSuggestions searchString)
-                , noResults
+                , delay 1000 (GetSearchSuggestions newSearchParameters)
                 )
 
-        Search ((SearchParameters searchMode searchString paginationOffset) as params) ->
-            let
-                -- Elastic.Word makes no modification to the search string
-                -- https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html#_simple_query_string_syntax
-                ( route, search_string ) =
-                    case searchMode of
-                        Strict ->
-                            ( "api/simple_query_search/"
-                            , Result.withDefault (Elastic.Word searchString) (parse searchString)
-                                |> serialize
-                            )
-
-                        Fuzzy ->
-                            ( "api/fuzzy_search/", searchString )
-
-                url =
-                    route
-                        ++ (Routes.searchResultParams params
-                                |> UB.toQuery
-                           )
-
-                serverQuery =
-                    get
-                        { url = url
-                        , expect =
-                            Http.expectJson
-                                (GotHttpSearchResponse paginationOffset << toWebData)
-                                (decodeSearchResults paginationOffset)
-                        }
-            in
-            ( updateSearchString searchString
+        Search searchParameters ->
+            ( model
                 |> hideSuggestions
-            , serverQuery
-            , Just <| OutMsg Loading params
+            , Nav.pushUrl model.navKey (Routes.searchResultsRoute searchParameters)
             )
 
         EnterKey ->
@@ -132,15 +94,14 @@ update msg model =
                     update (Search model.searchParameters) model
 
         -- recursive call should be avoided
-        GetSearchSuggestions value ->
+        GetSearchSuggestions ((SearchParameters _ searchString _) as searchParameters) ->
             -- This is some debounce on the search string to prevent spamming ElasticSearch with queries
-            if getSearchString model.searchParameters  == value then
+            if model.searchParameters == searchParameters then
                 ( model
                 , get
-                    { url = "api/search_as_you_type/" ++ value
+                    { url = "api/search_as_you_type/" ++ searchString
                     , expect = Http.expectJson (GotSearchSuggestions << toWebData) decodeSearchSuggestions
                     }
-                , noResults
                 )
 
             else
@@ -156,7 +117,7 @@ update msg model =
             case getWebDataIndex index model.searchSuggestions of
                 Just suggestion ->
                     onlyData
-                        (updateSearchString suggestion
+                        ({ model | searchParameters = withSearchString suggestion model.searchParameters }
                             |> clearActiveSuggestion
                             |> hideSuggestions
                         )
@@ -197,12 +158,6 @@ update msg model =
 
         FuzzySelected string ->
             onlyData { model | searchParameters = withSearchMode Fuzzy model.searchParameters }
-
-        GotHttpSearchResponse paginationOffset webData ->
-            ( model
-            , Cmd.none
-            , Just <| toOutMsg paginationOffset webData
-            )
 
         ClickOutOfSuggestions ->
             onlyData (hideSuggestions model)

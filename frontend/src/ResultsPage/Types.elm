@@ -1,6 +1,7 @@
 module ResultsPage.Types exposing (..)
 
 import Array
+import Browser.Navigation as Nav
 import Dict
 import SearchPage.Types exposing (SearchParameters, SearchResults)
 import Set
@@ -25,7 +26,8 @@ type alias ResultRows =
 
 
 type alias Model =
-    { searchResults : WebData SearchResults
+    { navKey : Nav.Key
+    , searchResults : WebData SearchResults
     , searchParameters: Maybe SearchParameters
     , resultsTableQuery : String
     , resultsTableState : Table.State
@@ -48,6 +50,6 @@ type Msg
     | SetSelectedResultsTableState Table.State
     | DownloadRequested
     | DownloadButtonReset
-    | PageRequest SharedTypes.PaginationOffset
+    | PageRequest SearchParameters
     | ShowToggleTip Int
 

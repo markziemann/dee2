@@ -1,6 +1,7 @@
 module SearchPage.Types exposing (..)
 
 import Array exposing (Array)
+import Browser.Navigation as Nav
 import Dict
 import SharedTypes exposing (PaginationOffset, WebData)
 
@@ -23,10 +24,7 @@ type alias SearchResults =
     }
 
 
-type alias OutMsg =
-    { searchResults: WebData SearchResults
-    , searchParameters: SearchParameters
-    }
+
 
 
 type alias SearchSuggestions =
@@ -43,7 +41,8 @@ type SearchMode
 
 
 type alias Model =
-    { searchParameters : SearchParameters
+    { navKey : Nav.Key
+    , searchParameters : SearchParameters
     , defaultPaginationOffset: PaginationOffset
     , searchSuggestions : WebData SearchSuggestions
     , activeSuggestion : Maybe Int
@@ -54,7 +53,7 @@ type alias Model =
 type Msg
     = SearchUpdate String
     | Search SearchParameters
-    | GetSearchSuggestions String
+    | GetSearchSuggestions SearchParameters
     | GotSearchSuggestions (WebData SearchSuggestions)
     | ArrowUp
     | ArrowDown
@@ -63,4 +62,3 @@ type Msg
     | FuzzySelected String
     | SuggestionSelected Int
     | ClickOutOfSuggestions
-    | GotHttpSearchResponse SharedTypes.PaginationOffset (WebData SearchResults)

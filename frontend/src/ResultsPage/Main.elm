@@ -1,20 +1,23 @@
 module ResultsPage.Main exposing (..)
 
+import Browser.Navigation as Nav
 import Dict
 import Dict.Extra as DExtra
 import Maybe.Extra as MExtra
 import ResultsPage.Helpers exposing (stageResultForDownload)
 import ResultsPage.Types exposing (..)
-import SearchPage.Helpers exposing (delay)
+import Routes
+import SearchPage.Helpers exposing (delay, withPagination)
 import SearchPage.Types exposing (SearchParameters, SearchResults)
 import Set
 import SharedTypes exposing (PaginationOffset, RemoteData(..), WebData)
 import Table
 
 
-init : WebData SearchResults -> Maybe SearchParameters -> Model
-init searchResults maybeSearchParameters =
-    { searchResults = searchResults
+init : Nav.Key -> WebData SearchResults -> Maybe SearchParameters -> Model
+init navKey searchResults maybeSearchParameters =
+    { navKey = navKey
+    , searchResults = searchResults
     , searchParameters = maybeSearchParameters
     , resultsTableQuery = ""
     , resultsTableState = Table.initialSort "id"
@@ -26,12 +29,12 @@ init searchResults maybeSearchParameters =
     }
 
 
-onlyData : Model -> ( Model, Cmd msg, Maybe SharedTypes.PaginationOffset )
+onlyData : Model -> ( Model, Cmd msg)
 onlyData model =
-    ( model, Cmd.none, Nothing )
+    ( model, Cmd.none)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe SharedTypes.PaginationOffset )
+update : Msg -> Model -> ( Model, Cmd Msg)
 update msg model =
     case msg of
         ResultClicked result ->
@@ -71,8 +74,8 @@ update msg model =
                     , resultsPendingRemoval = Set.empty
                 }
 
-        PageRequest paginationOffset ->
-            ( model, Cmd.none, Just paginationOffset )
+        PageRequest searchParameters ->
+            ( model, Nav.pushUrl model.navKey (Routes.searchResultsRoute searchParameters))
 
         SetResultsTableQuery resultsTableQuery ->
             onlyData { model | resultsTableQuery = resultsTableQuery }
@@ -87,7 +90,7 @@ update msg model =
             onlyData { model | selectedResultsTableState = selectedResultsTableState }
 
         DownloadRequested ->
-            ( { model | downloading = True }, delay 5000 DownloadButtonReset, Nothing )
+            ( { model | downloading = True }, delay 5000 DownloadButtonReset)
 
         DownloadButtonReset ->
             onlyData { model | downloading = False }

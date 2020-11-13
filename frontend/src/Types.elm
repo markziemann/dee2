@@ -3,8 +3,8 @@ module Types exposing (..)
 import Browser exposing (Document)
 import Browser.Navigation as Nav
 import ResultsPage.Types
-import SearchPage.Types exposing (SearchParameters)
-import SharedTypes
+import SearchPage.Types exposing (SearchParameters, SearchResults)
+import SharedTypes exposing (WebData)
 import Url
 import Routes
 
@@ -23,5 +23,4 @@ type Msg
     | GotResultsPageMsg ResultsPage.Types.Msg
     | LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
-    | RequestSearch SearchParameters
-    | HomeReset
+    | GotHttpSearchResponse SearchParameters (WebData SearchResults)

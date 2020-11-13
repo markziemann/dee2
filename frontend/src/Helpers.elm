@@ -1,6 +1,24 @@
 module Helpers exposing (..)
 
+import Array
 import Http exposing (Error(..))
+import Json.Decode as Decode exposing (Decoder, field)
+import SearchPage.Types exposing (SearchResults)
+import SharedTypes
+
+
+decodeSearchResults : SharedTypes.PaginationOffset -> Decoder SearchResults
+decodeSearchResults ({ offset } as paginationOffset) =
+    Decode.map2 SearchResults
+        (field "hits" Decode.int)
+        (field "rows"
+            (Decode.list (Decode.dict Decode.string)
+                -- Decode.map doesn't iterate (confusing!) its more like function application
+                -- it should be called apply
+                |> Decode.map Array.fromList
+                |> Decode.map (Array.indexedMap (\idx data -> SearchPage.Types.SearchResult (idx + offset) data))
+            )
+        )
 
 errorToString : Http.Error -> String
 errorToString error =

@@ -9,7 +9,8 @@ import Html.Attributes exposing (..)
 import Html.Events as Events exposing (onClick)
 import ResultsPage.Helpers exposing (..)
 import ResultsPage.Types exposing (..)
-import SearchPage.Types exposing (SearchResult, SearchResults)
+import SearchPage.Helpers exposing (withPagination)
+import SearchPage.Types exposing (SearchParameters, SearchResult, SearchResults)
 import Set
 import SharedTypes exposing (PaginationOffset, RemoteData(..), WebData, unwrapWebData)
 import Table exposing (HtmlDetails, Status)
@@ -17,7 +18,7 @@ import Table exposing (HtmlDetails, Status)
 
 selectClickedResult : (SearchResult -> Msg) -> SelectedResults -> SearchResult -> List (Html.Attribute Msg)
 selectClickedResult msg selectedResults searchResult =
-    [ class  (highlightRowIfTrue "table-primary" <| Dict.member searchResult.id selectedResults)
+    [ class (highlightRowIfTrue "table-primary" <| Dict.member searchResult.id selectedResults)
     , style "cursor" "pointer" -- First place not using bootstrap for style?
     , Events.onClick (msg searchResult)
     ]
@@ -40,11 +41,11 @@ resultsTable selectedResults =
             [ Table.stringColumn "Row" getId
             , Table.stringColumn "Species" (get "species")
             , Table.stringColumn "SRA Run" (get "SRR_accession")
-            , noOverflowColumn "QC summary" (\data -> (data.id, get "QC_summary" data))
+            , noOverflowColumn "QC summary" (\data -> ( data.id, get "QC_summary" data ))
             , Table.stringColumn "SRA experiment" (get "SRX_accession")
             , Table.stringColumn "SRA sample" (get "SRS_accession")
             , Table.stringColumn "SRA project" (get "SRP_accession")
-            , noOverflowColumn "Sample" (\data -> (data.id, get "Sample_name" data))
+            , noOverflowColumn "Sample" (\data -> ( data.id, get "Sample_name" data ))
             , Table.stringColumn "Experiment" (get "GEO_series")
             ]
         , customizations =
@@ -115,32 +116,35 @@ pageSelector disable page label =
         ]
 
 
-pagination : SharedTypes.PaginationOffset -> Int -> Html Msg
-pagination ({ perPage, offset } as paginationOffset) hits =
+pagination : SearchParameters -> PaginationOffset -> Int -> Html Msg
+pagination searchParameters ({ perPage, offset } as paginationOffset) hits =
     let
         previousButton =
             if offset < perPage then
                 -- Disabled state
                 pageSelector
                     True
-                    paginationOffset
+                    (withPagination paginationOffset searchParameters)
                     "Previous"
 
             else
-                pageSelector False (PaginationOffset perPage <| offset - perPage) "Previous"
+                pageSelector
+                    False
+                    (withPagination (PaginationOffset perPage <| offset - perPage) searchParameters)
+                    "Previous"
 
         nextButton =
             --Disabled state
             if (hits - offset) <= perPage then
                 pageSelector
                     True
-                    paginationOffset
+                    (withPagination paginationOffset searchParameters)
                     "Next"
 
             else
                 pageSelector
                     False
-                    (PaginationOffset perPage <| offset + perPage)
+                    (withPagination (PaginationOffset perPage <| offset + perPage) searchParameters)
                     "Next"
     in
     nav [ attribute "aria-label" "Page navigation" ]
@@ -169,36 +173,41 @@ viewSearchResultHits searchResults =
 
 viewSearchResults : Model -> PaginationOffset -> List (Html Msg)
 viewSearchResults ({ resultsTableState, resultsTableQuery } as model) paginationOffset =
-    [ div [ class "row" ]
-        [ div [ class "col-xl-9" ]
-            [ div [ class "bg-light text-primary" ]
-                [ viewSearchResultHits model.searchResults ]
-            , Table.view
-                (resultsTable model.selectedResults)
-                resultsTableState
-                (unwrapWebData [] (.rows >> Array.toList) model.searchResults)
-            , pagination paginationOffset (unwrapWebData 0 .hits model.searchResults)
-            ]
-        , div [ class "col-xl-3" ]
-            [ div [ class "sticky-top" ]
-                [ div [ class "bg-light text-primary" ]
-                    [ text <| "Selected: " ++ (Dict.size model.selectedResults |> String.fromInt) ]
-                , Table.view
-                    (selectedTable model.resultsPendingRemoval)
-                    model.selectedResultsTableState
-                    (Dict.toList model.selectedResults)
-                , div []
-                    [ buttonOrSpinner model.downloading model.selectedResults
-                    , button
-                        [ hideWhenTrue
-                            "btn btn-outline-danger btn-block"
-                            (Set.isEmpty model.resultsPendingRemoval)
-                            |> class
-                        , onClick RemoveStagedSelections
+    case model.searchParameters of
+        Just searchParameters ->
+            [ div [ class "row" ]
+                [ div [ class "col-xl-9" ]
+                    [ div [ class "bg-light text-primary" ]
+                        [ viewSearchResultHits model.searchResults ]
+                    , Table.view
+                        (resultsTable model.selectedResults)
+                        resultsTableState
+                        (unwrapWebData [] (.rows >> Array.toList) model.searchResults)
+                    , pagination searchParameters paginationOffset (unwrapWebData 0 .hits model.searchResults)
+                    ]
+                , div [ class "col-xl-3" ]
+                    [ div [ class "sticky-top" ]
+                        [ div [ class "bg-light text-primary" ]
+                            [ text <| "Selected: " ++ (Dict.size model.selectedResults |> String.fromInt) ]
+                        , Table.view
+                            (selectedTable model.resultsPendingRemoval)
+                            model.selectedResultsTableState
+                            (Dict.toList model.selectedResults)
+                        , div []
+                            [ buttonOrSpinner model.downloading model.selectedResults
+                            , button
+                                [ hideWhenTrue
+                                    "btn btn-outline-danger btn-block"
+                                    (Set.isEmpty model.resultsPendingRemoval)
+                                    |> class
+                                , onClick RemoveStagedSelections
+                                ]
+                                [ text "Remove" ]
+                            ]
                         ]
-                        [ text "Remove" ]
                     ]
                 ]
             ]
-        ]
-    ]
+
+        Nothing ->
+            [ div [] [ text "I need something to search for first!" ] ]

@@ -111,18 +111,6 @@ highlightMatchingText searchString suggestion =
         []
 
 
-decodeSearchResults : SharedTypes.PaginationOffset -> Decoder SearchResults
-decodeSearchResults ({ offset } as paginationOffset) =
-    Decode.map2 SearchResults
-        (field "hits" Decode.int)
-        (field "rows"
-            (Decode.list (Decode.dict Decode.string)
-                -- Decode.map doesn't iterate (confusing!) its more like function application
-                -- it should be called apply
-                |> Decode.map Array.fromList
-                |> Decode.map (Array.indexedMap (\idx data -> SearchResult (idx + offset) data))
-            )
-        )
 
 
 withPagination : PaginationOffset -> SearchParameters -> SearchParameters

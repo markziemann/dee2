@@ -2,8 +2,11 @@ module Main exposing (..)
 
 import Browser exposing (Document)
 import Browser.Navigation as Nav
+import Elastic exposing (parse, serialize)
+import Helpers exposing (decodeSearchResults)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Http
 import Info exposing (introduction)
 import Maybe.Extra
 import Nav exposing (navbar)
@@ -13,21 +16,11 @@ import ResultsPage.Views exposing (viewSearchResults)
 import Routes
 import SearchPage.Helpers exposing (getSearchMode, sameModeAndString, withPagination)
 import SearchPage.Main as SPMain
-import SearchPage.Types exposing (SearchParameters(..))
+import SearchPage.Types exposing (SearchMode(..), SearchParameters(..))
 import SearchPage.Views exposing (viewLargeSearchBar, viewSearchButton, viewSearchModeSelector)
-import SharedTypes exposing (PaginationOffset, RemoteData(..))
+import SharedTypes exposing (PaginationOffset, RemoteData(..), toWebData)
 import Types exposing (..)
 import Url
-
-
-initializeModelTORoute : Model -> ( Model, Cmd Msg )
-initializeModelTORoute model =
-    case model.route of
-        Routes.ResultsRoute searchUrlParameters ->
-            update (RequestSearch searchUrlParameters) model
-
-        _ ->
-            ( model, Cmd.none )
 
 
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -39,83 +32,58 @@ init flags url navKey =
         model =
             { navKey = navKey
             , url = url
-            , searchPage = SPMain.init
-            , resultsPage = RPMain.init NotAsked Nothing
+            , searchPage = SPMain.init navKey
+            , resultsPage = RPMain.init navKey NotAsked Nothing
             , route = route
             }
     in
-    initializeModelTORoute model
+    case model.route of
+        Routes.ResultsRoute searchUrlParameters ->
+            ( model, search searchUrlParameters )
+
+        _ ->
+            ( model, Cmd.none )
 
 
 
 ---- UPDATE ----
 
 
-maybeUpdateResults : ResultsPage.Types.Model -> Maybe SearchPage.Types.OutMsg -> ResultsPage.Types.Model
-maybeUpdateResults model maybeOutMsg =
-    case maybeOutMsg of
-        Just { searchResults, searchParameters } ->
-            case model.searchParameters of
-                Just currentSearchParams ->
-                    if sameModeAndString searchParameters currentSearchParams then
-                        { model | searchResults = searchResults, searchParameters = Just searchParameters }
+search : SearchParameters -> Cmd Msg
+search (SearchParameters searchMode searchString paginationOffset) =
+    let
+        parsedSearchString =
+            case searchMode of
+                Strict ->
+                    Result.withDefault (Elastic.Word searchString) (parse searchString)
+                        |> serialize
 
-                    else
-                        RPMain.init searchResults (Just searchParameters)
+                Fuzzy ->
+                    Elastic.Word searchString
+                        |> serialize
 
-                _ ->
-                    RPMain.init searchResults (Just searchParameters)
-
-        _ ->
-            model
-
-
-maybeUpdateUrl cmd model =
-    .searchParameters
-        >> Routes.searchResultsRoute
-        >> Nav.pushUrl model.navKey
+        parsedParameters =
+            SearchParameters searchMode parsedSearchString paginationOffset
+    in
+    Http.get
+        { url = Routes.searchResultsRoute parsedParameters
+        , expect =
+            Http.expectJson
+                (GotHttpSearchResponse parsedParameters << toWebData)
+                (decodeSearchResults paginationOffset)
+        }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         fromSearchPage =
-            \( mdl, cmd, maybeOutMsg ) ->
-                ( { model
-                    | searchPage = mdl
-                    , resultsPage = maybeUpdateResults model.resultsPage maybeOutMsg
-                  }
-                , case maybeOutMsg of
-                    Just { searchResults, searchParameters } ->
-                        if searchResults == Loading then
-                            Debug.log "PUSH" Cmd.batch
-                                [ Cmd.map GotSearchPageMsg cmd
-                                , Nav.pushUrl model.navKey <| Routes.searchResultsRoute searchParameters
-                                ]
-
-                        else
-                            Cmd.map GotSearchPageMsg cmd
-
-                    Nothing ->
-                        Cmd.map GotSearchPageMsg cmd
-                )
+            \( mdl, cmd ) ->
+                ( { model | searchPage = mdl }, Cmd.map GotSearchPageMsg cmd )
 
         fromResultsPage =
-            \( mdl, cmd, maybePaginationOffset ) ->
-                let
-                    newModel =
-                        { model | resultsPage = mdl }
-
-                    command =
-                        Cmd.map GotResultsPageMsg cmd
-                in
-                case ( maybePaginationOffset, mdl.searchParameters ) of
-                    ( Just paginationOffset, Just searchParameters ) ->
-                        update (RequestSearch <| withPagination paginationOffset searchParameters) newModel
-                            |> (\( m, c ) -> ( m, Cmd.batch [ c, command ] ))
-
-                    ( _, _ ) ->
-                        ( newModel, command )
+            \( mdl, cmd ) ->
+                ( { model | resultsPage = mdl }, Cmd.map GotResultsPageMsg cmd )
     in
     case msg of
         GotSearchPageMsg message ->
@@ -126,12 +94,6 @@ update msg model =
             RPMain.update message model.resultsPage
                 |> fromResultsPage
 
-        RequestSearch searchParameters ->
-            SPMain.update
-                (SPMain.search searchParameters)
-                model.searchPage
-                |> fromSearchPage
-
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
@@ -140,8 +102,8 @@ update msg model =
                 Browser.External href ->
                     ( model, Nav.load href )
 
-        HomeReset ->
-            ( { model | searchPage = SPMain.init }, Nav.pushUrl model.navKey "/" )
+        GotHttpSearchResponse searchParameters webData ->
+            ( model, Cmd.none )
 
         UrlChanged url ->
             let
@@ -149,23 +111,15 @@ update msg model =
                     Routes.determinePage url
 
                 default =
-                    ( { model | url = url, route = route }, Cmd.none )
+                    \cmd ->
+                        ( { model | url = url, route = route }, cmd )
             in
-            case ( route, model.resultsPage.searchParameters ) of
-                ( Routes.ResultsRoute searchParameters, Nothing ) ->
-                    -- This can occur when the browser navigates forwards after
-                    -- Leaving the web site
-                    update (RequestSearch searchParameters) model
+            case route of
+                Routes.ResultsRoute searchParameters ->
+                    default <| search searchParameters
 
-                ( Routes.ResultsRoute searchParameters, Just searchParams ) ->
-                    if searchParameters /= searchParams then
-                        update (RequestSearch searchParameters) model
-
-                    else
-                        default
-
-                ( _, _ ) ->
-                    default
+                _ ->
+                    default Cmd.none
 
 
 
