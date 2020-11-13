@@ -29,8 +29,8 @@ init navKey  maybeSearchParameters searchResults =
     , resultsPendingRemoval = Set.empty
     }
 
-gotNewSearchResults: Model -> SearchParameters ->  WebData SearchResults -> Model
-gotNewSearchResults model searchParameters searchResults =
+newSearchResults: Model -> SearchParameters ->  WebData SearchResults -> Model
+newSearchResults model searchParameters searchResults =
     if differentSearch model.searchParameters searchParameters then
          init model.navKey (Just searchParameters) (Current searchResults)
     else

@@ -9,7 +9,7 @@ import Html.Attributes exposing (..)
 import Http
 import Info exposing (introduction)
 import Nav exposing (navbar)
-import ResultsPage.Main as RPMain exposing (gotNewSearchResults)
+import ResultsPage.Main as RPMain exposing (newSearchResults)
 import ResultsPage.Types exposing (MaybeExpired(..))
 import ResultsPage.Views exposing (viewSearchResults)
 import Routes
@@ -111,7 +111,7 @@ update msg model =
                     ( model, Nav.load href )
 
         GotHttpSearchResponse searchParameters webDataSearchResults ->
-            ( { model | resultsPage = gotNewSearchResults model.resultsPage searchParameters webDataSearchResults }
+            ( { model | resultsPage = newSearchResults model.resultsPage searchParameters webDataSearchResults }
             , Cmd.none
             )
 
@@ -131,7 +131,7 @@ update msg model =
                 -- push a new url which will be caught and handled here!
                 Routes.ResultsRoute searchParameters ->
                     ( { newModel
-                        | resultsPage = gotNewSearchResults model.resultsPage searchParameters Loading
+                        | resultsPage = newSearchResults model.resultsPage searchParameters Loading
                       }
                     , search searchParameters
                     )
