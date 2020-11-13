@@ -1,12 +1,12 @@
 module SearchPage.Views exposing (..)
 
-import Array exposing (isEmpty)
+import Array
 import Bool.Extra as BExtra
 import Helpers exposing (errorToString)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import SearchPage.Helpers exposing (getSearchString, highlightMatchingText, suggestionHighlightFunc, withPagination)
+import SearchPage.Helpers exposing (getSearchString, highlightMatchingText, suggestionHighlightFunc)
 import SearchPage.Types exposing (..)
 import SharedTypes exposing (RemoteData(..))
 

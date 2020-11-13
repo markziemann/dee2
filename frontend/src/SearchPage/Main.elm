@@ -44,10 +44,6 @@ onlyData model =
     ( model, Cmd.none )
 
 
-noResults =
-    Nothing
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let

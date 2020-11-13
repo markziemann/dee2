@@ -7,7 +7,7 @@ import Maybe.Extra as MExtra
 import ResultsPage.Helpers exposing (stageResultForDownload)
 import ResultsPage.Types exposing (..)
 import Routes
-import SearchPage.Helpers exposing (delay, differentSearch, withPagination)
+import SearchPage.Helpers exposing (delay, differentSearch)
 import SearchPage.Types exposing (SearchParameters, SearchResults)
 import Set
 import SharedTypes exposing (PaginationOffset, RemoteData(..), WebData)

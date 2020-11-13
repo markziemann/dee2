@@ -5,8 +5,10 @@ import Browser.Navigation as Nav
 import Dict
 import SharedTypes exposing (PaginationOffset, WebData)
 
+
 type SearchParameters
     = SearchParameters SearchMode String SharedTypes.PaginationOffset
+
 
 type alias SearchData =
     Dict.Dict String String
@@ -22,9 +24,6 @@ type alias SearchResults =
     { hits : Int
     , rows : Array SearchResult
     }
-
-
-
 
 
 type alias SearchSuggestions =
@@ -43,7 +42,7 @@ type SearchMode
 type alias Model =
     { navKey : Nav.Key
     , searchParameters : SearchParameters
-    , defaultPaginationOffset: PaginationOffset
+    , defaultPaginationOffset : PaginationOffset
     , searchSuggestions : WebData SearchSuggestions
     , activeSuggestion : Maybe Int
     , suggestionsVisible : Bool

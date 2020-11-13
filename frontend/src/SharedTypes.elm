@@ -1,6 +1,5 @@
 module SharedTypes exposing (..)
 
-import Array
 import Http
 
 

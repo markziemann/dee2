@@ -4,7 +4,7 @@ import Bool.Extra as BExtra
 import Dict exposing (Dict)
 import Dict.Extra as DExtra
 import Html exposing (text)
-import Html.Attributes exposing (class, style, title)
+import Html.Attributes exposing (class, style)
 import Html.Events exposing (on)
 import Json.Decode as Decode exposing (Decoder)
 import ResultsPage.Types exposing (..)

@@ -8,7 +8,7 @@ import SharedTypes
 
 
 decodeSearchResults : SharedTypes.PaginationOffset -> Decoder SearchResults
-decodeSearchResults ({ offset } as paginationOffset) =
+decodeSearchResults { offset } =
     Decode.map2 SearchResults
         (field "hits" Decode.int)
         (field "rows"
