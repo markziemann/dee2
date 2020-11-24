@@ -11,9 +11,17 @@ import Url.Parser.Query as Query
 
 type Route
     = HomeRoute
+    | SearchRunsRoute
+    | SearchProjectsRoute
     | ResultsRoute SearchParameters
     | Unknown
 
+
+searchRunsRoute =
+    "Runs"
+
+searchProjectsRoute =
+    "Projects"
 
 searchResultsSlug =
     "Search"
@@ -61,6 +69,8 @@ routeParser =
                 <?> Query.string "perPage"
                 <?> Query.string "offset"
             )
+        , UP.map SearchRunsRoute (UP.s searchRunsRoute)
+        , UP.map SearchProjectsRoute (UP.s searchProjectsRoute)
         ]
 
 

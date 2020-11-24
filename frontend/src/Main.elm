@@ -9,6 +9,7 @@ import Html.Attributes exposing (..)
 import Http
 import Info exposing (introduction)
 import Nav exposing (navbar)
+import HomePage.Main as HPMain
 import ResultsPage.Main as RPMain exposing (newSearchResults)
 import ResultsPage.Types exposing (MaybeExpired(..))
 import ResultsPage.Views exposing (viewSearchResults)
@@ -32,6 +33,7 @@ init flags url navKey =
         model =
             { navKey = navKey
             , url = url
+            , homePage = HPMain.init navKey
             , searchPage = SPMain.init navKey
             , resultsPage = RPMain.init navKey Nothing (Current NotAsked)
             , route = route
@@ -85,18 +87,29 @@ search (SearchParameters searchMode searchString paginationOffset) =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
+        fromHomePage =
+            \( mdl, cmd ) ->
+                ( { model | homePage = mdl }, Cmd.map GotHomePageMsg cmd )
+
         fromSearchPage =
             \( mdl, cmd ) ->
-                ( { model | searchPage = mdl }, Cmd.map GotSearchPageMsg cmd )
+                ( { model | searchPage = mdl }, Cmd.map GotSearchRunsPageMsg cmd )
 
         fromResultsPage =
             \( mdl, cmd ) ->
                 ( { model | resultsPage = mdl }, Cmd.map GotResultsPageMsg cmd )
     in
     case msg of
-        GotSearchPageMsg message ->
+        GotHomePageMsg message->
+            HPMain.update message model.homePage
+                |> fromHomePage
+
+        GotSearchRunsPageMsg message ->
             SPMain.update message model.searchPage
                 |> fromSearchPage
+
+        GotSearchProjectsPageMsg message ->
+            (model, Cmd.none)
 
         GotResultsPageMsg message ->
             RPMain.update message model.resultsPage
@@ -141,6 +154,9 @@ update msg model =
 
 
 
+
+
+
 ---- VIEW ----
 
 
@@ -155,8 +171,11 @@ pageLayout content =
 pageView : Model -> List (Html Msg)
 pageView model =
     let
+        fromHomePage =
+            List.map (Html.map GotHomePageMsg)
+
         fromSearchPage =
-            List.map (Html.map GotSearchPageMsg)
+            List.map (Html.map GotSearchRunsPageMsg)
 
         fromResultsPage =
             List.map (Html.map GotResultsPageMsg)
@@ -164,11 +183,16 @@ pageView model =
     pageLayout <|
         case model.route of
             Routes.HomeRoute ->
+                fromHomePage [HPMain.view]
+
+            Routes.SearchRunsRoute ->
                 fromSearchPage
                     [ viewLargeSearchBar model.searchPage
                     , viewSearchModeSelector <| getSearchMode model.searchPage.searchParameters
                     , viewSearchButton model.searchPage
                     ]
+            Routes.SearchProjectsRoute ->
+                fromHomePage [HPMain.view]
 
             Routes.ResultsRoute (SearchParameters _ _ paginationOffset) ->
                 fromResultsPage
@@ -176,6 +200,7 @@ pageView model =
 
             Routes.Unknown ->
                 [ text "Hmm... I don't recognise that url." ]
+
 
 
 view : Model -> Document Msg
@@ -189,9 +214,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     case model.route of
         Routes.HomeRoute ->
-            Sub.batch
-                [ Sub.map GotSearchPageMsg <| SPMain.subscriptions model.searchPage
-                ]
+            Sub.none
 
         Routes.ResultsRoute _ ->
             Sub.none
@@ -199,6 +222,14 @@ subscriptions model =
         Routes.Unknown ->
             subscriptions { model | route = Routes.HomeRoute }
 
+        Routes.SearchRunsRoute ->
+            Sub.batch
+                [ Sub.map GotSearchRunsPageMsg <| SPMain.subscriptions model.searchPage
+                ]
+
+        Routes.SearchProjectsRoute ->
+
+            Sub.none
 
 
 ---- PROGRAM ----

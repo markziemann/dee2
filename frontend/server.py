@@ -35,7 +35,7 @@ def get_hit_count(search_results: dict) -> int:
 
 @routes.get('/')
 async def index(request):
-    return web.FileResponse('./dist/index.html')
+    return web.FileResponse('./dist/improved_search.html')
 
 
 @routes.get('/api/download/')
@@ -149,3 +149,6 @@ app.add_routes(routes)
 app.add_routes([web.static('/', './dist')])
 
 web.run_app(app, host="localhost", port=8080)
+
+
+# r = requests.get("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi", params={"db": "sra", "id":"SRX096035"})
