@@ -16,7 +16,7 @@ import ResultsPage.Views exposing (viewSearchResults)
 import Routes
 import SearchPage.Helpers exposing (getSearchMode)
 import SearchPage.Main as SPMain
-import SearchPage.Types exposing (SearchMode(..), SearchParameters(..))
+import SearchPage.Types exposing (Mode(..), SearchParameters(..))
 import SearchPage.Views exposing (viewLargeSearchBar, viewSearchButton, viewSearchModeSelector)
 import SharedTypes exposing (PaginationOffset, RemoteData(..), toWebData)
 import Types exposing (..)
@@ -52,15 +52,9 @@ init flags url navKey =
 
 
 search : SearchParameters -> Cmd Msg
-search (SearchParameters searchMode searchString paginationOffset) =
+search ((SearchParameters searchLevel searchMode searchString paginationOffset) as searchParameters) =
     let
-        endPoint =
-            case searchMode of
-                Strict ->
-                    "api/simple_query_search/"
-
-                Fuzzy ->
-                    "api/fuzzy_search/"
+        endPoint = "api/search/"
 
         parsedSearchString =
             case searchMode of
@@ -71,15 +65,12 @@ search (SearchParameters searchMode searchString paginationOffset) =
                 Fuzzy ->
                     Elastic.Word searchString
                         |> serialize
-
-        parsedParameters =
-            SearchParameters searchMode parsedSearchString paginationOffset
     in
     Http.get
-        { url = endPoint ++ (Url.Builder.toQuery <| Routes.searchResultParams parsedParameters)
+        { url = endPoint ++ (Url.Builder.toQuery <| Routes.searchResultParams searchParameters)
         , expect =
             Http.expectJson
-                (GotHttpSearchResponse parsedParameters << toWebData)
+                (GotHttpSearchResponse searchParameters << toWebData)
                 (decodeSearchResults paginationOffset)
         }
 
@@ -188,13 +179,13 @@ pageView model =
             Routes.SearchRunsRoute ->
                 fromSearchPage
                     [ viewLargeSearchBar model.searchPage
-                    , viewSearchModeSelector <| getSearchMode model.searchPage.searchParameters
+                    , viewSearchModeSelector <| getSearchMode model.searchPage.previousSearch
                     , viewSearchButton model.searchPage
                     ]
             Routes.SearchProjectsRoute ->
                 fromHomePage [HPMain.view]
 
-            Routes.ResultsRoute (SearchParameters _ _ paginationOffset) ->
+            Routes.ResultsRoute (SearchParameters _ _ _ paginationOffset) ->
                 fromResultsPage
                     (viewSearchResults model.resultsPage paginationOffset)
 

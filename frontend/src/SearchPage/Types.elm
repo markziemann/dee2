@@ -7,7 +7,7 @@ import SharedTypes exposing (PaginationOffset, WebData)
 
 
 type SearchParameters
-    = SearchParameters SearchMode String SharedTypes.PaginationOffset
+    = SearchParameters Level Mode String SharedTypes.PaginationOffset
 
 
 type alias SearchData =
@@ -33,15 +33,21 @@ type alias SearchSuggestions =
 type alias ActiveSuggestion =
     Int
 
+type Level
+    = Runs
+    | Projects
 
-type SearchMode
+type Mode
     = Strict
     | Fuzzy
 
 
 type alias Model =
     { navKey : Nav.Key
-    , searchParameters : SearchParameters
+    , previousSearch : Maybe SearchParameters
+    , level : Maybe Level
+    , mode : Mode
+    , query : String
     , defaultPaginationOffset : PaginationOffset
     , searchSuggestions : WebData SearchSuggestions
     , activeSuggestion : Maybe Int
@@ -51,7 +57,7 @@ type alias Model =
 
 type Msg
     = SearchUpdate String
-    | Search SearchParameters
+    | Search
     | GetSearchSuggestions SearchParameters
     | GotSearchSuggestions (WebData SearchSuggestions)
     | ArrowUp

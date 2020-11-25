@@ -1,7 +1,7 @@
 module Routes exposing (..)
 
 import Maybe.Extra as ME
-import SearchPage.Types exposing (SearchMode(..), SearchParameters(..))
+import SearchPage.Types exposing (Level(..), Mode(..), SearchParameters(..))
 import SharedTypes
 import Url
 import Url.Builder as UB exposing (QueryParameter)
@@ -20,15 +20,30 @@ type Route
 searchRunsRoute =
     "Runs"
 
+
 searchProjectsRoute =
     "Projects"
+
 
 searchResultsSlug =
     "Search"
 
 
-parseSearchMode : Maybe String -> Maybe SearchMode
-parseSearchMode maybeSearchMode =
+parseLevel : Maybe String -> Maybe Level
+parseLevel maybeLevel =
+    case maybeLevel of
+        Just "Projects" ->
+            Just Projects
+
+        Just "Runs" ->
+            Just Runs
+
+        _ ->
+            Nothing
+
+
+parseMode : Maybe String -> Maybe Mode
+parseMode maybeSearchMode =
     case maybeSearchMode of
         Just "Strict" ->
             Just Strict
@@ -40,21 +55,22 @@ parseSearchMode maybeSearchMode =
             Nothing
 
 
-parseSearchResultRoute : Maybe String -> Maybe String -> Maybe String -> Maybe String -> Route
-parseSearchResultRoute maybeSearchMode maybeSearchString maybePerPage maybeOffset =
+parseSearchResultRoute : Maybe String -> Maybe String -> Maybe String -> Maybe String -> Maybe String -> Route
+parseSearchResultRoute maybeLevel maybeSearchMode maybeSearchString maybePerPage maybeOffset =
     case
-        ( parseSearchMode maybeSearchMode
-        , maybeSearchString
-        , Maybe.map2 SharedTypes.PaginationOffset
-            (Maybe.andThen String.toInt maybePerPage)
-            (Maybe.andThen String.toInt maybeOffset)
-        )
+        Maybe.map4 SearchParameters
+            (parseLevel maybeLevel)
+            (parseMode maybeSearchMode)
+            maybeSearchString
+            (Maybe.map2 SharedTypes.PaginationOffset
+                (Maybe.andThen String.toInt maybePerPage)
+                (Maybe.andThen String.toInt maybeOffset)
+            )
     of
-        ( Just searchMode, Just searchString, Just paginationOffset ) ->
-            ResultsRoute <|
-                SearchParameters searchMode searchString paginationOffset
+        Just searchParameters ->
+            ResultsRoute <| searchParameters
 
-        ( _, _, _ ) ->
+        Nothing ->
             Unknown
 
 
@@ -64,8 +80,9 @@ routeParser =
         [ UP.map HomeRoute <| UP.oneOf [ UP.top, UP.s "improved_search" ]
         , UP.map parseSearchResultRoute
             (UP.s searchResultsSlug
-                <?> Query.string "searchMode"
-                <?> Query.string "searchString"
+                <?> Query.string "level"
+                <?> Query.string "mode"
+                <?> Query.string "query"
                 <?> Query.string "perPage"
                 <?> Query.string "offset"
             )
@@ -80,18 +97,27 @@ searchResultsRoute searchUrlParameters =
 
 
 searchResultParams : SearchParameters -> List QueryParameter
-searchResultParams (SearchParameters searchMode searchString paginationOffset) =
+searchResultParams (SearchParameters level mode query paginationOffset) =
     let
-        searchModeString =
-            case searchMode of
+        levelString =
+            case level of
+                Projects ->
+                    "Projects"
+
+                Runs ->
+                    "Runs"
+
+        modeString =
+            case mode of
                 Strict ->
                     "Strict"
 
                 Fuzzy ->
                     "Fuzzy"
     in
-    [ UB.string "searchMode" searchModeString
-    , UB.string "searchString" searchString
+    [ UB.string "level" levelString
+    , UB.string "mode" modeString
+    , UB.string "query" query
     , UB.string "perPage" <| String.fromInt paginationOffset.perPage
     , UB.string "offset" <| String.fromInt paginationOffset.offset
     ]

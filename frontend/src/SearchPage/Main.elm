@@ -9,6 +9,7 @@ import Routes
 import SearchPage.Helpers exposing (..)
 import SearchPage.Types exposing (..)
 import SharedTypes exposing (PaginationOffset, RemoteData(..), toWebData)
+import Url.Builder
 
 
 search =
@@ -22,7 +23,10 @@ init navKey =
             PaginationOffset 20 0
     in
     { navKey = navKey
-    , searchParameters = SearchParameters Strict "" defaultPaginationOffset
+    , previousSearch = Nothing
+    , level = Nothing
+    , mode = Strict
+    , query = ""
     , searchSuggestions = NotAsked
     , activeSuggestion = Nothing
     , suggestionsVisible = False
@@ -51,32 +55,41 @@ update msg model =
             ( model, Cmd.none )
     in
     case msg of
-        SearchUpdate searchString ->
+        SearchUpdate string ->
             let
-                newSearchParameters =
-                    withSearchString searchString model.searchParameters
+                newModel =
+                    { model | query = string }
             in
-            if searchString == "" then
+            if string == "" then
                 -- Don't wait to clear the suggestions if there is nothing
                 -- in the search box. Having search suggestions with an empty
-                -- searchString causes issues for the highlightMatchingText function
+                -- query causes issues for the highlightMatchingText function
                 onlyData
-                    ({ model | searchParameters = newSearchParameters }
+                    (newModel
                         |> clearActiveSuggestion
                         |> clearSearchSuggestions
                     )
 
             else
-                ( { model | searchParameters = newSearchParameters }
-                    |> showSuggestions
-                , delay 1000 (GetSearchSuggestions newSearchParameters)
-                )
+                case newModel |> toSearchParameters of
+                    Just searchParameters ->
+                        ( newModel |> showSuggestions
+                        , delay 1000 (GetSearchSuggestions searchParameters)
+                        )
 
-        Search searchParameters ->
-            ( model
-                |> hideSuggestions
-            , Nav.pushUrl model.navKey (Routes.searchResultsRoute searchParameters)
-            )
+                    Nothing ->
+                        noChange
+
+        Search ->
+            case model |> toSearchParameters of
+                Just searchParameters ->
+                    ( {model | previousSearch = Just searchParameters}
+                        |> hideSuggestions
+                    , Nav.pushUrl model.navKey (Routes.searchResultsRoute searchParameters)
+                    )
+                Nothing ->
+                    noChange
+
 
         EnterKey ->
             case ( emptyWebData model.searchSuggestions, model.activeSuggestion ) of
@@ -87,21 +100,29 @@ update msg model =
 
                 -- recursive call should be avoided
                 ( _, _ ) ->
-                    update (Search model.searchParameters) model
+                    update Search model
+
 
         -- recursive call should be avoided
-        GetSearchSuggestions ((SearchParameters _ searchString _) as searchParameters) ->
+        GetSearchSuggestions searchParameters ->
             -- This is some debounce on the search string to prevent spamming ElasticSearch with queries
-            if model.searchParameters == searchParameters then
-                ( model |> showSuggestions
-                , get
-                    { url = "api/search_as_you_type/" ++ searchString
-                    , expect = Http.expectJson (GotSearchSuggestions << toWebData) decodeSearchSuggestions
-                    }
-                )
+            case model.previousSearch of
+                Just previousSearch ->
+                    if previousSearch == searchParameters then
+                        ( model |> showSuggestions
+                        , get
+                            { url =
+                                "api/search_as_you_type/"
+                                    ++ (Routes.searchResultParams searchParameters |> Url.Builder.toQuery)
+                            , expect = Http.expectJson (GotSearchSuggestions << toWebData) decodeSearchSuggestions
+                            }
+                        )
 
-            else
-                onlyData (showSuggestions model)
+                    else
+                        onlyData (showSuggestions model)
+
+                Nothing ->
+                    noChange
 
         GotSearchSuggestions webData ->
             onlyData
@@ -113,7 +134,7 @@ update msg model =
             case getWebDataIndex index model.searchSuggestions of
                 Just suggestion ->
                     onlyData
-                        ({ model | searchParameters = withSearchString suggestion model.searchParameters }
+                        ({ model | previousSearch = Maybe.map (withquery suggestion) model.previousSearch }
                             |> clearActiveSuggestion
                             |> hideSuggestions
                         )
@@ -150,10 +171,10 @@ update msg model =
                     noChange
 
         StrictSelected string ->
-            onlyData { model | searchParameters = withSearchMode Strict model.searchParameters }
+            onlyData { model | previousSearch = Maybe.map (withMode Strict) model.previousSearch }
 
         FuzzySelected string ->
-            onlyData { model | searchParameters = withSearchMode Fuzzy model.searchParameters }
+            onlyData { model | previousSearch = Maybe.map (withMode Fuzzy) model.previousSearch }
 
         ClickOutOfSuggestions ->
             onlyData (hideSuggestions model)

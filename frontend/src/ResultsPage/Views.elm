@@ -162,7 +162,7 @@ viewSearchResultHits searchResults =
             text <| "Hits: " ++ String.fromInt results.hits
 
         Failure err ->
-            div [ class "text-warning" ] [ text <| errorToString err ]
+            div [ class "text-danger" ] [ text <| errorToString err ]
 
         _ ->
             div [ class "spinner-border spinner-border-sm", attribute "role" "status" ]

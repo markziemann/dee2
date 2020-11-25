@@ -6,7 +6,7 @@ import Helpers exposing (errorToString)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import SearchPage.Helpers exposing (getSearchString, highlightMatchingText, suggestionHighlightFunc)
+import SearchPage.Helpers exposing (getQuery, highlightMatchingText, suggestionHighlightFunc, toSearchParameters)
 import SearchPage.Types exposing (..)
 import SharedTypes exposing (RemoteData(..))
 
@@ -20,16 +20,16 @@ viewLargeSearchBar model =
             , class "form-control form-control-lg"
             , placeholder "e.g. Human epilepisy | SRP070529"
             , type_ "search"
-            , value <| getSearchString model.searchParameters
+            , value <| Maybe.withDefault "" (getQuery model.previousSearch)
             , id "search-bar"
             ]
-            [ text <| getSearchString model.searchParameters ]
+            [ text <| Maybe.withDefault ""  (getQuery model.previousSearch) ]
         , viewSuggestions model
         ]
 
 
 viewSuggestions : Model -> Html Msg
-viewSuggestions { suggestionsVisible, searchParameters, searchSuggestions, activeSuggestion } =
+viewSuggestions { suggestionsVisible, previousSearch, searchSuggestions, activeSuggestion } =
     let
         highlight =
             suggestionHighlightFunc activeSuggestion
@@ -58,13 +58,13 @@ viewSuggestions { suggestionsVisible, searchParameters, searchSuggestions, activ
                             |> class
                         , onClick (SuggestionSelected idx)
                         ]
-                        (highlightMatchingText (getSearchString searchParameters) suggestion)
+                        (highlightMatchingText (Maybe.withDefault ""  <| getQuery previousSearch) suggestion)
                 )
                 (Array.toList suggestions)
                 |> dropdown
 
         Failure err ->
-            [ div [ class "text-warning px-2" ] [ text <| errorToString err ] ]
+            [ div [ class "text-danger px-2" ] [ text <| errorToString err ] ]
                 |> dropdown
 
         NotAsked ->
@@ -87,7 +87,7 @@ viewSearchButton model =
     div [ class "d-flex justify-content-center" ]
         [ div [ class "btn-group dropright my-5" ]
             [ button
-                [ onClick <| Search model.searchParameters
+                [ onClick <| Search
                 , class "btn btn-lg btn-outline-success"
                 , type_ "button"
                 ]
@@ -96,8 +96,8 @@ viewSearchButton model =
         ]
 
 
-viewSearchModeSelector : SearchMode -> Html Msg
-viewSearchModeSelector searchMode =
+viewmodeSelector : Mode -> Html Msg
+viewmodeSelector mode =
     div [ class "d-sm-flex justify-content-center" ]
         [ div [ class "form-check mx-2 my-4" ]
             [ input
@@ -105,7 +105,7 @@ viewSearchModeSelector searchMode =
                 , class "form-check-input"
                 , type_ "radio"
                 , name "search-mode"
-                , checked <| BExtra.ifElse True False (searchMode == Strict)
+                , checked <| BExtra.ifElse True False (mode == Strict)
                 , id "simple-query-string"
                 ]
                 []
@@ -117,7 +117,7 @@ viewSearchModeSelector searchMode =
                 , class "form-check-input"
                 , type_ "radio"
                 , name "search-mode"
-                , checked <| BExtra.ifElse True False (searchMode == Fuzzy)
+                , checked <| BExtra.ifElse True False (mode == Fuzzy)
                 , id "fuzzy-text"
                 ]
                 []

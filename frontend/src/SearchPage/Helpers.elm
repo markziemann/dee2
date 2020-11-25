@@ -8,6 +8,8 @@ import Process exposing (sleep)
 import SearchPage.Types exposing (..)
 import SharedTypes exposing (PaginationOffset, RemoteData(..), WebData)
 import Task
+import Url.Builder exposing (QueryParameter)
+import Json.Encode
 
 
 getWebDataIndex : Int -> WebData (Array.Array a) -> Maybe a
@@ -93,49 +95,65 @@ suggestionHighlightFunc maybeActiveSuggestion =
 
 
 highlightMatchingText : String -> String -> List (Html msg)
-highlightMatchingText searchString suggestion =
+highlightMatchingText query suggestion =
     -- Note splitting a string removes the split string eg.> split "a" "James" = ["J", "mes"]
-    if searchString /= "" then
+    if query /= "" then
         -- Determine location of matches (Case insensitive!)
-        String.indexes (String.toLower searchString) (String.toLower suggestion)
+        String.indexes (String.toLower query) (String.toLower suggestion)
             -- Get List of matching characters
-            |> List.map (\idx -> String.slice idx (idx + String.length searchString) suggestion)
+            |> List.map (\idx -> String.slice idx (idx + String.length query) suggestion)
             -- Consecutively split the suggestion on the matching strings
             |> List.foldl (\str -> List.concatMap (\innerStr -> String.split str innerStr)) [ suggestion ]
             -- Convert each split string to NON-bold text
             |> List.map (\t -> p [ class "d-inline" ] [ text t ])
             -- Insert BOLD text of matching strings
-            |> List.intersperse (p [ class "d-inline font-weight-bold" ] [ text searchString ])
+            |> List.intersperse (p [ class "d-inline font-weight-bold" ] [ text query ])
 
     else
         []
 
 
-
-
 withPagination : PaginationOffset -> SearchParameters -> SearchParameters
-withPagination paginationOffset (SearchParameters searchMode searchString _) =
-    SearchParameters searchMode searchString paginationOffset
+withPagination paginationOffset (SearchParameters mode query _) =
+    SearchParameters mode query paginationOffset
 
 
-withSearchString : String -> SearchParameters -> SearchParameters
-withSearchString searchString (SearchParameters searchMode _ paginationOffset) =
-    SearchParameters searchMode searchString paginationOffset
+withquery : String -> SearchParameters -> SearchParameters
+withquery query (SearchParameters mode _ paginationOffset) =
+    SearchParameters mode query paginationOffset
 
 
-withSearchMode : SearchMode -> SearchParameters -> SearchParameters
-withSearchMode searchMode (SearchParameters _ searchString paginationOffset) =
-    SearchParameters searchMode searchString paginationOffset
+toSearchParameters : Model -> Maybe SearchParameters
+toSearchParameters model =
+    case model.level of
+        Just level ->
+            SearchParameters
+                level
+                model.mode
+                model.query
+                model.defaultPaginationOffset
+            |> Just
+        Nothing ->
+            Nothing
 
 
-getSearchString : SearchParameters -> String
-getSearchString (SearchParameters _ searchString _) =
-    searchString
+withMode : Mode -> SearchParameters -> SearchParameters
+withMode mode (SearchParameters _ _ query paginationOffset) =
+    SearchParameters mode query paginationOffset
 
 
-getSearchMode : SearchParameters -> SearchMode
-getSearchMode (SearchParameters searchMode _ _) =
-    searchMode
+getQuery : Maybe SearchParameters -> Maybe String
+getQuery parameters =
+    case parameters of
+        Just (SearchParameters _ _ query _) ->
+            Just query
+        Nothing ->
+            Nothing
+
+
+getMode : SearchParameters -> Mode
+getMode (SearchParameters _ mode _ _) =
+    mode
 
 
 differentSearch : Maybe SearchParameters -> SearchParameters -> Bool
@@ -143,5 +161,6 @@ differentSearch maybeSearchParameters (SearchParameters modeB stringB _) =
     case maybeSearchParameters of
         Just (SearchParameters modeA stringA _) ->
             modeA /= modeB || stringA /= stringB
+
         Nothing ->
             False

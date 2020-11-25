@@ -3,7 +3,7 @@
 import csv
 import itertools
 import os
-from shared_config import SEARCH_AS_YOU_TYPE_FIELDS
+from ..config import SEARCH_AS_YOU_TYPE_FIELDS
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
