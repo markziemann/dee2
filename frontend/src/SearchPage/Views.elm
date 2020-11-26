@@ -20,16 +20,16 @@ viewLargeSearchBar model =
             , class "form-control form-control-lg"
             , placeholder "e.g. Human epilepisy | SRP070529"
             , type_ "search"
-            , value <| Maybe.withDefault "" (getQuery model.previousSearch)
+            , value model.query
             , id "search-bar"
             ]
-            [ text <| Maybe.withDefault ""  (getQuery model.previousSearch) ]
+            [ text model.query ]
         , viewSuggestions model
         ]
 
 
 viewSuggestions : Model -> Html Msg
-viewSuggestions { suggestionsVisible, previousSearch, searchSuggestions, activeSuggestion } =
+viewSuggestions { suggestionsVisible, query, searchSuggestions, activeSuggestion } =
     let
         highlight =
             suggestionHighlightFunc activeSuggestion
@@ -58,7 +58,7 @@ viewSuggestions { suggestionsVisible, previousSearch, searchSuggestions, activeS
                             |> class
                         , onClick (SuggestionSelected idx)
                         ]
-                        (highlightMatchingText (Maybe.withDefault ""  <| getQuery previousSearch) suggestion)
+                        (highlightMatchingText query suggestion)
                 )
                 (Array.toList suggestions)
                 |> dropdown
@@ -96,8 +96,8 @@ viewSearchButton model =
         ]
 
 
-viewmodeSelector : Mode -> Html Msg
-viewmodeSelector mode =
+viewModeSelector : Mode -> Html Msg
+viewModeSelector mode =
     div [ class "d-sm-flex justify-content-center" ]
         [ div [ class "form-check mx-2 my-4" ]
             [ input
@@ -123,4 +123,13 @@ viewmodeSelector mode =
                 []
             , label [ class "form-check-label", for "fuzzy-text" ] [ text "Fuzzy Text Search" ]
             ]
+        ]
+
+
+view : Model -> Html Msg
+view model =
+    div []
+        [ viewLargeSearchBar model
+        , viewModeSelector <| model.mode
+        , viewSearchButton model
         ]

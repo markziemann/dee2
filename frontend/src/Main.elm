@@ -4,20 +4,20 @@ import Browser exposing (Document)
 import Browser.Navigation as Nav
 import Elastic exposing (parse, serialize)
 import Helpers exposing (decodeSearchResults)
+import HomePage.Main as HPMain
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
 import Info exposing (introduction)
 import Nav exposing (navbar)
-import HomePage.Main as HPMain
 import ResultsPage.Main as RPMain exposing (newSearchResults)
 import ResultsPage.Types exposing (MaybeExpired(..))
 import ResultsPage.Views exposing (viewSearchResults)
 import Routes
-import SearchPage.Helpers exposing (getSearchMode)
+import SearchPage.Helpers exposing (getMode, updateLevel)
 import SearchPage.Main as SPMain
-import SearchPage.Types exposing (Mode(..), SearchParameters(..))
-import SearchPage.Views exposing (viewLargeSearchBar, viewSearchButton, viewSearchModeSelector)
+import SearchPage.Types exposing (Level(..), Mode(..), SearchParameters(..))
+import SearchPage.Views
 import SharedTypes exposing (PaginationOffset, RemoteData(..), toWebData)
 import Types exposing (..)
 import Url
@@ -54,7 +54,8 @@ init flags url navKey =
 search : SearchParameters -> Cmd Msg
 search ((SearchParameters searchLevel searchMode searchString paginationOffset) as searchParameters) =
     let
-        endPoint = "api/search/"
+        endPoint =
+            "api/search/"
 
         parsedSearchString =
             case searchMode of
@@ -91,7 +92,7 @@ update msg model =
                 ( { model | resultsPage = mdl }, Cmd.map GotResultsPageMsg cmd )
     in
     case msg of
-        GotHomePageMsg message->
+        GotHomePageMsg message ->
             HPMain.update message model.homePage
                 |> fromHomePage
 
@@ -100,7 +101,7 @@ update msg model =
                 |> fromSearchPage
 
         GotSearchProjectsPageMsg message ->
-            (model, Cmd.none)
+            ( model, Cmd.none )
 
         GotResultsPageMsg message ->
             RPMain.update message model.resultsPage
@@ -140,11 +141,14 @@ update msg model =
                     , search searchParameters
                     )
 
+                Routes.SearchRunsRoute ->
+                    ( { newModel | searchPage = updateLevel Runs model.searchPage }, Cmd.none )
+
+                Routes.SearchProjectsRoute ->
+                    ( { newModel | searchPage = updateLevel Projects model.searchPage }, Cmd.none )
+
                 _ ->
                     ( newModel, Cmd.none )
-
-
-
 
 
 
@@ -174,16 +178,15 @@ pageView model =
     pageLayout <|
         case model.route of
             Routes.HomeRoute ->
-                fromHomePage [HPMain.view]
+                fromHomePage [ HPMain.view ]
 
             Routes.SearchRunsRoute ->
                 fromSearchPage
-                    [ viewLargeSearchBar model.searchPage
-                    , viewSearchModeSelector <| getSearchMode model.searchPage.previousSearch
-                    , viewSearchButton model.searchPage
-                    ]
+                    [ SearchPage.Views.view model.searchPage ]
+
             Routes.SearchProjectsRoute ->
-                fromHomePage [HPMain.view]
+                fromSearchPage
+                    [ SearchPage.Views.view model.searchPage ]
 
             Routes.ResultsRoute (SearchParameters _ _ _ paginationOffset) ->
                 fromResultsPage
@@ -191,7 +194,6 @@ pageView model =
 
             Routes.Unknown ->
                 [ text "Hmm... I don't recognise that url." ]
-
 
 
 view : Model -> Document Msg
@@ -219,8 +221,8 @@ subscriptions model =
                 ]
 
         Routes.SearchProjectsRoute ->
-
             Sub.none
+
 
 
 ---- PROGRAM ----

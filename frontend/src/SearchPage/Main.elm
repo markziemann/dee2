@@ -83,13 +83,13 @@ update msg model =
         Search ->
             case model |> toSearchParameters of
                 Just searchParameters ->
-                    ( {model | previousSearch = Just searchParameters}
+                    ( { model | previousSearch = Just searchParameters }
                         |> hideSuggestions
                     , Nav.pushUrl model.navKey (Routes.searchResultsRoute searchParameters)
                     )
+
                 Nothing ->
                     noChange
-
 
         EnterKey ->
             case ( emptyWebData model.searchSuggestions, model.activeSuggestion ) of
@@ -102,27 +102,21 @@ update msg model =
                 ( _, _ ) ->
                     update Search model
 
-
         -- recursive call should be avoided
-        GetSearchSuggestions searchParameters ->
+        GetSearchSuggestions ((SearchParameters level mode query _) as searchParameters) ->
             -- This is some debounce on the search string to prevent spamming ElasticSearch with queries
-            case model.previousSearch of
-                Just previousSearch ->
-                    if previousSearch == searchParameters then
-                        ( model |> showSuggestions
-                        , get
-                            { url =
-                                "api/search_as_you_type/"
-                                    ++ (Routes.searchResultParams searchParameters |> Url.Builder.toQuery)
-                            , expect = Http.expectJson (GotSearchSuggestions << toWebData) decodeSearchSuggestions
-                            }
-                        )
+            if query == model.query then
+                ( model |> showSuggestions
+                , get
+                    { url =
+                        "api/suggestions/"
+                            ++ (Routes.searchResultParams searchParameters |> Url.Builder.toQuery)
+                    , expect = Http.expectJson (GotSearchSuggestions << toWebData) decodeSearchSuggestions
+                    }
+                )
 
-                    else
-                        onlyData (showSuggestions model)
-
-                Nothing ->
-                    noChange
+            else
+                onlyData (showSuggestions model)
 
         GotSearchSuggestions webData ->
             onlyData

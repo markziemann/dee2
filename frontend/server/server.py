@@ -3,7 +3,6 @@ import io
 import zipfile
 
 import aiohttp
-from aiohttp import web
 from elasticsearch import AsyncElasticsearch
 
 from config import SEARCH_AS_YOU_TYPE_FIELDS
@@ -52,16 +51,15 @@ async def download(request):
 
 # /simple_query_search/?searchString=a&perPage=20&offset=0"
 
-@routes.get('/api/simple_query_search/')
-@query_params('searchMode', 'searchString', 'offset', 'perPage')
-async def search(request, /, searchMode, searchString, offset=0, perPage=20):
+@routes.get('/api/search/')
+@query_params('level', 'mode', 'query', 'offset', 'per_page')
+async def search(request, /, level, mode, query, offset=0, per_page=20):
     """Seacrh Elasticsearch"""
-
-    if searchMode == 'Strict':
+    if mode == 'Strict':
         search_response = await client.search(
             {"from": offset,
-             "size": perPage,
-             "query": {"simple_query_string": {"query": f"{searchString}",
+             "size": per_page,
+             "query": {"simple_query_string": {"query": f"{query}",
                                                "analyze_wildcard": "true",
                                                "fields": SEARCH_AS_YOU_TYPE_FIELDS,
                                                }
@@ -71,13 +69,13 @@ async def search(request, /, searchMode, searchString, offset=0, perPage=20):
         search_hits = get_hit_count(search_response)
         search_results = get_data(get_hits(search_response))
         return web.json_response({'hits': search_hits, 'rows': search_results})
-    elif searchMode == 'Fuzzy':
+    elif mode == 'Fuzzy':
         search_response = await client.search(
             {"from": offset,
-             "size": perPage,
+             "size": per_page,
              "query": {
                  "multi_match": {
-                     "query": f"{searchString}",
+                     "query": f"{query}",
                      "fields": SEARCH_AS_YOU_TYPE_FIELDS,
                      "fuzziness": "AUTO"
                  }
@@ -93,17 +91,17 @@ async def search(request, /, searchMode, searchString, offset=0, perPage=20):
                                  )
 
 
-@routes.get('/api/search_as_you_type/{search_string}')
-@url_params('search_string')
-async def search_as_you_type(request, /, search_string):
-    search_string = search_string
+@routes.get('/api/suggestions/')
+@query_params('level', 'query')
+async def suggestions(request, /, level, query):
+    print(level, query)
     return web.json_response({"suggestions":
         extract_relevant_terms(
             await client.search(
                 {
                     "query": {
                         "multi_match": {
-                            "query": search_string,
+                            "query": query,
                             "type": "bool_prefix",
                             "fields": SEARCH_AS_YOU_TYPE_FIELDS
                         }
@@ -113,7 +111,7 @@ async def search_as_you_type(request, /, search_string):
                     "_source": SEARCH_AS_YOU_TYPE_FIELDS,
                 }
             ),
-            search_string)
+            query)
     })
 
 

@@ -83,7 +83,7 @@ routeParser =
                 <?> Query.string "level"
                 <?> Query.string "mode"
                 <?> Query.string "query"
-                <?> Query.string "perPage"
+                <?> Query.string "per_page"
                 <?> Query.string "offset"
             )
         , UP.map SearchRunsRoute (UP.s searchRunsRoute)
@@ -115,10 +115,11 @@ searchResultParams (SearchParameters level mode query paginationOffset) =
                 Fuzzy ->
                     "Fuzzy"
     in
+    -- These url parameters reflect what the python server expects
     [ UB.string "level" levelString
     , UB.string "mode" modeString
     , UB.string "query" query
-    , UB.string "perPage" <| String.fromInt paginationOffset.perPage
+    , UB.string "per_page" <| String.fromInt paginationOffset.perPage
     , UB.string "offset" <| String.fromInt paginationOffset.offset
     ]
 

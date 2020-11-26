@@ -8,8 +8,6 @@ import Process exposing (sleep)
 import SearchPage.Types exposing (..)
 import SharedTypes exposing (PaginationOffset, RemoteData(..), WebData)
 import Task
-import Url.Builder exposing (QueryParameter)
-import Json.Encode
 
 
 getWebDataIndex : Int -> WebData (Array.Array a) -> Maybe a
@@ -114,13 +112,13 @@ highlightMatchingText query suggestion =
 
 
 withPagination : PaginationOffset -> SearchParameters -> SearchParameters
-withPagination paginationOffset (SearchParameters mode query _) =
-    SearchParameters mode query paginationOffset
+withPagination paginationOffset (SearchParameters level mode query _) =
+    SearchParameters level mode query paginationOffset
 
 
 withquery : String -> SearchParameters -> SearchParameters
-withquery query (SearchParameters mode _ paginationOffset) =
-    SearchParameters mode query paginationOffset
+withquery query (SearchParameters level mode _ paginationOffset) =
+    SearchParameters level mode query paginationOffset
 
 
 toSearchParameters : Model -> Maybe SearchParameters
@@ -132,14 +130,15 @@ toSearchParameters model =
                 model.mode
                 model.query
                 model.defaultPaginationOffset
-            |> Just
+                |> Just
+
         Nothing ->
             Nothing
 
 
 withMode : Mode -> SearchParameters -> SearchParameters
-withMode mode (SearchParameters _ _ query paginationOffset) =
-    SearchParameters mode query paginationOffset
+withMode mode (SearchParameters level _ query paginationOffset) =
+    SearchParameters level mode query paginationOffset
 
 
 getQuery : Maybe SearchParameters -> Maybe String
@@ -147,6 +146,7 @@ getQuery parameters =
     case parameters of
         Just (SearchParameters _ _ query _) ->
             Just query
+
         Nothing ->
             Nothing
 
@@ -157,10 +157,15 @@ getMode (SearchParameters _ mode _ _) =
 
 
 differentSearch : Maybe SearchParameters -> SearchParameters -> Bool
-differentSearch maybeSearchParameters (SearchParameters modeB stringB _) =
+differentSearch maybeSearchParameters (SearchParameters levelB modeB queryB _) =
     case maybeSearchParameters of
-        Just (SearchParameters modeA stringA _) ->
-            modeA /= modeB || stringA /= stringB
+        Just (SearchParameters levelA modeA queryA _) ->
+            levelA /= levelB || modeA /= modeB || queryA /= queryB
 
         Nothing ->
             False
+
+
+updateLevel : Level -> Model -> Model
+updateLevel level model =
+    { model | level = Just level }
