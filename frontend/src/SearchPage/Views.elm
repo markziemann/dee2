@@ -10,6 +10,16 @@ import SearchPage.Helpers exposing (getQuery, highlightMatchingText, suggestionH
 import SearchPage.Types exposing (..)
 import SharedTypes exposing (RemoteData(..))
 
+placeholderInstructions: Maybe Level -> String
+placeholderInstructions maybeLevel =
+    case maybeLevel of
+        Just Projects ->
+            "Projects e.g. SRP070529"
+        Just Runs ->
+            "Runs e.g. SRR7868058"
+        Nothing ->
+            "No search level selected"
+
 
 viewLargeSearchBar : Model -> Html Msg
 viewLargeSearchBar model =
@@ -18,7 +28,7 @@ viewLargeSearchBar model =
             [ onInput SearchUpdate
             , attribute "aria-label" "Search"
             , class "form-control form-control-lg"
-            , placeholder "e.g. Human epilepisy | SRP070529"
+            , placeholder (placeholderInstructions model.level)
             , type_ "search"
             , value model.query
             , id "search-bar"
@@ -88,7 +98,7 @@ viewSearchButton model =
         [ div [ class "btn-group dropright my-5" ]
             [ button
                 [ onClick <| Search
-                , class "btn btn-lg btn-outline-success"
+                , class "btn btn-lg btn-outline-primary"
                 , type_ "button"
                 ]
                 [ text "Search" ]

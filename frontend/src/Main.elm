@@ -9,7 +9,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
 import Info exposing (introduction)
-import Nav exposing (navbar)
+import Nav exposing (navBar)
 import ResultsPage.Main as RPMain exposing (newSearchResults)
 import ResultsPage.Types exposing (MaybeExpired(..))
 import ResultsPage.Views exposing (viewSearchResults)
@@ -157,7 +157,7 @@ update msg model =
 
 pageLayout : List (Html Msg) -> List (Html Msg)
 pageLayout content =
-    [ navbar
+    [ Html.map GotHomePageMsg navBar
     , div [ class "container my-5 mx-auto" ] content
     , introduction
     ]
@@ -185,8 +185,7 @@ pageView model =
                     [ SearchPage.Views.view model.searchPage ]
 
             Routes.SearchProjectsRoute ->
-                fromSearchPage
-                    [ SearchPage.Views.view model.searchPage ]
+                fromSearchPage [ SearchPage.Views.view model.searchPage ]
 
             Routes.ResultsRoute (SearchParameters _ _ _ paginationOffset) ->
                 fromResultsPage
