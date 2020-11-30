@@ -1,13 +1,15 @@
 import argparse
 import asyncio
+import csv
 import glob
 import re
-from functools import partial
-from itertools import takewhile, zip_longest
-from lxml import etree
-import csv
 import warnings
+from functools import partial
+from itertools import takewhile
+from time import time
+
 from aiohttp.client import ClientSession
+from lxml import etree
 
 parser = argparse.ArgumentParser(description='Download Abstracts from NCBI SRA database for Dee2 SRPs')
 parser.add_argument('--mapping', help='TSV file that maps SRPs to SRXs', default='SRP_to_SRX.tsv')
@@ -62,10 +64,21 @@ def take(iterator, n):
     """Return n elements from iterator"""
     return list(map(lambda x: x[1], takewhile(lambda x: x[0] < n, enumerate(iterator))))
 
+
 def text(obj):
     return obj.text
 
-async def downloader(session, host, tsv_writer, sra_geo_iter):
+
+async def rate_limiter(requests_per_min):
+    time_increment = 60 / requests_per_min
+    current_time = time()
+    while True:
+        await asyncio.sleep(current_time - time())
+        yield
+        current_time = time() + time_increment
+
+
+async def downloader(session, host, tsv_writer, sra_geo_iter, limiter):
     while True:
         sra_geo_params = take(sra_geo_iter, 200)
         if not sra_geo_params:
@@ -74,14 +87,14 @@ async def downloader(session, host, tsv_writer, sra_geo_iter):
 
         print(f"Downloading SRA chunk beginning with: {sra_geo_params[0]}")
 
-        # Example using requests
-        # r = requests.get("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi", params={"db": "sra", "id":"SRX096035"})
-
         srxs = ','.join(map(lambda x: SRP_to_SRX[x[0]], sra_geo_params))
-        rsp = await session.post(host+E_FETCH, params=dict(DEFAULT_PARAMS, **{'id': srxs}))
+        await limiter.asend(None)
+        rsp = await session.post(host + E_FETCH, params=dict(DEFAULT_PARAMS, **{'id': srxs}))
+
         if not rsp.status == 200:
             warnings.warn(f"Failed to download abstract chunk beginning with {sra_geo_params[0]}")
             continue  # < - Or raise error'
+
         root = etree.fromstring(await rsp.text())
         species = map(text, root.xpath('EXPERIMENT_PACKAGE/SAMPLE/SAMPLE_NAME/SCIENTIFIC_NAME'))
         abstract = map(text, root.xpath('EXPERIMENT_PACKAGE/STUDY/DESCRIPTOR/STUDY_ABSTRACT'))
@@ -89,17 +102,18 @@ async def downloader(session, host, tsv_writer, sra_geo_iter):
             tsv_writer.writerow([sra, geo, species, abstract])
 
 
-async def run(host, dest, project_paths):
+async def run(host, dest, project_paths, requests_per_min):
+    limiter = rate_limiter(requests_per_min)
     async with ClientSession() as session:
         sra_geo_iter = iter_sra_geo(project_paths)
         with open(f'{dest}/abstracts.tsv', 'w', encoding='utf8') as out_file:
             header = ['SRP', "GSE", "SPECIES", "ABSTRACT"]
             tsv_writer = csv.writer(out_file, dialect='excel-tab')
             tsv_writer.writerow(header)
-            await asyncio.gather(*[downloader(session, host, tsv_writer, sra_geo_iter) for _ in range(1)])
+            await asyncio.gather(*[downloader(session, host, tsv_writer, sra_geo_iter, limiter) for _ in range(1)])
         print("Completed!")
 
 
 loop = asyncio.get_event_loop()
 
-loop.run_until_complete(run(HOST, args.dest, PATHS))
+loop.run_until_complete(run(HOST, args.dest, PATHS, 500))
