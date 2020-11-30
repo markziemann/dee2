@@ -7,7 +7,7 @@ import warnings
 from functools import partial
 from itertools import takewhile
 from time import time
-
+import os
 from aiohttp.client import ClientSession
 from lxml import etree
 
@@ -18,13 +18,15 @@ parser.add_argument('--dest', help='Folder to save data', default='./')
 
 args = parser.parse_args()
 
+API_KEY = os.environ['E_UTILITIES_KEY']
+
 HOST = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
 
 E_SEARCH = "esearch.fcgi"
 
 E_FETCH = "efetch.fcgi"
 
-DEFAULT_PARAMS = {"db": "sra"}
+DEFAULT_PARAMS = {"db": "sra", 'api_key': API_KEY}
 
 TEST_SRA_PROJECTS = ['/dee2_data/bulk/scerevisiae/SRP038992_GSE55400.zip',
                      '/dee2_data/bulk/scerevisiae/SRP004431_GSE25107.zip',
