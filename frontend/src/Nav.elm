@@ -35,14 +35,6 @@ navBar =
         , div [ class "collapse navbar-collapse", id "navbarSupportedContent" ]
             [ ul [ class "navbar-nav mr-auto" ]
                 [ li [ class "nav-item" ]
-                    [ b [ class "nav-link", onClick SearchProjects ]
-                        [ text "Search ", b [] [ text "Projects" ] ]
-                    ]
-                , li [ class "nav-item" ]
-                    [ b [ class "nav-link", onClick SearchRuns ]
-                        [ text "Search ", b [] [ text "Runs" ] ]
-                    ]
-                , li [ class "nav-item" ]
                     [ a [ class "nav-link", href "#" ]
                         [ text "FAQ" ]
                     ]
@@ -50,18 +42,22 @@ navBar =
                     [ a [ class "nav-link", href "#" ]
                         [ text "About" ]
                     ]
-                , li [ class "nav-item dropdown" ]
-                    [ a [ attribute "aria-expanded" "false", attribute "aria-haspopup" "true", class "nav-link dropdown-toggle", attribute "data-toggle" "dropdown", href "#", id "navbarDropdown", attribute "role" "button" ]
-                        [ text "Dropdown        " ]
+                , li [ class "nav-item dropdown dropright" ]
+                    [ a
+                        [ attribute "aria-expanded" "false"
+                        , attribute "aria-haspopup" "true"
+                        , class "nav-link dropdown-toggle"
+                        , attribute "data-toggle" "dropdown"
+                        , href "#"
+                        , id "navbarDropdown"
+                        , attribute "role" "button"
+                        ]
+                        [ text "Search" ]
                     , div [ attribute "aria-labelledby" "navbarDropdown", class "dropdown-menu" ]
-                        [ a [ class "dropdown-item", href "#" ]
-                            [ text "Action" ]
-                        , a [ class "dropdown-item", href "#" ]
-                            [ text "Another action" ]
-                        , div [ class "dropdown-divider" ]
-                            []
-                        , a [ class "dropdown-item", href "#" ]
-                            [ text "Something else here" ]
+                        [ li [ class "dropdown-item", onClick SearchProjects ]
+                            [ b [] [ text "Projects" ] ]
+                        , li [ class "dropdown-item", onClick SearchRuns ]
+                            [ b [] [ text "Runs" ] ]
                         ]
                     ]
                 ]

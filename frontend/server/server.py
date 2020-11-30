@@ -119,4 +119,3 @@ app = web.Application()
 app.add_routes(routes)
 app.add_routes([web.static('/', './dist')])
 
-# r = requests.get("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi", params={"db": "sra", "id":"SRX096035"})
