@@ -11,7 +11,7 @@ mapping = {}
 with open(args.accessions, 'r', newline='', encoding='utf8') as f:
     reader = csv.DictReader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
     for row in reader:
-        if row['Accession'][2] == "X" and row['Status'] == 'live':
+        if row['Accession'][2] == "X":
             if not row['Study'] in mapping:
                 mapping.update({row['Study']: row['Accession']})
 

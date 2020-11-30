@@ -2,12 +2,13 @@ import argparse
 import asyncio
 import csv
 import glob
+import os
 import re
 import warnings
 from functools import partial
 from itertools import takewhile
 from time import time
-import os
+
 from aiohttp.client import ClientSession
 from lxml import etree
 
@@ -80,6 +81,14 @@ async def rate_limiter(requests_per_min):
         current_time = time() + time_increment
 
 
+def lookup_or_search(srp):
+    try:
+        return SRP_to_SRX[srp]
+    except KeyError:
+        warnings.warn(f'{srp} not in mapping')
+        return ''
+
+
 async def downloader(session, host, tsv_writer, sra_geo_iter, limiter):
     while True:
         sra_geo_params = take(sra_geo_iter, 200)
@@ -89,7 +98,7 @@ async def downloader(session, host, tsv_writer, sra_geo_iter, limiter):
 
         print(f"Downloading SRA chunk beginning with: {sra_geo_params[0]}")
 
-        srxs = ','.join(map(lambda x: SRP_to_SRX[x[0]], sra_geo_params))
+        srxs = ','.join(map(lambda x: lookup_or_search(x[0]), sra_geo_params))
         await limiter.asend(None)
         rsp = await session.post(host + E_FETCH, params=dict(DEFAULT_PARAMS, **{'id': srxs}))
 
