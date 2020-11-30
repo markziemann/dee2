@@ -1,13 +1,20 @@
 import csv
+import argparse
+
+parser = argparse.ArgumentParser(description='Generate SRP to SRX mapping file')
+parser.add_argument('--accessions', help='Path to SRA_Accessions.tab file', default='./SRA_Accessions.tab')
+parser.add_argument('--dest', help='Destination for output file', default='./SRP_to_SRX.tab')
+
+args = parser.parse_args()
 
 mapping = {}
-with open(r'C:\Users\James\PycharmProjects\dee2\SRA_Accessions.tab', 'r', newline='', encoding='utf8') as f:
+with open(args.accessions, 'r', newline='', encoding='utf8') as f:
     reader = csv.DictReader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
     for row in reader:
-        if row['Accession'][:3] == "SRX":
+        if row['Accession'][2] == "X" and row['Status'] == 'live':
             if not row['Accession'] in mapping:
                 mapping.update({row['Study']: row['Accession']})
 
-with open('SRP_to_SRX.tsv', 'w', encoding='utf8') as f:
+with open(args.dest, 'w', encoding='utf8') as f:
     for key, value in mapping.items():
         f.write(f'{key}\t{value}\n')
