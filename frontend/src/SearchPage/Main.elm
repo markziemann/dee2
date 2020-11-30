@@ -128,7 +128,7 @@ update msg model =
             case getWebDataIndex index model.searchSuggestions of
                 Just suggestion ->
                     onlyData
-                        ({ model | previousSearch = Maybe.map (withquery suggestion) model.previousSearch }
+                        ({ model | query = suggestion }
                             |> clearActiveSuggestion
                             |> hideSuggestions
                         )
@@ -165,10 +165,10 @@ update msg model =
                     noChange
 
         StrictSelected string ->
-            onlyData { model | previousSearch = Maybe.map (withMode Strict) model.previousSearch }
+            onlyData { model | mode = Strict}
 
         FuzzySelected string ->
-            onlyData { model | previousSearch = Maybe.map (withMode Fuzzy) model.previousSearch }
+            onlyData { model | mode = Fuzzy}
 
         ClickOutOfSuggestions ->
             onlyData (hideSuggestions model)

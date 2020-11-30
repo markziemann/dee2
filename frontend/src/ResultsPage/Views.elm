@@ -9,8 +9,8 @@ import Html.Attributes exposing (..)
 import Html.Events as Events exposing (onClick)
 import ResultsPage.Helpers exposing (..)
 import ResultsPage.Types exposing (..)
-import SearchPage.Helpers exposing (withPagination)
-import SearchPage.Types exposing (SearchParameters, SearchResult, SearchResults)
+import SearchPage.Helpers exposing (getLevel, withPagination)
+import SearchPage.Types exposing (Level(..), SearchParameters, SearchResult, SearchResults)
 import Set
 import SharedTypes exposing (PaginationOffset, RemoteData(..), WebData, unwrapWebData)
 import Table exposing (HtmlDetails, Status)
@@ -32,14 +32,14 @@ stageResultForRemoval msg resultsPendingRemoval ( id, ( _, _ ) ) =
     ]
 
 
-resultsTable : SelectedResults -> Table.Config SearchResult Msg
-resultsTable selectedResults =
+runResultsTable : SelectedResults -> Table.Config SearchResult Msg
+runResultsTable selectedResults =
     Table.customConfig
         { toId = getId
         , toMsg = SetResultsTableState
         , columns =
             [ Table.stringColumn "Row" getId
-            , Table.stringColumn "Species" (get "species")
+            , noOverflowColumn "Species" (\data -> ( data.id, get "index" data ))
             , Table.stringColumn "SRA Run" (get "SRR_accession")
             , noOverflowColumn "QC summary" (\data -> ( data.id, get "QC_summary" data ))
             , Table.stringColumn "SRA experiment" (get "SRX_accession")
@@ -55,7 +55,37 @@ resultsTable selectedResults =
                     , style "table-layout" "fixed" -- Prevents table going wider than parent element
                     , style "font-size" "clamp(12px, 4vw, 14px)"
                     ]
-                , rowAttrs = selectClickedResult ResultClicked selectedResults
+                , rowAttrs =
+                    selectClickedResult
+                        (ResultClicked (ColumnMapping "index" "SRR_accession"))
+                        selectedResults
+            }
+        }
+
+
+projectsResultsTable : SelectedResults -> Table.Config SearchResult Msg
+projectsResultsTable selectedResults =
+    Table.customConfig
+        { toId = getId
+        , toMsg = SetResultsTableState
+        , columns =
+            [ Table.stringColumn "Row" getId
+            , Table.stringColumn "Species" (get "SPECIES")
+            , Table.stringColumn "SRP Project" (get "SRP")
+            , Table.stringColumn "GSE Accession" (get "GSE")
+            , noOverflowColumn "Abstract" (\data -> ( data.id, get "ABSTRACT" data ))
+            ]
+        , customizations =
+            { defaultTable
+                | tableAttrs =
+                    [ class "table table-hover table-sm table-bordered table-responsive-lg"
+                    , style "table-layout" "fixed" -- Prevents table going wider than parent element
+                    , style "font-size" "clamp(12px, 4vw, 14px)"
+                    ]
+                , rowAttrs =
+                    selectClickedResult
+                        (ResultClicked (ColumnMapping "SPECIES" "SRP"))
+                        selectedResults
             }
         }
 
@@ -67,7 +97,7 @@ selectedTable resultsPendingRemoval =
         , toMsg = SetSelectedResultsTableState
         , columns =
             [ Table.intColumn "Row" Tuple.first
-            , Table.stringColumn "Species" (Tuple.second >> Tuple.first)
+            , noOverflowColumn "Species" (\data -> ( Tuple.first data, (Tuple.second >> Tuple.first) data))
             , Table.stringColumn "SRA" (Tuple.second >> Tuple.second)
             ]
         , customizations =
@@ -176,6 +206,19 @@ viewSearchResults ({ resultsTableState, resultsTableQuery } as model) pagination
     let
         maybeExpiredSearchResults =
             maybeExpiredData model.searchResults
+
+        table =
+            Maybe.map
+                (\parameters ->
+                    case getLevel parameters of
+                        Projects ->
+                            projectsResultsTable
+
+                        Runs ->
+                            runResultsTable
+                )
+                model.searchParameters
+                |> Maybe.withDefault runResultsTable
     in
     case model.searchParameters of
         Just searchParameters ->
@@ -184,7 +227,7 @@ viewSearchResults ({ resultsTableState, resultsTableQuery } as model) pagination
                     [ div [ class "bg-light text-primary" ]
                         [ viewSearchResultHits maybeExpiredSearchResults ]
                     , Table.view
-                        (resultsTable model.selectedResults)
+                        (table model.selectedResults)
                         resultsTableState
                         (unwrapWebData [] (.rows >> Array.toList) maybeExpiredSearchResults)
                     , pagination searchParameters paginationOffset (unwrapWebData 0 .hits maybeExpiredSearchResults)

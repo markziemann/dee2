@@ -220,7 +220,9 @@ subscriptions model =
                 ]
 
         Routes.SearchProjectsRoute ->
-            Sub.none
+            Sub.batch
+                [ Sub.map GotSearchRunsPageMsg <| SPMain.subscriptions model.searchPage
+                ]
 
 
 

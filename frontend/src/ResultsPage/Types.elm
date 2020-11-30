@@ -24,14 +24,16 @@ type alias ResultsPendingRemoval =
 type alias ResultRows =
     Array.Array SearchPage.Types.SearchResult
 
+
 type MaybeExpired a
     = Current a
     | Expired a
 
+
 type alias Model =
     { navKey : Nav.Key
     , searchResults : MaybeExpired (WebData SearchResults)
-    , searchParameters: Maybe SearchParameters
+    , searchParameters : Maybe SearchParameters
     , resultsTableQuery : String
     , resultsTableState : Table.State
     , selectedResultsTableQuery : String
@@ -39,12 +41,20 @@ type alias Model =
     , downloading : Bool
     , selectedResults : SelectedResults
     , resultsPendingRemoval : ResultsPendingRemoval
-
     }
 
 
-type Msg
-    = ResultClicked SearchPage.Types.SearchResult
+type alias ColumnMapping =
+    { species : String
+    , accession : String
+    }
+
+
+type
+    Msg
+    -- For runs the species is encoded in the ElasticSearch index 'index'
+    -- Where for Projects the species is encoded in "SPECIES"
+    = ResultClicked ColumnMapping SearchPage.Types.SearchResult
     | RemoveStagedSelections
     | SelectedResultClicked Int
     | SetResultsTableQuery String
@@ -55,4 +65,3 @@ type Msg
     | DownloadButtonReset
     | PageRequest SearchParameters
     | ShowToggleTip Int
-

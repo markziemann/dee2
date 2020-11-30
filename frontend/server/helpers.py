@@ -45,10 +45,10 @@ def get_hits(search_results: dict) -> list:
     return dict.get(search_results, 'hits', {}).get('hits', [])
 
 
-def extract_species_and_data(hit):
+def extract_index_and_data(hit):
     try:
         data = hit['_source']
-        data.update({"species": hit['_index']})
+        data.update({"index": hit['_index']})
     except KeyError:
         return {}
     else:
@@ -56,7 +56,7 @@ def extract_species_and_data(hit):
 
 
 def get_data(hits: list) -> list:
-    return list(map(extract_species_and_data, hits))
+    return list(map(extract_index_and_data, hits))
 
 
 def get_hit_count(search_results: dict) -> int:

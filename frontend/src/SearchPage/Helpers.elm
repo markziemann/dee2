@@ -155,6 +155,9 @@ getMode : SearchParameters -> Mode
 getMode (SearchParameters _ mode _ _) =
     mode
 
+getLevel : SearchParameters -> Level
+getLevel (SearchParameters level _ _ _) =
+    level
 
 differentSearch : Maybe SearchParameters -> SearchParameters -> Bool
 differentSearch maybeSearchParameters (SearchParameters levelB modeB queryB _) =

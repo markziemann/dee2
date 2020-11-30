@@ -49,7 +49,7 @@ onlyData model =
 update : Msg -> Model -> ( Model, Cmd Msg)
 update msg model =
     case msg of
-        ResultClicked result ->
+        ResultClicked columnMapping result ->
             if Dict.member result.id model.selectedResults then
                 onlyData
                     { model
@@ -63,7 +63,7 @@ update msg model =
                         | selectedResults =
                             MExtra.unwrap model.selectedResults
                                 (\value -> Dict.insert result.id value model.selectedResults)
-                                (stageResultForDownload result)
+                                (stageResultForDownload columnMapping result)
                     }
 
         SelectedResultClicked id ->

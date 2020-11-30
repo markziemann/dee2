@@ -3,13 +3,32 @@ import io
 import zipfile
 
 import aiohttp
-from elasticsearch import AsyncElasticsearch
+import elasticsearch as es
+from elasticsearch import AsyncElasticsearch, Elasticsearch
 
 from config import SEARCH_AS_YOU_TYPE_FIELDS
 from helpers import *
 
 client = AsyncElasticsearch()
+cat_client = es.client.CatClient(Elasticsearch())
+
 routes = web.RouteTableDef()
+
+RUN_INDICES = [index['index'] for index in cat_client.indices(format='json')]
+PROJECT_INDICES = ['projects']
+
+for index in PROJECT_INDICES:
+    RUN_INDICES.remove(index)
+
+RUN_INDICES = ','.join(RUN_INDICES)
+PROJECT_INDICES = ','.join(PROJECT_INDICES)
+
+
+def level_to_indices_and_fields(level):
+    if level == 'Projects':
+        return PROJECT_INDICES, ['SRP', "GSE", "SPECIES", "ABSTRACT"]
+    else:
+        return RUN_INDICES, SEARCH_AS_YOU_TYPE_FIELDS
 
 
 @routes.get('/')
@@ -55,16 +74,17 @@ async def download(request):
 @query_params('level', 'mode', 'query', 'offset', 'per_page')
 async def search(request, /, level, mode, query, offset=0, per_page=20):
     """Seacrh Elasticsearch"""
+    indices, fields = level_to_indices_and_fields(level)
     if mode == 'Strict':
         search_response = await client.search(
             {"from": offset,
              "size": per_page,
              "query": {"simple_query_string": {"query": f"{query}",
                                                "analyze_wildcard": "true",
-                                               "fields": SEARCH_AS_YOU_TYPE_FIELDS,
+                                               "fields": fields,
                                                }
                        },
-             }
+             }, index=indices
         )
         search_hits = get_hit_count(search_response)
         search_results = get_data(get_hits(search_response))
@@ -76,10 +96,10 @@ async def search(request, /, level, mode, query, offset=0, per_page=20):
              "query": {
                  "multi_match": {
                      "query": f"{query}",
-                     "fields": SEARCH_AS_YOU_TYPE_FIELDS,
+                     "fields": fields,
                      "fuzziness": "AUTO"
                  }
-             }}
+             }}, index=indices
         )
         search_hits = get_hit_count(search_response)
         search_results = get_data(get_hits(search_response))
@@ -94,7 +114,7 @@ async def search(request, /, level, mode, query, offset=0, per_page=20):
 @routes.get('/api/suggestions/')
 @query_params('level', 'query')
 async def suggestions(request, /, level, query):
-    print(level, query)
+    indices, fields = level_to_indices_and_fields(level)
     return web.json_response({"suggestions":
         extract_relevant_terms(
             await client.search(
@@ -103,13 +123,13 @@ async def suggestions(request, /, level, query):
                         "multi_match": {
                             "query": query,
                             "type": "bool_prefix",
-                            "fields": SEARCH_AS_YOU_TYPE_FIELDS
+                            "fields": fields
                         }
 
                     },
                     # Filters out non-relevant data
-                    "_source": SEARCH_AS_YOU_TYPE_FIELDS,
-                }
+                    "_source": fields,
+                }, index=indices
             ),
             query)
     })
@@ -118,4 +138,3 @@ async def suggestions(request, /, level, query):
 app = web.Application()
 app.add_routes(routes)
 app.add_routes([web.static('/', './dist')])
-

@@ -94,9 +94,9 @@ highlightRowIfTrue style true =
     BExtra.ifElse style "" true
 
 
-stageResultForDownload : SearchPage.Types.SearchResult -> Maybe ( String, String )
-stageResultForDownload searchResult =
-    case ( Dict.get "species" searchResult.data, Dict.get "SRR_accession" searchResult.data ) of
+stageResultForDownload : ColumnMapping -> SearchPage.Types.SearchResult -> Maybe ( String, String )
+stageResultForDownload mapping searchResult =
+    case ( Dict.get mapping.species searchResult.data, Dict.get mapping.accession searchResult.data ) of
         ( Just key, Just value ) ->
             Just ( key, value )
 
