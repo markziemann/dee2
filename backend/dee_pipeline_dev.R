@@ -8,7 +8,7 @@ setwd("/mnt/md0/dee2/code")
 library("parallel")
 library("data.table")
 library("R.utils")
-library("SRAdb")
+library("reutils")
 
 IPADD="118.138.234.94"
 
@@ -51,10 +51,28 @@ QUEUEWD = normalizePath("../queue/")
 # Get metadata 
 ########################
 
-# run this when it is required to get new metadata
-# wget -O /mnt/md0/dee2/sradb/ecoli.csv 'http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term="transcriptomic"[Source] AND "Escherichia coli"[Organism]'
-
 CSV=paste(SRADBWD,"/",org,".csv",sep="")
+
+if (!file.exists(CSV)) {
+  file.rename(CSV,paste(CSV,".old",sep=""))
+}
+
+SRA_DL_CMDS <- c(
+' wget -O ../sradb/athaliana.csv \'http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term="transcriptomic"[Source] AND "Arabidopsis thaliana"[Organism]\' ' ,
+' wget -O ../sradb/celegans.csv \'http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term="transcriptomic"[Source] AND "Caenorhabditis elegans"[Organism]\' ' ,
+' wget -O ../sradb/dmelanogaster.csv \'http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term="transcriptomic"[Source] AND "Drosophila melanogaster"[Organism]\' ' ,
+' wget -O ../sradb/drerio.csv \'http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term="transcriptomic"[Source] AND "Danio rerio"[Organism]\' ' ,
+' wget -O ../sradb/ecoli.csv \'http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term="transcriptomic"[Source] AND "Escherichia coli"[Organism]\' ' ,
+' wget -O ../sradb/hsapiens.csv \'http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term="transcriptomic"[Source] AND "Homo sapiens"[Organism]\' ' ,
+' wget -O ../sradb/mmusculus.csv \'http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term="transcriptomic"[Source] AND "Mus musculus"[Organism]\' ' ,
+' wget -O ../sradb/rnorvegicus.csv \'http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term="transcriptomic"[Source] AND "Rattus norvegicus"[Organism]\' ' ,
+' wget -O ../sradb/scerevisiae.csv \'http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term="transcriptomic"[Source] AND "Saccharomyces cerevisiae"[Organism]\' '
+)
+
+MY_SRA_CMD <- SRA_DL_CMDS[grep(gsub("'","",species_name),SRA_DL_CMDS)]
+MY_SRA_CMD
+
+system(MY_SRA_CMD)
 
 if (!file.exists(CSV)) {
     stop("Error: the metadata CSV file does not exist")
@@ -76,20 +94,6 @@ colnames(accessions) <- c("experiment","study","sample","run")
 runs <- res$Run
 
 source("dee_pipeline_functions.R")
-
-
-########################
-# linsarob solution
-########################
-
-#sqlfile <- 'SRAmetadb.sqlite'
-sra_accessions <- "../sradb/SRA_Accessions.tab"
-sra_runmembers <- "../sradb/SRA_Run_Members.tab"
-#download.file("https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab",destfile="../sradb/SRA_Accessions.tab")
-#download.file("https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Run_Members.tab",destfile="../sradb/SRA_Run_Members.tab")
-sra_acc <- read.table(sra_accessions,sep="\t",fill=TRUE,header=TRUE)
-
-
 ########################
 # Now determine which datasets have already been processed and completed
 ########################
@@ -119,6 +123,7 @@ tre<-dim( read.table(paste(DATAWD,"/rownames_tx.txt",sep=""),header=TRUE, commen
 
 message("run the check of new datasets")
 source("dee_pipeline_functions.R")
+
 mclapply(fin_new,check_contents,gre,tre,mc.cores=5)
 message("done")
 
@@ -150,26 +155,31 @@ QC_summary="BLANK"
 # here extract any samples that have GEO sample IDs ie GSM
 # res$GEO_Accession
 
-######################################################################
-# the problem is that the csv downloaded from SRA doesnt contain the GSE accession
-# looking into it now
-# see the screenshot
-# solution for now is to download the sample data for GEO then
-# filter with a shell script
-# Here is the search strategy
-# (("gsm"[Filter] AND "Saccharomyces cerevisiae"[porgn:__txid4932])) AND "high throughput sequencing"[Platform Technology Type] 
-# sed 's/Accession: /Accession:/g;s/Series: /Series:/g' gds_result.txt \
-# |tr ' \t' '\n' | egrep '(Series:|Accession:)' | paste - - \
-# | sed 's/Series://;s/Accession://' > ecoli_geo.tsv
-######################################################################
+# here we use reutils use https://www.rdocumentation.org/packages/reutils/versions/0.2.2
+GEO_QUERY_TERMS <- c(
+'"Arabidopsis thaliana"[porgn:__txid3702] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Caenorhabditis elegans"[porgn:__txid6239] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Drosophila melanogaster"[porgn:__txid7227] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Danio rerio"[porgn:__txid7955] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Escherichia coli"[porgn:__txid562] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Homo sapiens"[porgn:__txid9606] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Mus musculus"[porgn:__txid10090] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Rattus norvegicus"[porgn:__txid10116] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Saccharomyces cerevisiae"[porgn:__txid4932] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]'
+)
 
-GSE_FILE=paste(SRADBWD,"/",org,"_geo.tsv",sep="")
+MY_GEO_QUERY_TERM <- GEO_QUERY_TERMS[grep(gsub("'","",species_name),GEO_QUERY_TERMS)]
 
-if (!file.exists(GSE_FILE)) {
-    stop("Error: the GEO series file does not exist")
-}
+ESEARCH_RES <- esearch(term=MY_GEO_QUERY_TERM, db = "gds", rettype = "uilist", retmode = "xml", retstart = 0, 
+  retmax = 5000000, usehistory = TRUE, webenv = NULL, querykey = NULL, sort = NULL, field = NULL, 
+  datetype = NULL, reldate = NULL, mindate = NULL, maxdate = NULL)
 
-gse<-read.table(GSE_FILE, stringsAsFactors=FALSE, comment.char="")
+ESUMMARY <- esummary(ESEARCH_RES)
+
+GSE <- paste("GSE",ESUMMARY$xmlValue("//GSE"),sep="")
+GSM <- ESUMMARY$xmlValue("//Accession")
+
+gse <- data.frame(GSE,GSM)
 colnames(gse)<-c("GEO_series","GEO_sample")
 
 resx<-merge(res,gse,by.x="SampleName",by.y="GEO_sample",all.x=TRUE)
@@ -301,4 +311,3 @@ legend("topright", colnames(z), fill=c("darkblue","red") , cex=1.2)
 text( cbind(as.numeric(z[,1])+70000 ,as.numeric(z[,2])+70000 )  ,t(bb),labels=c(z[,1],z[,2]) ,cex=1.2)
 dev.off()
 system("scp -i ~/.ssh/monash/cloud2.key dee_datasets.png ubuntu@118.138.234.94:/mnt/dee2_data/mx")
-
