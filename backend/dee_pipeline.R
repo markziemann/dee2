@@ -203,6 +203,15 @@ write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.complete.tsv.cut",sep=""),
   quote=F,sep="\t",row.names=F)
 x2<-x2[which(x2$SRR_accession %in% runs_done),]
 
+# write the srpqueue to enable new request from users
+srpqueue <- accessions[which(! accessions$run %in% x2$SRR_accession),2]
+srpqueuename = paste(SRADBWD,"/",org,"_srpqueue.txt",sep="")
+writeLines(srpqueue,con=srpqueuename)
+SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key", srpqueuename ,
+    " ubuntu@118.138.234.94:/mnt/dee2_data/metadata")
+system(SCP_COMMAND)
+
+
 source("dee_pipeline_functions.R")
 library("parallel")
 # this line is giving some errors with mouse data - now executes in batches
