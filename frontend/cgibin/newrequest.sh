@@ -79,7 +79,7 @@ input[type=checkbox] {
 <body>
 '
 
-DIR=/var/www/html/metadata/
+DIR=/var/www/html/srpqueue
 
 #QUERY_STRING="org=ecoli&accessionsearch=SRP253578&emailaddress=mark.ziemann%40gmail.com"
 ORG=$(echo $QUERY_STRING | cut -d '&' -f1 | cut -d '=' -f2)
@@ -92,6 +92,12 @@ echo "<br>"
 echo "<br>"
 
 QUEUE=$DIR/${ORG}_srpqueue.txt
+
+if [ ! -r $QUEUE ] ; then
+
+  echo "$QUEUE not found on server"
+
+fi
 
 #Error handling if no input provided
 if [ -z "$ACC" ] ; then

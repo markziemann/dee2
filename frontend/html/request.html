@@ -159,12 +159,18 @@ li {
 <h1>Request@DEE2
 </h1>
 
-<p>Provide an SRA project accession number (eg SRP096177) or GEO series accession
-(GSE95762) for one of the supported organisms and your email address for notification.
+This feature is experimental and under active development. 
+It may change significantly without warning.
+<br><br>
+Use this form to schedule the analysis of particular SRA projects. 
+A list of projects in the queue is found <a href="srpqueue" target="_blank">here</a>.
+<br><br>
+If your project of interest is not in this list, it might be because it isn't RNA-seq, the organism
+specified is wrong or is so new it hasn't been incorporated into the queue yet.
 
 <h2 id="content">Select your organism
 </h2>
-<form action="cgi-bin/newsearch.sh" method="get">
+<form action="cgi-bin/newrequest.sh" method="get">
 
 <label class="container" ><strong><em>Arabidopsis thaliana</em></strong>
   <input type="radio" checked="checked" name="org"  value="athaliana">
@@ -206,37 +212,19 @@ li {
 <h2 id="content">Specify your accession numbers
 </h2>
 
-<strong>Request accession numbers </strong> Multiple accessions can be separated by
-commas. Try GSE63462,SRP070529,SRR401430 for <em>A. thaliana</em>.
+<strong>Request SRA one project accession number </strong>
+Eg: SRP070529 for <i>A. thaliana</i>.
+
 <br>
 <input type="text" name="accessionsearch"></input><input type="submit" value="Submit" class="tfbutton">
 <br>
-<strong>Provide an email address </strong>for notification.
+<strong>Provide an email address </strong>for notification (optional).
 <br>
 <input type="text" name="emailaddress"></input><input type="submit" value="Submit" class="tfbutton">
 </form>
 Requests may take a while depending on how many datasets and how large they are. Please ensure that the
 email address is correct and check the spam folder before contacting admins for help.
 </p>
-<hr>
-
-<h2>Disclaimer
-</h2>
-
-<p>Although all reasonable efforts have been taken to ensure the accuracy and reliability of the data, 
-Deakin and Monash Universities do not and cannot warrant the performance or results that may be obtained by
-using this software or data. Deakin and Monash disclaim all warranties, express or implied, including 
-warranties of performance, merchantability or fitness for any particular purpose.
-</p>
-
-<hr>
-
-<h2>Citation</h2>
-
-<p>Ziemann M, Kaspi A, El-Osta A. Digital expression explorer 2: a repository of uniformly processed RNA sequencing data. Gigascience. 2019 Apr 1;8(4). pii: 
-giz022. <a href="https://doi.org/10.1093/gigascience/giz022" target="_blank">DOI:10.1093/gigascience/giz022</a>.
-</p>
-
 <hr>
 <hr>
 </body>

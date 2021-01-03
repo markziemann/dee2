@@ -215,8 +215,8 @@ for new users.</li>
 </p>
 
 <ol>
- <li>A) We have written an R package that interfaces with the webpage and loads data into R. For more
-information, read the documentation <a href="https://github.com/markziemann/dee2/blob/master/AccessDEEfromR.md"  target="_blank" >here</a> </li> .
+ <li>A) We have written an R/Bioconductor package that interfaces with the webpage and loads data into R. For more
+information, read the documentation <a href="https://www.bioconductor.org/packages/release/bioc/vignettes/getDEE2/inst/doc/getDEE2.html"  target="_blank" >here</a> </li> .
 </ol>
 <hr>
 
@@ -243,8 +243,9 @@ submitting 500 run accessions at a time. Thirdly, you could download the full bu
 </p>
 
 <ol>
- <li>A) Counts can be aggregated in R (recommended) as outlined in our <a href="https://github.com/markziemann/dee2/blob/master/AccessDEEfromR.md#aggregating-runs-data">guide</a>. Alternatives 
-include <a href='http://stackoverflow.com/questions/10464055/use-awk-to-calculate-sum-for-multiple-columns'> awk </a> or even 
+ <li>A) The getDEE2 R package has a function called srx_agg() which can do this.
+Refer to the <a href="https://www.bioconductor.org/packages/release/bioc/manuals/getDEE2/man/getDEE2.pdf">package manual</a> for details. 
+Alternatives include <a href='http://stackoverflow.com/questions/10464055/use-awk-to-calculate-sum-for-multiple-columns'> awk </a> or even 
 spreadsheet software (ie. Excel). If using Excel or other spreadsheet software, please be wary of its default behaviour that converts
 gene names and accession numbers to dates and scientific numbers.
 </ol>
