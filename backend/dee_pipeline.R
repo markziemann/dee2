@@ -205,10 +205,11 @@ x2<-x2[which(x2$SRR_accession %in% runs_done),]
 
 # write the srpqueue to enable new request from users
 srpqueue <- accessions[which(! accessions$run %in% x2$SRR_accession),2]
+srpqueue <- unique(srpqueue)
 srpqueuename = paste(SRADBWD,"/",org,"_srpqueue.txt",sep="")
 writeLines(srpqueue,con=srpqueuename)
 SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key", srpqueuename ,
-    " ubuntu@118.138.234.94:/mnt/dee2_data/metadata")
+    " ubuntu@118.138.234.94:/mnt/dee2_data/srpqueue")
 system(SCP_COMMAND)
 
 
