@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -x
 # This script is designed to accommodat requests from users who nominate
 # specific accessions to be processed
 
@@ -35,7 +36,8 @@ if [ $len -gt 0 ] ; then
       docker run mziemann/tallyup $ORG $ACCS
 
       CONTAINER=$(docker ps -aql)
-      docker cp ${CONTAINER}:/dee2/data/$ORG .
+      mkdir data
+      docker cp ${CONTAINER}:/dee2/data/$ORG data
       ACCS2=$(grep -w $SRP ../sradb/${ORG}.csv | cut -d ',' -f1 | paste -s -d '|')
       mkdir $SRP
 
