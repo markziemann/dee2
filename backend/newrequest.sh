@@ -34,7 +34,7 @@ if [ $len -gt 0 ] ; then
       > $PROG
       docker run mziemann/tallyup $ORG $ACCS
 
-      CONTAINER=$(docker ps -aq)
+      CONTAINER=$(docker ps -aql)
       docker cp ${CONTAINER}:/dee2/data/$ORG .
       ACCS2=$(grep -w $SRP ../sradb/${ORG}.csv | cut -d ',' -f1 | paste -s -d '|')
       mkdir $SRP
