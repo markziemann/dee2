@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 cd "$(dirname "$0")";
 
 REQ=/var/www/html/request.txt
@@ -8,7 +10,7 @@ while read line ; do
 
   SRP=$(echo $line | awk '{print $2}')
 
-  ADDRESS=(echo $line | awk '{print $2}')
+  ADDRESS=$(echo $line | awk '{print $3}')
 
   FILENAME=/dee2_data/requests/$SRP.zip
 
@@ -26,8 +28,9 @@ while read line ; do
         -r "mdz@dee2.io" "$ADDRESS" < mail.txt
 
         grep -wv $SRP $REQ > tmp && mv tmp $REQ
+        sudo chown www-data:www-data $REQ
 
-      if
+      fi
 
     fi
 
