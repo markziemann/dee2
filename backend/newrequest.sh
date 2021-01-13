@@ -24,11 +24,12 @@ if [ $len -gt 0 ] ; then
 
   while IFS= read -r line; do echo $line
 
-    ORG=$(cat $TODO | cut -d ' ' -f1)
-    SRP=$(cat $TODO | cut -d ' ' -f2)
-    EMAIL=$(cat $TODO | cut -d ' ' -f3)
+    ORG=$(echo $line | cut -d ' ' -f1)
+    SRP=$(echo $line | cut -d ' ' -f2)
+    EMAIL=$(echo $line | cut -d ' ' -f3)
     ACCS=$(grep -w $SRP ../sradb/${ORG}.csv | cut -d ',' -f1 | paste -s -d ',')
     len2=$(echo $ACCS | wc -c)
+    N=$(echo $ACCS | tr ',' '\n' | wc -l)
 
     if [ $len2 -gt 0 ] ; then
 
@@ -49,6 +50,12 @@ if [ $len -gt 0 ] ; then
       COLS=$(echo $COLS | tr ' ' ',')
       echo GeneID $ACCS2 | tr '| ' '\t' > $SRP/genecounts.tsv
       paste $SE | sed 1d | cut -f1,$COLS >> $SRP/genecounts.tsv
+      ERROR_CNT=0
+      RES_COL=$(head $SRP/genecounts.tsv | tail -1 | wc -w )
+      RES_COL=$((RES_COL-1))
+      if [ $RES_COL -ne $N ] ; then
+        ERROR_CNT=$((ERROR_CNT+1))
+      fi
 
       # Prepare txcounts file
       KE=$(find data/$ORG/ | egrep $ACCS2 | grep ke)
@@ -59,22 +66,46 @@ if [ $len -gt 0 ] ; then
       paste $KE | cut -f$COLS | head -1 | sed 's/^/TranscriptID\t/' \
       | sed 's/_est_counts//g'  > $SRP/txcounts.tsv
       paste $KE | sed 1d | cut -f1,$COLS >> $SRP/txcounts.tsv
+      RES_COL=$(head $SRP/txcounts.tsv | tail -1 | wc -w )
+      RES_COL=$((RES_COL-1))
+      if [ $RES_COL -ne $N ] ; then
+        ERROR_CNT=$((ERROR_CNT+1))
+      fi
 
       # prepare qc file
       QC=$(find data/$ORG/ | egrep $ACCS2 | grep qc)
       NUMQC=$(echo $QC | wc -w)
       NUMQC=$(echo $((NUMQC * 2)) )
-      COLS=1$(seq 2 2 $NUMQC)
+      COLS=$(seq 2 2 $NUMQC)
       COLS=$(echo 1 $COLS | tr ' ' ',')
       echo QCmetric $ACCS2 | tr '| ' '\t' > $SRP/qc.tsv
       paste $QC | tr ':' '\t' | head -28 | cut -f$COLS >> $SRP/qc.tsv
+      RES_COL=$(head $SRP/qc.tsv | tail -1 | wc -w )
+      RES_COL=$((RES_COL-1))
+      if [ $RES_COL -ne $N ] ; then
+        ERROR_CNT=$((ERROR_CNT+1))
+      fi
 
       LOG=$(find data/$ORG/ | egrep $ACCS2 | grep log )
       mkdir -p $SRP/log
       cp $LOG $SRP/log
+      RES_COL=$(echo $LOG | wc -w )
+      if [ $RES_COL -ne $N ] ; then
+        ERROR_CNT=$((ERROR_CNT+1))
+      fi
 
-      zip -r $SRP.zip $SRP
-      scp $SRP.zip ubuntu@118.138.234.94:/dee2_data/requests
+      if [ $ERROR_CNT -gt 0 ] ; then
+        echo "There were errors processing ${SRP}" >> $SRP.txt
+        scp $SRP.txt ubuntu@118.138.234.94:/dee2_data/requests
+        cp -r data $SRP.data
+        scp $SRP.data ubuntu@118.138.234.94:/dee2_data/requests
+        rm $SRP.data
+        zip -r $SRP.zip $SRP
+        scp $SRP.zip ubuntu@118.138.234.94:/dee2_data/requests
+      else
+        zip -r $SRP.zip $SRP
+        scp $SRP.zip ubuntu@118.138.234.94:/dee2_data/requests
+      fi
 
       rm -rf data
 
