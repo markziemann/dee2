@@ -42,16 +42,24 @@ if [ $len -gt 0 ] ; then
       ACCS2=$(grep -w $SRP ../sradb/${ORG}.csv | cut -d ',' -f1 | paste -s -d '|')
       mkdir $SRP
 
+      # README
+      cp contents.md $SRP/README.md
+
+      # Gene and tx info
+      ORG3=$(echo $ORG | cut -c-3)
+      cp ../gene_info/${ORG3}_gene_info.tsv $SRP/GeneInfo.tsv
+      cp ../gene_info/${ORG3}_tx_info.tsv $SRP/TxInfo.tsv
+
       # Prepare genecounts file
       SE=$(find data/$ORG/ | egrep $ACCS2 | grep se.tsv)
       NUMSE=$(echo $SE | wc -w)
       NUMCOL=$(echo $((NUMSE * 2)) )
       COLS=$(seq 2 2 $NUMCOL)
       COLS=$(echo $COLS | tr ' ' ',')
-      echo GeneID $ACCS2 | tr '| ' '\t' > $SRP/genecounts.tsv
-      paste $SE | sed 1d | cut -f1,$COLS >> $SRP/genecounts.tsv
+      echo GeneID $ACCS2 | tr '| ' '\t' > $SRP/GeneCountMatrix.tsv
+      paste $SE | sed 1d | cut -f1,$COLS >> $SRP/GeneCountMatrix.tsv
       ERROR_CNT=0
-      RES_COL=$(head $SRP/genecounts.tsv | tail -1 | wc -w )
+      RES_COL=$(head $SRP/GeneCountMatrix.tsv | tail -1 | wc -w )
       RES_COL=$((RES_COL-1))
       if [ $RES_COL -ne $N ] ; then
         ERROR_CNT=$((ERROR_CNT+1))
@@ -64,9 +72,9 @@ if [ $len -gt 0 ] ; then
       COLS=$(seq 4 5 $NUMCOL)
       COLS=$(echo $COLS | tr ' ' ',')
       paste $KE | cut -f$COLS | head -1 | sed 's/^/TranscriptID\t/' \
-      | sed 's/_est_counts//g'  > $SRP/txcounts.tsv
-      paste $KE | sed 1d | cut -f1,$COLS >> $SRP/txcounts.tsv
-      RES_COL=$(head $SRP/txcounts.tsv | tail -1 | wc -w )
+      | sed 's/_est_counts//g' > $SRP/TxCountMatrix.tsv
+      paste $KE | sed 1d | cut -f1,$COLS >> $SRP/TxCountMatrix.tsv
+      RES_COL=$(head $SRP/TxCountMatrix.tsv | tail -1 | wc -w )
       RES_COL=$((RES_COL-1))
       if [ $RES_COL -ne $N ] ; then
         ERROR_CNT=$((ERROR_CNT+1))
@@ -78,9 +86,9 @@ if [ $len -gt 0 ] ; then
       NUMQC=$(echo $((NUMQC * 2)) )
       COLS=$(seq 2 2 $NUMQC)
       COLS=$(echo 1 $COLS | tr ' ' ',')
-      echo QCmetric $ACCS2 | tr '| ' '\t' > $SRP/qc.tsv
-      paste $QC | tr ':' '\t' | head -28 | cut -f$COLS >> $SRP/qc.tsv
-      RES_COL=$(head $SRP/qc.tsv | tail -1 | wc -w )
+      echo QCmetric $ACCS2 | tr '| ' '\t' > $SRP/QC_Matrix.tsv
+      paste $QC | tr ':' '\t' | head -28 | cut -f$COLS >> $SRP/QC_Matrix.tsv
+      RES_COL=$(head $SRP/QC_Matrix.tsv | tail -1 | wc -w )
       RES_COL=$((RES_COL-1))
       if [ $RES_COL -ne $N ] ; then
         ERROR_CNT=$((ERROR_CNT+1))
@@ -93,6 +101,8 @@ if [ $len -gt 0 ] ; then
       if [ $RES_COL -ne $N ] ; then
         ERROR_CNT=$((ERROR_CNT+1))
       fi
+
+      cp contents.md $SRP/README.md
 
       if [ $ERROR_CNT -gt 0 ] ; then
         echo "There were errors processing ${SRP}" >> $SRP.txt
