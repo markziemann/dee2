@@ -15,8 +15,12 @@ IPADD="118.138.234.94"
 CORES=5
 
 #start the analysis
-args = commandArgs(trailingOnly=TRUE)
-org=args[1]
+for ( org in c(  "athaliana", "celegans", "dmelanogaster", "drerio",
+  "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae"  )) {
+
+#args = commandArgs(trailingOnly=TRUE)
+#org=args[1]
+
 species_list <- c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
  
 #now annotate the short names 
@@ -206,6 +210,7 @@ x2<-x2[which(x2$SRR_accession %in% runs_done),]
 # write the srpqueue to enable new request from users
 srpqueue <- accessions[which(! accessions$run %in% x2$SRR_accession),2]
 srpqueue <- unique(srpqueue)
+srpqueue <- srpqueue[order(srpqueue)]
 srpqueuename = paste(SRADBWD,"/",org,"_srpqueue.txt",sep="")
 writeLines(srpqueue,con=srpqueuename)
 SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key", srpqueuename ,
@@ -286,6 +291,16 @@ SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key ",
 system(SCP_COMMAND)
 
 save.image(file = paste(org,".RData",sep=""))
+
+
+}
+
+
+
+
+
+
+
 
 png("dee_datasets.png",width=600,height=600)
 options(bitmapType="cairo")
