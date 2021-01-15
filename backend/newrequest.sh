@@ -14,7 +14,7 @@ PROG=inprogress
 # check if already working
 if [ -r $PROG ] ; then exit ; fi
 
-scp ubuntu@118.138.234.94:/var/www/html/request.txt .
+scp ubuntu@118.138.234.94:/var/www/request.txt .
 
 comm -23 <(sort request.txt) <(sort oldrequest.txt) > $TODO
 
