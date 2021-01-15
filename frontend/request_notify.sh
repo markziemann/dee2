@@ -4,7 +4,7 @@ set -x
 
 cd "$(dirname "$0")";
 
-REQ=/var/www/html/request.txt
+REQ=/var/www/request.txt
 
 while read line ; do
 

@@ -125,7 +125,7 @@ if [ -n "$ACC" ] ; then
     echo "<br>"
     echo '<FORM><INPUT Type="button" VALUE="Go back" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
     echo "<br><br>"
-    echo $ORG $ACC $EMAIL >> /var/www/html/request.txt
+    echo $ORG $ACC $EMAIL >> /var/www/request.txt
     exit
   fi
 
