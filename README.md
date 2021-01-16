@@ -9,6 +9,8 @@ DEE2 currently supports analysis of several major species including A. thaliana 
 ## How can I access the processed data?
 The processed data is available at http://dee2.io and can be also accessed using our specially developed [R interface](https://bioconductor.org/packages/getDEE2/)
 
+If there is a particular dataset of interest missing from DEE2, you can use the [request webform](http://dee2.io/request.html) to have it expedited.
+
 ## Want to learn more?
 For information on different parts of the app, see the specific documentation:
 * [How to use the pipeline to process raw data](../master/pipeline/README.md)
