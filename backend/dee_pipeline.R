@@ -15,8 +15,13 @@ IPADD="118.138.234.94"
 CORES=5
 
 #start the analysis
-for ( org in c(  "athaliana", "celegans", "dmelanogaster", "drerio",
-  "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae"  )) {
+#for ( org in c(  "athaliana", "celegans", "dmelanogaster", "drerio",
+#  "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae"  )) {
+
+for ( org in c(  "mmusculus", "rnorvegicus", "scerevisiae" , 
+  "athaliana", "celegans", "dmelanogaster", "drerio",
+  "ecoli", "hsapiens"  )) {
+
 
 #args = commandArgs(trailingOnly=TRUE)
 #org=args[1]
@@ -141,11 +146,15 @@ print(paste(length(runs_done),"runs completed"))
 runs_todo<-base::setdiff(runs, runs_done)
 print(paste(length(runs_todo),"requeued runs"))
 
-#Update queue on webserver
+#Update queue on webserver if older than
 queue_name=paste(QUEUEWD,"/",org,".queue.txt",sep="")
-write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
-SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key ",queue_name ," ubuntu@118.138.234.94:~/Public")
-system(SCP_COMMAND)
+DIFFTIME=difftime ( ( Sys.Date()-90 ) , file.mtime(queue_name,units="s") )[1]
+
+if ( DIFFTIME > 0 ) {
+  write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
+  SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key ",queue_name ," ubuntu@118.138.234.94:~/Public")
+  system(SCP_COMMAND)
+}
 
 #Update metadata on webserver
 accessions_done<-accessions[which(accessions$run %in% runs_done),]
