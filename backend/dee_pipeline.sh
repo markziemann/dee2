@@ -26,7 +26,7 @@ zcat $ACC/$ACC.se.tsv.gz | sed 1d | sed "s/^/${ACC}\t/"
 }
 export -f se_agg
 parallel -j$CORES se_agg :::: $MD.tmp | pbzip2 -c -j$CORES > $SEMX.bz2
-md5sum $SEMX.bz2 > $SEMX.bz2.md5
+md5sum $SEMX.bz2 > $SEMX.bz2.md5 &
 
 ####
 echo "ke_agg"
@@ -37,7 +37,7 @@ zcat $ACC/$ACC.ke.tsv.gz | sed 1d | cut -f1,4 | sed "s/^/${ACC}\t/"
 }
 export -f ke_agg
 parallel -j$CORES ke_agg :::: $MD.tmp | pbzip2 -c -j$CORES > $KEMX.bz2
-md5sum $KEMX.bz2 > $KEMX.bz2.md5
+md5sum $KEMX.bz2 > $KEMX.bz2.md5 &
 
 ####
 echo "qc agg"
@@ -50,7 +50,7 @@ sed 's/:/\t/' $ACC/$ACC.qc | sed "s/^/${ACC}\t/"
 }
 export -f qc_agg
 parallel -j$CORES qc_agg :::: $MD.tmp | pbzip2 -c -j$CORES > $QCMX.bz2
-md5sum $QCMX.bz2 > $QCMX.bz2.md5
+md5sum $QCMX.bz2 > $QCMX.bz2.md5 &
 
 ####
 echo "fix permissions"
@@ -70,8 +70,9 @@ pbzip2 -c $MD > $MDC
 
 # checksums
 rm  $MXDIR/checksums.md5
+wait
 cat $MXDIR/*md5 | sed 's#/mnt/md0/dee2/mx/##' > $MXDIR/checksums.md5
 # transfer to webserver
 scp -i ~/.ssh/monash/cloud2.key $SEMX.bz2 $KEMX.bz2 $QCMX.bz2 $MDC $MXDIR/checksums.md5 \
-ubuntu@118.138.234.94:/dee2_data/mx
+ubuntu@118.138.237.110:/dee2_data/mx
 
