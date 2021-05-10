@@ -10,18 +10,14 @@ library("data.table")
 library("R.utils")
 library("reutils")
 
-IPADD="118.138.234.94"
+IPADD="118.138.237.110"
 
 CORES=5
 
 #start the analysis
-#for ( org in c(  "athaliana", "celegans", "dmelanogaster", "drerio",
-#  "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae"  )) {
-
 for ( org in c(  "mmusculus", "rnorvegicus", "scerevisiae" , 
   "athaliana", "celegans", "dmelanogaster", "drerio",
   "ecoli", "hsapiens"  )) {
-
 
 #args = commandArgs(trailingOnly=TRUE)
 #org=args[1]
@@ -152,7 +148,7 @@ DIFFTIME=difftime ( ( Sys.Date()-90 ) , file.mtime(queue_name,units="s") )[1]
 
 if ( DIFFTIME > 0 ) {
   write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
-  SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key ",queue_name ," ubuntu@118.138.234.94:~/Public")
+  SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key ",queue_name ," ubuntu@118.138.237.110:~/Public")
   system(SCP_COMMAND)
 }
 
@@ -223,7 +219,7 @@ srpqueue <- srpqueue[order(srpqueue)]
 srpqueuename = paste(SRADBWD,"/",org,"_srpqueue.txt",sep="")
 writeLines(srpqueue,con=srpqueuename)
 SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key", srpqueuename ,
-    " ubuntu@118.138.234.94:/mnt/dee2_data/srpqueue")
+    " ubuntu@118.138.237.110:/mnt/dee2_data/srpqueue")
 system(SCP_COMMAND)
 
 
@@ -266,7 +262,7 @@ rsync<-function(d,org) {
       d<-setdiff(d,d[1:1000])
     }
     CMD=paste('rsync -azh -e \"ssh -i  ~/.ssh/monash/cloud2.key \" ',
-      chunk ,' ubuntu@118.138.234.94:/dee2_data/data/',org,sep="")
+      chunk ,' ubuntu@118.138.237.110:/dee2_data/data/',org,sep="")
     system(CMD)
   }
 }
@@ -274,13 +270,13 @@ d<-val
 rsync(d,org)
 
 #delete *e.tsv.gz
-CMD2=paste('ssh -i ~/.ssh/monash/cloud2.key ubuntu@118.138.234.94 "find /dee2_data/data/',org,' | grep e.tsv.gz | parallel -j1 rm {}"',sep="")
+CMD2=paste('ssh -i ~/.ssh/monash/cloud2.key ubuntu@118.138.237.110 "find /dee2_data/data/',org,' | grep e.tsv.gz | parallel -j1 rm {}"',sep="")
 system(CMD2)
 
 #upload metadata
 SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key", 
   paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ,
-    " ubuntu@118.138.234.94:/mnt/dee2_data/metadata")
+    " ubuntu@118.138.237.110:/mnt/dee2_data/metadata")
 system(SCP_COMMAND)
 
 save.image(file = paste(org,".RData",sep=""))
@@ -296,7 +292,7 @@ x<-gsub("\r?\n|\r", " ", x)
 write.table(x,file=paste(SRADBWD,"/",org,"_metadata.tsv",sep=""),quote=F,sep="\t",row.names=F)
 SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key ", 
   paste(SRADBWD,"/",org,"_metadata.tsv",sep="") ,
-  " ubuntu@118.138.234.94:/mnt/dee2_data/metadata")
+  " ubuntu@118.138.237.110:/mnt/dee2_data/metadata")
 system(SCP_COMMAND)
 
 save.image(file = paste(org,".RData",sep=""))
@@ -344,4 +340,4 @@ legend("topright", colnames(z), fill=c("darkblue","red") , cex=1.2)
 
 text( cbind(as.numeric(z[,1])+70000 ,as.numeric(z[,2])+70000 )  ,t(bb),labels=c(z[,1],z[,2]) ,cex=1.2)
 dev.off()
-system("scp -i ~/.ssh/monash/cloud2.key dee_datasets.png ubuntu@118.138.234.94:/mnt/dee2_data/mx")
+system("scp -i ~/.ssh/monash/cloud2.key dee_datasets.png ubuntu@118.138.237.110:/mnt/dee2_data/mx")
