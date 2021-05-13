@@ -50,7 +50,7 @@ docker commit flamboyant_albattani mziemann/tallyup_dre
 
 #run this to set the entrypoint and regenerate the ssh keys
 
-docker run -it --entrypoint /dee2/code/volunteer_pipeline.sh mziemann/tallyup_dre
+docker run -it --entrypoint /dee2/code/volunteer_pipeline.sh mziemann/tallyup ecoli SRR5985593
 
 #get new container name
 
