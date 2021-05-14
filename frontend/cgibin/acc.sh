@@ -1,7 +1,7 @@
 #!/bin/bash
 #set -x #-v
 #/usr/lib/cgi-bin
-#QUERY_STRING='ORG=athaliana&sub=Submit'
+#QUERY_STRING='ORG=ecoli&sub=Submit'
 cleanit(){
 tr '<>&*?/' ' '
 }
@@ -45,6 +45,8 @@ ALLOC=${DATA}/${ORG}.alloc.txt
 SHORTLIST=${DATA}/${ORG}.shortlist.txt
 
 if [ ! -r $SHORTLIST ] ; then
+  awk '{OFS="\t"}{print $0,$0}' $TODO_NEW | cut -c4-  | sort -k1 -gr | cut -f2 > tmp
+  mv tmp $TODO_NEW
   head -1000 $TODO_NEW > $SHORTLIST
   ACCESSION=$(head -1 $SHORTLIST)
   echo $ACCESSION > $ALLOC
