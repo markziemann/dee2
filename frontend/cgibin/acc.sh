@@ -1,7 +1,7 @@
 #!/bin/bash
 #set -x #-v
 #/usr/lib/cgi-bin
-#QUERY_STRING='ORG=ecoli&sub=Submit'
+#QUERY_STRING='ORG=drerio&sub=Submit'
 cleanit(){
 tr '<>&*?/' ' '
 }
@@ -12,7 +12,7 @@ echo ""
 echo '<html>'
 echo '<head>'
 echo '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
-echo '<title>Tempemon</title>'
+echo '<title>DEE2 job queue</title>'
 echo '</head>'
 echo '<body>'
 # check whether ORG is known and quit if not in the list
