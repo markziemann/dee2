@@ -23,3 +23,12 @@ docker run -it --entrypoint /bin/bash <image>
 docker login
 docker commit db7c579a270 user_name/image_name
 docker push user_name/image_name
+
+
+# how to update an image (ssh key handshake)
+docker run -it --entrypoint /bin/bash mziemann/tallyup
+rm test_pass
+bash code/volunteer_pipeline.sh ecoli 
+exit
+docker run -it --entrypoint /dee2/code/volunteer_pipeline.sh mziemann/tallyup ecoli ERR2095502
+docker commit <container> <image>
