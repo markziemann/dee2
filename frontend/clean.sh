@@ -14,7 +14,7 @@ STASH=/mnt/stash
 cd $DATA
 AGE=$(date -r started +%s)
 TIME=$(date +%s)
-if [ $((TIME-AGE)) -gt 3600 ] ; then
+if [ $((TIME-AGE)) -gt 36 ] ; then
   rm $STARTED_FILE
 fi
 
@@ -64,7 +64,7 @@ if [ ! -r started ] ; then
 #            unzip -o $FILE -d $DATA/$ORG && scp -i ~/.ssh/monash/id_rsa -r -l 8192 $DATA/$ORG/$SRR mziemann@118.138.246.227:/scratch/mziemann/dee2/data/$ORG && sudo rm -rf $DATA/$ORG/$SRR $FILE
 
             #test the connection
-            ssh -i ~/.ssh/monash/id_rsa -p 2211 mdz@localhost "ls" >/dev/null && CONNECT=1 || CONNECT=0
+            ssh -i ~/.ssh/monash/id_rsa -p 2210 mdz@localhost "ls" >/dev/null && CONNECT=1 || CONNECT=0
 
             #test disk space on root is more than 3GB
             DF=$(df / | awk 'NR>1 {print $4}')
@@ -72,9 +72,9 @@ if [ ! -r started ] ; then
 
             if [ $CONNECT -eq 1 -a $STORAGE -eq 1 ] ; then
               unzip -o $FILE -d $DATA/$ORG && \
-              rsync -Pavz -e "ssh -i ~/.ssh/monash/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 2211" $DATA/$ORG/$SRR mdz@localhost:/mnt/md0/dee2/data/$ORG  && \
+              rsync -Pavz -e "ssh -i ~/.ssh/monash/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 2210" $DATA/$ORG/$SRR mdz@localhost:/mnt/md0/dee2/data/$ORG  && \
               sudo rm -rf $DATA/$ORG/$SRR $FILE
-              ssh -i ~/.ssh/monash/id_rsa -p 2211 mdz@localhost "chmod -R +w /mnt/md0/dee2/data/$ORG/$SRR"
+              ssh -i ~/.ssh/monash/id_rsa -p 2210 mdz@localhost "chmod -R +w /mnt/md0/dee2/data/$ORG/$SRR"
             else
               mv $FILE $STASH
             fi
@@ -93,4 +93,4 @@ fi
 #[[ $(( $(date +'%s') - $(stat --format "%Y" /mnt/dee2_data/mx/*.bz2 | sort | head -1) )) -gt 86400 ]] && \
 # scp -i ~/.ssh/monash/id_rsa mziemann@118.138.246.227:/scratch/mziemann/dee2/mx/*bz2 /mnt/dee2_data/mx || \
 # echo "not time to refresh"
-find /var/log/apache2/  -mtime +2 -exec rm {} \;
+find /var/log/apache2/  -mtime +2 -exec sudo rm {} \;
