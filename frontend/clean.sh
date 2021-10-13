@@ -12,11 +12,6 @@ SFTP_INCOMING=/sftp/guestuser/incoming
 STASH=/mnt/stash
 #the below needs to be integrated to automate incorporation of volunteer data
 cd $DATA
-AGE=$(date -r started +%s)
-TIME=$(date +%s)
-if [ $((TIME-AGE)) -gt 36 ] ; then
-  rm $STARTED_FILE
-fi
 
 if [ ! -r started ] ; then
   touch $STARTED_FILE
@@ -72,9 +67,9 @@ if [ ! -r started ] ; then
 
             if [ $CONNECT -eq 1 -a $STORAGE -eq 1 ] ; then
               unzip -o $FILE -d $DATA/$ORG && \
-              rsync -Pavz -e "ssh -i ~/.ssh/monash/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 2210" $DATA/$ORG/$SRR mdz@localhost:/mnt/md0/dee2/data/$ORG  && \
+              rsync -Pavz -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 2210" $DATA/$ORG/$SRR mdz@localhost:/mnt/md0/dee2/data/$ORG  && \
               sudo rm -rf $DATA/$ORG/$SRR $FILE
-              ssh -i ~/.ssh/monash/id_rsa -p 2210 mdz@localhost "chmod -R +w /mnt/md0/dee2/data/$ORG/$SRR"
+              ssh -p 2210 mdz@localhost "chmod -R +w /mnt/md0/dee2/data/$ORG/$SRR"
             else
               mv $FILE $STASH
             fi
