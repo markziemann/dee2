@@ -9,15 +9,19 @@ library("parallel")
 library("data.table")
 library("R.utils")
 library("reutils")
+library("XML")
+library("rjson")
 
-IPADD="118.138.237.110"
+IPADD="118.138.239.130"
 
 CORES=5
 
 #start the analysis
-for ( org in c(  "mmusculus", "rnorvegicus", "scerevisiae" , 
-  "athaliana", "celegans", "dmelanogaster", "drerio",
-  "ecoli", "hsapiens"  )) {
+for ( org in c( "ecoli" )) {
+
+#for ( org in c(  "mmusculus", "rnorvegicus", "scerevisiae" , 
+#  "athaliana", "celegans", "dmelanogaster", "drerio",
+#  "ecoli", "hsapiens"  )) {
 
 #args = commandArgs(trailingOnly=TRUE)
 #org=args[1]
@@ -148,7 +152,7 @@ DIFFTIME=difftime ( ( Sys.Date()-90 ) , file.mtime(queue_name,units="s") )[1]
 
 if ( DIFFTIME > 0 ) {
   write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
-  SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key ",queue_name ," ubuntu@118.138.237.110:~/Public")
+  SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key ",queue_name ," ubuntu@118.138.239.130:~/Public")
   system(SCP_COMMAND)
 }
 
@@ -179,19 +183,35 @@ GEO_QUERY_TERMS <- c(
 
 MY_GEO_QUERY_TERM <- GEO_QUERY_TERMS[grep(gsub("'","",species_name),GEO_QUERY_TERMS)]
 
-ESEARCH_RES <- esearch(term=MY_GEO_QUERY_TERM, db = "gds", rettype = "uilist", retmode = "xml", retstart = 0, 
-  retmax = 5000000, usehistory = TRUE, webenv = NULL, querykey = NULL, sort = NULL, field = NULL, 
+
+# so now we are going with JSON format because XML was failing due to 
+# angled brackets in the GEO data
+ESEARCH <- esearch(term = MY_GEO_QUERY_TERM , db = "gds", rettype = "uilist", 
+  retmode = "json", retstart = 0, retmax = 500000000, usehistory = TRUE, 
+  webenv = NULL, querykey = NULL, sort = NULL, field = NULL,
   datetype = NULL, reldate = NULL, mindate = NULL, maxdate = NULL)
 
-ESUMMARY <- esummary(ESEARCH_RES)
+j <- fromJSON(ESEARCH$content)
+COUNT <- j$esearchresult$count
+myrange <- seq(0,COUNT,500)
 
-GSE <- paste("GSE",ESUMMARY$xmlValue("//GSE"),sep="")
-GSM <- ESUMMARY$xmlValue("//Accession")
-
+gsel <- lapply(myrange, function(i) {
+  ESUMMARY <- esummary(ESEARCH,retstart=i,retmax=500,retmode="json")
+  myjson <- fromJSON(ESUMMARY$content)
+  myjson <- myjson$result
+  myjson[1] = NULL
+  geodf <- do.call(rbind, myjson)
+  geodf <- geodf[,c("gse","accession")]
+  return(geodf)
+})
+gsel <- do.call(rbind, gsel)
+GSE <- unlist(gsel[,1])
+GSM <- unlist(gsel[,2])
 gse <- data.frame(GSE,GSM)
-colnames(gse)<-c("GEO_series","GEO_sample")
+colnames(gse) <- c("GEO_series","GEO_sample")
+gse$GEO_series <- paste("GSE",sapply(strsplit(gse$GEO_series,";"),"[[",1),sep="")
 
-resx<-merge(res,gse,by.x="SampleName",by.y="GEO_sample",all.x=TRUE)
+resx <- merge(res,gse,by.x="SampleName",by.y="GEO_sample",all.x=TRUE)
 
 # here is a good opportunity to check that the join has worked
 res<-resx
@@ -219,7 +239,7 @@ srpqueue <- srpqueue[order(srpqueue)]
 srpqueuename = paste(SRADBWD,"/",org,"_srpqueue.txt",sep="")
 writeLines(srpqueue,con=srpqueuename)
 SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key", srpqueuename ,
-    " ubuntu@118.138.237.110:/mnt/dee2_data/srpqueue")
+    " ubuntu@118.138.239.130:/mnt/dee2_data/srpqueue")
 system(SCP_COMMAND)
 
 
@@ -250,33 +270,34 @@ write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep=""),
 CMD=paste("./dee_pipeline.sh",org)
 system(CMD)
 
-#here we rsync files to server in chunks of 1000
+
+#delete *e.tsv.gz after each chunk of 10000
+CMD2=paste('ssh -i ~/.ssh/monash/cloud2.key ubuntu@118.138.239.130 "find /dee2_data/data/',org,' | grep e.tsv.gz | parallel -j1 rm {}"',sep="")
+
+#here we rsync files to server in chunks of 10000
 rsync<-function(d,org) {
   while ( length(d)>0 ) {
-    CHUNKSIZE=1000
+    CHUNKSIZE=5000
     if ( length(d)>CHUNKSIZE ) {
       chunk<-paste(d[1:CHUNKSIZE],collapse=" ")
-      d<-setdiff(d,d[1:1000])
+      d<-setdiff(d,d[1:5000])
     } else {
       chunk<-paste(d[1:length(d)],collapse=" ")
-      d<-setdiff(d,d[1:1000])
+      d<-setdiff(d,d[1:5000])
     }
     CMD=paste('rsync -azh -e \"ssh -i  ~/.ssh/monash/cloud2.key \" ',
-      chunk ,' ubuntu@118.138.237.110:/dee2_data/data/',org,sep="")
+      chunk ,' ubuntu@118.138.239.130:/dee2_data/data/',org,sep="")
     system(CMD)
+    system(CMD2)
   }
 }
 d<-val
 rsync(d,org)
 
-#delete *e.tsv.gz
-CMD2=paste('ssh -i ~/.ssh/monash/cloud2.key ubuntu@118.138.237.110 "find /dee2_data/data/',org,' | grep e.tsv.gz | parallel -j1 rm {}"',sep="")
-system(CMD2)
-
 #upload metadata
 SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key", 
   paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ,
-    " ubuntu@118.138.237.110:/mnt/dee2_data/metadata")
+    " ubuntu@118.138.239.130:/mnt/dee2_data/metadata")
 system(SCP_COMMAND)
 
 save.image(file = paste(org,".RData",sep=""))
@@ -292,20 +313,13 @@ x<-gsub("\r?\n|\r", " ", x)
 write.table(x,file=paste(SRADBWD,"/",org,"_metadata.tsv",sep=""),quote=F,sep="\t",row.names=F)
 SCP_COMMAND=paste("scp -i ~/.ssh/monash/cloud2.key ", 
   paste(SRADBWD,"/",org,"_metadata.tsv",sep="") ,
-  " ubuntu@118.138.237.110:/mnt/dee2_data/metadata")
+  " ubuntu@118.138.239.130:/mnt/dee2_data/metadata")
 system(SCP_COMMAND)
 
 save.image(file = paste(org,".RData",sep=""))
 
 
 }
-
-
-
-
-
-
-
 
 png("dee_datasets.png",width=600,height=600)
 options(bitmapType="cairo")
@@ -340,4 +354,4 @@ legend("topright", colnames(z), fill=c("darkblue","red") , cex=1.2)
 
 text( cbind(as.numeric(z[,1])+70000 ,as.numeric(z[,2])+70000 )  ,t(bb),labels=c(z[,1],z[,2]) ,cex=1.2)
 dev.off()
-system("scp -i ~/.ssh/monash/cloud2.key dee_datasets.png ubuntu@118.138.237.110:/mnt/dee2_data/mx")
+system("scp -i ~/.ssh/monash/cloud2.key dee_datasets.png ubuntu@118.138.239.130:/mnt/dee2_data/mx")
