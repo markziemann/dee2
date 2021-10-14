@@ -17,11 +17,10 @@ IPADD="118.138.239.130"
 CORES=5
 
 #start the analysis
-for ( org in c( "ecoli" )) {
+#for ( org in c( "ecoli" )) {
 
-#for ( org in c(  "mmusculus", "rnorvegicus", "scerevisiae" , 
-#  "athaliana", "celegans", "dmelanogaster", "drerio",
-#  "ecoli", "hsapiens"  )) {
+for ( org in c(   "athaliana", "celegans", "dmelanogaster", "drerio",
+"rnorvegicus", "scerevisiae" , "mmusculus", "ecoli", "hsapiens" )) {
 
 #args = commandArgs(trailingOnly=TRUE)
 #org=args[1]
@@ -209,6 +208,7 @@ GSE <- unlist(gsel[,1])
 GSM <- unlist(gsel[,2])
 gse <- data.frame(GSE,GSM)
 colnames(gse) <- c("GEO_series","GEO_sample")
+gse$GEO_series[which(gse$GEO_series=="")] <- "NA"
 gse$GEO_series <- paste("GSE",sapply(strsplit(gse$GEO_series,";"),"[[",1),sep="")
 
 resx <- merge(res,gse,by.x="SampleName",by.y="GEO_sample",all.x=TRUE)
