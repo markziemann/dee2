@@ -17,10 +17,10 @@ IPADD="118.138.239.130"
 CORES=5
 
 #start the analysis
-#for ( org in c( "ecoli" )) {
+for ( org in c( "drerio" )) {
 
-for ( org in c(   "athaliana", "celegans", "dmelanogaster", "drerio",
-"rnorvegicus", "scerevisiae" , "mmusculus", "ecoli", "hsapiens" )) {
+#for ( org in c(   "athaliana", "celegans", "dmelanogaster", "drerio",
+#"rnorvegicus", "scerevisiae" , "mmusculus", "ecoli", "hsapiens" )) {
 
 #args = commandArgs(trailingOnly=TRUE)
 #org=args[1]
@@ -277,13 +277,13 @@ CMD2=paste('ssh -i ~/.ssh/monash/cloud2.key ubuntu@118.138.239.130 "find /dee2_d
 #here we rsync files to server in chunks of 10000
 rsync<-function(d,org) {
   while ( length(d)>0 ) {
-    CHUNKSIZE=5000
+    CHUNKSIZE=1000
     if ( length(d)>CHUNKSIZE ) {
       chunk<-paste(d[1:CHUNKSIZE],collapse=" ")
-      d<-setdiff(d,d[1:5000])
+      d<-setdiff(d,d[1:1000])
     } else {
       chunk<-paste(d[1:length(d)],collapse=" ")
-      d<-setdiff(d,d[1:5000])
+      d<-setdiff(d,d[1:1000])
     }
     CMD=paste('rsync -azh -e \"ssh -i  ~/.ssh/monash/cloud2.key \" ',
       chunk ,' ubuntu@118.138.239.130:/dee2_data/data/',org,sep="")
