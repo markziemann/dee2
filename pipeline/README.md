@@ -51,6 +51,13 @@ Return the data directory from the container to the host filesystem
 
 `docker cp $(docker ps -alq):/dee2/data/ .`
 
+## Running on HPC without download ability
+
+Use the dl.sh script to download a bunch of SRA files in advance and keep these in the 
+current working directory.
+
+`docker run -v $(pwd):/dee2/mnt mziemann/tallyup hsapiens -d`
+
 ## Donating compute time
 
 If you have a species of interest

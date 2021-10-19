@@ -2,6 +2,7 @@
 #sra2mx for docker image
 #Copyright Mark Ziemann 2015 to 2017 mark.ziemann@gmail.com
 
+
 #Fix locale issue
 export LANGUAGE=C
 export LC_ALL=C
@@ -13,9 +14,8 @@ NUMVARS=$#
 shopt -s expand_aliases
 
 #handling verbosity setting
-ISVERBOSE=$(echo $@ | grep -c '\-V')
-
-if [ $ISVERBOSE -gt 0 ] ; then
+LASTVAR=$(echo $@ | rev | cut -d ' ' -f1 | rev)
+if [ $LASTVAR == "-V" ] ; then
   set -x
   VERBOSE=TRUE
   NUMVARS=$#
@@ -33,14 +33,12 @@ if [ $NUMVARS -gt 1 ] ; then
 fi
 MEM_FACTOR=2
 
-ISPREDOWNLOADED=$(echo $@ | grep -v '\-d')
-
 main(){
 #logging all commands
 NUMVARS=$#
-ISVERBOSE=$(echo $@ | grep -c '\-V')
-
-if [ $ISVERBOSE -gt 0 ] ; then
+LASTVAR=$(echo $@ | rev | cut -d ' ' -f1 | rev)
+VERBOSE=$(echo $LASTVAR | cut -d '=' -f2)
+if [ ! -z $VERBOSE ] ; then
   if [ $VERBOSE == "TRUE" ] ; then
     set -x
   fi
@@ -56,44 +54,28 @@ export -f exit1
 #JOB
 ORG=$1
 
-ISOWNFILE=$(echo $@ | grep -c '\-f')
-
-ISPREDOWNLOADED=$(echo $@ | grep -c '\-d')
-
-DLDIR=$(echo $@ | tr ' ' '\n' | nl -n ln | grep '\-d' | head -1 | cut -f1)
-DLDIR=$((DLDIR+1))
-
-if [ $ISOWNFILE -eq 0 -a $ISPREDOWNLOADED -eq 0 ] ; then
-  SRR_FILE=$2
-  SRR=$(basename $SRR_FILE .sra)
+# herenow
+if [ $2 == '-d' ] ; then
+  DL=TRUE
+  SRA_FILE=$3
+  SRR=$(echo $SRA_FILE | cut -d '_' -f2 | cut -d '.' -f1)
   echo $SRR
-  wget -O $SRR.html "https://www.ncbi.nlm.nih.gov/sra/${SRR}"
-  ORG2=$(echo $ORG | cut -c2-)
-  ORG_OK=$(sed 's/class=/\n/g' $SRR.html  | grep 'Organism:' | grep -c $ORG2)
-  rm $SRR.html
-  if [ $ORG_OK -ne 1 ] ; then
-    echo Annotated species name from NCBI SRA does not match user input! Quitting. | tee -a $SRR.log
-    exit1 ; exit 1
-  else
-    echo User input species and SRA metadata match. OK.
-  fi
-fi
-
-
-if [ $ISPREDOWNLOADED -gt 0 ] ; then
-  ##HERENOW
-  SRR=""
-  while [ SRR -eq "" ] ; do
-    for SRR_CAND in $(find $DLDIR | grep '.sra$' | shuf) ; do
-      FIN=$(echo $SRR_CAND | sed 's/.sra/.fin/')
-      if [ ! -r $FIN ] ; then
-        SRR=$SRR_CAND
-      fi
-    done
-    if [ SRR -eq "" ] ; then
-      sleep 30
+else
+  if [ $2 != '-f' ] ; then
+    SRR_FILE=$2
+    SRR=$(basename $SRR_FILE .sra)
+    echo $SRR
+    wget -O $SRR.html "https://www.ncbi.nlm.nih.gov/sra/${SRR}"
+    ORG2=$(echo $ORG | cut -c2-)
+    ORG_OK=$(sed 's/class=/\n/g' $SRR.html  | grep 'Organism:' | grep -c $ORG2)
+    rm $SRR.html
+    if [ $ORG_OK -ne 1 ] ; then
+      echo Annotated species name from NCBI SRA does not match user input! Quitting. | tee -a $SRR.log
+      exit1 ; exit 1
+    else
+      echo User input species and SRA metadata match. OK.
     fi
-  done
+  fi
 fi
 
 #ENVIRONMENT VARS
@@ -315,8 +297,8 @@ fi
 if [ ! -d $DATA_DIR ] ; then mkdir -p $DATA_DIR ; fi
 cd $DATA_DIR
 
-if [ $ISOWNFILE -eq 0 ] ; then
-  mkdir $SRR ; cp $PIPELINE $SRR ; cd $SRR
+if [ $2 != '-f' ] ; then
+  mkdir $SRR ; cp CODE_DIR/$PIPELINE $SRR ; cd $SRR
   echo "Starting $PIPELINE $SRR
     current disk space = $DISK
     free memory = $MEM " | tee -a $SRR.log
@@ -339,6 +321,12 @@ if [ $ISOWNFILE -eq 0 ] ; then
 ##########################################################################
   echo $SRR check if SRA file exists and download if neccessary
 ##########################################################################
+
+  # Moving SRA file downloaded previously
+  if [ $DL == 'TRUE' ] ; then
+    mv $SRA_FILE $SRR.sra
+  fi
+
   if [ ! -f $SRR.sra ] ; then
     #build URL
     BASEURL=ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra
@@ -365,7 +353,7 @@ Ta7g6mGwIMXrdTQQ8fZs
 EOF
       chmod 700 $DEE_DIR/.ascp
     fi
-    prefetch -a "/usr/local/bin/ascp|/dee2/.ascp/aspera-license" $SRR \
+    prefetch -X 9999999999999 -a "/usr/local/bin/ascp|/dee2/.ascp/aspera-license" $SRR \
     || ( echo $SRR failed download with prefetch | tee -a $SRR.log ; sleep 5 ; exit1 ; return 1 )
     mv /dee2/ncbi/public/sra/${SRR}.sra .
   fi
@@ -1283,7 +1271,6 @@ MEM=$(echo $(free | awk '$1 ~ /Mem:/  {print $2-$3}') \
 NUM_CPUS=$(grep -c ^processor /proc/cpuinfo)
 CPU_SPEED=$(lscpu | grep MHz | awk '{print $NF}' | sort -k2gr)
 
-
 ACC_URL="http://dee2.io/acc.html"
 ACC_REQUEST="http://dee2.io/cgi-bin/acc.sh"
 TMPHTML=/tmp/tmp.$RANDOM.html
@@ -1519,9 +1506,29 @@ else
 
 
 ##################################################
+# Testing whether the user is using the separate download process
+##################################################
+
+  DLPARAM=$(echo $@ | grep -wc '\-d')
+  if [ $DLPARAM -gt 0 ] ; then
+    for SRA_FILE in /dee2/mnt/${MY_ORG}*.sra ; do
+      if [ ! -r /dee2/mnt/$SRA_FILE.started ] ; then
+        DIR=$(pwd)
+        echo Starting pipeline with species $1 and SRA file $SRA_FILE
+        touch $SRA_FILE.started
+        USER_ACCESSION=$(echo $SRA_FILE | cut -d '_' -f2 | cut -d '.' -f1)
+        main $1 -d $SRA_FILE VERBOSE=$VERBOSE
+        #key_setup
+        cd /dee2/data/$MY_ORG
+        zip -r /dee2/mnt/$USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
+        rm /dee2/mnt/$SRA_FILE.started
+      fi
+    done
+    exit
+  elif [[ $NUMVARS -eq "2" && $OWN_DATA -eq "0" ]] ; then
+##################################################
 # Testing whether the user has provided SRR accessions
 ##################################################
-  if [[ $NUMVARS -eq "2" && $OWN_DATA -eq "0" ]] ; then
     TESTACCESSIONS=$(echo $2 | tr ',' '\n' | cut -c2-3 | grep -vc RR)
     if [ $TESTACCESSIONS -eq 0 ] ; then
       for USER_ACCESSION in $(echo $2 | tr ',' ' ') ; do
@@ -1541,7 +1548,7 @@ EOF
       echo Check input parameters and try again.
       exit
     fi
-  fi
+  fi  
 
 ##################################################
 # If no accessions are provided
