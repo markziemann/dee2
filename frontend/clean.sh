@@ -89,3 +89,4 @@ fi
 # scp -i ~/.ssh/monash/id_rsa mziemann@118.138.246.227:/scratch/mziemann/dee2/mx/*bz2 /mnt/dee2_data/mx || \
 # echo "not time to refresh"
 find /var/log/apache2/  -mtime +2 -exec sudo rm {} \;
+find /tmp -mmin +59 -delete
