@@ -54,7 +54,8 @@ export -f exit1
 #JOB
 ORG=$1
 
-# herenow
+# is the download done separately?
+DL=FALSE
 if [ $2 == '-d' ] ; then
   DL=TRUE
   SRA_FILE=$3
@@ -82,7 +83,7 @@ fi
 DEE_DIR=/dee2
 cd $DEE_DIR
 CODE_DIR=$DEE_DIR/code
-PIPELINE=$0
+PIPELINE=$CODE_DIR/$0
 PIPELINE_MD5=$(md5sum $PIPELINE | cut -d ' ' -f1)
 SW_DIR=$DEE_DIR/sw
 PATH=$PATH:$SW_DIR
@@ -298,7 +299,7 @@ if [ ! -d $DATA_DIR ] ; then mkdir -p $DATA_DIR ; fi
 cd $DATA_DIR
 
 if [ $2 != '-f' ] ; then
-  mkdir $SRR ; cp CODE_DIR/$PIPELINE $SRR ; cd $SRR
+  mkdir $SRR ; cp $PIPELINE $SRR ; cd $SRR
   echo "Starting $PIPELINE $SRR
     current disk space = $DISK
     free memory = $MEM " | tee -a $SRR.log
@@ -1269,15 +1270,11 @@ MEM=$(echo $(free | awk '$1 ~ /Mem:/  {print $2-$3}') \
   $(free | awk '$1 ~ /Swap:/  {print $2-$3}') \
   | awk '{print $1+$2}' )
 NUM_CPUS=$(grep -c ^processor /proc/cpuinfo)
-CPU_SPEED=$(lscpu | grep MHz | awk '{print $NF}' | sort -k2gr)
+CPU_SPEED=$(lscpu | grep MHz | awk '{print $NF}' | head -1)
 
 ACC_URL="http://dee2.io/acc.html"
 ACC_REQUEST="http://dee2.io/cgi-bin/acc.sh"
-TMPHTML=/tmp/tmp.$RANDOM.html
-wget --no-check-certificate -r -O $TMPHTML "dee2.io/ip"
-SFTP_URL=$(cat $TMPHTML )
-
-rm $TMPHTML
+SFTP_URL=$(curl dee2.io/ip)
 
 if [ ! -z $MY_ORG ] ; then
   ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae' \
@@ -1304,25 +1301,11 @@ scerevisiae     1644684' | grep -w $MY_ORG | awk -v f=$MEM_FACTOR '{print $2*f}'
 fi
 
 if [ -z $MY_ORG ] ; then
-  ORGS=$(echo 'athaliana	2853904
-celegans	2652204
-dmelanogaster	3403644
-drerio	14616592
-ecoli	1576132
-hsapiens	28968508
-mmusculus	26069664
-rnorvegicus	26913880
-scerevisiae	1644684' | awk -v M=$MEM -v F=$MEM_FACTOR 'M>($2*F)' | sort -k2gr | awk '{print $1}')
 
-  TMPHTML=/tmp/tmp.$RANDOM.html
-  wget --no-check-certificate -O $TMPHTML "$ACC_URL"
-  wget --no-check-certificate -O $TMPHTML $(grep 'frame src=' $TMPHTML | cut -d '"' -f2)
+  echo "Error: no organism was specified. Quitting"
+  sleep 10
+  exit1
 
-  #specify organism if it has not already been specified by user
-  MY_ORG=$(join -1 1 -2 1 \
-  <(grep ORG $TMPHTML | cut -d '>' -f2 | tr -d ' .' | tr 'A-Z' 'a-z' | tr '()' ' ' | sort -k 1b,1) \
-  <(echo $ORGS | tr ' ' '\n' | sort -k 1b,1) | sort -k2gr | awk 'NR==1{print $1}' )
-  rm $TMPHTML
 fi
 
 #echo $MY_ORG
@@ -1330,22 +1313,17 @@ fi
 myfunc(){
 MY_ORG=$1
 ACC_REQUEST=$2
-TMPHTML=/tmp/tmp.$RANDOM.html
-wget --no-check-certificate -r -O $TMPHTML "${ACC_REQUEST}?ORG=${MY_ORG}&Submit"
-wget --no-check-certificate -O $TMPHTML $(grep 'frame src=' $TMPHTML | cut -d '"' -f2)
-ACCESSION=$(grep 'ACCESSION=' $TMPHTML | cut -d '=' -f2)
+ACCESSION=$(curl "http://dee2.io/cgi-bin/acc.sh?ORG=${MY_ORG}&submit" \
+| grep ACCESSION \
+| cut -d '=' -f2 )
+
 STAR --genomeLoad LoadAndExit --genomeDir ../ref/$MY_ORG/ensembl/star >/dev/null  2>&1
 echo $ACCESSION
-rm $TMPHTML
 }
 export -f myfunc
 
 key_setup(){
-TMPHTML=/tmp/tmp.$RANDOM.html
-wget --no-check-certificate -r -O $TMPHTML "dee2.io/ip"
-SFTP_URL=$(cat $TMPHTML )
 mkdir -p /dee2/.ssh
-rm $TMPHTML
 touch /dee2/.ssh/known_hosts
 chmod 777 /dee2/.ssh/known_hosts
 
@@ -1518,10 +1496,8 @@ else
         touch $SRA_FILE.started
         USER_ACCESSION=$(echo $SRA_FILE | cut -d '_' -f2 | cut -d '.' -f1)
         main $1 -d $SRA_FILE VERBOSE=$VERBOSE
-        #key_setup
         cd /dee2/data/$MY_ORG
         zip -r /dee2/mnt/$USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
-        rm /dee2/mnt/$SRA_FILE.started
       fi
     done
     exit
