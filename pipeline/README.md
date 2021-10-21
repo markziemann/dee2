@@ -53,7 +53,7 @@ Return the data directory from the container to the host filesystem
 
 ## Running on HPC without download ability
 
-Use the dl.sh script to download a bunch of SRA files in advance and keep these in the 
+Use the downloader.sh script to download a bunch of SRA files in advance and keep these in the 
 current working directory.
 
 `docker run -v $(pwd):/dee2/mnt mziemann/tallyup hsapiens -d`
