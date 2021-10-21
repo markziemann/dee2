@@ -83,7 +83,7 @@ fi
 DEE_DIR=/dee2
 cd $DEE_DIR
 CODE_DIR=$DEE_DIR/code
-PIPELINE=$CODE_DIR/$0
+PIPELINE=$CODE_DIR/volunteer_pipeline.sh
 PIPELINE_MD5=$(md5sum $PIPELINE | cut -d ' ' -f1)
 SW_DIR=$DEE_DIR/sw
 PATH=$PATH:$SW_DIR
@@ -1524,7 +1524,7 @@ EOF
       echo Check input parameters and try again.
       exit
     fi
-  fi  
+  fi
 
 ##################################################
 # If no accessions are provided
