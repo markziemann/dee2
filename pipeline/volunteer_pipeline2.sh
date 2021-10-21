@@ -1489,16 +1489,20 @@ else
 
   DLPARAM=$(echo $@ | grep -wc '\-d')
   if [ $DLPARAM -gt 0 ] ; then
-    for SRA_FILE in /dee2/mnt/${MY_ORG}*.sra ; do
-      if [ ! -r /dee2/mnt/$SRA_FILE.started ] ; then
-        DIR=$(pwd)
-        echo Starting pipeline with species $1 and SRA file $SRA_FILE
-        touch $SRA_FILE.started
-        USER_ACCESSION=$(echo $SRA_FILE | cut -d '_' -f2 | cut -d '.' -f1)
-        main $1 -d $SRA_FILE VERBOSE=$VERBOSE
-        cd /dee2/data/$MY_ORG
-        zip -r /dee2/mnt/$USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
-      fi
+    FILECNT=$(ls /dee2/mnt/${MY_ORG}*.sra | wc -l)
+    while [ $FILECNT -gt 0 ] ; do
+      for SRA_FILE in /dee2/mnt/${MY_ORG}*.sra ; do
+        if [ ! -r /dee2/mnt/$SRA_FILE.started ] ; then
+          DIR=$(pwd)
+          echo Starting pipeline with species $1 and SRA file $SRA_FILE
+          touch $SRA_FILE.started
+          USER_ACCESSION=$(echo $SRA_FILE | cut -d '_' -f2 | cut -d '.' -f1)
+          main $1 -d $SRA_FILE VERBOSE=$VERBOSE
+          cd /dee2/data/$MY_ORG
+          zip -r /dee2/mnt/$USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
+          FILECNT=$(ls /dee2/mnt/${MY_ORG}*.sra | wc -l)
+        fi
+      done
     done
     exit
   elif [[ $NUMVARS -eq "2" && $OWN_DATA -eq "0" ]] ; then
