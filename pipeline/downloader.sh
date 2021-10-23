@@ -9,9 +9,10 @@ if [ -z $ORG ] ; then
 
 fi
 
-FILECNT=$(ls ${ORG}_*.sra | wc -l)
-
 while true ; do
+
+  FILECNT=$(ls ${ORG}_*.sra | wc -l)
+
 
   if [ $FILECNT -lt 100 ] ; then
 
