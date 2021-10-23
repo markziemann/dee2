@@ -47,7 +47,7 @@ SHORTLIST=${DATA}/${ORG}.shortlist.txt
 if [ ! -r $SHORTLIST ] ; then
   awk '{OFS="\t"}{print $0,$0}' $TODO_NEW | cut -c4-  | sort -k1 -gr | cut -f2 > tmp
   mv tmp $TODO_NEW
-  head -1000 $TODO_NEW > $SHORTLIST
+  tail -1000 $TODO_NEW > $SHORTLIST
   ACCESSION=$(head -1 $SHORTLIST)
   echo $ACCESSION > $ALLOC
 else
@@ -59,7 +59,7 @@ fi
 DIFF=$(( $(wc -l < $SHORTLIST )  - $(wc -l < $ALLOC ) ))
 
 if [ $DIFF -le 50 ] ; then
-  grep -w -A1000 $ACCESSION $TODO_NEW | sed 1d > $SHORTLIST
+  grep -w -B1000 $ACCESSION $TODO_NEW | sed 1d > $SHORTLIST
   > $ALLOC
   if [  $(wc -l < $SHORTLIST) -le 1 ] ; then rm $SHORTLIST ; fi
 fi
