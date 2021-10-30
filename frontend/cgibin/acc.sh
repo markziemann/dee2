@@ -17,6 +17,7 @@ echo '</head>'
 echo '<body>'
 # check whether ORG is known and quit if not in the list
 ORG=$(echo "$QUERY_STRING" | cleanit | tr ' ' '\n' | grep -m1 ^ORG=  | cut -d '=' -f2)
+#ORG="ecoli"
 ORGLIST='athaliana
 celegans
 dmelanogaster
@@ -40,29 +41,17 @@ if [ "$ORG_OK" != "1" ] ; then
 fi
 
 DATA=/usr/lib/cgi-bin/acc_data
-TODO_NEW=/home/ubuntu/Public/${ORG}.queue.txt
-ALLOC=${DATA}/${ORG}.alloc.txt
-SHORTLIST=${DATA}/${ORG}.shortlist.txt
+Q=$DATA/${ORG}.queue.txt
+NEWQ=/home/ubuntu/Public/${ORG}.queue.txt
 
-if [ ! -r $SHORTLIST ] ; then
-  awk '{OFS="\t"}{print $0,$0}' $TODO_NEW | cut -c4-  | sort -k1 -gr | cut -f2 > tmp
-  mv tmp $TODO_NEW
-  tail -1000 $TODO_NEW > $SHORTLIST
-  ACCESSION=$(head -1 $SHORTLIST)
-  echo $ACCESSION > $ALLOC
-else
-  PREV=$(tail -1 $ALLOC)
-  ACCESSION=$(grep -w -A1 $PREV $SHORTLIST | tail -1)
-  echo $ACCESSION >> $ALLOC
+if [ -r $NEWQ ] ; then
+  awk '{OFS="\t"}{print $0,$0}' $NEWQ | cut -c4-  | sort -k1 -gr | cut -f2 > tmp
+  mv tmp $Q
+  rm $NEWQ
 fi
 
-DIFF=$(( $(wc -l < $SHORTLIST )  - $(wc -l < $ALLOC ) ))
-
-if [ $DIFF -le 50 ] ; then
-  grep -w -B1000 $ACCESSION $TODO_NEW | sed 1d > $SHORTLIST
-  > $ALLOC
-  if [  $(wc -l < $SHORTLIST) -le 1 ] ; then rm $SHORTLIST ; fi
-fi
+ACCESSION=$(head -1 $Q)
+sed -i '1d' $Q
 
 echo '<br>'
 echo "ACCESSION=$ACCESSION"
