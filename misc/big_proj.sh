@@ -8,7 +8,7 @@ if [ $(ulimit -n) -lt 1000000 ] ; then
 fi
 
 for ORG in athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae ; do
-#for ORG in scerevisiae ; do
+#for ORG in ecoli ; do
 
 FULL_METADATA=${ORG}_metadata.tsv.cut
 DEE2_ACCESSIONS=${ORG}_accessions.tsv
@@ -25,7 +25,7 @@ cut -d ' ' -f2 $DEE2_ACCESSIONS \
   if [ $CNT_DEE -eq $CNT_SRA ] ; then
 
     #fetch the geo series number
-    GSE=$(grep -wm1 $SRP ${ORG}_metadata.tsv.cut | cut -f7 | grep GSE)
+    GSE=$(grep -wm1 $SRP ${ORG}_metadata.tsv.cut | cut -f7 | grep GSE | cut -d ';' -f1)
     if [ -z "$GSE" ] ; then
       GSE="NA"
     fi
