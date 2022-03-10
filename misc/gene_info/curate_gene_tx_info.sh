@@ -3,8 +3,8 @@
 which gtftools.py > /dev/null || echo "GTFtools_0.6.5 is required"
 which gtftools.py > /dev/null || exit 1
 INSTALLED_VERSION=$(gtftools.py -v 2>&1 | tr -d ' ' )
-REQUIRED_VERSION="GTFtoolsversion:0.6.5"
-if [ $REQUIRED_VERSION != $INSTALLED_VERSION ] ; then echo "GTFtools_0.6.5 is required" ; exit 1 ; fi
+REQUIRED_VERSION="GTFtoolsversion:0.8.5"
+if [ $REQUIRED_VERSION != $INSTALLED_VERSION ] ; then echo "GTFtools_0.8.5 is required" ; exit 1 ; fi
 
 ATH_GTFURL="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.36.gtf.gz"
 ATH_CDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/fasta/arabidopsis_thaliana/cdna/Arabidopsis_thaliana.TAIR10.cdna.all.fa.gz"
