@@ -57,6 +57,12 @@ Please note that SFTP upload is now inoperative, so these processed data cannot 
 
 The recommended application is to use the downloader.sh script to download a bunch of SRA files in 
 advance and keep these in the current working directory.
+downloader.sh fetches SRR accession numbers from the queue, so if you want to analyse some different
+datasets from SRA, you can download them with SRA toolkit `prefetch`.
+
+Use downloader.sh like this:
+
+`bash downloader.sh hsapiens`
 
 Then you can run the docker image like this:
 
