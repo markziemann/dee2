@@ -51,30 +51,25 @@ Return the data directory from the container to the host filesystem
 
 `docker cp $(docker ps -alq):/dee2/data/ .`
 
+Please note that SFTP upload is now inoperative, so these processed data cannot be uploaded to DEE2.
+
 ## Running on HPC without download ability
 
-Use the downloader.sh script to download a bunch of SRA files in advance and keep these in the 
-current working directory.
+The recommended application is to use the downloader.sh script to download a bunch of SRA files in 
+advance and keep these in the current working directory.
+
+Then you can run the docker image like this:
 
 `docker run -v $(pwd):/dee2/mnt mziemann/tallyup hsapiens -d`
 
+I have included an example script called `run_dee2_hsa1.sh` which I use on my own workstation.
+
 ## Donating compute time
 
-If you have a species of interest
+Please note that the SFTP upload feature is now inoperative as it is a security weakness.
 
-`docker run mziemann/tallyup celegans`
-
-Let the app choose the species and accessions - it will be selected based on available memory
-
-`docker run mziemann/tallyup`
-
-If you want to keep it running even if ssh gets terminated, use 'nohup'
-
-`nohup docker run mziemann/tallyup & tailf nohup.out`
-
-If you want to keep one container running contantly, try the 'run-one' utility
-
-`nohup run-one-constantly docker run mziemann/tallyup mmusculus &`
+The downloader.sh script enables the data to be uploaded to dee2, but you will need to request a
+unique ssh key first.
 
 ## Running into problems?
 
