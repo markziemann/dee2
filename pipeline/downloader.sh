@@ -13,10 +13,9 @@ while true ; do
 
   FILECNT=$(ls ${ORG}_*.sra | wc -l)
 
-
   if [ $FILECNT -lt 100 ] ; then
 
-    SRR=$(curl "http://dee2.io/cgi-bin/acc.sh?ORG=${ORG}&submit" \
+    SRR=$(curl "https://dee2.io/cgi-bin/acc.sh?ORG=${ORG}&submit" \
     | grep ACCESSION \
     | cut -d '=' -f2 )
 
@@ -28,6 +27,7 @@ while true ; do
 
   else
 
+    date
     sleep 10
 
   fi
@@ -36,17 +36,10 @@ while true ; do
 
   if [ $ZIPCNT -gt 0 ] ; then
 
-    SFTP_URL=$(curl dee2.io/ip)
-
     for ZIP in $(ls *${ORG}.zip) ; do
 
-      sftp -i ~/.ssh/guestuser guestuser@$SFTP_URL << EOF
-put $ZIP
-EOF
-
-      rm -f $ZIP
+      scp -i ~/.ssh/dee2 $ZIP ubuntu@dee2.io:~/upload && rm -f $ZIP
 
     done
   fi
 done
-
