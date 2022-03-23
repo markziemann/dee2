@@ -6,31 +6,28 @@ set -x #-v
 #*/10 * * * * user bash -c "/home/user/clean.sh"
 #put this script in the location "/home/user/clean.sh"
 
-DATA=/home/ubuntu/dee2_data
-STARTED_FILE=$DATA/started
-SFTP_INCOMING=/sftp/guestuser/incoming
-STASH=/mnt/stash
-#the below needs to be integrated to automate incorporation of volunteer data
-cd $DATA
+INCOMING=~/upload/
+TMPDATA=~/tmpdata/
+STARTED_FILE=$INCOMING/started
+STASH=/dee2_data/stash
 
 if [ ! -r started ] ; then
   touch $STARTED_FILE
-
   if [ -d dee2 ] ; then
-    cd dee2 ; git pull ; cd ..
+    cd dee2 ; git pull ; cd ~
   else
     git clone https://github.com/markziemann/dee2.git
   fi
 
   PREV_REFERENCE_PIPELINE_MD5SUM1="750d197f551ef3ac98f9e83f8d61ca43"
   PREV_REFERENCE_PIPELINE_MD5SUM2="b658ab07180ba71dce32a255b1c32fa3"
+  REFERENCE_PIPELINE_MD5SUM=$(md5sum ~/dee2/pipeline/volunteer_pipeline.sh | awk '{print $1}')
 
-  REFERENCE_PIPELINE_MD5SUM=$(md5sum dee2/pipeline/volunteer_pipeline.sh | awk '{print $1}')
+  if [ "$(ls -A ${INCOMING})" ]; then
 
-  if [ "$(ls -A ${SFTP_INCOMING})" ]; then
+    for FILE in $(find ${INCOMING} ${STASH}) ; do
 
-    for FILE in $(find ${SFTP_INCOMING} ${STASH}) ; do
-
+      # delete files that are not zips
       if [ "$(echo $FILE | grep -c .zip$)" -ne "1" ] ; then
         echo "now rm $FILE"
         sudo rm $FILE
@@ -56,18 +53,17 @@ if [ ! -r started ] ; then
           if [ $(du -s $FILE | cut -f1) -gt 6000 ] ; then INVALID=$((INVALID+1)) ; fi
 
           if [ $INVALID -eq "0" ] ; then
-            mkdir $DATA/$ORG
+            mkdir -p $TMPDATA/$ORG
             #test the connection
-            ssh -i ~/.ssh/monash/id_rsa -p 2210 mdz@localhost "ls" >/dev/null && CONNECT=1 || CONNECT=0
+            ssh -p 2210 mdz@localhost "ls" >/dev/null && CONNECT=1 || CONNECT=0
             #test disk space on root is more than 3GB
             DF=$(df / | awk 'NR>1 {print $4}')
             [ $DF -gt 3249932 ] && STORAGE=1 || STORAGE=0
 
             if [ $CONNECT -eq 1 -a $STORAGE -eq 1 ] ; then
-              unzip -o $FILE -d $DATA/$ORG && \
-              rsync -Pavz -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 2210" $DATA/$ORG/$SRR mdz@localhost:/mnt/md0/dee2/data/$ORG  && \
-              sudo rm -rf $DATA/$ORG/$SRR $FILE
-              ssh -p 2210 mdz@localhost "chmod -R +w /mnt/md0/dee2/data/$ORG/$SRR"
+              unzip -o $FILE -d $TMPDATA/$ORG && \
+              scp -r -P 2210 $TMPDATA/$ORG/$SRR mdz@localhost:/mnt/md0/dee2/data/$ORG
+              sudo rm -rf $TMPDATA/$ORG/$SRR $FILE
             else
               mv $FILE $STASH
             fi
