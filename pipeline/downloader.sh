@@ -38,8 +38,13 @@ while true ; do
 
     for ZIP in $(ls *${ORG}.zip) ; do
 
-      scp -i ~/.ssh/dee2 $ZIP ubuntu@dee2.io:~/upload && rm -f $ZIP
+      SIZE=$(du -s $ZIP | awk '$1')
 
+      if [ $SIZE -gt 5000 ] ; then
+        rm $ZIP
+      else
+        scp -i ~/.ssh/dee2 $ZIP ubuntu@dee2.io:~/upload && rm -f $ZIP
+      fi
     done
   fi
 done
