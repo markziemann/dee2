@@ -239,7 +239,7 @@ srpqueue <- srpqueue[order(srpqueue)]
 srpqueuename = paste(SRADBWD,"/",org,"_srpqueue.txt",sep="")
 writeLines(srpqueue,con=srpqueuename)
 SCP_COMMAND=paste("scp -i ~/.ssh/dee2", srpqueuename ,
-    " ubuntu@118.138.235.221:/mnt/dee2_data/srpqueue")
+    " ubuntu@118.138.235.221:/dee2_data/srpqueue")
 system(SCP_COMMAND)
 
 
@@ -273,7 +273,7 @@ system(CMD)
 
 #delete *e.tsv.gz after each chunk of 10000
 #not needed if --exclude \"*.gz\" is used
-#CMD2=paste('ssh -i ~/.ssh/monash/cloud2.key ubuntu@118.138.239.130 "find /dee2_data/data/',org,' | grep e.tsv.gz | parallel -j1 rm {}"',sep="")
+CMD2=paste('ssh -i ~/.ssh/dee2 ubuntu@118.138.235.221 "find /dee2_data/data/',org,' | grep e.tsv.gz | parallel -j1 rm {}"',sep="")
 
 #here we rsync files to server in chunks of 10000
 rsync<-function(d,org) {
@@ -298,7 +298,7 @@ rsync(d,org)
 #upload metadata
 SCP_COMMAND=paste("scp -i ~/.ssh/dee2", 
   paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ,
-    " ubuntu@118.138.235.221:/mnt/dee2_data/metadata")
+    " ubuntu@118.138.235.221:/dee2_data/metadata")
 system(SCP_COMMAND)
 
 save.image(file = paste(org,".RData",sep=""))
@@ -314,7 +314,7 @@ x<-gsub("\r?\n|\r", " ", x)
 write.table(x,file=paste(SRADBWD,"/",org,"_metadata.tsv",sep=""),quote=F,sep="\t",row.names=F)
 SCP_COMMAND=paste("scp -i ~/.ssh/dee2 ", 
   paste(SRADBWD,"/",org,"_metadata.tsv",sep="") ,
-  " ubuntu@118.138.235.221:/mnt/dee2_data/metadata")
+  " ubuntu@118.138.235.221:/dee2_data/metadata")
 system(SCP_COMMAND)
 
 save.image(file = paste(org,".RData",sep=""))
@@ -355,4 +355,4 @@ legend("topright", colnames(z), fill=c("darkblue","red") , cex=1.2)
 
 text( cbind(as.numeric(z[,1])+70000 ,as.numeric(z[,2])+70000 )  ,t(bb),labels=c(z[,1],z[,2]) ,cex=1.2)
 dev.off()
-system("scp -i ~/.ssh/dee2 dee_datasets.png ubuntu@118.138.235.221:/mnt/dee2_data/mx")
+system("scp -i ~/.ssh/dee2 dee_datasets.png ubuntu@118.138.235.221:/home/ubuntu/dee2/frontend/html/images")
