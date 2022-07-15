@@ -1,0 +1,83 @@
+---
+title: "Converting huge long dataset to Rds"
+author: "Mark Ziemann"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+    fig_width: 7
+    fig_height: 7
+theme: cosmo
+---
+
+## Intro
+
+Here I want to provide the bulk datasets as Rds files, but they are huge!
+The human and mouse data are 600GB compressed as BZ2 so I will need to be clever to provide these as Rds.
+The idea is to use the unix command `split` and then convert these chunks to wide Rds,
+followed by finally joining the small wide Rds into a large Rds.
+
+## Split the large dataset
+
+```{bash,split1}
+
+for FILE in *_se.tsv.bz2 ; do
+  DATSIZE=$(bzcat $FILE | head -200000 | cut -f2 | sort -u | wc -l)
+  NDATS=1000
+  CHUNKSIZE=$((DATSIZE * NDATS))
+  bzcat $FILE | split -l $CHUNKSIZE --additional-suffix=.tsv - split.
+done
+
+```
+
+## Process chunks
+
+Now process each of these chunks with R and save them as separate Rds files.
+The long split files will be deleted as we don't need them anymore.
+
+```{r,process1}
+
+library("reshape2")
+FILELIST1 <- list.files(".",pattern="split.*.tsv")
+
+rdschunk <- function(FILENAME) {
+  x <- read.table(FILENAME)
+  w <- t(acast(x, V1~V2, value.var="V3"))
+  RDS_OUT=paste(FILENAME,".Rds",sep="")
+  saveRDS(object=w,file=RDS_OUT,compress="bzip2")
+  unlink(FILENAME)
+}
+
+lapply(FILELIST1,rdschunk)
+
+```
+
+## Join datasets
+
+Now it's time to bring all the chunks together and save the full dataset.
+
+```{r,join1}
+
+FILELIST2 <- list.files(".",pattern="split.*.Rds")
+
+xl <- lapply( FILELIST2, function(FILE) {
+ x <- readRDS("split.aa.tsv.Rds")
+} )
+w <- do.call(cbind,xl)
+RDS_OUT=paste(list.files(".",pattern="se.tsv.bz2"),".Rds",sep="")
+saveRDS(object=w,file=RDS_OUT,compress="bzip2")
+
+lapply(FILELIST2, unlink)
+
+```
+
+## Session info
+
+```{r,session}
+
+sessionInfo()
+
+```
+
