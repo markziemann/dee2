@@ -18,9 +18,8 @@ for YEAR in $(seq 2007 2022) ; do
     >tmp.csv
     pysradb search --organism="${ORGANISM}" \
       --publication-date 01-${MONTH}-${YEAR}:31-${MONTH}-${YEAR} \
-      --source="transcriptomic" --max=999000 --saveto tmp.csv
-    cat tmp.csv >> $ORG.csv
+      --source="transcriptomic" --max=999000 --query="Public[Access]" --saveto tmp.csv
+    cat tmp.csv >> ../sradb/$ORG.csv
   done
 done
-
-#hsapiens_test2017.csv
+rm tmp.csv
