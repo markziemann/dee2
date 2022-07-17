@@ -96,7 +96,7 @@ if (!file.exists(CSV)) {
   file.rename(CSV,paste(CSV,".old",sep=""))
 }
 
-SRA_DL_CMD <- paste('bash metadata_dl.sh', org)
+MY_SRA_CMD <- paste('bash metadata_dl.sh', org)
 MY_SRA_CMD
 system(MY_SRA_CMD)
 
@@ -350,7 +350,7 @@ rsync(d,org)
 #upload metadata
 SCP_COMMAND=paste("scp -i ~/.ssh/dee2", 
   paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ,
-    " ubuntu@118.138.235.221:/dee2_data/metadata")
+    " ubuntu@dee2.io:/dee2_data/metadata")
 system(SCP_COMMAND)
 
 save.image(file = paste(org,".RData",sep=""))
@@ -368,7 +368,7 @@ write.table(x,file=paste(SRADBWD,"/",org,"_metadata.tsv",sep=""),quote=F,sep="\t
 
 SCP_COMMAND=paste("scp -i ~/.ssh/dee2 ", 
   paste(SRADBWD,"/",org,"_metadata.tsv",sep="") ,
-  " ubuntu@118.138.235.221:/dee2_data/metadata")
+  " ubuntu@dee2.io:/dee2_data/metadata")
 system(SCP_COMMAND)
 
 save.image(file = paste(org,".RData",sep=""))
@@ -414,6 +414,6 @@ legend("topright", colnames(z), fill=c("darkblue","red") , cex=1.2)
 
 text( cbind(as.numeric(z[,1])+70000 ,as.numeric(z[,2])+70000 )  ,t(bb),labels=c(z[,1],z[,2]) ,cex=1.2)
 dev.off()
-system("scp -i ~/.ssh/dee2 dee_datasets.png ubuntu@118.138.235.221:/home/ubuntu/dee2/frontend/html/images")
+system("scp -i ~/.ssh/dee2 dee_datasets.png ubuntu@dee2.io:/home/ubuntu/dee2/frontend/html/images")
 
 ```
