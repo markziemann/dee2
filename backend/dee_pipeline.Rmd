@@ -40,7 +40,7 @@ IPADD="118.138.235.221"
 CORES=5
 
 #start the analysis
-org="hsapiens"
+org="celegans"
 
 #for ( org in c(   "athaliana", "celegans", "dmelanogaster", "drerio",
 #"rnorvegicus", "scerevisiae" , "mmusculus", "ecoli", "hsapiens" )) {
@@ -49,15 +49,17 @@ org="hsapiens"
 #org=args[1]
 
 species_list <- c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
- 
+
 #now annotate the short names 
 names(species_list) <- c("athaliana", "celegans", "dmelanogaster", "drerio",
 "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae")
 
 taxa_name <- species_list[[org]]
 
-species_names <- c("'Arabidopsis thaliana'","'Caenorhabditis elegans'","'Drosophila melanogaster'","'Danio rerio'",
-  "'Escherichia coli'","'Homo sapiens'", "'Mus musculus'", "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
+species_names <- c("'Arabidopsis thaliana'","'Caenorhabditis elegans'",
+  "'Drosophila melanogaster'","'Danio rerio'",
+  "'Escherichia coli'","'Homo sapiens'", "'Mus musculus'",
+  "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
  #now annotate the short names 
 names(species_names)<- c("athaliana", "celegans", "dmelanogaster", "drerio",
   "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae")
@@ -287,17 +289,19 @@ library("parallel")
 
 # this line was giving some errors with mouse data - now executes in batches
 myaccessions <- x2$SRR_accession
+length(myaccessions)
 qc_res=NULL
-chunksize=1000
+chunksize=200
 while (length(myaccessions) > chunksize ) {
+
     qc_res_part<-unlist(mclapply(myaccessions[1:chunksize], qc_analysis, org=org,
-        mc.cores=4))
+        mc.cores=1))
     qc_res <- c(qc_res,qc_res_part)
     myaccessions <- myaccessions[(chunksize+1):length(myaccessions)]
 }
 
 if (length(myaccessions) > 0 ) {
-    qc_res_part<-unlist(mclapply(myaccessions, qc_analysis, org=org,mc.cores=4))
+    qc_res_part<-unlist(mclapply(myaccessions, qc_analysis, org=org,mc.cores=1))
     qc_res <- c(qc_res,qc_res_part)
 }
 x2$QC_summary <- qc_res
