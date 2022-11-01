@@ -370,6 +370,11 @@ SCP_COMMAND=paste("scp -i ~/.ssh/dee2 ",
   " ubuntu@dee2.io:/dee2_data/metadata")
 system(SCP_COMMAND)
 
+SCP_COMMAND=paste("scp -i ~/.ssh/dee2 ", 
+  paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ,
+  " ubuntu@dee2.io:/dee2_data/metadata")
+system(SCP_COMMAND)
+
 save.image(file = paste(org,".RData",sep=""))
 
 ```
