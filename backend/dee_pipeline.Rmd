@@ -40,7 +40,7 @@ IPADD="118.138.235.221"
 CORES=5
 
 #start the analysis
-org="celegans"
+org="ecoli"
 
 #for ( org in c(   "athaliana", "celegans", "dmelanogaster", "drerio",
 #"rnorvegicus", "scerevisiae" , "mmusculus", "ecoli", "hsapiens" )) {
@@ -107,8 +107,11 @@ if (!file.exists(CSV)) {
 }
 
 res <-read.csv(CSV,stringsAsFactors=FALSE)
-
 res <-res[order(res$run_1_accession),]
+
+dim(res)
+res <- unique(res)
+dim(res)
 
 accessions <- as.data.frame(cbind(res$experiment_accession,
   res$study_accession,
@@ -350,14 +353,6 @@ rsync<-function(d,org) {
 }
 d<-val
 rsync(d,org)
-
-#upload metadata
-SCP_COMMAND=paste("scp -i ~/.ssh/dee2", 
-  paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ,
-    " ubuntu@dee2.io:/dee2_data/metadata")
-system(SCP_COMMAND)
-
-save.image(file = paste(org,".RData",sep=""))
 
 #now attach the additional metadata and upload
 x<-res[, !(colnames(res) %in% 
