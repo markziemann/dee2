@@ -40,7 +40,7 @@ IPADD="118.138.235.221"
 CORES=5
 
 #start the analysis
-org="ecoli"
+org="mmusculus"
 
 #for ( org in c(   "athaliana", "celegans", "dmelanogaster", "drerio",
 #"rnorvegicus", "scerevisiae" , "mmusculus", "ecoli", "hsapiens" )) {
@@ -107,23 +107,38 @@ if (!file.exists(CSV)) {
 }
 
 res <-read.csv(CSV,stringsAsFactors=FALSE)
-res <-res[order(res$run_1_accession),]
 
-dim(res)
-res <- unique(res)
-dim(res)
+COLS <- colnames(res)
 
-accessions <- as.data.frame(cbind(res$experiment_accession,
-  res$study_accession,
-  res$sample_accession,
-  res$run_1_accession))
+if ( "run_1_accession" %in% COLS ) {
+
+  res <-res[order(res$run_1_accession),]
+  dim(res)
+  res <- unique(res)
+  dim(res)
+
+  accessions <- as.data.frame(cbind(res$experiment_accession,
+    res$study_accession,
+    res$sample_accession,
+    res$run_1_accession))
+
+} else {
+
+  res <-res[order(res$Run),]
+  dim(res)
+  res <- unique(res)
+  dim(res)
+
+  accessions <- as.data.frame(cbind(res$Experiment,
+    res$SRAStudy,
+    res$Sample,
+    res$Run))
+
+}
 
 nrow(accessions)
-
 colnames(accessions) <- c("experiment","study","sample","run")
-
 runs <- accessions$run
-
 source("dee_pipeline_functions.R")
 
 ```
@@ -213,8 +228,8 @@ MY_GEO_QUERY_TERM <- GEO_QUERY_TERMS[grep(gsub("'","",species_name),GEO_QUERY_TE
 
 # so now we are going with JSON format because XML was failing due to 
 # angled brackets in the GEO data
-ESEARCH <- esearch(term = MY_GEO_QUERY_TERM , db = "gds", rettype = "uilist", 
-  retmode = "json", retstart = 0, retmax = 500000000, usehistory = TRUE, 
+ESEARCH <- esearch(term = MY_GEO_QUERY_TERM , db = "gds", rettype = "uilist",
+  retmode = "json", retstart = 0, retmax = 500000000, usehistory = TRUE,
   webenv = NULL, querykey = NULL, sort = NULL, field = NULL,
   datetype = NULL, reldate = NULL, mindate = NULL, maxdate = NULL)
 
@@ -222,10 +237,31 @@ j <- fromJSON(ESEARCH$content)
 COUNT <- j$esearchresult$count
 myrange <- seq(0,COUNT,500)
 
+# as the geo resource is unreliable I need to use trycatch to prevent errors
+# from terminating the script
+fetch_esummary <- function(i) {
+  out <- tryCatch(
+    {
+      message(i)
+      esummary(ESEARCH,retstart=i,retmax=500,retmode="json")
+    },error=function(cond) {
+      message(paste("There was an error processing request",i))
+      NULL
+    }
+  )
+}
+
 gsel <- lapply(myrange, function(i) {
   message(i)
   Sys.sleep(1)
-  ESUMMARY <- esummary(ESEARCH,retstart=i,retmax=500,retmode="json")
+  ESUMMARY <- NULL
+  attempt <- 1
+  while ( is.null(ESUMMARY) ) {
+    message(paste("attempt",attempt))
+    attempt <- attempt + 1
+    ESUMMARY <- fetch_esummary(i)
+  }
+  #ESUMMARY <- esummary(ESEARCH,retstart=i,retmax=500,retmode="json")
   myjson <- fromJSON(ESUMMARY$content)
   myjson <- myjson$result
   myjson[1] = NULL
@@ -336,7 +372,7 @@ CMD2=paste('ssh -i ~/.ssh/dee2 ubuntu@dee2.io "find /dee2_data/data/',org,' | gr
 #here we rsync files to server in chunks of 50000
 rsync<-function(d,org) {
   while ( length(d)>0 ) {
-    CHUNKSIZE=50000
+    CHUNKSIZE=10000
     if ( length(d)>CHUNKSIZE ) {
       chunk<-paste(d[1:CHUNKSIZE],collapse=" ")
       d<-setdiff(d,d[1:CHUNKSIZE])
@@ -344,9 +380,10 @@ rsync<-function(d,org) {
       chunk<-paste(d[1:length(d)],collapse=" ")
       d<-setdiff(d,d[1:CHUNKSIZE])
     }
-    CMD=paste('rsync -azh -e \"ssh -i  ~/.ssh/dee2 \" --exclude \"*.gz\" ',
-      chunk ,' ubuntu@dee2.io:/dee2_data/data/',org,sep="")
-    system(CMD)
+    CMD=paste('rsync -azh -e \"ssh -i  ~/.ssh/dee2 \" --exclude \"*.gz\" ', chunk ,' ubuntu@dee2.io:/dee2_data/data/',org,sep="")
+    writeLines(CMD,"cmd")
+    system("bash cmd")
+    unlink("cmd")
     system(CMD2)
     message(length(d))
   }
@@ -355,9 +392,8 @@ d<-val
 rsync(d,org)
 
 #now attach the additional metadata and upload
-x<-res[, !(colnames(res) %in% 
+x<-res[, !(colnames(res) %in%
   c("QC_summary","Experiment","sample_acc","SRA.Study","GEO_series","GEO_Accession"))]
-
 x<-merge(x2,x,by.x="SRR_accession",by.y="run_1_accession")
 
 x<-x[which(x$SRR_accession %in% runs_done),]
@@ -365,14 +401,10 @@ x <- apply(x,2,as.character)
 x<-gsub("\r?\n|\r", " ", x)
 write.table(x,file=paste(SRADBWD,"/",org,"_metadata.tsv",sep=""),quote=F,sep="\t",row.names=F)
 
-SCP_COMMAND=paste("scp -i ~/.ssh/dee2 ", 
-  paste(SRADBWD,"/",org,"_metadata.tsv",sep="") ,
-  " ubuntu@dee2.io:/dee2_data/metadata")
+SCP_COMMAND=paste("scp -i ~/.ssh/dee2 ", paste(SRADBWD,"/",org,"_metadata.tsv",sep="") , " ubuntu@dee2.io:/dee2_data/metadata")
 system(SCP_COMMAND)
 
-SCP_COMMAND=paste("scp -i ~/.ssh/dee2 ", 
-  paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") ,
-  " ubuntu@dee2.io:/dee2_data/metadata")
+SCP_COMMAND=paste("scp -i ~/.ssh/dee2 ", paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") , " ubuntu@dee2.io:/dee2_data/metadata")
 system(SCP_COMMAND)
 
 save.image(file = paste(org,".RData",sep=""))
