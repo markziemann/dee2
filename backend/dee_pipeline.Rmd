@@ -40,7 +40,7 @@ IPADD="118.138.235.221"
 CORES=5
 
 #start the analysis
-org="ecoli"
+org="dmelanogaster"
 
 #for ( org in c(   "athaliana", "celegans", "dmelanogaster", "drerio",
 #"rnorvegicus", "scerevisiae" , "mmusculus", "ecoli", "hsapiens" )) {
