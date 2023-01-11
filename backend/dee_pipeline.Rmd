@@ -105,7 +105,7 @@ CSVNEW=paste(SRADBWD,"/",org,"_2023.csv",sep="")
 
 if (file.exists(CSVNEW)) {
   FILENAME=gsub(".csv","_old.csv",CSVNEW)
-  renameFile(CSVNEW,FILENAME)
+  renameFile(CSVNEW,FILENAME,overwrite=TRUE)
 }
 
 MY_SRA_CMD <- paste('bash metadata_dl_2023.sh', org)
@@ -116,13 +116,11 @@ if (!file.exists(CSVNEW)) {
     stop("Error: the metadata CSV file does not exist")
 }
 
-res0 <- read.csv(CSVOLD,stringsAsFactors=FALSE,header=FALSE)
-res0 <- res0[which(res0$study_accession!="study_accession"),]
 res1 <- read.csv(CSVNEW,stringsAsFactors=FALSE)
+res0 <- read.csv(CSVOLD,stringsAsFactors=FALSE,header=FALSE)
 colnames(res0) <- colnames(res1)
-
+res0 <- res0[which(res0$study_accession!="study_accession"),]
 res <- rbind(res0,res1)
-
 COLS <- colnames(res)
 
 if ( "run_1_accession" %in% COLS ) {
@@ -222,7 +220,13 @@ save.image(file = paste(org,".RData",sep=""))
 
 ## Get GEO metadata information
 
+Again any data from 2022 or earlier has been previously downloaded so we only need to download 2023 data.
+
 ```{r,geoquery1}
+
+GEOOLD=paste(SRADBWD,"/",org,"_geo_2022.csv",sep="")
+
+GEONEW=paste(SRADBWD,"/",org,"_geo_2023.csv",sep="")
 
 #collect QC info - this is temporary and logic will be incorporated in future
 QC_summary="BLANK"
@@ -242,12 +246,70 @@ GEO_QUERY_TERMS <- c(
 
 MY_GEO_QUERY_TERM <- GEO_QUERY_TERMS[grep(gsub("'","",species_name),GEO_QUERY_TERMS)]
 
+
+if ( !file.exists(GEOOLD) ) {
+
 # so now we are going with JSON format because XML was failing due to 
 # angled brackets in the GEO data
 ESEARCH <- esearch(term = MY_GEO_QUERY_TERM , db = "gds", rettype = "uilist",
   retmode = "json", retstart = 0, retmax = 500000000, usehistory = TRUE,
   webenv = NULL, querykey = NULL, sort = NULL, field = NULL,
-  datetype = NULL, reldate = NULL, mindate = NULL, maxdate = NULL)
+  datetype = "pdat", reldate = NULL, mindate = "2000/01/01", maxdate = "2022/12/31")
+
+j <- fromJSON(ESEARCH$content)
+COUNT <- j$esearchresult$count
+myrange <- seq(0,COUNT,500)
+
+# as the geo resource is unreliable I need to use trycatch to prevent errors
+# from terminating the script
+fetch_esummary <- function(i) {
+  out <- tryCatch(
+    {
+      message(i)
+      esummary(ESEARCH,retstart=i,retmax=500,retmode="json")
+    },error=function(cond) {
+      message(paste("There was an error processing request",i))
+      NULL
+    }
+  )
+}
+
+gsel <- lapply(myrange, function(i) {
+  message(i)
+  Sys.sleep(1)
+  ESUMMARY <- NULL
+  attempt <- 1
+  while ( is.null(ESUMMARY) ) {
+    message(paste("attempt",attempt))
+    attempt <- attempt + 1
+    ESUMMARY <- fetch_esummary(i)
+  }
+  myjson <- fromJSON(ESUMMARY$content)
+  myjson <- myjson$result
+  myjson[1] = NULL
+  geodf <- do.call(rbind, myjson)
+  geodf <- geodf[,c("gse","accession")]
+  return(geodf)
+})
+
+gsel <- do.call(rbind, gsel)
+GSE <- unlist(gsel[,1])
+GSM <- unlist(gsel[,2])
+gse <- data.frame(GSE,GSM)
+colnames(gse) <- c("GEO_series","GEO_sample")
+gse$GEO_series[which(gse$GEO_series=="")] <- "NA"
+gse$GEO_series <- paste("GSE",sapply(strsplit(gse$GEO_series,";"),"[[",1),sep="")
+
+write.table(gse,GEOOLD,sep=",")
+remove(gse)
+
+}
+
+# now get 2023
+ESEARCH <- esearch(term = MY_GEO_QUERY_TERM , db = "gds", rettype = "uilist",
+  retmode = "json", retstart = 0, retmax = 500000000, usehistory = TRUE,
+  webenv = NULL, querykey = NULL, sort = NULL, field = NULL,
+  datetype = "pdat", reldate = NULL, mindate = "2023/01/01", maxdate = "2023/12/31")
 
 j <- fromJSON(ESEARCH$content)
 COUNT <- j$esearchresult$count
@@ -293,6 +355,15 @@ gse <- data.frame(GSE,GSM)
 colnames(gse) <- c("GEO_series","GEO_sample")
 gse$GEO_series[which(gse$GEO_series=="")] <- "NA"
 gse$GEO_series <- paste("GSE",sapply(strsplit(gse$GEO_series,";"),"[[",1),sep="")
+
+# write new GEO data
+write.table(gse,GEONEW,sep=",")
+
+# now join old and new
+gse1 <- gse
+gse0 <- read.csv(GEOOLD)
+gse <- rbind(gse0,gse1)
+gse <- unique(gse)
 
 ```
 
