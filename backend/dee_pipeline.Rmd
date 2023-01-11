@@ -40,7 +40,7 @@ IPADD="118.138.235.221"
 CORES=5
 
 #start the analysis
-org="mmusculus"
+org="ecoli"
 
 #for ( org in c(   "athaliana", "celegans", "dmelanogaster", "drerio",
 #"rnorvegicus", "scerevisiae" , "mmusculus", "ecoli", "hsapiens" )) {
@@ -90,23 +90,38 @@ For human and mouse, we may need to fetch the metadata in chunks that are groupe
 pysradb search --organism="Homo sapiens"  --publication-date 01-01-2015:31-12-2020 --source="transcriptomic" --max=999000 --saveto hsapiens_test2020.csv
 `
 
+Using a helper bash script called metadata_dl.sh which uses pysradb.
+It grabs monthly batches of metadata.
+
+Previously I fetched all data pre 2023, and so now I only need to get 2023 data fresh.
+
+This means that each january this script should be updated.
+
 ```{r,fetchmetadata}
 
-CSV=paste(SRADBWD,"/",org,".csv",sep="")
+CSVOLD=paste(SRADBWD,"/",org,"_2022.csv",sep="")
 
-if (!file.exists(CSV)) {
-  file.rename(CSV,paste(CSV,".old",sep=""))
+CSVNEW=paste(SRADBWD,"/",org,"_2023.csv",sep="")
+
+if (file.exists(CSVNEW)) {
+  FILENAME=gsub(".csv","_old.csv",CSVNEW)
+  renameFile(CSVNEW,FILENAME)
 }
 
-MY_SRA_CMD <- paste('bash metadata_dl.sh', org)
+MY_SRA_CMD <- paste('bash metadata_dl_2023.sh', org)
 MY_SRA_CMD
 system(MY_SRA_CMD)
 
-if (!file.exists(CSV)) {
+if (!file.exists(CSVNEW)) {
     stop("Error: the metadata CSV file does not exist")
 }
 
-res <-read.csv(CSV,stringsAsFactors=FALSE)
+res0 <- read.csv(CSVOLD,stringsAsFactors=FALSE,header=FALSE)
+res0 <- res0[which(res0$study_accession!="study_accession"),]
+res1 <- read.csv(CSVNEW,stringsAsFactors=FALSE)
+colnames(res0) <- colnames(res1)
+
+res <- rbind(res0,res1)
 
 COLS <- colnames(res)
 
@@ -136,6 +151,7 @@ if ( "run_1_accession" %in% COLS ) {
 
 }
 
+accessions <- unique(accessions)
 nrow(accessions)
 colnames(accessions) <- c("experiment","study","sample","run")
 runs <- accessions$run

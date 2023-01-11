@@ -14,13 +14,13 @@ if [ $ORG = "rnorvegicus" ] ; then ORGANISM='Rattus norvegicus' ; fi
 
 > $ORG.csv
 #for YEAR in $(seq 2007 2022) ; do
-for YEAR in 2022 ; do
+for YEAR in 2023 ; do
   for MONTH in $(seq -w 01 12) ; do
     >tmp.csv
     pysradb search --organism="${ORGANISM}" \
       --publication-date 01-${MONTH}-${YEAR}:31-${MONTH}-${YEAR} \
       --source="transcriptomic" --max=999000 --query="Public[Access]" --saveto tmp.csv
-    cat tmp.csv >> ../sradb/$ORG.csv
+    cat tmp.csv >> ../sradb/${ORG}_2023.csv
   done
 done
 rm tmp.csv
