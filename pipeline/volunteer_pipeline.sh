@@ -721,12 +721,12 @@ fi
 echo $SRR Quality trimming
 ##########################################################################
 if [ $RDS == "SE" ] ; then
-  skewer -l 18 -q 10 -k inf -t $THREADS -o $SRR $FQ1
+  skewer -f sanger -l 18 -q 10 -k inf -t $THREADS -o $SRR $FQ1
   rm $FQ1
   FQ1=${SRR}-trimmed.fastq
 
 elif [ $RDS == "PE" ] ; then
-  skewer -l 18 -q 10 -k inf -t $THREADS -o $SRR $FQ1 $FQ2
+  skewer -f sanger -l 18 -q 10 -k inf -t $THREADS -o $SRR $FQ1 $FQ2
   rm $FQ1 $FQ2
   FQ1=${SRR}-trimmed-pair1.fastq
   FQ2=${SRR}-trimmed-pair2.fastq
@@ -783,7 +783,7 @@ if [ $RDS == "SE" ] ; then
         | unsort --seed 42 \
         | tr '\t' '\n' > ${SRR}.fastq
         CLIP_LINE_NUM=$(echo $DENSITY $ADAPTER_THRESHOLD $READ_CNT_AVAIL | awk '{printf "%.0f\n", ($1-$2)/$1*$3*4}' | numround -n 4)
-        head -$CLIP_LINE_NUM ${SRR}.fastq | skewer -l 18 -t $THREADS -x $ADAPTER -o $SRR -
+        head -$CLIP_LINE_NUM ${SRR}.fastq | skewer -f sanger -l 18 -t $THREADS -x $ADAPTER -o $SRR -
         cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
         CLIP_LINE_NUM1=$((CLIP_LINE_NUM+1))
         tail -n+$CLIP_LINE_NUM1 ${SRR}.fastq >> ${SRR}-trimmed.fastq && rm ${SRR}.fastq
@@ -827,7 +827,7 @@ elif [ $RDS == "PE" ] ; then
         CLIP_LINE_NUM=$(echo $DENSITY $ADAPTER_THRESHOLD $READ_CNT_AVAIL | awk '{printf "%.0f\n", ($1-$2)/$1*$3*4}' | numround -n 4)
         head -$CLIP_LINE_NUM ${SRR}_1.tmp.fastq > ${SRR}_1.fastq &
         head -$CLIP_LINE_NUM ${SRR}_2.tmp.fastq > ${SRR}_2.fastq ; wait
-        skewer -l 18 -t $THREADS -x $ADAPTER1 -y $ADAPTER2 -o $SRR ${SRR}_1.fastq ${SRR}_2.fastq
+        skewer -f sanger -l 18 -t $THREADS -x $ADAPTER1 -y $ADAPTER2 -o $SRR ${SRR}_1.fastq ${SRR}_2.fastq
         READ_CNT_AVAIL=$(grep 'available; of these:' ${SRR}-trimmed.log | cut -d ' ' -f1)
         if [ -z "$READ_CNT_AVAIL" ] ; then READ_CNT_AVAIL=0 ; fi
         cat ${SRR}-trimmed.log >> $SRR.log && rm ${SRR}-trimmed.log
@@ -981,7 +981,7 @@ if [ $RDS == "PE" ] ; then
       fastx_trimmer -f $((R2_CLIP_NUM+1)) -m 18 -Q 33 -i $FQ2 > $FQ2.tmp.fq && mv $FQ2.tmp.fq $FQ2
       wait
     else
-      skewer -m ap --cut $R1_CLIP_NUM,$R2_CLIP_NUM -l 18 -k inf -t $THREADS $FQ1 $FQ2 && \
+      skewer -f sanger -m ap --cut $R1_CLIP_NUM,$R2_CLIP_NUM -l 18 -k inf -t $THREADS $FQ1 $FQ2 && \
       mv $(basename $FQ1 .fastq)-trimmed-pair1.fastq $FQ1 && \
       mv $(basename $FQ1 .fastq)-trimmed-pair2.fastq $FQ2 && \
       rm *untrimmed*fastq *trimmed.log
@@ -1071,7 +1071,7 @@ if [ $RDS == "SE" ] ; then
 
   if [[ ( $CLIP_NUM -gt 0 ) && ( $CLIP_NUM -lt 20 ) ]] ; then
     cp $FQ1 $FQ1.tmp.fq
-    skewer -m ap --cut $CLIP_NUM,$CLIP_NUM -l 18 -k inf -t $THREADS $FQ1 $FQ1.tmp.fq \
+    skewer -f sanger -m ap --cut $CLIP_NUM,$CLIP_NUM -l 18 -k inf -t $THREADS $FQ1 $FQ1.tmp.fq \
     && mv $(basename $FQ1 .fastq)-trimmed-pair1.fastq $FQ1 \
     && rm $(basename $FQ1 .fastq)-trimmed-pair2.fastq \
     && rm $FQ1.tmp.fq *untrimmed*fastq *trimmed.log
