@@ -21,6 +21,9 @@ if [ ! -r started ] ; then
 
   PREV_REFERENCE_PIPELINE_MD5SUM1="750d197f551ef3ac98f9e83f8d61ca43"
   PREV_REFERENCE_PIPELINE_MD5SUM2="b658ab07180ba71dce32a255b1c32fa3"
+  PREV_REFERENCE_PIPELINE_MD5SUM3="888a4b1e21a693aa53ebc5490bd49053"
+  PREV_REFERENCE_PIPELINE_MD5SUM4="0cf85a7690f1a121fe283ebe9467f631"
+
   REFERENCE_PIPELINE_MD5SUM=$(md5sum ~/dee2/pipeline/volunteer_pipeline.sh | awk '{print $1}')
 
   if [ "$(ls -A ${INCOMING})" ]; then
@@ -46,7 +49,9 @@ if [ ! -r started ] ; then
           INVALID=0
           if [ "$REFERENCE_PIPELINE_MD5SUM" != "$PIPELINE_MD5SUM" ] \
           && [ "$PREV_REFERENCE_PIPELINE_MD5SUM1" != "$PIPELINE_MD5SUM" ] \
-          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM2" != "$PIPELINE_MD5SUM" ] ; then
+          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM2" != "$PIPELINE_MD5SUM" ] \
+          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM3" != "$PIPELINE_MD5SUM" ] \
+          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM4" != "$PIPELINE_MD5SUM" ] ; then
               INVALID=$((INVALID+1))
           fi
           unzip -t $FILE || INVALID=$((INVALID+1))
@@ -78,4 +83,4 @@ if [ ! -r started ] ; then
 fi
 
 find /var/log/apache2/  -mtime +2 -exec sudo rm {} \;
-sudo find /tmp -mmin +59 -delete
+#sudo find /tmp -mmin +59 -delete
