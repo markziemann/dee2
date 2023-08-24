@@ -40,7 +40,7 @@ IPADD="118.138.235.221"
 CORES=5
 
 #start the analysis
-org="hsapiens"
+org="ecoli"
 
 #for ( org in c(   "athaliana", "celegans", "dmelanogaster", "drerio",
 #"rnorvegicus", "scerevisiae" , "mmusculus", "ecoli", "hsapiens" )) {
@@ -300,6 +300,7 @@ gsel <- lapply(myrange, function(i) {
   geodf <- geodf[,c("gse","accession")]
   return(geodf)
 })
+}
 
 gsel <- do.call(rbind, gsel)
 GSE <- unlist(gsel[,1])
