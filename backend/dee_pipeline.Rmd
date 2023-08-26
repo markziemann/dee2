@@ -40,7 +40,7 @@ IPADD="118.138.235.221"
 CORES=5
 
 #start the analysis
-org="ecoli"
+org="mmusculus"
 
 #for ( org in c(   "athaliana", "celegans", "dmelanogaster", "drerio",
 #"rnorvegicus", "scerevisiae" , "mmusculus", "ecoli", "hsapiens" )) {
@@ -313,7 +313,8 @@ write.table(gse,GEOFILENAME,sep=",")
 
 
 # now join old and new
-geofiles <- list.files("../sradb/", pattern="mmusculus_geo_20",full.names=TRUE)
+PATTERN=paste(org,"_geo_20",sep="")
+geofiles <- list.files("../sradb/", pattern=PATTERN,full.names=TRUE)
 gf <- lapply(geofiles,read.csv)
 gf <- do.call(rbind,gf)
 gse <- unique(gf)
