@@ -2,6 +2,8 @@
 #sra2mx for docker image
 #Copyright Mark Ziemann 2015 to 2017 mark.ziemann@gmail.com
 
+# Modifications:
+# Added references for osativa and zmays, and handled unpaired reads with FastqPairer.pl
 
 #Fix locale issue
 export LANGUAGE=C
@@ -187,6 +189,20 @@ elif [ $ORG == "scerevisiae" ] ; then
   BT2_MD5="d484b1bf9e98c0e93c1f7ec37b5d449e"
   KAL_MD5="eb4dd17423dc9644dbfb6daefb9130d0"
   STAR_MD5="052b2523d3e0912bb19de6739bd1d6ed"
+elif [ $ORG == "osativa" ] ; then
+  GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/oryza_sativa/Oryza_sativa.IRGSP-1.0.59.gtf.gz"
+  GDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/oryza_sativa/dna/Oryza_sativa.IRGSP-1.0.dna_sm.toplevel.fa.gz"
+  CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/oryza_sativa/cdna/Oryza_sativa.IRGSP-1.0.cdna.all.fa.gz"
+  BT2_MD5="05eb69ae1d8b8b0d2cc06e890bf55dc6"
+  KAL_MD5="6f618eda89e9b057c99d4d7580c5858d"
+  STAR_MD5="b374bef1756a1ea105c968d68c71127e"
+elif [ $ORG == "zmays" ] ; then
+  GTFURL="https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gtf/zea_mays/Zea_mays.Zm-B73-REFERENCE-NAM-5.0.59.gtf.gz"
+  GDNAURL="https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/fasta/zea_mays/dna/Zea_mays.Zm-B73-REFERENCE-NAM-5.0.dna_sm.toplevel.fa.gz"
+  CDNAURL="https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/fasta/zea_mays/cdna/Zea_mays.Zm-B73-REFERENCE-NAM-5.0.cdna.all.fa.gz"
+  BT2_MD5="7dc6bbdf600fd4305af72600b4c417f9"
+  KAL_MD5="00ecbba2360b5ffdd24a3be6b0aa0acd"
+  STAR_MD5="4a44ab4db80dcc1e887f6861dc48eae9"
 fi
 
 # download the necessary reference files
@@ -197,7 +213,7 @@ if [ -z $GTF ] || [ ! -r $GTF  ] ; then
   wget $GTFURL
   gunzip -f $(basename $GTFURL)
   GTF=$MYREF_DIR/$(basename $GTFURL .gz)
-  grep -cw gene $GTF > $GTF.cnt
+  grep -cE "\sgene\s" $GTF > $GTF.cnt
   cd -
 fi
 
@@ -1005,6 +1021,19 @@ if [ $RDS == "PE" ] ; then
     RDS="SE"
     mv $FQ2 $FQ1
   fi
+  
+  # Remove unpaired reads
+  if [[ ( $R1_CLIP_NUM -gt 15 ) || ( $R2_CLIP_NUM -gt 15 ) ]] && [[ $RDS != "SE" ]]; then
+    if [ ! -f $HOME/FastqPairer.pl ]; then
+      echo "Error: $HOME/FastqPairer.pl is missing"
+      exit 1
+    fi
+    echo Unpaired reads removal | tee -a $SRR.log
+    perl $HOME/FastqPairer.pl -min 18 $FQ1 $FQ2
+    rm $FQ1 && mv $FQ1.paired $FQ1
+    rm $FQ2 && mv $FQ2.paired $FQ2
+  fi
+
 fi
 
 
@@ -1277,7 +1306,7 @@ ACC_REQUEST="http://dee2.io/cgi-bin/acc.sh"
 SFTP_URL=$(curl dee2.io/ip)
 
 if [ ! -z $MY_ORG ] ; then
-  ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae' \
+  ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae osativa zmays' \
   | tr ' ' '\n' | grep -wc "$MY_ORG")
   if [ $ORG_CHECK -ne 1 ] ; then
     echo Organism not specified correctly. Check options and try again.
@@ -1292,7 +1321,9 @@ ecoli   1576132
 hsapiens        28968508
 mmusculus       26069664
 rnorvegicus     26913880
-scerevisiae     1644684' | grep -w $MY_ORG | awk -v f=$MEM_FACTOR '{print $2*f}')
+scerevisiae     1644684
+osativa         8000000
+zmays           22000000' | grep -w $MY_ORG | awk -v f=$MEM_FACTOR '{print $2*f}')
 
   if [ $MEM_REQD -gt $MEM ] ; then
     echo Error, analysis of $ORG data requires at least $MEM_REQD $MEM_FACTOR kB in RAM, but there is only $MEM available.
