@@ -11,6 +11,60 @@ export LC_ALL=C
 export LANG=C
 export LC_TYPE=C
 
+usage() {
+    echo
+    echo "volunteer_pipeline.sh is a script for processing transcriptomic data from NCBI SRA to be included in the DEE2 database (dee2.io)."
+    echo
+    echo "Usage: ./volunteer_pipeline.sh <ORGANISM> <SRA RUN ACCESSION> [-h] [-t THREADS] [-d] [-v]"
+    echo
+    echo "  ORGANISM, supported species include 'athaliana', 'celegans', 'dmelanogaster', 'drerio', 'ecoli', 'hsapiens', 'mmusculus', 'osativa', 'rnorvegicus', 'scerevisiae' and 'zmays' "
+    echo "  SRA_RUN_ACCESSION, a text string matching an SRA run accession. eg: SRR10861665 or ERR3281011"
+    echo "  -h  Help. Display this message and quit."
+    echo "  -t  Number of parallel threads. Default is 8."
+    echo "  -v  Increase verbosity."
+    echo "  -d  Sequence data is downloaded separately (this is the most efficient way)."
+    echo
+    echo "Output: The pipeline will injest the sra archive, process it and create a zip file that contains the processed RNA-seq data."
+
+    exit
+}
+
+if [ $# -eq 0 ] ; then
+  usage
+fi
+
+THREADS=8
+
+while [[ "$#" -gt 0 ]]; do
+    case $3 in
+        -h|--help) usage ; exit ;;
+        -t|--threads) THREADS="$4" ; shift ;;
+        -v|--version) set -x ; VERBOSE=TRUE ; shift ;;
+        -d|--downloaded) DL=TRUE ; shift ;;
+        *) echo "Unknown parameter passed: $3"; exit 1 ;;
+    esac
+    shift
+done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 NUMVARS=$#
 
 shopt -s expand_aliases
