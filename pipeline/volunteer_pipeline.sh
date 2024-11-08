@@ -15,10 +15,10 @@ usage() {
     echo
     echo "volunteer_pipeline.sh is a script for processing transcriptomic data from NCBI SRA to be included in the DEE2 database (dee2.io)."
     echo
-    echo "Usage: ./volunteer_pipeline.sh <ORGANISM> <SRA RUN ACCESSION> [-h] [-t THREADS] [-d] [-v]"
+    echo "Usage: ./volunteer_pipeline.sh <-s SPECIES> <-a SRA ACCESSION> [-h] [-t THREADS] [-d] [-v]"
     echo
-    echo "  ORGANISM, supported species include 'athaliana', 'celegans', 'dmelanogaster', 'drerio', 'ecoli', 'hsapiens', 'mmusculus', 'osativa', 'rnorvegicus', 'scerevisiae' and 'zmays' "
-    echo "  SRA_RUN_ACCESSION, a text string matching an SRA run accession. eg: SRR10861665 or ERR3281011"
+    echo "  -s  Species, supported ones include 'athaliana', 'celegans', 'dmelanogaster', 'drerio', 'ecoli', 'hsapiens', 'mmusculus', 'osativa', 'rnorvegicus', 'scerevisiae' and 'zmays' "
+    echo "  -a  SRA run accession, a text string matching an SRA run accession. eg: SRR10861665 or ERR3281011"
     echo "  -h  Help. Display this message and quit."
     echo "  -t  Number of parallel threads. Default is 8."
     echo "  -v  Increase verbosity."
@@ -36,69 +36,64 @@ fi
 THREADS=8
 
 while [[ "$#" -gt 0 ]]; do
-    case $3 in
+    case $1 in
         -h|--help) usage ; exit ;;
-        -t|--threads) THREADS="$4" ; shift ;;
-        -v|--version) set -x ; VERBOSE=TRUE ; shift ;;
+        -s|--species) MY_ORG="$2" ; shift ;;
+        -a|--accessions) MY_ACCESSIONS="$2" ; shift ;;
+        -t|--threads) THREADS="$2" ; shift ;;
+        -v|--verbose) VERBOSE=TRUE ; shift ;;
         -d|--downloaded) DL=TRUE ; shift ;;
-        *) echo "Unknown parameter passed: $3"; exit 1 ;;
+        -f|--fastq) FQ1="$2" ; FQ2="$3" ; shift ;;
+        *) echo "Unknown parameter passed: $1"; exit 1 ;;
     esac
     shift
 done
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-NUMVARS=$#
-
 shopt -s expand_aliases
+MEM_FACTOR=2
 
 #handling verbosity setting
-LASTVAR=$(echo $@ | rev | cut -d ' ' -f1 | rev)
-if [ $LASTVAR == "-V" ] ; then
+if [ $VERBOSE == "TRUE" ] ; then
   set -x
   VERBOSE=TRUE
-  NUMVARS=$#
-  NUMVARS=$((NUMVARS-1))
 else
   alias wget='wget -q'
   alias curl='curl -s'
 fi
 
-MY_ORG=$1
-if [ $NUMVARS -gt 1 ] ; then
-  if [ $2 != '-f' ] ; then
-    MY_ACCESSIONS=$2
-  fi
-fi
-MEM_FACTOR=2
+
+#### OLD How the main function is used later on:
+# With supplied fastq files
+# main $MY_ORG -f $FQ_R1 $FQ_R2 VERBOSE=$VERBOSE THREADS=$THREADS
+# main $MY_ORG -f $FQ VERBOSE=$VERBOSE THREADS=$THREADS
+# With supplied SRA archive
+# main $1 -d $SRA_FILE VERBOSE=$VERBOSE THREADS=$THREADS
+# With user supplied accession
+# main $1 $USER_ACCESSION VERBOSE=$VERBOSE THREADS=$THREADS
+# Only define the species, let the pipeline select accessions from the run queue
+# main "$MY_ORG" "$ACCESSION" VERBOSE=$VERBOSE THREADS=$THREADS
+
+### NEW
+# With supplied fastq files
+# main ORG=$MY_ORG FASTQ=${FQ_R1},${FQ_R2} VERBOSE=$VERBOSE THREADS=$THREADS
+# main ORG=$MY_ORG FASTQ=$FQ VERBOSE=$VERBOSE THREADS=$THREADS
+# With supplied SRA archive
+# main ORG=$MY_ORG SRA_ARCHIVE=$SRA_FILE VERBOSE=$VERBOSE THREADS=$THREADS
+# With user supplied accession
+# main $ORG=MY_ORG ACCESSION=$USER_ACCESSION VERBOSE=$VERBOSE THREADS=$THREADS
+# Only define the species, let the pipeline select accessions from the run queue
+# main ORG="$MY_ORG" "$ACCESSION" VERBOSE=$VERBOSE THREADS=$THREADS
 
 main(){
-#logging all commands
-NUMVARS=$#
-LASTVAR=$(echo $@ | rev | cut -d ' ' -f1 | rev)
-VERBOSE=$(echo $LASTVAR | cut -d '=' -f2)
+#logging all options
+VERBOSE=$(echo $@ | tr ' ' '\n' | grep VERBOSE | cut -d '=' -f2)
 if [ ! -z $VERBOSE ] ; then
   if [ $VERBOSE == "TRUE" ] ; then
     set -x
   fi
 fi
+
+THREADS=$(echo $@ | tr ' ' '\n' | grep THREADS | cut -d '=' -f2)
 
 #define bad exit
 exit1(){
@@ -108,30 +103,36 @@ return 1
 export -f exit1
 
 #JOB
-ORG=$1
+ORG=$(echo $@ | tr ' ' '\n' | grep ORG | cut -d '=' -f2)
 
-# is the download done separately?
-DL=FALSE
-if [ $2 == '-d' ] ; then
-  DL=TRUE
-  SRA_FILE=$3
-  SRR=$(echo $SRA_FILE | cut -d '_' -f2 | cut -d '.' -f1)
+# What is the run MODE?
+## ACCESSION=to be downloaded with the script
+## FASTQ=fastq files are supplied
+## SRA_ARCHIVE=sra archives are supplied
+MODE=$(echo $@ | tr ' ' '\n' | grep -c ACCESSION)
+if [ $MODE -eq 1 ] then
+  MODE=ACCESSION
+  SRR_FILE=$2
+  SRR=$(basename $SRR_FILE .sra)
   echo $SRR
+  wget -O $SRR.html "https://www.ncbi.nlm.nih.gov/sra/${SRR}"
+  ORG2=$(echo $ORG | cut -c2-)
+  ORG_OK=$(sed 's/class=/\n/g' $SRR.html  | grep 'Organism:' | grep -c $ORG2)
+  rm $SRR.html
+  if [ $ORG_OK -ne 1 ] ; then
+    echo Annotated species name from NCBI SRA does not match user input! Quitting. | tee -a $SRR.log
+    exit1 ; exit 1
+  else
+    echo User input species and SRA metadata match. OK.
+  fi
 else
-  if [ $2 != '-f' ] ; then
-    SRR_FILE=$2
-    SRR=$(basename $SRR_FILE .sra)
-    echo $SRR
-    wget -O $SRR.html "https://www.ncbi.nlm.nih.gov/sra/${SRR}"
-    ORG2=$(echo $ORG | cut -c2-)
-    ORG_OK=$(sed 's/class=/\n/g' $SRR.html  | grep 'Organism:' | grep -c $ORG2)
-    rm $SRR.html
-    if [ $ORG_OK -ne 1 ] ; then
-      echo Annotated species name from NCBI SRA does not match user input! Quitting. | tee -a $SRR.log
-      exit1 ; exit 1
-    else
-      echo User input species and SRA metadata match. OK.
-    fi
+  MODE=$(echo $@ | tr ' ' '\n' | grep -c SRA_ARCHIVE)
+  if [ $MODE -eq 1 ] then
+    MODE=SRA_ARCHIVE
+    SRA_FILE=$(echo $@ | tr ' ' '\n' | grep SRA_ARCHIVE | cut -d '=' -f2)
+    SRR=$(echo $SRA_FILE | cut -d '_' -f2 | cut -d '.' -f1)
+  else
+    MODE=FASTQ
   fi
 fi
 
@@ -152,7 +153,6 @@ DISKLIM=32000000
 DLLIM=1
 ALNLIM=2
 MEMALNLIM=4
-THREADS=$(grep -c ^processor /proc/cpuinfo)
 DISK=$(df . | awk 'END{print$4}')
 MEM=$(echo $(free | awk '$1 ~ /Mem:/  {print $2-$3}') \
   $(free | awk '$1 ~ /Swap:/  {print $2-$3}') \
@@ -321,11 +321,7 @@ fi
 KAL_REF=$KAL_DIR/$(basename $CDNA).idx
 if [ -z $KAL_REF ] || [ ! -r $KAL_REF  ] ; then
   cd $KAL_DIR
-  #kallisto index here
   ln $CDNA .
-#  for KMER in `seq 11 2 29` ; do
-#    kallisto index -i $(basename $CDNA).k$KMER.idx -k $KMER $(basename $CDNA)
-#  done
   kallisto index -i $(basename $CDNA).idx $(basename $CDNA)
   for IDX in *idx ; do grep -c '>' $(basename $CDNA) > $IDX.cnt ; done
   KAL_REF=$KAL_DIR/$(basename $CDNA).idx
@@ -368,7 +364,8 @@ fi
 if [ ! -d $DATA_DIR ] ; then mkdir -p $DATA_DIR ; fi
 cd $DATA_DIR
 
-if [ $2 != '-f' ] ; then
+# if mode != fastq
+if [ $MODE != 'FASTQ' ] ; then
   mkdir $SRR ; cp $PIPELINE $SRR ; cd $SRR
   echo "Starting $PIPELINE $SRR
     current disk space = $DISK
@@ -394,7 +391,7 @@ if [ $2 != '-f' ] ; then
 ##########################################################################
 
   # Moving SRA file downloaded previously
-  if [ $DL == 'TRUE' ] ; then
+  if [ $MODE == 'SRA_ARCHIVE' ] ; then
     mv $SRA_FILE $SRR.sra
   fi
 
@@ -569,7 +566,7 @@ EOF
   echo $SRR completed basic pipeline successfully | tee -a $SRR.log
 
 ##########################################################################
-# If user has own data
+# If user has own fastq files
 ##########################################################################
 else
   echo using user data
@@ -588,15 +585,19 @@ else
 ##########################################################################
 # OWN data SE
 ##########################################################################
-  if [ $NUMVARS -lt "4" ] ; then
-    echo Error, not enough arguments specified. Quitting
+  FQS=$(echo $@ | tr ' ' '\n' | grep FASTQ | cut -d '=' -f2)
+  FQCNT=$(echo $FQS | tr ',' ' ' | wc -w)
+  if [ $FQCNT -gt "2" ] ; then
+    echo Error: more than 2 fastq files provided.
     exit1; return 1
-  elif [ $NUMVARS -gt "5" ] ; then
-    echo Too many arguments. Check syntax and try again. Ensure filenames do not contain spaces. Quitting
-    exit1 ; return 1
-  elif [ $NUMVARS -eq "4" ] ; then
-    echo Processing fastq file $3 in single end mode
-    FQ1=$3
+  fi
+  if [ $FQCNT -lt "1" ] ; then
+    echo Error: No fastq files provided!
+    exit1; return 1
+  fi
+
+  if [ $FQCNT -eq "1" ] ; then
+    FQ1=$(echo $@ | tr ' ' '\n' | grep FASTQ | cut -d '=' -f2)
     SRR=$(basename $FQ1 | cut -d '.' -f1)
     RDS=SE
 
@@ -645,10 +646,11 @@ else
 ##########################################################################
 # OWN data PE
 ##########################################################################
-  elif [ $NUMVARS -eq "5" ] ; then
-    echo Processing fastq files $3 and $4 in paired end mode
-    FQ1=$3
-    FQ2=$4
+  elif [ $FQCNT -eq "2" ] ; then
+    FQ1=$(echo $FQS | cut -d ',' -f1 )
+    FQ2=$(echo $FQS | cut -d ',' -f2 )
+
+    echo Processing fastq files $FQ1 and $FQ2 in paired end mode
     SRR=$(basename $FQ1 | cut -d '.' -f1)
     RDS=PE
 
@@ -744,7 +746,6 @@ else
   FQ2_MEDIAN_LEN=NULL
   FQ2_MAX_LEN=NULL
 
-
   if [ $RDS == "PE" ] ; then
     fastqc $FQ2
     FQ2BASE=$(echo $FQ2 | rev | cut -d '.' -f2 | rev)
@@ -774,7 +775,6 @@ else
       echo Number of sequence tags in read 1 and read 2 differ. Quitting.
       exit1 ; return 1
     fi
-
   fi
 
 ##########################################################################
@@ -784,7 +784,6 @@ else
     echo Colorspace data is excluded from analysis for now
     exit1 ; return 1
   fi
-
 fi
 
 ##########################################################################
@@ -950,11 +949,6 @@ if [ $RDS == "PE" ] ; then
   head -10000 $FQ1 > test_R1.fq ; head -1000000 $FQ1 | tail -90000 >> test_R1.fq
   head -10000 $FQ2 > test_R2.fq ; head -1000000 $FQ2 | tail -90000 >> test_R2.fq
 
-#  skewer -m ap --cut 4,4 -l 18 -k inf -t $THREADS test_R1.fq test_R2.fq && mv test_R1-trimmed-pair1.fastq test_R1_clip4.fq && mv test_R1-trimmed-pair2.fastq test_R2_clip4.fq
-#  skewer -m ap --cut 8,8 -l 18 -k inf -t $THREADS test_R1.fq test_R2.fq && mv test_R1-trimmed-pair1.fastq test_R1_clip8.fq && mv test_R1-trimmed-pair2.fastq test_R2_clip8.fq
-#  skewer -m ap --cut 12,12 -l 18 -k inf -t $THREADS test_R1.fq test_R2.fq && mv test_R1-trimmed-pair1.fastq test_R1_clip12.fq && mv test_R1-trimmed-pair2.fastq test_R2_clip12.fq
-#  skewer -m ap --cut 20,20 -l 18 -k inf -t $THREADS test_R1.fq test_R2.fq && mv test_R1-trimmed-pair1.fastq test_R1_clip12.fq && mv test_R1-trimmed-pair2.fastq test_R2_clip12.fq
-
   fastx_trimmer -f 5 -m 18 -Q 33 -i test_R1.fq > test_R1_clip4.fq &
   fastx_trimmer -f 5 -m 18 -Q 33 -i test_R2.fq > test_R2_clip4.fq &
   fastx_trimmer -f 9 -m 18 -Q 33 -i test_R1.fq > test_R1_clip8.fq &
@@ -1075,7 +1069,7 @@ if [ $RDS == "PE" ] ; then
     RDS="SE"
     mv $FQ2 $FQ1
   fi
-  
+
   # Remove unpaired reads
   if [[ ( $R1_CLIP_NUM -gt 15 ) || ( $R2_CLIP_NUM -gt 15 ) ]] && [[ $RDS != "SE" ]]; then
     if [ ! -f $HOME/FastqPairer.pl ]; then
@@ -1101,10 +1095,6 @@ if [ $RDS == "SE" ] ; then
   head -1000000 $FQ1 | tail -90000 >> test.fq
   cp test.fq test2.fq
 
-#  skewer -m ap --cut 4,4 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip4.fq
-#  skewer -m ap --cut 8,8 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip8.fq
-#  skewer -m ap --cut 12,12 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip12.fq
-#  skewer -m ap --cut 20,20 -l 18 -k inf -t $THREADS test.fq test2.fq && mv test-trimmed-pair1.fastq test_clip20.fq
   fastx_trimmer -f 5 -m 18 -Q 33 -i test.fq > test_clip4.fq &
   fastx_trimmer -f 9 -m 18 -Q 33 -i test.fq > test_clip8.fq &
   fastx_trimmer -f 13 -m 18 -Q 33 -i test.fq > test_clip12.fq &
@@ -1295,7 +1285,6 @@ if [ $SE_NR -eq $SE_CNT -a $KE_NR -eq $((KE_CNT+1)) ] ; then
   sed -e "1i${SRR}" $SRR.se.tsv > tmp ; mv tmp  $SRR.se.tsv
   sed -e "1i${SRR}_target_id\t${SRR}_length\t${SRR}_eff_length\t${SRR}_est_counts\t${SRR}_tpm" $SRR.ke.tsv | sed 2d > tmp ; mv tmp $SRR.ke.tsv
 
-  # gzip *tsv
   touch $SRR.finished
 else
   echo "$SRR An error occurred. Count file line numbers don't match the reference." | tee -a $SRR.log
@@ -1335,12 +1324,8 @@ QC_SUMMARY:${QC_SUMMARY}${REASON}" > $SRR.qc
 
 rm -rf *fastq
 cd ..
-#zip -r $SRR.$ORG.zip $SRR
 }
 export -f main
-
-#TODO
-#-allow specific accessions
 
 cd /dee2
 
@@ -1476,7 +1461,7 @@ EOF
   fi
 
   #TEST SRA DATASET
-  main ecoli SRR057750 VERBOSE=$VERBOSE
+  main ORG=ecoli ACCESSION=SRR057750 VERBOSE=$VERBOSE THREADS=$THREADS
   TEST_CHECKSUM=a739998e33947c0a60edbde92e8f0218
   cd /dee2/data/ecoli/
   TEST_DATASET_USER_CHECKSUM=$(cat SRR057750/SRR057750*tsv | md5sum | awk '{print $1}')
@@ -1490,7 +1475,7 @@ EOF
   #TEST OWN PE FQ DATASET
   wget -O /dee2/mnt/SRR5985593_1.fastq.gz "https://github.com/markziemann/dee2/blob/master/misc/example_data/SRR5985593_1.fastq.gz?raw=true"
   wget -O /dee2/mnt/SRR5985593_2.fastq.gz "https://github.com/markziemann/dee2/blob/master/misc/example_data/SRR5985593_2.fastq.gz?raw=true"
-  main ecoli -f /dee2/mnt/SRR5985593_1.fastq.gz /dee2/mnt/SRR5985593_2.fastq.gz VERBOSE=$VERBOSE
+  main ORG=ecoli FASTQ=/dee2/mnt/SRR5985593_1.fastq.gz,/dee2/mnt/SRR5985593_2.fastq.gz VERBOSE=$VERBOSE THREADS=$THREADS
 
   TEST_CHECKSUM=68db313456ae8065ff8d0553bd95325f
   TEST_DATASET_USER_CHECKSUM=$(cat SRR5985593_1/SRR5985593_1*tsv | md5sum | awk '{print $1}')
@@ -1514,12 +1499,17 @@ else
   #echo own data? $OWN_DATA
   if [ $OWN_DATA -eq "1" ] ; then
     echo Starting pipeline with own data specified
-    NUM_RDS=$(echo $@ | sed 's/\-f/@/' | cut -d '@' -f2 | sed 's/\-V/@/' | cut -d '@' -f1 | wc -w)
+
+    if [ ! -z "$FQ2" ] ; then
+      NUM_RDS=1
+    else
+      NUM_RDS=2
+    fi
 
     if [ $NUM_RDS -eq 2 ] ; then
       RDS="PE"
-      R1_LIST=$(echo $@ | sed 's/\-f/@/' | cut -d '@' -f2 | awk '{print $1}')
-      R2_LIST=$(echo $@ | sed 's/\-f/@/' | cut -d '@' -f2 | awk '{print $2}')
+      R1_LIST=$FQ1
+      R2_LIST=$FQ2
       R1_LIST_LEN=$(echo $R1_LIST | sed 's/,/ /g' | wc -w)
       R2_LIST_LEN=$(echo $R2_LIST | sed 's/,/ /g' | wc -w)
 
@@ -1532,7 +1522,7 @@ else
 
           if [ -r $FQ_R1 -a -r $FQ_R2 ] ; then
             echo "running pipeline.sh $MY_ORG -f $FQ_R1 $FQ_R2"
-            main $MY_ORG -f $FQ_R1 $FQ_R2 VERBOSE=$VERBOSE
+            main ORG=$MY_ORG FASTQ=${FQ_R1},${FQ_R2} VERBOSE=$VERBOSE THREADS=$THREADS
           else
             echo Specified fastq file $FQ_R1 or $FQ_R2 do not exist or not readable. Quitting
           fi
@@ -1541,9 +1531,8 @@ else
     fi
 
     if [ $NUM_RDS -eq 1 ] ; then
-
       RDS="SE"
-      FQ_LIST=$(echo $@ | sed 's/\-f/@/' | cut -d '@' -f2 | awk '{print $1}')
+      FQ_LIST=$FQ1
       FQ_LIST_LEN=$(echo $FQ_LIST | sed 's/,/ /' | wc -w)
 
       for DATASET_NUM in $(seq $FQ_LIST_LEN) ; do
@@ -1552,16 +1541,12 @@ else
 
         if [ -r $FQ ] ; then
           echo "running pipeline.sh $MY_ORG -f $FQ"
-          main $MY_ORG -f $FQ VERBOSE=$VERBOSE
+          main ORG=$MY_ORG FASTQ=$FQ VERBOSE=$VERBOSE THREADS=$THREADS
         else
           echo Specified fastq file $FQ does not exist or not readable. Quitting
         fi
       done
 
-    fi
-
-    if [ -z $RDS ] ; then
-      echo "Syntax Error. Unknown option to '-f'"
     fi
 
     exit
@@ -1572,17 +1557,16 @@ else
 # Testing whether the user is using the separate download process
 ##################################################
 
-  DLPARAM=$(echo $@ | grep -wc '\-d')
-  if [ $DLPARAM -gt 0 ] ; then
+  if [ $DL == "TRUE" ] ; then
     FILECNT=$(ls /dee2/mnt/${MY_ORG}*.sra | wc -l)
     while [ $FILECNT -gt 0 ] ; do
       for SRA_FILE in /dee2/mnt/${MY_ORG}*.sra ; do
         if [ ! -r /dee2/mnt/$SRA_FILE.started ] ; then
           DIR=$(pwd)
-          echo Starting pipeline with species $1 and SRA file $SRA_FILE
+          echo Starting pipeline with species $MY_ORG and SRA file $SRA_FILE
           touch $SRA_FILE.started
           USER_ACCESSION=$(echo $SRA_FILE | cut -d '_' -f2 | cut -d '.' -f1)
-          main $1 -d $SRA_FILE VERBOSE=$VERBOSE
+          main ORG=$MY_ORG SRA_ARCHIVE=$SRA_FILE VERBOSE=$VERBOSE THREADS=$THREADS
           cd /dee2/data/$MY_ORG
           zip -r /dee2/mnt/$USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
           FILECNT=$(ls /dee2/mnt/${MY_ORG}*.sra | wc -l)
@@ -1590,7 +1574,7 @@ else
       done
     done
     exit
-  elif [[ $NUMVARS -eq "2" && $OWN_DATA -eq "0" ]] ; then
+  elif [[ $MODE == ACCESSION ]] ; then
 ##################################################
 # Testing whether the user has provided SRR accessions
 ##################################################
@@ -1599,8 +1583,7 @@ else
       for USER_ACCESSION in $(echo $2 | tr ',' ' ') ; do
         DIR=$(pwd)
         echo Starting pipeline with species $1 and accession $USER_ACCESSION
-        main $1 $USER_ACCESSION VERBOSE=$VERBOSE
-        #key_setup
+        main $1 $USER_ACCESSION VERBOSE=$VERBOSE THREADS=$THREADS
         cd /dee2/data/$MY_ORG
         zip -r $USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
         sftp -i /dee2/.ssh/guestuser guestuser@$SFTP_URL << EOF
@@ -1620,13 +1603,12 @@ EOF
 #################################################
   count=0
   while [ $count -lt 1000 ] ; do
-  #while true ; do
     (( count++ ))
     cd /dee2
     echo Run "$count" of 1000
     ACCESSION=$(myfunc $MY_ORG $ACC_REQUEST)
     echo Starting pipeline with species $MY_ORG and accession $ACCESSION
-    main "$MY_ORG" "$ACCESSION" VERBOSE=$VERBOSE && COMPLETE=1 || COMPLETE=0
+    main "$MY_ORG" "$ACCESSION" VERBOSE=$VERBOSE THREADS=$THREADS && COMPLETE=1 || COMPLETE=0
     if [ "$COMPLETE" -eq "1" ] ; then
       #key_setup
       cd /dee2/data/$MY_ORG
