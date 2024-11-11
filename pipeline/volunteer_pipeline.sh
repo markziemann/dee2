@@ -1444,10 +1444,8 @@ else
 ##################################################
 # Testing whether the user has provided own FASTQ data
 ##################################################
-  #Putting this bit into a dummy function for now
   if [ $MODE == FASTQ ] ; then
     echo Starting pipeline with own fastq data specified
-
     if [ ! -z "$FQ2" ] ; then
       NUM_RDS=1
     else
