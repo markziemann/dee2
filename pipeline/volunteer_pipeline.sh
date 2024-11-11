@@ -53,6 +53,10 @@ shopt -s expand_aliases
 MEM_FACTOR=2
 
 #handling verbosity setting
+if [ -z $VERBOSE ] ; then
+  VERBOSE==FALSE
+fi
+
 if [ $VERBOSE == "TRUE" ] ; then
   set -x
   VERBOSE=TRUE
