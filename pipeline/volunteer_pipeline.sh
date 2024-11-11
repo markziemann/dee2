@@ -15,16 +15,17 @@ usage() {
     echo
     echo "volunteer_pipeline.sh is a script for processing transcriptomic data from NCBI SRA to be included in the DEE2 database (dee2.io)."
     echo
-    echo "Usage: ./volunteer_pipeline.sh <-s SPECIES> <-a SRA ACCESSION> [-h] [-t THREADS] [-d] [-v]"
+    echo "Usage: ./volunteer_pipeline.sh <-s SPECIES> [-a SRA ACCESSION] [-h] [-t THREADS] [-d] [-v] [-f FASTQ_READ1 FASTQ_READ2]"
     echo
     echo "  -s  Species, supported ones include 'athaliana', 'celegans', 'dmelanogaster', 'drerio', 'ecoli', 'hsapiens', 'mmusculus', 'osativa', 'rnorvegicus', 'scerevisiae' and 'zmays' "
     echo "  -a  SRA run accession, a text string matching an SRA run accession. eg: SRR10861665 or ERR3281011"
     echo "  -h  Help. Display this message and quit."
     echo "  -t  Number of parallel threads. Default is 8."
     echo "  -v  Increase verbosity."
-    echo "  -d  Sequence data is downloaded separately (this is the most efficient way)."
+    echo "  -d  Sequence data is downloaded separately in SRA archives (this is the most efficient way). This option will process all SRA archives with .sra suffices in the current working directory."
+    echo "  -f  User provided FASTQ files. Multiple datasets can be provided using commas (eg: -f Sample1_R1.fq.gz,Sample2_R1.fq.gz Sample1_R2.fq.gz,Sample2_R2.fq.gz )."
     echo
-    echo "Output: The pipeline will injest the sra archive, process it and create a zip file that contains the processed RNA-seq data."
+    echo "Output: The pipeline will ingest the sra archive, process it and create a zip file that contains the processed RNA-seq data."
 
     exit
 }
@@ -112,7 +113,6 @@ ORG=$(echo $@ | tr ' ' '\n' | grep ORG | cut -d '=' -f2)
 ## FASTQ=fastq files are supplied
 ## SRA_ARCHIVE=sra archives are supplied
 MODE=$(echo $@ | tr ' ' '\n' | grep -c ACCESSION)
-echo MODE $MODE
 if [ "$MODE" -eq 1 ] ; then
   MODE=ACCESSION
   SRR_FILE=$2
@@ -183,6 +183,7 @@ if [ ! -d $MYREF_DIR ] ; then
   mkdir -p $MYREF_DIR
 fi
 
+echo $ORG
 if [ $ORG == "athaliana" ] ; then
   GTFURL="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.36.gtf.gz"
   GDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna_sm.toplevel.fa.gz"
@@ -1395,49 +1396,6 @@ echo $ACCESSION
 }
 export -f myfunc
 
-key_setup(){
-mkdir -p /dee2/.ssh
-touch /dee2/.ssh/known_hosts
-chmod 777 /dee2/.ssh/known_hosts
-
-cat << EOF > /dee2/.ssh/guestuser
------BEGIN RSA PRIVATE KEY-----
-MIIEpAIBAAKCAQEAyLJ5TihXnb2ATexgYMIkzpHgopCbctWKH8rrPZNN6PALRYjg
-1ozfeMFylSvQilFw+6bCe7HlqUQ3e6pS/jHJukEyzbJOEVR4AwuZxxctI4QH00AL
-2eDvWvlEOChlxPg8Er5SjPziUXw8Ov3bNLvFHSQ7qlNb/gbKhKvzl6Lk0n6Yzl9C
-/eiwzTKjfEKfXAZ51fjyD2fmSFaVleq+t3zviZaGftFtOLKtDA9wXXiosYrBufEf
-zixujQF04Hzv+Eg814bjzgkSpZiDyS735NUzu0PCbnXNjZA6QiymisOkhx0J7w3r
-vn/gmlYMmeBa5GZZsnnfRBvj0grQIefkLS30RwIDAQABAoIBAHVdUWzwUJRxPjfT
-dGUBA689RaUrdYxI7hY7fyeqHdSLk7vdGMa+6OxgDBbJ4ZERoUW4tmDJnqlGuD98
-Uj5OdU6TVBdQHzEpOWlmfk4b8oyjaEQUXxnR3YdQ36ELlsAB/ndjjzjdpafLRBmn
-XGpRKCsrhizLxK8f34yIVdImMzQYQ7Enki003AgmEWZ/hZmOJtbXWHq/MIGk67Gq
-rD3UJL+w0OVgQMYdD57CNBlpQIVDu4Z2C7NPLW/n2DiatzZ+7wOSWfc3I2Gu1E5o
-/YV84Pa0dzwpCnBSNuWtrieSHgF96R2rBk/2slN/q1MV0XAFxFqnup1A/YpmdCI2
-04+Q5vkCgYEA/IzR+nGquL/bJevGhtanMMxGMVSZJuCYGQU33R/WrWbDz1AJqPtd
-/rQlFWcfkK4hpcZdGNIoVkH3aa/mfhMfGx1DEScxzoFaPEj2vKBDldPYyMW7owVH
-ByPP0EiWwmERi7Ds6o/F325b2w0c1+waOTbA1eD9/dUZzExgVeBYes0CgYEAy3BS
-TJ+5/wu0XkQi2qqUck4hdB6VrmLujTGcT6MmOyncGL0Y6SR9cvf51UpbPsCQpCEm
-bOvRia/3wq9ovKIP3Zx22+SFSeu0bGeYo+i2ofzxl4XzZo3JIMpJtRXahn4BAH5E
-PzXd/Hs4AkCgnQB3HXDyp3FSDFxC0V7/jvO+U2MCgYEAioAb47IUg09MOuarsGTl
-ucA9Om5/sy92mjofYdhFHkF+XyIwughoivd2Yt90Ex87+rLneWY/ktaIfeBmknug
-EnmgvzZ0fSC5QNhu4BEwH2nXuHugJI4PXt4H6Nz2ONGNEsPLmfOQ+7CFFYOCbvPf
-icL6TBEgmeUVSdIU/uOTAn0CgYAN6OsnpBAymRlHDL+ZVep6ek8dQm4Xk1oeO1Ml
-utEFYJJU+rD2V/Ff6AakB8Z/XulE36Nh9SnJkUeOfzHZG/ebvnP+Cvz2FfCrLNYp
-9uJt5v6ZzqXa0Dz9SfeKMylS4tCsuPVvoP5BoictOEADHCII2E0vF7d1cuV6rVUp
-8A6GYwKBgQCc8T4sr/wF/BKkk+kCBUpsYibqIxnTw7Rjl/+gUJL5IR3ynmWuJkUt
-Qzab+/WnlQMuslmCLxXXOijq5lEDJLJ0m9hZ0sdC+j13jsTCEOnyj/XJ3VgLKifP
-8itVEOnDffxs+RKeaXWhPiSll/wp6SlSuIdI2VpYMd15LtmkSkZSYg==
------END RSA PRIVATE KEY-----
-EOF
-
-cat << EOF > /dee2/.ssh/guestuser.pub
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIsnlOKFedvYBN7GBgwiTOkeCikJty1Yofyus9k03o8AtFiODWjN94wXKVK9CKUXD7psJ7seWpRDd7qlL+Mcm6QTLNsk4RVHgDC5nHFy0jhAfTQAvZ4O9a+UQ4KGXE+DwSvlKM/OJRfDw6/ds0u8UdJDuqU1v+BsqEq/OXouTSfpjOX0L96LDNMqN8Qp9cBnnV+PIPZ+ZIVpWV6r63fO+JloZ+0W04sq0MD3BdeKixisG58R/OLG6NAXTgfO/4SDzXhuPOCRKlmIPJLvfk1TO7Q8Judc2NkDpCLKaKw6SHHQnvDeu+f+CaVgyZ4FrkZlmyed9EG+PSCtAh5+QtLfRH mdz@opti
-EOF
-
-chmod -R 700 /dee2/.ssh
-}
-export -f key_setup
-
 ##################################################
 # Testing the pipeline with ecoli sample
 ##################################################
@@ -1448,20 +1406,9 @@ if [ ! -r $TESTFILE ] ; then
     rm -rf /dee2/data/ecoli/SRR057750
   fi
 
-  #test ssh key setup
-  key_setup $SFTP_URL
+  #test ssh key setup deleted
   cd /dee2/data/ecoli
   date > date.txt
-  sftp -v -i /dee2/.ssh/guestuser -o StrictHostKeyChecking=no guestuser@$SFTP_URL << EOF && KEYTEST="OK"
-put date.txt
-EOF
-
-  if [ $KEYTEST == "OK" ] ; then
-    echo "SSH keys successfully set up"
-  else
-    echo "SSH keys not set up properly. Quitting now."
-    exit 1
-  fi
 
   #TEST SRA DATASET
   main ORG=ecoli ACCESSION=SRR057750 VERBOSE=$VERBOSE THREADS=$THREADS
@@ -1495,13 +1442,11 @@ EOF
 else
   echo
 ##################################################
-# Testing whether the user has provided own data
+# Testing whether the user has provided own FASTQ data
 ##################################################
   #Putting this bit into a dummy function for now
-  OWN_DATA=$(echo $@ | grep -wc '\-f')
-  #echo own data? $OWN_DATA
-  if [ $OWN_DATA -eq "1" ] ; then
-    echo Starting pipeline with own data specified
+  if [ $MODE == FASTQ ] ; then
+    echo Starting pipeline with own fastq data specified
 
     if [ ! -z "$FQ2" ] ; then
       NUM_RDS=1
@@ -1524,7 +1469,7 @@ else
           FQ_R2=/dee2/mnt/$(echo $R2_LIST | cut -d ',' -f$DATASET_NUM)
 
           if [ -r $FQ_R1 -a -r $FQ_R2 ] ; then
-            echo "running pipeline.sh $MY_ORG -f $FQ_R1 $FQ_R2"
+            echo "running pipeline.sh -s $MY_ORG  $FQ_R1 $FQ_R2"
             main ORG=$MY_ORG FASTQ=${FQ_R1},${FQ_R2} VERBOSE=$VERBOSE THREADS=$THREADS
           else
             echo Specified fastq file $FQ_R1 or $FQ_R2 do not exist or not readable. Quitting
@@ -1583,10 +1528,10 @@ else
 ##################################################
     TESTACCESSIONS=$(echo $2 | tr ',' '\n' | cut -c2-3 | grep -vc RR)
     if [ $TESTACCESSIONS -eq 0 ] ; then
-      for USER_ACCESSION in $(echo $2 | tr ',' ' ') ; do
+      for USER_ACCESSION in $(echo $MY_ACCESSIONS | tr ',' ' ') ; do
         DIR=$(pwd)
-        echo Starting pipeline with species $1 and accession $USER_ACCESSION
-        main $1 $USER_ACCESSION VERBOSE=$VERBOSE THREADS=$THREADS
+        echo Starting pipeline with species $MY_ORG and accession $USER_ACCESSION
+        main ORG=$MY_ORG ACCESSION=$USER_ACCESSION VERBOSE=$VERBOSE THREADS=$THREADS
         cd /dee2/data/$MY_ORG
         zip -r $USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
         sftp -i /dee2/.ssh/guestuser guestuser@$SFTP_URL << EOF
@@ -1611,7 +1556,7 @@ EOF
     echo Run "$count" of 1000
     ACCESSION=$(myfunc $MY_ORG $ACC_REQUEST)
     echo Starting pipeline with species $MY_ORG and accession $ACCESSION
-    main "$MY_ORG" "$ACCESSION" VERBOSE=$VERBOSE THREADS=$THREADS && COMPLETE=1 || COMPLETE=0
+    main ORG=$MY_ORG ACCESSION=$MY_ACCESSIONS VERBOSE=$VERBOSE THREADS=$THREADS && COMPLETE=1 || COMPLETE=0
     if [ "$COMPLETE" -eq "1" ] ; then
       #key_setup
       cd /dee2/data/$MY_ORG
