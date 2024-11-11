@@ -114,7 +114,7 @@ ORG=$(echo $@ | tr ' ' '\n' | grep ORG | cut -d '=' -f2)
 ## FASTQ=fastq files are supplied
 ## SRA_ARCHIVE=sra archives are supplied
 MODE=$(echo $@ | tr ' ' '\n' | grep -c ACCESSION)
-if [ $MODE -eq 1 ] then
+if [ $MODE -eq 1 ] ; then
   MODE=ACCESSION
   SRR_FILE=$2
   SRR=$(basename $SRR_FILE .sra)
@@ -123,15 +123,13 @@ if [ $MODE -eq 1 ] then
   ORG2=$(echo $ORG | cut -c2-)
   ORG_OK=$(sed 's/class=/\n/g' $SRR.html  | grep 'Organism:' | grep -c $ORG2)
   rm $SRR.html
-  if [ $ORG_OK -ne 1 ] ; then
+  if [ "$ORG_OK" -ne 1 ] ; then
     echo Annotated species name from NCBI SRA does not match user input! Quitting. | tee -a $SRR.log
     exit1 ; exit 1
   else
     echo User input species and SRA metadata match. OK.
   fi
-fi
-
-if [ $MODE -ne 1 ] then
+else
   MODE=$(echo $@ | tr ' ' '\n' | grep -c SRA_ARCHIVE)
   if [ $MODE -eq 1 ] then
     MODE=SRA_ARCHIVE
