@@ -125,8 +125,8 @@ ORG=$(echo $@ | tr ' ' '\n' | grep ORG | cut -d '=' -f2)
 MODE=$(echo $@ | tr ' ' '\n' | grep -c ACCESSION)
 if [ "$MODE" -eq 1 ] ; then
   MODE=ACCESSION
-  SRR_FILE=$2
-  SRR=$(basename $SRR_FILE .sra)
+  SRR=$(echo $@ | tr ' ' '\n' | grep ACCESSION | cut -d '=' -f2)
+  SRR_FILE=$SRR.sra
   echo $SRR
   wget -O $SRR.html "https://www.ncbi.nlm.nih.gov/sra/${SRR}"
   ORG2=$(echo $ORG | cut -c2-)
@@ -1525,7 +1525,7 @@ else
 # Testing whether the user has provided SRR accessions
 ##################################################
   if [ $MODE == ACCESSION ] ; then
-    TESTACCESSIONS=$(echo $2 | tr ',' '\n' | cut -c2-3 | grep -vc RR)
+    TESTACCESSIONS=$(echo $MY_ACCESSIONS | tr ',' '\n' | cut -c2-3 | grep -vc RR)
     if [ $TESTACCESSIONS -eq 0 ] ; then
       for USER_ACCESSION in $(echo $MY_ACCESSIONS | tr ',' ' ') ; do
         DIR=$(pwd)
