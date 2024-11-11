@@ -35,7 +35,6 @@ if [ $# -eq 0 ] ; then
 fi
 
 VERBOSE=FALSE
-DL=FALSE
 THREADS=8
 
 while [[ "$#" -gt 0 ]]; do
@@ -64,6 +63,17 @@ else
   alias curl='curl -s'
 fi
 
+if [ ! -z $MY_ACCESSIONS ] ; then
+  MODE=ACCESSION
+fi
+
+if [ ! -z $FQ1 ] ; then
+  MODE=FASTQ
+fi
+
+if [ ! -z $DL ] ; then
+  MODE=SRA_ARCHIVE
+fi
 
 #### OLD How the main function is used later on:
 # With supplied fastq files
@@ -1346,7 +1356,6 @@ CPU_SPEED=$(lscpu | grep MHz | awk '{print $NF}' | head -1)
 
 ACC_URL="http://dee2.io/acc.html"
 ACC_REQUEST="http://dee2.io/cgi-bin/acc.sh"
-SFTP_URL=$(curl dee2.io/ip)
 
 if [ ! -z $MY_ORG ] ; then
   ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae osativa zmays' \
@@ -1447,12 +1456,6 @@ else
   if [ $MODE == FASTQ ] ; then
     echo Starting pipeline with own fastq data specified
     if [ ! -z "$FQ2" ] ; then
-      NUM_RDS=1
-    else
-      NUM_RDS=2
-    fi
-
-    if [ $NUM_RDS -eq 2 ] ; then
       RDS="PE"
       R1_LIST=$FQ1
       R2_LIST=$FQ2
@@ -1467,16 +1470,14 @@ else
           FQ_R2=/dee2/mnt/$(echo $R2_LIST | cut -d ',' -f$DATASET_NUM)
 
           if [ -r $FQ_R1 -a -r $FQ_R2 ] ; then
-            echo "running pipeline.sh -s $MY_ORG  $FQ_R1 $FQ_R2"
+            echo "running pipeline.sh -s $MY_ORG -f $FQ_R1 $FQ_R2"
             main ORG=$MY_ORG FASTQ=${FQ_R1},${FQ_R2} VERBOSE=$VERBOSE THREADS=$THREADS
           else
             echo Specified fastq file $FQ_R1 or $FQ_R2 do not exist or not readable. Quitting
           fi
         done
       fi
-    fi
-
-    if [ $NUM_RDS -eq 1 ] ; then
+    else
       RDS="SE"
       FQ_LIST=$FQ1
       FQ_LIST_LEN=$(echo $FQ_LIST | sed 's/,/ /' | wc -w)
@@ -1486,15 +1487,13 @@ else
         FQ=/dee2/mnt/$(echo $FQ_LIST | cut -d ',' -f$DATASET_NUM)
 
         if [ -r $FQ ] ; then
-          echo "running pipeline.sh $MY_ORG -f $FQ"
+          echo "running pipeline.sh -s $MY_ORG -f $FQ"
           main ORG=$MY_ORG FASTQ=$FQ VERBOSE=$VERBOSE THREADS=$THREADS
         else
           echo Specified fastq file $FQ does not exist or not readable. Quitting
         fi
       done
-
     fi
-
     exit
   fi
 
@@ -1503,7 +1502,7 @@ else
 # Testing whether the user is using the separate download process
 ##################################################
 
-  if [ $DL == "TRUE" ] ; then
+  if [ $MODE == SRA_ARCHIVE ] ; then
     FILECNT=$(ls /dee2/mnt/${MY_ORG}*.sra | wc -l)
     while [ $FILECNT -gt 0 ] ; do
       for SRA_FILE in /dee2/mnt/${MY_ORG}*.sra ; do
@@ -1520,10 +1519,12 @@ else
       done
     done
     exit
-  elif [[ $MODE == ACCESSION ]] ; then
+  fi
+
 ##################################################
 # Testing whether the user has provided SRR accessions
 ##################################################
+  if [ $MODE == ACCESSION ] ; then
     TESTACCESSIONS=$(echo $2 | tr ',' '\n' | cut -c2-3 | grep -vc RR)
     if [ $TESTACCESSIONS -eq 0 ] ; then
       for USER_ACCESSION in $(echo $MY_ACCESSIONS | tr ',' ' ') ; do
@@ -1532,9 +1533,6 @@ else
         main ORG=$MY_ORG ACCESSION=$USER_ACCESSION VERBOSE=$VERBOSE THREADS=$THREADS
         cd /dee2/data/$MY_ORG
         zip -r $USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
-        sftp -i /dee2/.ssh/guestuser guestuser@$SFTP_URL << EOF
-put $USER_ACCESSION.$MY_ORG.zip
-EOF
       done
       exit
     else
@@ -1544,28 +1542,4 @@ EOF
     fi
   fi
 
-##################################################
-# If no accessions are provided
-#################################################
-  count=0
-  while [ $count -lt 1000 ] ; do
-    (( count++ ))
-    cd /dee2
-    echo Run "$count" of 1000
-    ACCESSION=$(myfunc $MY_ORG $ACC_REQUEST)
-    echo Starting pipeline with species $MY_ORG and accession $ACCESSION
-    main ORG=$MY_ORG ACCESSION=$MY_ACCESSIONS VERBOSE=$VERBOSE THREADS=$THREADS && COMPLETE=1 || COMPLETE=0
-    if [ "$COMPLETE" -eq "1" ] ; then
-      #key_setup
-      cd /dee2/data/$MY_ORG
-      zip -r $ACCESSION.$MY_ORG.zip $ACCESSION
-      if [ $(du -s $ACCESSION.$MY_ORG.zip | awk '{print $1}') -lt "20000" ] ; then
-        sftp -i /dee2/.ssh/guestuser guestuser@$SFTP_URL << EOF
-put $ACCESSION.$MY_ORG.zip
-EOF
-      else
-        rm $ACCESSION.$MY_ORG.zip
-      fi
-    fi
-  done
 fi
