@@ -129,7 +129,9 @@ if [ $MODE -eq 1 ] then
   else
     echo User input species and SRA metadata match. OK.
   fi
-else
+fi
+
+if [ $MODE -ne 1 ] then
   MODE=$(echo $@ | tr ' ' '\n' | grep -c SRA_ARCHIVE)
   if [ $MODE -eq 1 ] then
     MODE=SRA_ARCHIVE
