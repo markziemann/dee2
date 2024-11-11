@@ -33,6 +33,8 @@ if [ $# -eq 0 ] ; then
   usage
 fi
 
+VERBOSE=FALSE
+DL=FALSE
 THREADS=8
 
 while [[ "$#" -gt 0 ]]; do
@@ -53,10 +55,6 @@ shopt -s expand_aliases
 MEM_FACTOR=2
 
 #handling verbosity setting
-if [ -z $VERBOSE ] ; then
-  VERBOSE==FALSE
-fi
-
 if [ $VERBOSE == "TRUE" ] ; then
   set -x
   VERBOSE=TRUE
@@ -114,7 +112,8 @@ ORG=$(echo $@ | tr ' ' '\n' | grep ORG | cut -d '=' -f2)
 ## FASTQ=fastq files are supplied
 ## SRA_ARCHIVE=sra archives are supplied
 MODE=$(echo $@ | tr ' ' '\n' | grep -c ACCESSION)
-if [ $MODE -eq 1 ] ; then
+echo MODE $MODE
+if [ "$MODE" -eq 1 ] ; then
   MODE=ACCESSION
   SRR_FILE=$2
   SRR=$(basename $SRR_FILE .sra)
@@ -131,7 +130,7 @@ if [ $MODE -eq 1 ] ; then
   fi
 else
   MODE=$(echo $@ | tr ' ' '\n' | grep -c SRA_ARCHIVE)
-  if [ $MODE -eq 1 ] then
+  if [ $MODE -eq 1 ] ; then
     MODE=SRA_ARCHIVE
     SRA_FILE=$(echo $@ | tr ' ' '\n' | grep SRA_ARCHIVE | cut -d '=' -f2)
     SRR=$(echo $SRA_FILE | cut -d '_' -f2 | cut -d '.' -f1)
