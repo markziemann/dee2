@@ -15,16 +15,18 @@ usage() {
     echo
     echo "volunteer_pipeline.sh is a script for processing transcriptomic data from NCBI SRA to be included in the DEE2 database (dee2.io)."
     echo
-    echo "Usage: ./volunteer_pipeline.sh <-s SPECIES> <-a SRA ACCESSION> [-h] [-t THREADS] [-d] [-v]"
+    echo "Usage: ./volunteer_pipeline.sh <-s SPECIES> [-a SRA ACCESSION] [-h] [-t THREADS] [-d] [-f FASTQ_READ1 FASTQ_READ2] [-v]"
     echo
     echo "  -s  Species, supported ones include 'athaliana', 'celegans', 'dmelanogaster', 'drerio', 'ecoli', 'hsapiens', 'mmusculus', 'osativa', 'rnorvegicus', 'scerevisiae' and 'zmays' "
     echo "  -a  SRA run accession, a text string matching an SRA run accession. eg: SRR10861665 or ERR3281011"
     echo "  -h  Help. Display this message and quit."
     echo "  -t  Number of parallel threads. Default is 8."
+    echo "  -d  Sequence data is downloaded separately in SRA archives (this is the most efficient way). This option will process all SRA archives with .sra suffices in the current working directory."
+    echo "  -f1  User provided FASTQ files for read 1."
+    echo "  -f2  User provided FASTQ files for read 2."
     echo "  -v  Increase verbosity."
-    echo "  -d  Sequence data is downloaded separately (this is the most efficient way)."
     echo
-    echo "Output: The pipeline will injest the sra archive, process it and create a zip file that contains the processed RNA-seq data."
+    echo "Output: The pipeline will ingest the sra archive, process it and create a zip file that contains the processed RNA-seq data."
 
     exit
 }
@@ -33,6 +35,10 @@ if [ $# -eq 0 ] ; then
   usage
 fi
 
+FQ1=NULL
+FQ2=NULL
+DL=FALSE
+VERBOSE=FALSE
 THREADS=8
 
 while [[ "$#" -gt 0 ]]; do
@@ -41,9 +47,10 @@ while [[ "$#" -gt 0 ]]; do
         -s|--species) MY_ORG="$2" ; shift ;;
         -a|--accessions) MY_ACCESSIONS="$2" ; shift ;;
         -t|--threads) THREADS="$2" ; shift ;;
-        -v|--verbose) VERBOSE=TRUE ; shift ;;
         -d|--downloaded) DL=TRUE ; shift ;;
-        -f|--fastq) FQ1="$2" ; FQ2="$3" ; shift ;;
+        -f1|--fastq1) FQ1="$2" ; shift ;;
+        -f2|--fastq2) FQ2="$2" ; shift ;;
+        -v|--verbose) VERBOSE=TRUE ;;
         *) echo "Unknown parameter passed: $1"; exit 1 ;;
     esac
     shift
@@ -61,6 +68,17 @@ else
   alias curl='curl -s'
 fi
 
+if [ ! -z $MY_ACCESSIONS ] ; then
+  MODE=ACCESSION
+fi
+
+if [ ! -z $FQ1 ] ; then
+  MODE=FASTQ
+fi
+
+if [ $DL == TRUE ] ; then
+  MODE=SRA_ARCHIVE
+fi
 
 #### OLD How the main function is used later on:
 # With supplied fastq files
@@ -110,16 +128,16 @@ ORG=$(echo $@ | tr ' ' '\n' | grep ORG | cut -d '=' -f2)
 ## FASTQ=fastq files are supplied
 ## SRA_ARCHIVE=sra archives are supplied
 MODE=$(echo $@ | tr ' ' '\n' | grep -c ACCESSION)
-if [ $MODE -eq 1 ] then
+if [ "$MODE" -eq 1 ] ; then
   MODE=ACCESSION
-  SRR_FILE=$2
-  SRR=$(basename $SRR_FILE .sra)
+  SRR=$(echo $@ | tr ' ' '\n' | grep ACCESSION | cut -d '=' -f2)
+  SRR_FILE=$SRR.sra
   echo $SRR
   wget -O $SRR.html "https://www.ncbi.nlm.nih.gov/sra/${SRR}"
   ORG2=$(echo $ORG | cut -c2-)
   ORG_OK=$(sed 's/class=/\n/g' $SRR.html  | grep 'Organism:' | grep -c $ORG2)
   rm $SRR.html
-  if [ $ORG_OK -ne 1 ] ; then
+  if [ "$ORG_OK" -ne 1 ] ; then
     echo Annotated species name from NCBI SRA does not match user input! Quitting. | tee -a $SRR.log
     exit1 ; exit 1
   else
@@ -127,7 +145,7 @@ if [ $MODE -eq 1 ] then
   fi
 else
   MODE=$(echo $@ | tr ' ' '\n' | grep -c SRA_ARCHIVE)
-  if [ $MODE -eq 1 ] then
+  if [ $MODE -eq 1 ] ; then
     MODE=SRA_ARCHIVE
     SRA_FILE=$(echo $@ | tr ' ' '\n' | grep SRA_ARCHIVE | cut -d '=' -f2)
     SRR=$(echo $SRA_FILE | cut -d '_' -f2 | cut -d '.' -f1)
@@ -180,6 +198,7 @@ if [ ! -d $MYREF_DIR ] ; then
   mkdir -p $MYREF_DIR
 fi
 
+echo $ORG
 if [ $ORG == "athaliana" ] ; then
   GTFURL="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.36.gtf.gz"
   GDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna_sm.toplevel.fa.gz"
@@ -396,32 +415,7 @@ if [ $MODE != 'FASTQ' ] ; then
   fi
 
   if [ ! -f $SRR.sra ] ; then
-    #build URL
-    BASEURL=ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra
-    PFX1=$(echo $SRR | cut -c-3)
-    PFX2=$(echo $SRR | cut -c-6)
-    URL=anonftp@ftp.ncbi.nlm.nih.gov:sra/sra-instant/reads/ByRun/sra/${PFX1}/${PFX2}/${SRR}/${SRR}.sra
-    ID=$DEE_DIR/.ascp/aspera-license
-
-    if [ ! -d $DEE_DIR/.ascp ] ; then
-      mkdir -p $DEE_DIR/.ascp
-      cat << EOF > $ID
------BEGIN DSA PRIVATE KEY-----
-MIIBuwIBAAKBgQDkKQHD6m4yIxgjsey6Pny46acZXERsJHy54p/BqXIyYkVOAkEp
-KgvT3qTTNmykWWw4ovOP1+Di1c/2FpYcllcTphkWcS8lA7j012mUEecXavXjPPG0
-i3t5vtB8xLy33kQ3e9v9/Lwh0xcRfua0d5UfFwopBIAXvJAr3B6raps8+QIVALws
-yeqsx3EolCaCVXJf+61ceJppAoGAPoPtEP4yzHG2XtcxCfXab4u9zE6wPz4ePJt0
-UTn3fUvnQmJT7i0KVCRr3g2H2OZMWF12y0jUq8QBuZ2so3CHee7W1VmAdbN7Fxc+
-cyV9nE6zURqAaPyt2bE+rgM1pP6LQUYxgD3xKdv1ZG+kDIDEf6U3onjcKbmA6ckx
-T6GavoACgYEAobapDv5p2foH+cG5K07sIFD9r0RD7uKJnlqjYAXzFc8U76wXKgu6
-WXup2ac0Co+RnZp7Hsa9G+E+iJ6poI9pOR08XTdPly4yDULNST4PwlfrbSFT9FVh
-zkWfpOvAUc8fkQAhZqv/PE6VhFQ8w03Z8GpqXx7b3NvBR+EfIx368KoCFEyfl0vH
-Ta7g6mGwIMXrdTQQ8fZs
------END DSA PRIVATE KEY-----
-EOF
-      chmod 700 $DEE_DIR/.ascp
-    fi
-    prefetch -X 9999999999999 -a "/usr/local/bin/ascp|/dee2/.ascp/aspera-license" $SRR \
+    prefetch -X 9999999999999 $SRR \
     || ( echo $SRR failed download with prefetch | tee -a $SRR.log ; sleep 5 ; exit1 ; return 1 )
     mv /dee2/ncbi/public/sra/${SRR}.sra .
   fi
@@ -459,7 +453,7 @@ EOF
 
   FQ1=$(ls  | grep $SRR | grep -m1 fastq$)
   echo ; echo Starting FastQC analysis of $FQ1
-  fastqc $FQ1
+  fastqc -t $THREADS $FQ1
   FQ1BASE=$(basename $FQ1 .fastq)
 
   #diagnose colorspace or conventional
@@ -500,7 +494,7 @@ EOF
   if [ $RDS == "PE" ] ; then
     FQ2=$(ls  | grep $SRR | grep fastq$ | sed -n 2p)
     echo ; echo Starting FastQC analysis of $FQ2
-    fastqc $FQ2
+    fastqc -t $THREADS $FQ2
     FQ2BASE=$(basename $FQ2 .fastq)
     FQ2_LEN=$(unzip -p ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc/fastqc_data.txt \
     | grep 'Sequence length' | cut -f2)
@@ -707,7 +701,7 @@ else
 
   fi
 
-  fastqc $FQ1
+  fastqc -t $THREADS $FQ1
   FQ1BASE=$(echo $FQ1 | rev | cut -d '.' -f2 | rev)
   SRR=$FQ1BASE
 
@@ -747,7 +741,7 @@ else
   FQ2_MAX_LEN=NULL
 
   if [ $RDS == "PE" ] ; then
-    fastqc $FQ2
+    fastqc -t $THREADS $FQ2
     FQ2BASE=$(echo $FQ2 | rev | cut -d '.' -f2 | rev)
     FQ2_LEN=$(unzip -p ${FQ2BASE}_fastqc.zip ${FQ2BASE}_fastqc/fastqc_data.txt \
     | grep 'Sequence length' | cut -f2)
@@ -1342,7 +1336,6 @@ CPU_SPEED=$(lscpu | grep MHz | awk '{print $NF}' | head -1)
 
 ACC_URL="http://dee2.io/acc.html"
 ACC_REQUEST="http://dee2.io/cgi-bin/acc.sh"
-SFTP_URL=$(curl dee2.io/ip)
 
 if [ ! -z $MY_ORG ] ; then
   ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae osativa zmays' \
@@ -1392,49 +1385,6 @@ echo $ACCESSION
 }
 export -f myfunc
 
-key_setup(){
-mkdir -p /dee2/.ssh
-touch /dee2/.ssh/known_hosts
-chmod 777 /dee2/.ssh/known_hosts
-
-cat << EOF > /dee2/.ssh/guestuser
------BEGIN RSA PRIVATE KEY-----
-MIIEpAIBAAKCAQEAyLJ5TihXnb2ATexgYMIkzpHgopCbctWKH8rrPZNN6PALRYjg
-1ozfeMFylSvQilFw+6bCe7HlqUQ3e6pS/jHJukEyzbJOEVR4AwuZxxctI4QH00AL
-2eDvWvlEOChlxPg8Er5SjPziUXw8Ov3bNLvFHSQ7qlNb/gbKhKvzl6Lk0n6Yzl9C
-/eiwzTKjfEKfXAZ51fjyD2fmSFaVleq+t3zviZaGftFtOLKtDA9wXXiosYrBufEf
-zixujQF04Hzv+Eg814bjzgkSpZiDyS735NUzu0PCbnXNjZA6QiymisOkhx0J7w3r
-vn/gmlYMmeBa5GZZsnnfRBvj0grQIefkLS30RwIDAQABAoIBAHVdUWzwUJRxPjfT
-dGUBA689RaUrdYxI7hY7fyeqHdSLk7vdGMa+6OxgDBbJ4ZERoUW4tmDJnqlGuD98
-Uj5OdU6TVBdQHzEpOWlmfk4b8oyjaEQUXxnR3YdQ36ELlsAB/ndjjzjdpafLRBmn
-XGpRKCsrhizLxK8f34yIVdImMzQYQ7Enki003AgmEWZ/hZmOJtbXWHq/MIGk67Gq
-rD3UJL+w0OVgQMYdD57CNBlpQIVDu4Z2C7NPLW/n2DiatzZ+7wOSWfc3I2Gu1E5o
-/YV84Pa0dzwpCnBSNuWtrieSHgF96R2rBk/2slN/q1MV0XAFxFqnup1A/YpmdCI2
-04+Q5vkCgYEA/IzR+nGquL/bJevGhtanMMxGMVSZJuCYGQU33R/WrWbDz1AJqPtd
-/rQlFWcfkK4hpcZdGNIoVkH3aa/mfhMfGx1DEScxzoFaPEj2vKBDldPYyMW7owVH
-ByPP0EiWwmERi7Ds6o/F325b2w0c1+waOTbA1eD9/dUZzExgVeBYes0CgYEAy3BS
-TJ+5/wu0XkQi2qqUck4hdB6VrmLujTGcT6MmOyncGL0Y6SR9cvf51UpbPsCQpCEm
-bOvRia/3wq9ovKIP3Zx22+SFSeu0bGeYo+i2ofzxl4XzZo3JIMpJtRXahn4BAH5E
-PzXd/Hs4AkCgnQB3HXDyp3FSDFxC0V7/jvO+U2MCgYEAioAb47IUg09MOuarsGTl
-ucA9Om5/sy92mjofYdhFHkF+XyIwughoivd2Yt90Ex87+rLneWY/ktaIfeBmknug
-EnmgvzZ0fSC5QNhu4BEwH2nXuHugJI4PXt4H6Nz2ONGNEsPLmfOQ+7CFFYOCbvPf
-icL6TBEgmeUVSdIU/uOTAn0CgYAN6OsnpBAymRlHDL+ZVep6ek8dQm4Xk1oeO1Ml
-utEFYJJU+rD2V/Ff6AakB8Z/XulE36Nh9SnJkUeOfzHZG/ebvnP+Cvz2FfCrLNYp
-9uJt5v6ZzqXa0Dz9SfeKMylS4tCsuPVvoP5BoictOEADHCII2E0vF7d1cuV6rVUp
-8A6GYwKBgQCc8T4sr/wF/BKkk+kCBUpsYibqIxnTw7Rjl/+gUJL5IR3ynmWuJkUt
-Qzab+/WnlQMuslmCLxXXOijq5lEDJLJ0m9hZ0sdC+j13jsTCEOnyj/XJ3VgLKifP
-8itVEOnDffxs+RKeaXWhPiSll/wp6SlSuIdI2VpYMd15LtmkSkZSYg==
------END RSA PRIVATE KEY-----
-EOF
-
-cat << EOF > /dee2/.ssh/guestuser.pub
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIsnlOKFedvYBN7GBgwiTOkeCikJty1Yofyus9k03o8AtFiODWjN94wXKVK9CKUXD7psJ7seWpRDd7qlL+Mcm6QTLNsk4RVHgDC5nHFy0jhAfTQAvZ4O9a+UQ4KGXE+DwSvlKM/OJRfDw6/ds0u8UdJDuqU1v+BsqEq/OXouTSfpjOX0L96LDNMqN8Qp9cBnnV+PIPZ+ZIVpWV6r63fO+JloZ+0W04sq0MD3BdeKixisG58R/OLG6NAXTgfO/4SDzXhuPOCRKlmIPJLvfk1TO7Q8Judc2NkDpCLKaKw6SHHQnvDeu+f+CaVgyZ4FrkZlmyed9EG+PSCtAh5+QtLfRH mdz@opti
-EOF
-
-chmod -R 700 /dee2/.ssh
-}
-export -f key_setup
-
 ##################################################
 # Testing the pipeline with ecoli sample
 ##################################################
@@ -1445,20 +1395,9 @@ if [ ! -r $TESTFILE ] ; then
     rm -rf /dee2/data/ecoli/SRR057750
   fi
 
-  #test ssh key setup
-  key_setup $SFTP_URL
+  #test ssh key setup deleted
   cd /dee2/data/ecoli
   date > date.txt
-  sftp -v -i /dee2/.ssh/guestuser -o StrictHostKeyChecking=no guestuser@$SFTP_URL << EOF && KEYTEST="OK"
-put date.txt
-EOF
-
-  if [ $KEYTEST == "OK" ] ; then
-    echo "SSH keys successfully set up"
-  else
-    echo "SSH keys not set up properly. Quitting now."
-    exit 1
-  fi
 
   #TEST SRA DATASET
   main ORG=ecoli ACCESSION=SRR057750 VERBOSE=$VERBOSE THREADS=$THREADS
@@ -1492,21 +1431,11 @@ EOF
 else
   echo
 ##################################################
-# Testing whether the user has provided own data
+# Testing whether the user has provided own FASTQ data
 ##################################################
-  #Putting this bit into a dummy function for now
-  OWN_DATA=$(echo $@ | grep -wc '\-f')
-  #echo own data? $OWN_DATA
-  if [ $OWN_DATA -eq "1" ] ; then
-    echo Starting pipeline with own data specified
-
+  if [ $MODE == FASTQ ] ; then
+    echo Starting pipeline with own fastq data specified
     if [ ! -z "$FQ2" ] ; then
-      NUM_RDS=1
-    else
-      NUM_RDS=2
-    fi
-
-    if [ $NUM_RDS -eq 2 ] ; then
       RDS="PE"
       R1_LIST=$FQ1
       R2_LIST=$FQ2
@@ -1521,16 +1450,14 @@ else
           FQ_R2=/dee2/mnt/$(echo $R2_LIST | cut -d ',' -f$DATASET_NUM)
 
           if [ -r $FQ_R1 -a -r $FQ_R2 ] ; then
-            echo "running pipeline.sh $MY_ORG -f $FQ_R1 $FQ_R2"
+            echo "running pipeline.sh -s $MY_ORG -f $FQ_R1 $FQ_R2"
             main ORG=$MY_ORG FASTQ=${FQ_R1},${FQ_R2} VERBOSE=$VERBOSE THREADS=$THREADS
           else
             echo Specified fastq file $FQ_R1 or $FQ_R2 do not exist or not readable. Quitting
           fi
         done
       fi
-    fi
-
-    if [ $NUM_RDS -eq 1 ] ; then
+    else
       RDS="SE"
       FQ_LIST=$FQ1
       FQ_LIST_LEN=$(echo $FQ_LIST | sed 's/,/ /' | wc -w)
@@ -1540,15 +1467,13 @@ else
         FQ=/dee2/mnt/$(echo $FQ_LIST | cut -d ',' -f$DATASET_NUM)
 
         if [ -r $FQ ] ; then
-          echo "running pipeline.sh $MY_ORG -f $FQ"
+          echo "running pipeline.sh -s $MY_ORG -f $FQ"
           main ORG=$MY_ORG FASTQ=$FQ VERBOSE=$VERBOSE THREADS=$THREADS
         else
           echo Specified fastq file $FQ does not exist or not readable. Quitting
         fi
       done
-
     fi
-
     exit
   fi
 
@@ -1557,7 +1482,7 @@ else
 # Testing whether the user is using the separate download process
 ##################################################
 
-  if [ $DL == "TRUE" ] ; then
+  if [ $MODE == SRA_ARCHIVE ] ; then
     FILECNT=$(ls /dee2/mnt/${MY_ORG}*.sra | wc -l)
     while [ $FILECNT -gt 0 ] ; do
       for SRA_FILE in /dee2/mnt/${MY_ORG}*.sra ; do
@@ -1574,21 +1499,20 @@ else
       done
     done
     exit
-  elif [[ $MODE == ACCESSION ]] ; then
+  fi
+
 ##################################################
 # Testing whether the user has provided SRR accessions
 ##################################################
-    TESTACCESSIONS=$(echo $2 | tr ',' '\n' | cut -c2-3 | grep -vc RR)
+  if [ $MODE == ACCESSION ] ; then
+    TESTACCESSIONS=$(echo $MY_ACCESSIONS | tr ',' '\n' | cut -c2-3 | grep -vc RR)
     if [ $TESTACCESSIONS -eq 0 ] ; then
-      for USER_ACCESSION in $(echo $2 | tr ',' ' ') ; do
+      for USER_ACCESSION in $(echo $MY_ACCESSIONS | tr ',' ' ') ; do
         DIR=$(pwd)
-        echo Starting pipeline with species $1 and accession $USER_ACCESSION
-        main $1 $USER_ACCESSION VERBOSE=$VERBOSE THREADS=$THREADS
+        echo Starting pipeline with species $MY_ORG and accession $USER_ACCESSION
+        main ORG=$MY_ORG ACCESSION=$USER_ACCESSION VERBOSE=$VERBOSE THREADS=$THREADS
         cd /dee2/data/$MY_ORG
         zip -r $USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
-        sftp -i /dee2/.ssh/guestuser guestuser@$SFTP_URL << EOF
-put $USER_ACCESSION.$MY_ORG.zip
-EOF
       done
       exit
     else
@@ -1598,28 +1522,4 @@ EOF
     fi
   fi
 
-##################################################
-# If no accessions are provided
-#################################################
-  count=0
-  while [ $count -lt 1000 ] ; do
-    (( count++ ))
-    cd /dee2
-    echo Run "$count" of 1000
-    ACCESSION=$(myfunc $MY_ORG $ACC_REQUEST)
-    echo Starting pipeline with species $MY_ORG and accession $ACCESSION
-    main "$MY_ORG" "$ACCESSION" VERBOSE=$VERBOSE THREADS=$THREADS && COMPLETE=1 || COMPLETE=0
-    if [ "$COMPLETE" -eq "1" ] ; then
-      #key_setup
-      cd /dee2/data/$MY_ORG
-      zip -r $ACCESSION.$MY_ORG.zip $ACCESSION
-      if [ $(du -s $ACCESSION.$MY_ORG.zip | awk '{print $1}') -lt "20000" ] ; then
-        sftp -i /dee2/.ssh/guestuser guestuser@$SFTP_URL << EOF
-put $ACCESSION.$MY_ORG.zip
-EOF
-      else
-        rm $ACCESSION.$MY_ORG.zip
-      fi
-    fi
-  done
 fi
