@@ -13,9 +13,9 @@ export LC_TYPE=C
 
 usage() {
     echo
-    echo "volunteer_pipeline.sh is a script for processing transcriptomic data from NCBI SRA to be included in the DEE2 database (dee2.io)."
+    echo "tallyup is a dockerised pipeline for processing transcriptomic data from NCBI SRA to be included in the DEE2 database (dee2.io)."
     echo
-    echo "Usage: ./volunteer_pipeline.sh <-s SPECIES> [-a SRA ACCESSION] [-h] [-t THREADS] [-d] [-f FASTQ_READ1 FASTQ_READ2] [-v]"
+    echo "Usage: docker run mziemann/tallyup <-s SPECIES> [-a SRA ACCESSION] [-h] [-t THREADS] [-d] [-f FASTQ_READ1 FASTQ_READ2] [-v]"
     echo
     echo "  -s  Species, supported ones include 'athaliana', 'celegans', 'dmelanogaster', 'drerio', 'ecoli', 'hsapiens', 'mmusculus', 'osativa', 'rnorvegicus', 'scerevisiae' and 'zmays' "
     echo "  -a  SRA run accession, a text string matching an SRA run accession. eg: SRR10861665 or ERR3281011"
@@ -26,7 +26,27 @@ usage() {
     echo "  -f2  User provided FASTQ files for read 2."
     echo "  -v  Increase verbosity."
     echo
-    echo "Output: The pipeline will ingest the sra archive, process it and create a zip file that contains the processed RNA-seq data."
+    echo "EXAMPLES"
+    echo "    Provide SRA run accessions run on 6 threads:"
+    echo
+    echo "        docker run -it  mziemann/tallyup -s ecoli -a SRR27386505,SRR27386506 -t 6"
+    echo
+    echo "    Process SRA archives with verbose logging:"
+    echo
+    echo "        prefetch SRR27386504"
+    echo "        docker run -it -v $(pwd):/dee2/mnt mziemann/tallyup -s ecoli -d -t 8 -v"
+    echo
+    echo "    Process own fastq files with 12 threads:"
+    echo
+    echo "        docker run -it -v $(pwd):/dee2/mnt mziemann/tallyup -s ecoli -f1 ecoli_SRR27386502_1.fastq.gz -f2 ecoli_SRR27386502_2.fastq.gz"
+    echo
+    echo "    Return data to host machine:"
+    echo
+    echo "        docker cp $(docker ps -alq):/dee2/data/ ."
+    echo
+    echo "OUTPUT"
+    echo "    If SRA archive files are provided, then the pipeline will create a zip file in the host working directory that contains the processed RNA-seq data."
+    echo "    If accession numbers or fastq files are provided, then the `docker cp` command is required to retrieve the processed RNA-seq data."
 
     exit
 }
@@ -35,6 +55,7 @@ if [ $# -eq 0 ] ; then
   usage
 fi
 
+MY_ACCESSIONS=NULL
 FQ1=NULL
 FQ2=NULL
 DL=FALSE
@@ -68,11 +89,11 @@ else
   alias curl='curl -s'
 fi
 
-if [ ! -z $MY_ACCESSIONS ] ; then
+if [ $MY_ACCESSIONS != NULL ] ; then
   MODE=ACCESSION
 fi
 
-if [ ! -z $FQ1 ] ; then
+if [ $FQ1 != NULL ] ; then
   MODE=FASTQ
 fi
 
@@ -1450,8 +1471,10 @@ else
           FQ_R2=/dee2/mnt/$(echo $R2_LIST | cut -d ',' -f$DATASET_NUM)
 
           if [ -r $FQ_R1 -a -r $FQ_R2 ] ; then
-            echo "running pipeline.sh -s $MY_ORG -f $FQ_R1 $FQ_R2"
+            echo "running pipeline.sh -s $MY_ORG -f1 $FQ_R1 -f2 $FQ_R2"
             main ORG=$MY_ORG FASTQ=${FQ_R1},${FQ_R2} VERBOSE=$VERBOSE THREADS=$THREADS
+            FQBASE=$(echo $FQ | sed 's/.gz$//' | sed 's/.bz2$//' | sed 's/.fastq$//' | sed 's/.fq$//')
+            zip -r ${FQBASE}.$MY_ORG.zip ${FQ_R1}
           else
             echo Specified fastq file $FQ_R1 or $FQ_R2 do not exist or not readable. Quitting
           fi
@@ -1467,8 +1490,10 @@ else
         FQ=/dee2/mnt/$(echo $FQ_LIST | cut -d ',' -f$DATASET_NUM)
 
         if [ -r $FQ ] ; then
-          echo "running pipeline.sh -s $MY_ORG -f $FQ"
+          echo "running pipeline.sh -s $MY_ORG -f1 $FQ"
           main ORG=$MY_ORG FASTQ=$FQ VERBOSE=$VERBOSE THREADS=$THREADS
+          FQBASE=$(echo $FQ | sed 's/.gz$//' | sed 's/.bz2$//' | sed 's/.fastq$//' | sed 's/.fq$//')
+          zip -r ${FQBASE}.$MY_ORG.zip ${FQ}
         else
           echo Specified fastq file $FQ does not exist or not readable. Quitting
         fi
@@ -1476,7 +1501,6 @@ else
     fi
     exit
   fi
-
 
 ##################################################
 # Testing whether the user is using the separate download process
@@ -1494,7 +1518,7 @@ else
           main ORG=$MY_ORG SRA_ARCHIVE=$SRA_FILE VERBOSE=$VERBOSE THREADS=$THREADS
           cd /dee2/data/$MY_ORG
           zip -r /dee2/mnt/$USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
-          FILECNT=$(ls /dee2/mnt/${MY_ORG}*.sra | wc -l)
+          FILECNT=$(ls /dee2/mnt/${MY_ORG}*.sra | wc -l) 2> /dev/null
         fi
       done
     done
@@ -1512,7 +1536,7 @@ else
         echo Starting pipeline with species $MY_ORG and accession $USER_ACCESSION
         main ORG=$MY_ORG ACCESSION=$USER_ACCESSION VERBOSE=$VERBOSE THREADS=$THREADS
         cd /dee2/data/$MY_ORG
-        zip -r $USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
+        zip -r /dee2/mnt/$USER_ACCESSION.$MY_ORG.zip $USER_ACCESSION
       done
       exit
     else
