@@ -23,6 +23,8 @@ if [ ! -r started ] ; then
   PREV_REFERENCE_PIPELINE_MD5SUM2="b658ab07180ba71dce32a255b1c32fa3"
   PREV_REFERENCE_PIPELINE_MD5SUM3="888a4b1e21a693aa53ebc5490bd49053"
   PREV_REFERENCE_PIPELINE_MD5SUM4="0cf85a7690f1a121fe283ebe9467f631"
+  PREV_REFERENCE_PIPELINE_MD5SUM5="0b12dedda2f2ab88aa4f098215055ff1"
+  PREV_REFERENCE_PIPELINE_MD5SUM6="eba8ca83e14fe4b9484e5d9e0e6ea4e7"
 
   REFERENCE_PIPELINE_MD5SUM=$(md5sum ~/dee2/pipeline/volunteer_pipeline.sh | awk '{print $1}')
 
@@ -51,7 +53,9 @@ if [ ! -r started ] ; then
           && [ "$PREV_REFERENCE_PIPELINE_MD5SUM1" != "$PIPELINE_MD5SUM" ] \
           && [ "$PREV_REFERENCE_PIPELINE_MD5SUM2" != "$PIPELINE_MD5SUM" ] \
           && [ "$PREV_REFERENCE_PIPELINE_MD5SUM3" != "$PIPELINE_MD5SUM" ] \
-          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM4" != "$PIPELINE_MD5SUM" ] ; then
+          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM4" != "$PIPELINE_MD5SUM" ] \
+          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM5" != "$PIPELINE_MD5SUM" ] \
+          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM6" != "$PIPELINE_MD5SUM" ] ; then
               INVALID=$((INVALID+1))
           fi
           unzip -t $FILE || INVALID=$((INVALID+1))
@@ -69,6 +73,7 @@ if [ ! -r started ] ; then
               unzip -o $FILE -d $TMPDATA/$ORG && \
               scp -r -P 2210 $TMPDATA/$ORG/$SRR mdz@localhost:/mnt/md0/dee2/data/$ORG
               sudo rm -rf $TMPDATA/$ORG/$SRR $FILE
+              sleep 1s
             else
               mv $FILE $STASH
             fi
@@ -84,3 +89,4 @@ fi
 
 find /var/log/apache2/  -mtime +2 -exec sudo rm {} \;
 #sudo find /tmp -mmin +59 -delete
+
