@@ -1345,9 +1345,10 @@ export -f main
 cd /dee2
 
 #echo Dumping star genomes from memory
-for DIR in $(find /dee2/ref/ | grep /ensembl/star$ | sed 's#\/code\/\.\.##' ) ; do
-  STAR --genomeLoad Remove --genomeDir $DIR >/dev/null 2>&1
-done
+# no longer needed
+#for DIR in $(find /dee2/ref/ | grep /ensembl/star$ | sed 's#\/code\/\.\.##' ) ; do
+#  STAR --genomeLoad Remove --genomeDir $DIR >/dev/null 2>&1
+#done
 
 MEM=$(echo $(free | awk '$1 ~ /Mem:/  {print $2-$3}') \
   $(free | awk '$1 ~ /Swap:/  {print $2-$3}') \
