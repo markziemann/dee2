@@ -25,7 +25,7 @@ if [ ! -r started ] ; then
   PREV_REFERENCE_PIPELINE_MD5SUM4="0cf85a7690f1a121fe283ebe9467f631"
   PREV_REFERENCE_PIPELINE_MD5SUM5="0b12dedda2f2ab88aa4f098215055ff1"
   PREV_REFERENCE_PIPELINE_MD5SUM6="eba8ca83e14fe4b9484e5d9e0e6ea4e7"
-
+  PREV_REFERENCE_PIPELINE_MD5SUM7="5ef12e0158c2554b8cae2f32c787f942"
   REFERENCE_PIPELINE_MD5SUM=$(md5sum ~/dee2/pipeline/volunteer_pipeline.sh | awk '{print $1}')
 
   if [ "$(ls -A ${INCOMING})" ]; then
@@ -55,7 +55,8 @@ if [ ! -r started ] ; then
           && [ "$PREV_REFERENCE_PIPELINE_MD5SUM3" != "$PIPELINE_MD5SUM" ] \
           && [ "$PREV_REFERENCE_PIPELINE_MD5SUM4" != "$PIPELINE_MD5SUM" ] \
           && [ "$PREV_REFERENCE_PIPELINE_MD5SUM5" != "$PIPELINE_MD5SUM" ] \
-          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM6" != "$PIPELINE_MD5SUM" ] ; then
+          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM6" != "$PIPELINE_MD5SUM" ] \
+          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM7" != "$PIPELINE_MD5SUM" ] ; then
               INVALID=$((INVALID+1))
           fi
           unzip -t $FILE || INVALID=$((INVALID+1))
