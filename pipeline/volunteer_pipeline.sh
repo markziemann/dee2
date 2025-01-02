@@ -974,7 +974,7 @@ if [ $RDS == "PE" ] ; then
   fastx_trimmer -f 21 -m 18 -Q 33 -i test_R2.fq > test_R2_clip20.fq &
   wait
 
-  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1.fq >/dev/null 2>&1
 
   R1_RD_CNT=$(sed -n '2~4p' < test_R1.fq | wc -l)
@@ -982,7 +982,7 @@ if [ $RDS == "PE" ] ; then
   UNMAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | head -1)
   R1_MAP_RATE=$(echo $MAPPED_CNT $R1_RD_CNT | awk '{print $1/$2*100}' | numround)
 
-  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R2.fq  >/dev/null 2>&1
 
   R2_RD_CNT=$(sed -n '2~4p' < test_R2.fq | wc -l)
@@ -990,49 +990,49 @@ if [ $RDS == "PE" ] ; then
   UNMAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | head -1)
   R2_MAP_RATE=$(echo $MAPPED_CNT $R2_RD_CNT | awk '{print $1/$2*100}' | numround)
 
-  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1_clip4.fq  >/dev/null 2>&1
 
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP4=$(echo $MAPPED_CNT $R1_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
-  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R2_clip4.fq  >/dev/null 2>&1
 
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R2_MAP_RATE_CLIP4=$(echo $MAPPED_CNT $R2_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
-  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1_clip8.fq  >/dev/null 2>&1
 
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP8=$(echo $MAPPED_CNT $R1_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
-  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R2_clip8.fq  >/dev/null 2>&1
 
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R2_MAP_RATE_CLIP8=$(echo $MAPPED_CNT $R2_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
-  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1_clip12.fq  >/dev/null 2>&1
 
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP12=$(echo $MAPPED_CNT $R1_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
-  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R2_clip12.fq  >/dev/null 2>&1
 
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R2_MAP_RATE_CLIP12=$(echo $MAPPED_CNT $R2_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
-  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R1_clip20.fq  >/dev/null 2>&1
 
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP20=$(echo $MAPPED_CNT $R1_RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
-  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_R2_clip20.fq  >/dev/null 2>&1
 
   MAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
@@ -1116,7 +1116,7 @@ if [ $RDS == "SE" ] ; then
   fastx_trimmer -f 21 -m 18 -Q 33 -i test.fq > test_clip20.fq &
   wait
 
-  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test.fq  >/dev/null 2>&1
 
   RD_CNT=$(sed -n '2~4p' < test.fq | wc -l)
@@ -1124,25 +1124,25 @@ if [ $RDS == "SE" ] ; then
   UNMAPPED_CNT=$(cut -f2 ReadsPerGene.out.tab | head -1)
   R1_MAP_RATE=$(echo $MAPPED_CNT $RD_CNT | awk '{print $1/$2*100}' | numround)
 
-  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_clip4.fq  >/dev/null 2>&1
 
   MAPPED_CNT_CLIP4=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP4=$(echo $MAPPED_CNT_CLIP4 $RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
-  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_clip8.fq  >/dev/null 2>&1
 
   MAPPED_CNT_CLIP8=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP8=$(echo $MAPPED_CNT_CLIP8 $RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
-  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_clip12.fq  >/dev/null 2>&1
 
   MAPPED_CNT_CLIP12=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
   R1_MAP_RATE_CLIP12=$(echo $MAPPED_CNT_CLIP12 $RD_CNT | awk '{print ($1/$2*100)-1}' | numround)
 
-  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=test_clip20.fq  >/dev/null 2>&1
 
   MAPPED_CNT_CLIP20=$(cut -f2 ReadsPerGene.out.tab | tail -n +3 | numsum)
@@ -1170,13 +1170,13 @@ if [ $RDS == "SE" ] ; then
   fi
 
   # Full SE alignment
-  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=$FQ1
 
 elif [ $RDS == "PE" ] ; then
   head $FQ1 $FQ2 ; tail $FQ1 $FQ2
   #proper PE mapping
-  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad NoSharedMemory \
+  STAR --runThreadN $THREADS --quantMode GeneCounts --genomeLoad LoadAndKeep \
   --outSAMtype None --genomeDir $STAR_DIR --readFilesIn=$FQ1 $FQ2
 fi
 
@@ -1345,10 +1345,9 @@ export -f main
 cd /dee2
 
 #echo Dumping star genomes from memory
-# no longer needed
-#for DIR in $(find /dee2/ref/ | grep /ensembl/star$ | sed 's#\/code\/\.\.##' ) ; do
-#  STAR --genomeLoad Remove --genomeDir $DIR >/dev/null 2>&1
-#done
+for DIR in $(find /dee2/ref/ | grep /ensembl/star$ | sed 's#\/code\/\.\.##' ) ; do
+  STAR --genomeLoad Remove --genomeDir $DIR >/dev/null 2>&1
+done
 
 MEM=$(echo $(free | awk '$1 ~ /Mem:/  {print $2-$3}') \
   $(free | awk '$1 ~ /Swap:/  {print $2-$3}') \
@@ -1402,8 +1401,7 @@ ACCESSION=$(curl "http://dee2.io/cgi-bin/acc.sh?ORG=${MY_ORG}&submit" \
 | grep ACCESSION \
 | cut -d '=' -f2 )
 
-# no shared memory
-#STAR --genomeLoad LoadAndExit --genomeDir ../ref/$MY_ORG/ensembl/star >/dev/null  2>&1
+STAR --genomeLoad LoadAndExit --genomeDir ../ref/$MY_ORG/ensembl/star >/dev/null  2>&1
 echo $ACCESSION
 }
 export -f myfunc
