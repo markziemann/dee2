@@ -24,6 +24,25 @@ Notes
 
 Set the organism
 
+The following code can take user supplied arguments and run the pipeline.
+
+```
+args = commandArgs(trailingOnly=TRUE)
+org=args[1]
+print(org)
+```
+
+We could run this as a for loop from bash
+
+```
+for ORG in athaliana osativa zmays celegans dmelanogaster drerio rnorvegicus scerevisiae ecoli hsapiens mmusculus; do
+
+  Rscript -e "rmarkdown::render('dee_pipeline.Rmd')" $ORG
+
+done
+
+```
+
 ```{r,begin}
 
 setwd("/mnt/md0/dee2/code")
@@ -40,37 +59,43 @@ IPADD="118.138.235.221"
 CORES=5
 
 #start the analysis
-org="mmusculus"
 
-#for ( org in c(   "athaliana", "celegans", "dmelanogaster", "drerio",
+#for ( org in c( "athaliana", "osativa", "zmays",
+# "celegans", "dmelanogaster", "drerio",
 #"rnorvegicus", "scerevisiae" , "mmusculus", "ecoli", "hsapiens" )) {
 
-#args = commandArgs(trailingOnly=TRUE)
-#org=args[1]
+args = commandArgs(trailingOnly=TRUE)
+org=args[1]
+#org="mmusculus"
 
-species_list <- c("3702","6239","7227","7955","562","9606", "10090", "10116", "4932")
+species_list <- c("3702", "4530", "4577", "6239", "7227", "7955",
+  "562", "9606", "10090", "10116", "4932")
 
 #now annotate the short names 
-names(species_list) <- c("athaliana", "celegans", "dmelanogaster", "drerio",
-"ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae")
+names(species_list) <- c("athaliana", "osativa", "zmays",
+  "celegans", "dmelanogaster", "drerio",
+  "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae")
 
 taxa_name <- species_list[[org]]
 
-species_names <- c("'Arabidopsis thaliana'","'Caenorhabditis elegans'",
-  "'Drosophila melanogaster'","'Danio rerio'",
-  "'Escherichia coli'","'Homo sapiens'", "'Mus musculus'",
+species_names <- c("'Arabidopsis thaliana'", "'Oryza sativa'",
+  "'Zea mays'", "'Caenorhabditis elegans'",
+  "'Drosophila melanogaster'", "'Danio rerio'",
+  "'Escherichia coli'", "'Homo sapiens'", "'Mus musculus'",
   "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
  #now annotate the short names 
-names(species_names)<- c("athaliana", "celegans", "dmelanogaster", "drerio",
+names(species_names)<- c("athaliana", "osativa", "zmays",
+  "celegans", "dmelanogaster", "drerio",
   "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae")
 species_name <- species_names[[org]]
 
 print(org)
 
 #number of protein coding genes from ensembl
-numgenes <- c(27655,20362,13918,25903,4140,20338,22598,22250,6692)
-names(numgenes) <- c("athaliana", "celegans", "dmelanogaster", "drerio",
-"ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae")
+numgenes <- c(27655, 35806, 39756, 20362, 13918, 25903, 4140, 20338, 22598, 22250, 6692)
+names(numgenes) <- c("athaliana", "osativa", "zmays",
+  "celegans", "dmelanogaster", "drerio",
+  "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae")
 numgenes = numgenes[[org]]
 
 ###Set some directories
@@ -81,7 +106,7 @@ MXDIR = normalizePath("../mx/")
 QUEUEWD = normalizePath("../queue/")
 
 ### Set years range
-YEARS=2000:2023
+YEARS=2000:2024
 
 ```
 
@@ -96,22 +121,22 @@ pysradb search --organism="Homo sapiens"  --publication-date 01-01-2015:31-12-20
 Using a helper bash script called metadata_dl.sh which uses pysradb.
 It grabs monthly batches of metadata.
 
-Previously I fetched all data pre 2023, and so now I only need to get 2023 data fresh.
+Previously I fetched all data 2023 and before, and so now I only need to get 2024 data fresh.
 
 This means that each january this script should be updated.
 
 ```{r,fetchmetadata}
 
-CSVOLD=paste(SRADBWD,"/",org,"_2022.csv",sep="")
+CSVOLD=paste(SRADBWD,"/",org,"_2023.csv",sep="")
 
-CSVNEW=paste(SRADBWD,"/",org,"_2023.csv",sep="")
+CSVNEW=paste(SRADBWD,"/",org,"_2024.csv",sep="")
 
 if (file.exists(CSVNEW)) {
   FILENAME=gsub(".csv","_old.csv",CSVNEW)
   renameFile(CSVNEW,FILENAME,overwrite=TRUE)
 }
 
-MY_SRA_CMD <- paste('bash metadata_dl_2023.sh', org)
+MY_SRA_CMD <- paste('bash metadata_dl_2024.sh', org)
 MY_SRA_CMD
 system(MY_SRA_CMD)
 
@@ -233,6 +258,8 @@ QC_summary="BLANK"
 # here we use reutils use https://www.rdocumentation.org/packages/reutils/versions/0.2.2
 GEO_QUERY_TERMS <- c(
 '"Arabidopsis thaliana"[porgn:__txid3702] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Oryza sativa"[porgn:__txid4530] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Zea mays"[porgn:__txid4577] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
 '"Caenorhabditis elegans"[porgn:__txid6239] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
 '"Drosophila melanogaster"[porgn:__txid7227] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
 '"Danio rerio"[porgn:__txid7955] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
@@ -466,13 +493,15 @@ png("dee_datasets.png",width=600,height=600)
 options(bitmapType="cairo")
 FILES1<-list.files(pattern="*queue.txt$",path="/mnt/md0/dee2/queue/",full.names=T)
 x<-as.data.frame(sapply(FILES1,rowcnt2),stringsAsFactors=FALSE)
-rownames(x)=c("A. thaliana","C. elegans","D. melanogaster","D. rerio",
+rownames(x)=c("A. thaliana", "O. sativa", "Z. mays",
+  "C. elegans","D. melanogaster","D. rerio",
   "E. coli","H. sapiens","M. musculus","R. norvegicus","S. cerevisiae")
 colnames(x)="queued"
 
 FILES2<-list.files(pattern="*accessions.tsv$",path="/mnt/md0/dee2/sradb/",full.names=T)
 y<-as.data.frame(sapply(FILES2,rowcnt2),stringsAsFactors=FALSE)
-rownames(y)=c("A. thaliana","C. elegans","D. melanogaster","D. rerio",
+rownames(y)=c("A. thaliana", "O. sativa", "Z. mays",
+  "C. elegans","D. melanogaster","D. rerio",
   "E. coli","H. sapiens","M. musculus","R. norvegicus","S. cerevisiae")
 colnames(y)="completed"
 
