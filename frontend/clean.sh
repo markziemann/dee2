@@ -26,6 +26,11 @@ if [ ! -r started ] ; then
   PREV_REFERENCE_PIPELINE_MD5SUM5="0b12dedda2f2ab88aa4f098215055ff1"
   PREV_REFERENCE_PIPELINE_MD5SUM6="eba8ca83e14fe4b9484e5d9e0e6ea4e7"
   PREV_REFERENCE_PIPELINE_MD5SUM7="5ef12e0158c2554b8cae2f32c787f942"
+  PREV_REFERENCE_PIPELINE_MD5SUM8="7d63a30717e102bf7932ad56a566bfe4"
+  PREV_REFERENCE_PIPELINE_MD5SUM9="7610cbde291320df137d9761ccc8090d"
+  PREV_REFERENCE_PIPELINE_MD5SUM10="9c7b9b535947214b2b29cacbd12e6ddf"
+  PREV_REFERENCE_PIPELINE_MD5SUM11="75a1c95dc37c82ae8aa4078f57fb9360"
+  PREV_REFERENCE_PIPELINE_MD5SUM12="73f3388fbedb61bd6b8213d6769ac49c"
   REFERENCE_PIPELINE_MD5SUM=$(md5sum ~/dee2/pipeline/volunteer_pipeline.sh | awk '{print $1}')
 
   if [ "$(ls -A ${INCOMING})" ]; then
@@ -56,7 +61,12 @@ if [ ! -r started ] ; then
           && [ "$PREV_REFERENCE_PIPELINE_MD5SUM4" != "$PIPELINE_MD5SUM" ] \
           && [ "$PREV_REFERENCE_PIPELINE_MD5SUM5" != "$PIPELINE_MD5SUM" ] \
           && [ "$PREV_REFERENCE_PIPELINE_MD5SUM6" != "$PIPELINE_MD5SUM" ] \
-          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM7" != "$PIPELINE_MD5SUM" ] ; then
+          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM7" != "$PIPELINE_MD5SUM" ] \
+          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM8" != "$PIPELINE_MD5SUM" ] \
+          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM9" != "$PIPELINE_MD5SUM" ] \
+          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM10" != "$PIPELINE_MD5SUM" ] \
+          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM11" != "$PIPELINE_MD5SUM" ] \
+          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM12" != "$PIPELINE_MD5SUM" ] ; then
               INVALID=$((INVALID+1))
           fi
           unzip -t $FILE || INVALID=$((INVALID+1))
@@ -74,7 +84,7 @@ if [ ! -r started ] ; then
               unzip -o $FILE -d $TMPDATA/$ORG && \
               scp -r -P 2210 $TMPDATA/$ORG/$SRR mdz@localhost:/mnt/md0/dee2/data/$ORG
               sudo rm -rf $TMPDATA/$ORG/$SRR $FILE
-              sleep 1s
+              #sleep 1s
             else
               mv $FILE $STASH
             fi
