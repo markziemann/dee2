@@ -1087,12 +1087,12 @@ if [ $RDS == "PE" ] ; then
 
   # Remove unpaired reads
   if [[ ( $R1_CLIP_NUM -gt 15 ) || ( $R2_CLIP_NUM -gt 15 ) ]] && [[ $RDS != "SE" ]]; then
-    if [ ! -f $HOME/FastqPairer.pl ]; then
-      echo "Error: $HOME/FastqPairer.pl is missing"
+    if [ ! -f /dee2/code/FastqPairer.pl ]; then
+      echo "Error: /dee2/code/FastqPairer.pl is missing"
       exit 1
     fi
     echo Unpaired reads removal | tee -a $SRR.log
-    perl $HOME/FastqPairer.pl -min 18 $FQ1 $FQ2
+    perl /dee/code/FastqPairer.pl -min 18 $FQ1 $FQ2
     rm $FQ1 && mv $FQ1.paired $FQ1
     rm $FQ2 && mv $FQ2.paired $FQ2
   fi
