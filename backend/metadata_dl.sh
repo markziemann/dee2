@@ -1,4 +1,5 @@
 #!/bin/bash
+source .venv/bin/activate
 ORG=$1
 
 if [ $ORG = "athaliana" ] ; then ORGANISM='Arabidopsis thaliana' ; fi
@@ -10,11 +11,13 @@ if [ $ORG = "hsapiens" ] ; then ORGANISM='Homo sapiens' ; fi
 if [ $ORG = "mmusculus" ] ; then ORGANISM='Mus musculus' ; fi
 if [ $ORG = "scerevisiae" ] ; then ORGANISM='Saccharomyces cerevisiae' ; fi
 if [ $ORG = "rnorvegicus" ] ; then ORGANISM='Rattus norvegicus' ; fi
+if [ $ORG = "osativa" ] ; then ORGANISM='Oryza sativa' ; fi
+if [ $ORG = "zmays" ] ; then ORGANISM='Zea mays' ; fi
+
 
 
 > $ORG.csv
-#for YEAR in $(seq 2007 2022) ; do
-for YEAR in 2022 ; do
+for YEAR in $(seq 2007 2024) ; do
   for MONTH in $(seq -w 01 12) ; do
     >tmp.csv
     pysradb search --organism="${ORGANISM}" \
