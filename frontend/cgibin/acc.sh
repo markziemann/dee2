@@ -25,8 +25,10 @@ drerio
 ecoli
 hsapiens
 mmusculus
+osativa
 rnorvegicus
-scerevisiae'
+scerevisiae
+zmays'
 
 ORG_OK=$(echo $ORGLIST | grep -cw $ORG )
 
