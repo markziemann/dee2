@@ -21,7 +21,9 @@ Here is an example, using a small E. coli dataset.
 prefetch -X 9999999999999 -o ecoli_SRR1755067.sra SRR1755067
 ```
 
-Now try out the apptainer based pipeline with this code.
+If you want to contribute to the general job queue, you can use the downloader.sh script which is available [here](https://raw.githubusercontent.com/markziemann/dee2/refs/heads/master/pipeline/downloader.sh).
+
+Once you have one or more .sra files, you can try out the apptainer based pipeline with this code.
 
 ```
 apptainer run -w -B ${PWD}:/dee2/mnt/ tallyup -s ecoli -t 10 -d
