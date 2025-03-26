@@ -12,6 +12,8 @@ if [ $ORG = "hsapiens" ] ; then ORGANISM='Homo sapiens' ; fi
 if [ $ORG = "mmusculus" ] ; then ORGANISM='Mus musculus' ; fi
 if [ $ORG = "scerevisiae" ] ; then ORGANISM='Saccharomyces cerevisiae' ; fi
 if [ $ORG = "rnorvegicus" ] ; then ORGANISM='Rattus norvegicus' ; fi
+if [ $ORG = "osativa" ] ; then ORGANISM='Oryza sativa' ; fi
+if [ $ORG = "zmays" ] ; then ORGANISM='Zea mays' ; fi
 
 > $ORG.csv
 #for YEAR in $(seq 2007 2022) ; do
