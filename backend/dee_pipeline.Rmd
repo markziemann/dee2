@@ -492,8 +492,8 @@ This is the last step.
 
 png("dee_datasets.png",width=600,height=600)
 options(bitmapType="cairo")
-FILES1<-list.files(pattern="*queue.txt$",path="/mnt/md0/dee2/queue/",full.names=T)
-x<-as.data.frame(sapply(FILES1,rowcnt2),stringsAsFactors=FALSE)
+FILES1 <- list.files(pattern="*metadata.complete.tsv.cut$",path="/mnt/md0/dee2/sradb/",full.names=T)
+x <- as.data.frame(sapply(FILES1,rowcnt2),stringsAsFactors=FALSE)
 
 rownames(x)=c("A. thaliana", "C. elegans","D. melanogaster","D. rerio",
   "E. coli","H. sapiens","M. musculus",
@@ -501,7 +501,7 @@ rownames(x)=c("A. thaliana", "C. elegans","D. melanogaster","D. rerio",
 
 colnames(x)="queued"
 
-FILES2<-list.files(pattern="*accessions.tsv$",path="/mnt/md0/dee2/sradb/",full.names=T)
+FILES2<-list.files(pattern="*_metadata.tsv$",path="/mnt/md0/dee2/sradb/",full.names=T)
 y<-as.data.frame(sapply(FILES2,rowcnt2),stringsAsFactors=FALSE)
 
 rownames(y)=c("A. thaliana", "C. elegans","D. melanogaster","D. rerio",
@@ -513,6 +513,11 @@ colnames(y)="completed"
 z<-merge(x,y,by=0)
 rownames(z)=z$Row.names
 z$Row.names=NULL
+
+zz <- as.data.frame(apply(z,2,as.numeric))
+zz$queued <- zz$queued - zz$completed
+rownames(zz) <- rownames(z)
+z <- zz
 
 DATE=date()
 HEADER=paste("Updated",DATE)
