@@ -1,6 +1,6 @@
 CORES=ceiling(8)
 
-rowcnt2<-function( file) { z<-system(paste("wc -l < ",file) , intern=TRUE) ; z}
+rowcnt2<-function( file) { z<-system(paste("cat ",file, "| cut -f1 | sed 1d | sort -u | wc -l" ) , intern=TRUE) ; z}
 
 qc_analysis<-function(srr,org) {
  QCFILE=paste("../data/",org,"/",srr,"/",srr,".qc",sep="")
