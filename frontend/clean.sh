@@ -3,7 +3,7 @@ set -x #-v
 # sanitise data regularly by cron and move validated data to /home/user/dee2_data/
 #create the file /etc/cron.d/user and paster in the following
 #MAILTO=user
-#*/10 * * * * user bash -c "/home/user/clean.sh"
+#0 0 * * * user bash -c "/home/user/clean.sh"
 #put this script in the location "/home/user/clean.sh"
 
 INCOMING=~/upload/
@@ -31,6 +31,7 @@ if [ ! -r started ] ; then
   PREV_REFERENCE_PIPELINE_MD5SUM10="9c7b9b535947214b2b29cacbd12e6ddf"
   PREV_REFERENCE_PIPELINE_MD5SUM11="75a1c95dc37c82ae8aa4078f57fb9360"
   PREV_REFERENCE_PIPELINE_MD5SUM12="73f3388fbedb61bd6b8213d6769ac49c"
+  PREV_REFERENCE_PIPELINE_MD5SUM13="fe3bc7b82b416d24cb99c0f85b4381d0"
   REFERENCE_PIPELINE_MD5SUM=$(md5sum ~/dee2/pipeline/volunteer_pipeline.sh | awk '{print $1}')
 
   if [ "$(ls -A ${INCOMING})" ]; then
@@ -66,7 +67,8 @@ if [ ! -r started ] ; then
           && [ "$PREV_REFERENCE_PIPELINE_MD5SUM9" != "$PIPELINE_MD5SUM" ] \
           && [ "$PREV_REFERENCE_PIPELINE_MD5SUM10" != "$PIPELINE_MD5SUM" ] \
           && [ "$PREV_REFERENCE_PIPELINE_MD5SUM11" != "$PIPELINE_MD5SUM" ] \
-          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM12" != "$PIPELINE_MD5SUM" ] ; then
+          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM12" != "$PIPELINE_MD5SUM" ] \
+          && [ "$PREV_REFERENCE_PIPELINE_MD5SUM13" != "$PIPELINE_MD5SUM" ] ; then
               INVALID=$((INVALID+1))
           fi
           unzip -t $FILE || INVALID=$((INVALID+1))
