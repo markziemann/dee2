@@ -1092,7 +1092,7 @@ if [ $RDS == "PE" ] ; then
       exit 1
     fi
     echo Unpaired reads removal | tee -a $SRR.log
-    perl /dee/code/FastqPairer.pl -min 18 $FQ1 $FQ2
+    perl /dee2/code/FastqPairer.pl -min 18 $FQ1 $FQ2
     rm $FQ1 && mv $FQ1.paired $FQ1
     rm $FQ2 && mv $FQ2.paired $FQ2
   fi
