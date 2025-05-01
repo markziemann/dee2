@@ -81,6 +81,15 @@ input[type=checkbox] {
 
 DIR=/var/www/html/metadata/
 
+SPEC=$(echo $QUERY_STRING  | egrep -c '(:|;|}|\{|\[|\]|\/|\\|\@|\<|\>)')
+if [ $SPEC -gt 0 ] ; then
+  echo $QUERY_STRING
+  echo "<br>"
+  echo "Avoid special characters"
+  exit
+fi
+QUERY_STRING=$(echo $QUERY_STRING | tr -d ':;{}()[]\/<>' )
+
 #QUERY_STRING="org=ecoli&accessionsearch=&keywordsearch=chaperone"
 #QUERY_STRING="org=scerevisiae&accessionsearch=&keywordsearch=metaboli"
 
