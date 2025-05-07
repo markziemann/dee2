@@ -80,6 +80,17 @@ input[type=checkbox] {
 <body>
 '
 
+#SPEC=$(echo $QUERY_STRING  | egrep -c '(:|;|}|\{|\[|\]|\/|\\|\@|\<|\>)')
+#SPEC=$(echo $QUERY_STRING  | egrep -c '(:|;|}|\{|\[|\]|\/|\\|\@)')
+SPEC=$(echo $QUERY_STRING  | egrep -c '(\!|\@|\#|\$|\%|\^|\&|\*|\:|\;|\}|\{|\[|\]|\/|\\|\@)')
+if [ $SPEC -gt 0 ] ; then
+  echo $QUERY_STRING
+  echo "<br>"
+  echo "Avoid special characters"
+  exit
+fi
+QUERY_STRING=$(echo $QUERY_STRING | tr -d ':;{}()[]\/<>' )
+
 CNT=`echo "$QUERY_STRING" | grep -c '&'`
 if [ $CNT -eq "0" ] ; then
   echo "Content-type: text/html"

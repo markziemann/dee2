@@ -81,14 +81,23 @@ input[type=checkbox] {
 
 DIR=/var/www/html/metadata/
 
-SPEC=$(echo $QUERY_STRING  | egrep -c '(:|;|}|\{|\[|\]|\/|\\|\@|\<|\>)')
-if [ $SPEC -gt 0 ] ; then
-  echo $QUERY_STRING
+#SPEC=$(echo $QUERY_STRING  | egrep -c '(:|;|}|\{|\[|\]|\/|\\|\@)')
+SPEC=$(echo "$QUERY_STRING"  | egrep -c '(\!|\@|\#|\$|\^|\*|\:|\;|\}|\{|\[|\]|\/|\\|\@)')
+if [ "$SPEC" -gt 0 ] ; then
+  echo "$QUERY_STRING"
   echo "<br>"
   echo "Avoid special characters"
   exit
 fi
-QUERY_STRING=$(echo $QUERY_STRING | tr -d ':;{}()[]\/<>' )
+QUERY_STRING=$(echo "$QUERY_STRING" | tr -d ':;{}()[]\/<>' )
+
+STRING_LEN=$(echo "$QUERY_STRING" | wc -c)
+if [ "$STRING_LEN" -gt 200 ] ; then
+  echo "$QUERY_STRING"
+  echo "<br>"
+  echo "Please keep queries to less than 200 characters."
+  exit
+fi
 
 #QUERY_STRING="org=ecoli&accessionsearch=&keywordsearch=chaperone"
 #QUERY_STRING="org=scerevisiae&accessionsearch=&keywordsearch=metaboli"

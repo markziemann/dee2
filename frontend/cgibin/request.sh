@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -x
+set -x
 
 CNT=`echo "$QUERY_STRING" | grep -c '&'`
 if [ $CNT -eq "0" ] ; then
@@ -16,16 +16,27 @@ echo "Content-Encoding: zip"
 echo "Content-disposition: attachment; filename=Data.zip"
 echo ""
 
+#SPEC=$(echo $QUERY_STRING  | egrep -c '(:|;|}|\{|\[|\]|\/|\\|\@|\<|\>)')
+#SPEC=$(echo $QUERY_STRING  | egrep -c '(:|;|}|\{|\[|\]|\/|\\|\@)')
+SPEC=$(echo $QUERY_STRING  | egrep -c '(\!|\@|\#|\$|\%|\^|\*|\:|\;|\}|\{|\[|\]|\/|\\|\@)')
+if [ $SPEC -gt 0 ] ; then
+  echo $QUERY_STRING
+  echo "<br>"
+  echo "Avoid special characters"
+  exit
+fi
+QUERY_STRING=$(echo $QUERY_STRING | tr -d ':;{}()[]\/<>' )
+
 #ID=$(< /dev/urandom tr -dc A-Za-z0-9 | head -c${1:-32};echo;)
 ID=${RANDOM}_${RANDOM}
-USRDIR=/mnt/tmp/$ID/
+USRDIR=/dee2_data/tmp/$ID/
 mkdir -p $USRDIR
 LOGDIR=$USRDIR/logs
 mkdir -p $LOGDIR
 ORG=`echo $QUERY_STRING | cut -d '&' -f1 | cut -d '=' -f2 | tr 'A-Z' 'a-z'`
 DATA_DIR=/dee2_data/data/${ORG}/
-ACCESSIONS=/mnt/dee2_data/metadata/${ORG}_metadata.tsv.cut
-METADATA=/mnt/dee2_data/metadata/${ORG}_metadata.tsv
+ACCESSIONS=/dee2_data/metadata/${ORG}_metadata.tsv.cut
+METADATA=/dee2_data/metadata/${ORG}_metadata.tsv
 
 cd $DATA_DIR
 
@@ -94,3 +105,4 @@ cp $LOGS $LOGDIR
 cd $USRDIR
 zip -r - README.md MetadataSummary.tsv MetadataFull.tsv GeneCountMatrix.tsv QC_Matrix.tsv TxCountMatrix.tsv GeneInfo.tsv TxInfo.tsv logs
 find $USRDIR -type d -mmin +60 -maxdepth 1 -exec rm -r {} \;
+

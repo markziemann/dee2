@@ -81,6 +81,18 @@ input[type=checkbox] {
 
 DIR=/var/www/dee2.io/srpqueue
 
+#SPEC=$(echo $QUERY_STRING  | egrep -c '(:|;|}|\{|\[|\]|\/|\\|\@|\<|\>)')
+SPEC=$(echo $QUERY_STRING  | egrep -c '(:|;|}|\{|\[|\]|\/|\\|\@)')
+
+if [ $SPEC -gt 0 ] ; then
+  echo $QUERY_STRING
+  echo "<br>"
+  echo "Avoid special characters"
+  exit
+fi
+QUERY_STRING=$(echo $QUERY_STRING | tr -d ':;{}()[]\/<>' )
+
+
 #QUERY_STRING="org=ecoli&accessionsearch=SRP253578&emailaddress=mark.ziemann%40gmail.com"
 ORG=$(echo $QUERY_STRING | cut -d '&' -f1 | cut -d '=' -f2)
 ACC=$(echo $QUERY_STRING | cut -d '&' -f2 | cut -d '=' -f2)
