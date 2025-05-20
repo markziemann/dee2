@@ -123,7 +123,7 @@ fi
 # Only define the species, let the pipeline select accessions from the run queue
 # main ORG="$MY_ORG" "$ACCESSION" VERBOSE=$VERBOSE THREADS=$THREADS
 
-DEE_DIR=${PWD}/dee2
+DEE_DIR=${PWD}
 
 main(){
 #logging all options
