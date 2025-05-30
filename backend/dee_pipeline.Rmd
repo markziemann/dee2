@@ -35,7 +35,8 @@ print(org)
 We could run this as a for loop from bash
 
 ```
-for ORG in athaliana osativa zmays celegans dmelanogaster drerio rnorvegicus scerevisiae ecoli hsapiens mmusculus; do
+for ORG in athaliana osativa zmays celegans dmelanogaster drerio rnorvegicus scerevisiae ecoli hsapiens mmusculus
+bdistachyon gmax hvulgare ptrichocarpa sbicolor slycopersicum stuberosum taestivum vvinifera ; do
 
   Rscript -e "rmarkdown::render('dee_pipeline.Rmd')" $ORG
 
@@ -69,12 +70,16 @@ org=args[1]
 #org="mmusculus"
 
 species_list <- c("3702", "4530", "4577", "6239", "7227", "7955",
-  "562", "9606", "10090", "10116", "4932")
+  "562", "9606", "10090", "10116", "4932",
+  "15368", "3847", "1753", "3694", "4558",
+  "1753", "4113", "4565", "1753")
 
 #now annotate the short names 
 names(species_list) <- c("athaliana", "osativa", "zmays",
   "celegans", "dmelanogaster", "drerio",
-  "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae")
+  "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae",
+  "bdistachyon", "gmax", "hvulgare", "ptrichocarpa", "sbicolor",
+  "slycopersicum", "stuberosum", "taestivum", "vvinifera")
 
 taxa_name <- species_list[[org]]
 
@@ -82,20 +87,34 @@ species_names <- c("'Arabidopsis thaliana'", "'Oryza sativa'",
   "'Zea mays'", "'Caenorhabditis elegans'",
   "'Drosophila melanogaster'", "'Danio rerio'",
   "'Escherichia coli'", "'Homo sapiens'", "'Mus musculus'",
-  "'Rattus norvegicus'", "'Saccharomyces cerevisiae'")
- #now annotate the short names 
+  "'Rattus norvegicus'", "'Saccharomyces cerevisiae'",
+  "'Brachypodium distachyon'", "'Glycine max'",
+  "'Hordeum vulgare'", "'Populus trichocarpa'",
+  "'Sorghum bicolor'","'Solanum lycopersicum'",
+  "'Solanum tuberosum'","'Solanum tuberosum'",
+  "'Triticum aestivum'","'Vitis vinifera'")
+
+#now annotate the short names 
 names(species_names)<- c("athaliana", "osativa", "zmays",
   "celegans", "dmelanogaster", "drerio",
-  "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae")
+  "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae",
+  "bdistachyon", "gmax", "hvulgare", "ptrichocarpa", "sbicolor",
+  "slycopersicum", "stuberosum", "taestivum", "vvinifera")
+
 species_name <- species_names[[org]]
 
 print(org)
 
 #number of protein coding genes from ensembl
-numgenes <- c(27655, 35806, 39756, 20362, 13918, 25903, 4140, 20338, 22598, 22250, 6692)
+numgenes <- c(27655, 35806, 39756, 20362, 13918, 25903, 4140, 20338, 22598, 22250, 6692,
+  34310, 55897, 35826, 34699, 34118, 34658, 39021, 107891, 37480)
+
 names(numgenes) <- c("athaliana", "osativa", "zmays",
   "celegans", "dmelanogaster", "drerio",
-  "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae")
+  "ecoli", "hsapiens", "mmusculus", "rnorvegicus", "scerevisiae",
+  "bdistachyon", "gmax", "hvulgare", "ptrichocarpa", "sbicolor",
+  "slycopersicum", "stuberosum", "taestivum", "vvinifera")
+
 numgenes = numgenes[[org]]
 
 ###Set some directories
