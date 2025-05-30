@@ -13,8 +13,15 @@ if [ $ORG = "scerevisiae" ] ; then ORGANISM='Saccharomyces cerevisiae' ; fi
 if [ $ORG = "rnorvegicus" ] ; then ORGANISM='Rattus norvegicus' ; fi
 if [ $ORG = "osativa" ] ; then ORGANISM='Oryza sativa' ; fi
 if [ $ORG = "zmays" ] ; then ORGANISM='Zea mays' ; fi
-
-
+if [ $ORG = "bdistachyon" ] ; then ORGANISM='Brachypodium distachyon' ; fi
+if [ $ORG = "gmax" ] ; then ORGANISM='Glycine max' ; fi
+if [ $ORG = "hvulgare" ] ; then ORGANISM='Hordeum vulgare' ; fi
+if [ $ORG = "ptrichocarpa" ] ; then ORGANISM='Populus trichocarpa' ; fi
+if [ $ORG = "sbicolor" ] ; then ORGANISM='Sorghum bicolor' ; fi
+if [ $ORG = "slycopersicum" ] ; then ORGANISM='Solanum lycopersicum' ; fi
+if [ $ORG = "stuberosum" ] ; then ORGANISM='Solanum tuberosum' ; fi
+if [ $ORG = "taestivum" ] ; then ORGANISM='Triticum aestivum' ; fi
+if [ $ORG = "vvinifera" ] ; then ORGANISM='Vitis vinifera' ; fi
 
 > $ORG.csv
 for YEAR in $(seq 2007 2024) ; do
