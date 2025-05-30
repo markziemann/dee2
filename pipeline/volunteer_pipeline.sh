@@ -1,9 +1,10 @@
 #!/bin/bash
 #sra2mx for docker image
-#Copyright Mark Ziemann 2015 to 2017 mark.ziemann@gmail.com
 
 # Modifications:
 # Added references for osativa and zmays, and handled unpaired reads with FastqPairer.pl
+# Wendar Added STAR_RAM=31000000000 for all organisms except taestivum with 39000000000
+
 
 #Fix locale issue
 export LANGUAGE=C
@@ -317,6 +318,70 @@ elif [ $ORG == "zmays" ] ; then
   BT2_MD5="7dc6bbdf600fd4305af72600b4c417f9"
   KAL_MD5="00ecbba2360b5ffdd24a3be6b0aa0acd"
   STAR_MD5="4a44ab4db80dcc1e887f6861dc48eae9"
+elif [ $ORG == "taestivum" ] ; then
+  GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/triticum_aestivum/Triticum_aestivum.IWGSC.59.gtf.gz"
+  GDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/triticum_aestivum/dna/Triticum_aestivum.IWGSC.dna_sm.toplevel.fa.gz"
+  CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/triticum_aestivum/cdna/Triticum_aestivum.IWGSC.cdna.all.fa.gz"
+  BT2_MD5="099dfe7ce318f3c593307ffc8fa46d82"
+  KAL_MD5="083b4dd4e4a0806c09d2e7b7bf18ee92"
+  STAR_MD5="dabad351c21c3a68d93c0d6d59ee1a81"
+  STAR_RAM=39000000000
+elif [ $ORG == "slycopersicum" ] ; then
+  GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/solanum_lycopersicum/Solanum_lycopersicum.SL3.0.59.gtf.gz"
+  GDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/solanum_lycopersicum/dna/Solanum_lycopersicum.SL3.0.dna_sm.toplevel.fa.gz"
+  CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/solanum_lycopersicum/cdna/Solanum_lycopersicum.SL3.0.cdna.all.fa.gz"
+  BT2_MD5="b80ba202b9266d13d16ccbf48a80fad8"
+  KAL_MD5="959251fbf4d01b054650c667db435231"
+  STAR_MD5="c7468ae75d3a9b0626b3a40be4ddf21c"
+elif [ $ORG == "sbicolor" ] ; then
+  GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/sorghum_bicolor/Sorghum_bicolor.Sorghum_bicolor_NCBIv3.59.gtf.gz"
+  GDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/sorghum_bicolor/dna/Sorghum_bicolor.Sorghum_bicolor_NCBIv3.dna_sm.toplevel.fa.gz"
+  CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/sorghum_bicolor/cdna/Sorghum_bicolor.Sorghum_bicolor_NCBIv3.cdna.all.fa.gz"
+  BT2_MD5="ea70bb21263f725d756dc6b7a29ccee0"
+  KAL_MD5="261036489cdf1ba1938f09a8edd8e772"
+  STAR_MD5="11d6dd1365f11252f2fd0964b9b1f801"
+elif [ $ORG == "gmax" ] ; then
+  GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/glycine_max/Glycine_max.Glycine_max_v2.1.59.gtf.gz"
+  GDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/glycine_max/dna/Glycine_max.Glycine_max_v2.1.dna_sm.toplevel.fa.gz"
+  CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/glycine_max/cdna/Glycine_max.Glycine_max_v2.1.cdna.all.fa.gz"
+  BT2_MD5="d4e475dea560b99c3b866a13e63f679e"
+  KAL_MD5="b14cb0435003a104a999fbcd5267f0c7"
+  STAR_MD5="d475e4021b603267462b74cba559bee8"
+elif [ $ORG == "ptrichocarpa" ] ; then
+  GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/populus_trichocarpa/Populus_trichocarpa.Pop_tri_v4.59.gtf.gz"
+  GDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/populus_trichocarpa/dna/Populus_trichocarpa.Pop_tri_v4.dna_sm.toplevel.fa.gz"
+  CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/populus_trichocarpa/cdna/Populus_trichocarpa.Pop_tri_v4.cdna.all.fa.gz"
+  BT2_MD5="4f0fdc09743249b7a9ad2b2c0024810c"
+  KAL_MD5="f2a11b7b7f51eaa31d475fad4b849754"
+  STAR_MD5="3069104cd566266bfe8a2af801aac64e"
+elif [ $ORG == "vvinifera" ] ; then
+  GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/vitis_vinifera/Vitis_vinifera.PN40024.v4.59.gtf.gz"
+  GDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/vitis_vinifera/dna/Vitis_vinifera.PN40024.v4.dna_sm.toplevel.fa.gz"
+  CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/vitis_vinifera/cdna/Vitis_vinifera.PN40024.v4.cdna.all.fa.gz"
+  BT2_MD5="ddfd3ced1d27566196a744ef677b9fe3"
+  KAL_MD5="bdc93a0879d4421868ba8b6a1e6800a7"
+  STAR_MD5="48f6a8b63d081484f52d6e0990d9a42e"
+elif [ $ORG == "hvulgare" ] ; then
+  GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/hordeum_vulgare/Hordeum_vulgare.MorexV3_pseudomolecules_assembly.59.gtf.gz"
+  GDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/hordeum_vulgare/dna/Hordeum_vulgare.MorexV3_pseudomolecules_assembly.dna_sm.toplevel.fa.gz"
+  CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/hordeum_vulgare/cdna/Hordeum_vulgare.MorexV3_pseudomolecules_assembly.cdna.all.fa.gz"
+  BT2_MD5="924a3e01017c5959765b0072e11698aa"
+  KAL_MD5="2916836d97b963470b1813d2d16ef924"
+  STAR_MD5="beb6f3cb999de8a4a937ed666ce5b4e6"
+elif [ $ORG == "stuberosum" ] ; then
+  GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/solanum_tuberosum/Solanum_tuberosum.SolTub_3.0.59.gtf.gz"
+  GDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/solanum_tuberosum/dna/Solanum_tuberosum.SolTub_3.0.dna_sm.toplevel.fa.gz"
+  CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/solanum_tuberosum/cdna/Solanum_tuberosum.SolTub_3.0.cdna.all.fa.gz"
+  BT2_MD5="89c16fc7cf007ef3ade4c95c98eae425"
+  KAL_MD5="449ac8a238bcab7130cda40fe4dced40"
+  STAR_MD5="b496d315cab58fb34d00f0b6945abe3b"
+elif [ $ORG == "bdistachyon" ] ; then
+  GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/brachypodium_distachyon/Brachypodium_distachyon.Brachypodium_distachyon_v3.0.59.gtf.gz"
+  GDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/brachypodium_distachyon/dna/Brachypodium_distachyon.Brachypodium_distachyon_v3.0.dna_sm.toplevel.fa.gz"
+  CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/brachypodium_distachyon/cdna/Brachypodium_distachyon.Brachypodium_distachyon_v3.0.cdna.all.fa.gz"
+  BT2_MD5="705148d9b39518787321d91462038421"
+  KAL_MD5="e21a952f8f32064d08c0ca35179f00c2"
+  STAR_MD5="814ff96269d7bc3f29156fbef398c1c3"
 fi
 
 # download the necessary reference files
@@ -1379,7 +1444,7 @@ ACC_URL="http://dee2.io/acc.html"
 ACC_REQUEST="http://dee2.io/cgi-bin/acc.sh"
 
 if [ ! -z $MY_ORG ] ; then
-  ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae osativa zmays' \
+  ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae osativa zmays taestivum slycopersicum sbicolor gmax ptrichocarpa vvinifera hvulgare stuberosum bdistachyon' \
   | tr ' ' '\n' | grep -wc "$MY_ORG")
   if [ $ORG_CHECK -ne 1 ] ; then
     echo Organism not specified correctly. Check options and try again.
@@ -1396,7 +1461,16 @@ mmusculus       26069664
 rnorvegicus     26913880
 scerevisiae     1644684
 osativa         8000000
-zmays           22000000' | grep -w $MY_ORG | awk -v f=$MEM_FACTOR '{print $2*f}')
+zmays           22000000
+taestivum       39500000
+slycopersicum   7750000
+sbicolor        6640000
+gmax            9160000
+ptrichocarpa    3680000
+vvinifera       4460000
+hvulgare        39500000
+stuberosum      7590000
+bdistachyon     2550000' | grep -w $MY_ORG | awk -v f=$MEM_FACTOR '{print $2*f}')
 
   if [ $MEM_REQD -gt $MEM ] ; then
     echo Error, analysis of $ORG data requires at least $MEM_REQD $MEM_FACTOR kB in RAM, but there is only $MEM available.
