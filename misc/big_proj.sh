@@ -7,7 +7,7 @@ if [ $(ulimit -n) -lt 1000000 ] ; then
   exit 1
 fi
 
-for ORG in athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae ; do
+for ORG in athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae bdistachyon gmax hvulgare ptrichocarpa sbicolor slycopersicum stuberosum taestivum vvinifera ; do
 #for ORG in ecoli ; do
 
 FULL_METADATA=${ORG}_metadata.tsv.cut
