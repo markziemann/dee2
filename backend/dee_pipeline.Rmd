@@ -67,7 +67,7 @@ CORES=5
 
 args = commandArgs(trailingOnly=TRUE)
 org=args[1]
-#org="mmusculus"
+org="ptrichocarpa"
 
 species_list <- c("3702", "4530", "4577", "6239", "7227", "7955",
   "562", "9606", "10090", "10116", "4932",
@@ -91,8 +91,8 @@ species_names <- c("'Arabidopsis thaliana'", "'Oryza sativa'",
   "'Brachypodium distachyon'", "'Glycine max'",
   "'Hordeum vulgare'", "'Populus trichocarpa'",
   "'Sorghum bicolor'","'Solanum lycopersicum'",
-  "'Solanum tuberosum'","'Solanum tuberosum'",
-  "'Triticum aestivum'","'Vitis vinifera'")
+  "'Solanum tuberosum'", "'Triticum aestivum'",
+  "'Vitis vinifera'")
 
 #now annotate the short names 
 names(species_names)<- c("athaliana", "osativa", "zmays",
@@ -249,13 +249,9 @@ print(paste(length(runs_todo),"requeued runs"))
 
 #Update queue on webserver if older than
 queue_name=paste(QUEUEWD,"/",org,".queue.txt",sep="")
-DIFFTIME=difftime ( ( Sys.Date()-90 ) , file.mtime(queue_name,units="s") )[1]
-
-if ( DIFFTIME > 0 ) {
-  write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
-  SCP_COMMAND=paste("scp -i ~/.ssh/dee2 ",queue_name ," ubuntu@118.138.235.221:~/Public")
-  system(SCP_COMMAND)
-}
+write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
+SCP_COMMAND=paste("scp -i ~/.ssh/dee2_2025 ",queue_name ," ubuntu@118.138.235.221:~/Public")
+system(SCP_COMMAND)
 
 #Update metadata on webserver
 accessions_done<-accessions[which(accessions$run %in% runs_done),]
@@ -286,8 +282,16 @@ GEO_QUERY_TERMS <- c(
 '"Homo sapiens"[porgn:__txid9606] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
 '"Mus musculus"[porgn:__txid10090] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
 '"Rattus norvegicus"[porgn:__txid10116] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
-'"Saccharomyces cerevisiae"[porgn:__txid4932] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]'
-)
+'"Saccharomyces cerevisiae"[porgn:__txid4932] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Brachypodium distachyon"[porgn:__txid15368] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Glycine max"[porgn:__txid3847] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Hordeum vulgare"[porgn:__txid4513] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Populus trichocarpa"[porgn:__txid3694] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Sorghum bicolor"[porgn:__txid4558] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Solanum lycopersicum"[porgn:__txid4081] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Solanum tuberosum"[porgn:__txid4113] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Triticum aestivum"[porgn:__txid4565] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]',
+'"Vitis vinifera"[porgn:__txid29760] AND "gsm"[Filter])) AND "high throughput sequencing"[Platform Technology Type]')
 
 MY_GEO_QUERY_TERM <- GEO_QUERY_TERMS[grep(gsub("'","",species_name),GEO_QUERY_TERMS)]
 
@@ -324,7 +328,7 @@ ESEARCH <- esearch(term = MY_GEO_QUERY_TERM , db = "gds", rettype = "uilist",
   datetype = "pdat", reldate = NULL, mindate = MINDATE, maxdate = MAXDATE)
 
 j <- fromJSON(ESEARCH$content)
-COUNT <- j$esearchresult$count
+COUNT <- as.numeric(j$esearchresult$count)
 message(paste("number of GEO results in year",YEAR,":",COUNT))
 if (COUNT>1) {
 
@@ -404,7 +408,7 @@ srpqueue <- unique(srpqueue)
 srpqueue <- srpqueue[order(srpqueue)]
 srpqueuename = paste(SRADBWD,"/",org,"_srpqueue.txt",sep="")
 writeLines(srpqueue,con=srpqueuename)
-SCP_COMMAND=paste("scp -i ~/.ssh/dee2", srpqueuename ,
+SCP_COMMAND=paste("scp -i ~/.ssh/dee2_2025", srpqueuename ,
     " ubuntu@118.138.235.221:/dee2_data/srpqueue")
 system(SCP_COMMAND)
 
@@ -459,7 +463,7 @@ system(CMD)
 
 #delete *e.tsv.gz after each chunk of 10000
 #not needed if --exclude \"*.gz\" is used
-CMD2=paste('ssh -i ~/.ssh/dee2 ubuntu@dee2.io "find /dee2_data/data/',org,' | grep e.tsv.gz | parallel -j1 rm {}"',sep="")
+CMD2=paste('ssh -i ~/.ssh/dee2_2025 ubuntu@dee2.io "find /dee2_data/data/',org,' | grep e.tsv.gz | parallel -j1 rm {}"',sep="")
 
 #here we rsync files to server in chunks of 50000
 rsync<-function(d,org) {
@@ -472,7 +476,7 @@ rsync<-function(d,org) {
       chunk<-paste(d[1:length(d)],collapse=" ")
       d<-setdiff(d,d[1:CHUNKSIZE])
     }
-    CMD=paste('rsync -azh -e \"ssh -i  ~/.ssh/dee2 \" --exclude \"*.gz\" ', chunk ,' ubuntu@dee2.io:/dee2_data/data/',org,sep="")
+    CMD=paste('rsync -azh -e \"ssh -i  ~/.ssh/dee2_2025 \" --exclude \"*.gz\" ', chunk ,' ubuntu@dee2.io:/dee2_data/data/',org,sep="")
     writeLines(CMD,"cmd")
     system("bash cmd")
     unlink("cmd")
@@ -493,10 +497,10 @@ x <- apply(x,2,as.character)
 x<-gsub("\r?\n|\r", " ", x)
 write.table(x,file=paste(SRADBWD,"/",org,"_metadata.tsv",sep=""),quote=F,sep="\t",row.names=F)
 
-SCP_COMMAND=paste("scp -i ~/.ssh/dee2 ", paste(SRADBWD,"/",org,"_metadata.tsv",sep="") , " ubuntu@dee2.io:/dee2_data/metadata")
+SCP_COMMAND=paste("scp -i ~/.ssh/dee2_2025 ", paste(SRADBWD,"/",org,"_metadata.tsv",sep="") , " ubuntu@dee2.io:/dee2_data/metadata")
 system(SCP_COMMAND)
 
-SCP_COMMAND=paste("scp -i ~/.ssh/dee2 ", paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") , " ubuntu@dee2.io:/dee2_data/metadata")
+SCP_COMMAND=paste("scp -i ~/.ssh/dee2_2025 ", paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") , " ubuntu@dee2.io:/dee2_data/metadata")
 system(SCP_COMMAND)
 
 save.image(file = paste(org,".RData",sep=""))
@@ -514,37 +518,44 @@ options(bitmapType="cairo")
 FILES1 <- list.files(pattern="*metadata.complete.tsv.cut$",path="/mnt/md0/dee2/sradb/",full.names=T)
 x <- as.data.frame(sapply(FILES1,rowcnt2),stringsAsFactors=FALSE)
 
-rownames(x)=c("A. thaliana", "C. elegans","D. melanogaster","D. rerio",
-  "E. coli","H. sapiens","M. musculus",
-  "O. sativa","R. norvegicus","S. cerevisiae", "Z. mays")
+rownames(x)=c("A. thaliana", "B. distachyon", "C. elegans",
+  "D. melanogaster", "D. rerio", "E. coli", "G. max",
+  "H. sapiens", "H. vulgare", "M. musculus", "O. sativa",
+  "P. trichocarpa", "R. norvegicus","S. cerevisiae", "Z. mays")
+
+#  "G. max", "H. vulgare'", "P. trichocarpa",
+#  "S. bicolor")
+#,"S. lycopersicum", "S. tuberosum",
+#  "T. aestivum", "V. vinifera")
 
 colnames(x)="queued"
 
-FILES2<-list.files(pattern="*_metadata.tsv$",path="/mnt/md0/dee2/sradb/",full.names=T)
-y<-as.data.frame(sapply(FILES2,rowcnt2),stringsAsFactors=FALSE)
+FILES2 <- list.files(pattern="*_metadata.tsv$",path="/mnt/md0/dee2/sradb/",full.names=T)
+y <- as.data.frame(sapply(FILES2,rowcnt2),stringsAsFactors=FALSE)
 
-rownames(y)=c("A. thaliana", "C. elegans","D. melanogaster","D. rerio",
-  "E. coli","H. sapiens","M. musculus",
-  "O. sativa","R. norvegicus","S. cerevisiae", "Z. mays")
+rownames(y)=c("A. thaliana", "B. distachyon", "C. elegans",
+  "D. melanogaster","D. rerio", "E. coli", "G. max",
+  "H. sapiens", "H. vulgare", "M. musculus", "O. sativa",
+  "P. trichocarpa", "R. norvegicus","S. cerevisiae", "Z. mays")
 
-colnames(y)="completed"
+colnames(y) = "completed"
 
-z<-merge(x,y,by=0)
-rownames(z)=z$Row.names
-z$Row.names=NULL
+z <- merge(x,y,by=0)
+rownames(z) = z$Row.names
+z$Row.names = NULL
 
 zz <- as.data.frame(apply(z,2,as.numeric))
 zz$queued <- zz$queued - zz$completed
 rownames(zz) <- rownames(z)
 z <- zz
 
-DATE=date()
-HEADER=paste("Updated",DATE)
-z<-z[order(rownames(z),decreasing=T ), ,drop=F]
+DATE = date()
+HEADER = paste("Updated",DATE)
+z <- z[order(rownames(z),decreasing=T ), ,drop=F]
 par(las=2) ; par(mai=c(1,2.5,1,0.5))
 MAX=1000000
 
-bb<-barplot( rbind( as.numeric(z$queued) , as.numeric(z$completed) ) ,
+bb <- barplot( rbind( as.numeric(z$queued) , as.numeric(z$completed) ) ,
   names.arg=rownames(z) ,xlim=c(0,MAX), beside=T, main=HEADER, col=c("darkblue","red") ,
   horiz=T , las=1, cex.axis=1.2, cex.names=1.4, cex.main=1.4 ,
   xlab="number of SRA runs")
@@ -553,6 +564,7 @@ legend("topright", colnames(z), fill=c("darkblue","red") , cex=1.2)
 
 text( cbind(as.numeric(z[,1])+70000 ,as.numeric(z[,2])+70000 )  ,t(bb),labels=c(z[,1],z[,2]) ,cex=1.2)
 dev.off()
-system("scp -i ~/.ssh/dee2 dee_datasets.png ubuntu@dee2.io:/home/ubuntu/dee2/frontend/html/images")
+system("scp -i ~/.ssh/dee2_2025 dee_datasets.png ubuntu@dee2.io:/home/ubuntu/dee2/frontend/html/images")
 
 ```
+
