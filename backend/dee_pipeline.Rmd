@@ -67,7 +67,7 @@ CORES=5
 
 args = commandArgs(trailingOnly=TRUE)
 org=args[1]
-org="ptrichocarpa"
+#org="osativa"
 
 species_list <- c("3702", "4530", "4577", "6239", "7227", "7955",
   "562", "9606", "10090", "10116", "4932",
@@ -247,6 +247,13 @@ print(paste(length(runs_done),"runs completed"))
 runs_todo<-base::setdiff(runs, runs_done)
 print(paste(length(runs_todo),"requeued runs"))
 
+# Cut the queue and flip order sometimes, so that we can analyse different runs
+# and not just process the same ones again and again
+CUTPOINT=sample(1:length(runs_todo),1)
+runs_todo <- runs_todo[c(CUTPOINT:length(runs_todo),1:(CUTPOINT-1))]
+ORIENTATION <- as.numeric(format(Sys.time(), "%s")) %% 2
+if ( ORIENTATION == 0 ) {  runs_todo <- rev(runs_todo) }
+
 #Update queue on webserver if older than
 queue_name=paste(QUEUEWD,"/",org,".queue.txt",sep="")
 write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
@@ -315,7 +322,8 @@ fetch_esummary <- function(i) {
 
 YEAR=2024
 #YEAR <- sapply(strsplit(as.character(Sys.Date()),"-"),"[[",1)
-MINDATE=paste(YEAR,"/01/01",sep="")
+#MINDATE=paste(YEAR,"/01/01",sep="")
+MINDATE=paste("2006","/01/01",sep="")
 MAXDATE=paste(YEAR,"/12/31",sep="")
 GEOFILENAME=paste(SRADBWD,"/",org,"_geo_",YEAR,".csv",sep="")
 Sys.sleep(1)
@@ -330,27 +338,26 @@ ESEARCH <- esearch(term = MY_GEO_QUERY_TERM , db = "gds", rettype = "uilist",
 j <- fromJSON(ESEARCH$content)
 COUNT <- as.numeric(j$esearchresult$count)
 message(paste("number of GEO results in year",YEAR,":",COUNT))
+
 if (COUNT>1) {
-
-myrange <- seq(0,COUNT,500)
-
-gsel <- lapply(myrange, function(i) {
-  message(i)
-  Sys.sleep(1)
-  ESUMMARY <- NULL
-  attempt <- 1
-  while ( is.null(ESUMMARY) ) {
-    message(paste("attempt",attempt))
-    attempt <- attempt + 1
-    ESUMMARY <- fetch_esummary(i)
-  }
-  myjson <- fromJSON(ESUMMARY$content)
-  myjson <- myjson$result
-  myjson[1] = NULL
-  geodf <- do.call(rbind, myjson)
-  geodf <- geodf[,c("gse","accession")]
-  return(geodf)
-})
+  myrange <- seq(0,COUNT,500)
+  gsel <- lapply(myrange, function(i) {
+    message(i)
+    Sys.sleep(1)
+    ESUMMARY <- NULL
+    attempt <- 1
+    while ( is.null(ESUMMARY) ) {
+      message(paste("attempt",attempt))
+      attempt <- attempt + 1
+      ESUMMARY <- fetch_esummary(i)
+    }
+    myjson <- fromJSON(ESUMMARY$content)
+    myjson <- myjson$result
+    myjson[1] = NULL
+    geodf <- do.call(rbind, myjson)
+    geodf <- geodf[,c("gse","accession")]
+    return(geodf)
+  })
 }
 
 gsel <- do.call(rbind, gsel)
@@ -513,7 +520,7 @@ This is the last step.
 
 ```{r, updatepng}
 
-png("dee_datasets.png",width=600,height=600)
+png("dee_datasets.png",width=600,height=800)
 options(bitmapType="cairo")
 FILES1 <- list.files(pattern="*metadata.complete.tsv.cut$",path="/mnt/md0/dee2/sradb/",full.names=T)
 x <- as.data.frame(sapply(FILES1,rowcnt2),stringsAsFactors=FALSE)
@@ -521,12 +528,9 @@ x <- as.data.frame(sapply(FILES1,rowcnt2),stringsAsFactors=FALSE)
 rownames(x)=c("A. thaliana", "B. distachyon", "C. elegans",
   "D. melanogaster", "D. rerio", "E. coli", "G. max",
   "H. sapiens", "H. vulgare", "M. musculus", "O. sativa",
-  "P. trichocarpa", "R. norvegicus","S. cerevisiae", "Z. mays")
-
-#  "G. max", "H. vulgare'", "P. trichocarpa",
-#  "S. bicolor")
-#,"S. lycopersicum", "S. tuberosum",
-#  "T. aestivum", "V. vinifera")
+  "P. trichocarpa", "R. norvegicus", "S. bicolor",
+  "S. cerevisiae", "S. lycopersicum", "S. tuberosum",
+  "T. aestivum", "V. vinifera", "Z. mays")
 
 colnames(x)="queued"
 
@@ -536,7 +540,9 @@ y <- as.data.frame(sapply(FILES2,rowcnt2),stringsAsFactors=FALSE)
 rownames(y)=c("A. thaliana", "B. distachyon", "C. elegans",
   "D. melanogaster","D. rerio", "E. coli", "G. max",
   "H. sapiens", "H. vulgare", "M. musculus", "O. sativa",
-  "P. trichocarpa", "R. norvegicus","S. cerevisiae", "Z. mays")
+  "P. trichocarpa", "R. norvegicus", "S. bicolor",
+  "S. cerevisiae", "S. lycopersicum", "S. tuberosum",
+  "T. aestivum", "V. vinifera", "Z. mays")
 
 colnames(y) = "completed"
 
