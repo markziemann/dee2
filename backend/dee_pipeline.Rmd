@@ -67,7 +67,7 @@ CORES=5
 
 args = commandArgs(trailingOnly=TRUE)
 org=args[1]
-#org="osativa"
+#org="ptrichocarpa"
 
 species_list <- c("3702", "4530", "4577", "6239", "7227", "7955",
   "562", "9606", "10090", "10116", "4932",
@@ -520,8 +520,6 @@ This is the last step.
 
 ```{r, updatepng}
 
-png("dee_datasets.png",width=600,height=800)
-options(bitmapType="cairo")
 FILES1 <- list.files(pattern="*metadata.complete.tsv.cut$",path="/mnt/md0/dee2/sradb/",full.names=T)
 x <- as.data.frame(sapply(FILES1,rowcnt2),stringsAsFactors=FALSE)
 
@@ -558,18 +556,52 @@ z <- zz
 DATE = date()
 HEADER = paste("Updated",DATE)
 z <- z[order(rownames(z),decreasing=T ), ,drop=F]
-par(las=2) ; par(mai=c(1,2.5,1,0.5))
+
+plants <- c("Z. mays", "V. vinifera", "T. aestivum","S. tuberosum","S. lycopersicum", "S. bicolor",
+  "P. trichocarpa","O. sativa","H. vulgare","G. max","B. distachyon","A. thaliana")
+
+animals <- c("R. norvegicus","M. musculus", "H. sapiens", "D. rerio", "D. melanogaster", "C. elegans")
+
+microbes <- c("S. cerevisiae","E. coli")
+
+plantdf <- z[rownames(z) %in% plants,]
+animaldf <- z[rownames(z) %in% animals,]
+microbedf <- z[rownames(z) %in% microbes,]
+
+png("dee_datasets.png",width=600,height=600)
+options(bitmapType="cairo")
+layout.matrix <- matrix(c(1, 3, 2, 2), nrow = 2, ncol = 2)
+
+layout(mat=layout.matrix, heights=c(2,1),widths=c(2,2))
+
+par(las=2) ; par(mai=c(0.5,2,0.5,0.2))
 MAX=1000000
+z2 <- animaldf
+bb <- barplot( t(z2), beside=TRUE , xlim=c(0,MAX), main="Animals", col=c("darkblue","red") ,
+  horiz=T , las=1, cex.axis=1.2, cex.names=1.3, cex.main=1.4, xlab="number of SRA runs")
+legend("topright", colnames(z2), fill=c("darkblue","red") , cex=0.9)
+text( cbind(as.numeric(z2[,1])+150000 ,as.numeric(z2[,2])+150000 ),
+  t(bb),labels=c(z2[,1],z2[,2]) ,cex=1.15)
 
-bb <- barplot( rbind( as.numeric(z$queued) , as.numeric(z$completed) ) ,
-  names.arg=rownames(z) ,xlim=c(0,MAX), beside=T, main=HEADER, col=c("darkblue","red") ,
-  horiz=T , las=1, cex.axis=1.2, cex.names=1.4, cex.main=1.4 ,
-  xlab="number of SRA runs")
+par(las=2) ; par(mai=c(0.5,2,0.5,0.2))
+MAX=150000
+z2 <- plantdf
+bb <- barplot( t(z2), beside=TRUE , xlim=c(0,MAX), main="Plants", col=c("darkblue","red") ,
+  horiz=T , las=1, cex.axis=1.2, cex.names=1.3, cex.main=1.4, xlab="number of SRA runs")
+mtext(HEADER, las=1, adj=1, cex=0.8)
+text( cbind(as.numeric(z2[,1])+20000 ,as.numeric(z2[,2])+20000 ),
+  t(bb),labels=c(z2[,1],z2[,2]) ,cex=1.15)
 
-legend("topright", colnames(z), fill=c("darkblue","red") , cex=1.2)
+par(las=2) ; par(mai=c(0.5,2,0.5,0.2))
+MAX=50000
+z2 <- microbedf
+bb <- barplot( t(z2), beside=TRUE , xlim=c(0,MAX), main="Microbes", col=c("darkblue","red"),
+horiz=T , las=1, cex.axis=1.2, cex.names=1.3, cex.main=1.4, xlab="number of SRA runs")
+text( cbind(as.numeric(z2[,1])+10000 ,as.numeric(z2[,2])+10000 ),
+  t(bb),labels=c(z2[,1],z2[,2]) ,cex=1.15)
 
-text( cbind(as.numeric(z[,1])+70000 ,as.numeric(z[,2])+70000 )  ,t(bb),labels=c(z[,1],z[,2]) ,cex=1.2)
 dev.off()
+
 system("scp -i ~/.ssh/dee2_2025 dee_datasets.png ubuntu@dee2.io:/home/ubuntu/dee2/frontend/html/images")
 
 ```
