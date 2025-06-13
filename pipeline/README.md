@@ -74,6 +74,8 @@ docker run mziemann/tallyup:dev -s ecoli -a SRR19643580,SRR19643581
 This approach is okay for a small number of runs, but isn't the most efficient, because
 the CPU is idle while downloading data from SRA.
 
+## Power users
+
 To increase the throughput and efficiency, I recommend runnning another script in parallel
 which downloads the SRA files, so the CPUs can be kept busy processing them.
 To do this, create a text file called SRR.txt which contains all the SRR identifiers of all
@@ -115,6 +117,8 @@ In the above script, I have only demonstrated processing of E. coli data, but it
 the other supported species too.
 For those other species, the genome needs to be downloaded and indexed for each time the
 pipeline is launched, which can be inefficient in you're going to be using it regularly.
+
+## Keeping genome indexes for future use
 
 To keep the indexed genome, I suggest starting with processing just one SRA file.
 When it is finished, use `docker ps -a` to list the completed containers.
