@@ -134,24 +134,6 @@ Then when you want to run the pipeline again, you can skip the genome regenerati
 docker run -v $(pwd):/dee2/mnt mziemann/tallyup:hsa -s hsapiens -t 8 -d -v
 ```
 
-
-## Running on HPC without download ability
-
-The recommended application is to use the downloader.sh script to download a bunch of SRA files in 
-advance and keep these in the current working directory.
-downloader.sh fetches SRR accession numbers from the queue, so if you want to analyse some different
-datasets from SRA, you can download them with SRA toolkit `prefetch`.
-
-Use downloader.sh like this:
-
-`bash downloader.sh hsapiens`
-
-Then you can run the docker image like this:
-
-`docker run -v $(pwd):/dee2/mnt mziemann/tallyup hsapiens -d`
-
-I have included an example script called `run_dee2_hsa1.sh` which I use on my own workstation.
-
 ## Running into problems?
 
 Raise an issue and we will try to resolve it.
