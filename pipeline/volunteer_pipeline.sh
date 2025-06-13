@@ -30,16 +30,16 @@ usage() {
     echo "EXAMPLES"
     echo "    Provide SRA run accessions run on 6 threads:"
     echo
-    echo "        docker run -it  mziemann/tallyup -s ecoli -a SRR27386505,SRR27386506 -t 6"
+    echo "        docker run -it  mziemann/tallyup:dev -s ecoli -a SRR27386505,SRR27386506 -t 6"
     echo
     echo "    Process SRA archives with verbose logging:"
     echo
     echo "        prefetch SRR27386504"
-    echo "        docker run -it -v $(pwd):/dee2/mnt mziemann/tallyup -s ecoli -d -t 8 -v"
+    echo "        docker run -it -v $(pwd):/dee2/mnt mziemann/tallyup:dev -s ecoli -t 8 -d -v"
     echo
     echo "    Process own fastq files with 12 threads:"
     echo
-    echo "        docker run -it -v $(pwd):/dee2/mnt mziemann/tallyup -s ecoli -f1 ecoli_SRR27386502_1.fastq.gz -f2 ecoli_SRR27386502_2.fastq.gz"
+    echo "        docker run -it -v $(pwd):/dee2/mnt mziemann/tallyup:dev -s ecoli -f1 ecoli_SRR27386502_1.fastq.gz -f2 ecoli_SRR27386502_2.fastq.gz"
     echo
     echo "    Return data to host machine:"
     echo
@@ -124,7 +124,7 @@ fi
 # Only define the species, let the pipeline select accessions from the run queue
 # main ORG="$MY_ORG" "$ACCESSION" VERBOSE=$VERBOSE THREADS=$THREADS
 
-DEE_DIR=${PWD}
+DEE_DIR=/dee2
 
 main(){
 #logging all options
