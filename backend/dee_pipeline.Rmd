@@ -67,7 +67,7 @@ CORES=5
 
 args = commandArgs(trailingOnly=TRUE)
 org=args[1]
-#org="ptrichocarpa"
+org="osativa"
 
 species_list <- c("3702", "4530", "4577", "6239", "7227", "7955",
   "562", "9606", "10090", "10116", "4932",
@@ -456,7 +456,141 @@ write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep=""),
 
 ## Data aggregation
 
-```{r,dataagg}
+SE, KE, then QC files in HDF5 format.
+
+```{r,dataagg_hdf5}
+
+library(rhdf5)
+h5file <- paste(org,"_se.h5",sep="")
+
+if (file.exists(h5file)) { file.remove(h5file) }
+h5createFile(h5file)
+
+srr <- x2$SRR_accession
+
+file_list <- paste("/mnt/md0/dee2/data/",org,"/",srr,"/",srr,".se.tsv.gz",sep="")
+batch_size <- 1000
+num_files <- length(file_list)
+rows_per_file <- nrow(read.table(file_list[1],row.names=1,header=TRUE))
+num_cols <- 1
+
+h5createDataset(
+  file = h5file,
+  dataset = "bigmatrix",
+  dims = c(num_files, rows_per_file),
+  storage.mode = "integer",
+  chunk = c(10, rows_per_file),    # 10,000-row chunks
+  level = 9                      # compression level (gzip)
+)
+
+for (i in seq(1, length(file_list), by = batch_size)) {
+  batch_files <- file_list[i:min(i + batch_size - 1, length(file_list))]
+  data_list <- lapply(batch_files, function(f) { t(as.matrix(read.table(f,header=TRUE,row.names=1)[,1])) } )
+  batch_data <- do.call(rbind, data_list)
+  row_start <- (i - 1) + 1
+  row_end <- row_start + nrow(batch_data) - 1
+  h5write(batch_data, h5file, "bigmatrix", index = list(row_start:row_end, 1:rows_per_file ))
+  cat(sprintf("Processed files %d to %d\n", i, i + length(batch_files) - 1))
+}
+
+myrownames <- sapply(strsplit(basename(file_list),"\\."),"[[",1)
+h5write(myrownames, h5file,"rownames")
+
+mycolnames <- rownames( read.table(file_list[1]) )
+h5write(mycolnames, h5file, "colnames")
+
+H5close()
+
+# NOW FOR THE KE TSV DATASET
+h5file <- paste(org,"_ke.h5",sep="")
+
+if (file.exists(h5file)) { file.remove(h5file) }
+h5createFile(h5file)
+
+file_list <- paste("/mnt/md0/dee2/data/",org,"/",srr,"/",srr,".ke.tsv.gz",sep="")
+batch_size <- 1000
+num_files <- length(file_list)
+rows_per_file <- nrow(read.table(file_list[1],row.names=1,header=TRUE))
+num_cols <- 1
+
+h5createDataset(
+  file = h5file,
+  dataset = "bigmatrix",
+  dims = c(num_files, rows_per_file),
+  storage.mode = "double",
+  chunk = c(10, rows_per_file),    # 10,000-row chunks
+  level = 9                      # compression level (gzip)
+)
+
+for (i in seq(1, length(file_list), by = batch_size)) {
+  batch_files <- file_list[i:min(i + batch_size - 1, length(file_list))]
+  data_list <- lapply(batch_files, function(f) { t(as.matrix(read.table(f,header=TRUE,row.names=1)[,3]) ) } )
+  batch_data <- do.call(rbind, data_list)
+  row_start <- (i - 1) + 1
+  row_end <- row_start + nrow(batch_data) - 1
+  h5write(batch_data, h5file, "bigmatrix", index = list(row_start:row_end, 1:rows_per_file ))
+  cat(sprintf("Processed files %d to %d\n", i, i + length(batch_files) - 1))
+}
+
+myrownames <- sapply(strsplit(basename(file_list),"\\."),"[[",1)
+h5write(myrownames, h5file, "rownames")
+
+mycolnames <- rownames( read.table(file_list[1]) )
+h5write(mycolnames, h5file, "colnames")
+
+H5close()
+
+## Next is the QC data
+h5file <- paste(org,"_qc.h5",sep="")
+
+if (file.exists(h5file)) { file.remove(h5file) }
+h5createFile(h5file)
+
+file_list <- paste("/mnt/md0/dee2/data/",org,"/",srr,"/",srr,".qc",sep="")
+batch_size <- 10000
+num_files <- length(file_list)
+rows_per_file <- nrow(read.table(file_list[1],row.names=1,header=TRUE))
+num_cols <- 1
+
+qc <- read.csv(file_list[1],row.names=1,header=FALSE,sep=":")
+
+num_files <- length(file_list)
+rows_per_file <- nrow(read.csv(file_list[1],row.names=1,header=FALSE,sep=":"))
+num_cols <- 1
+
+h5createDataset(
+  file = h5file,
+  dataset = "bigmatrix",
+  dims = c(num_files, rows_per_file),
+  storage.mode = "character",
+  chunk = c(100, rows_per_file),
+  level = 9
+)
+
+for (i in seq(1, length(file_list), by = batch_size)) {
+  batch_files <- file_list[i:min(i + batch_size - 1, length(file_list))]
+  data_list <- lapply(batch_files, function(f) { t(as.matrix( read.csv(file_list[1],row.names=1,header=FALSE,sep=":") )
+) } )
+  batch_data <- do.call(rbind, data_list)
+  row_start <- (i - 1) + 1
+  row_end <- row_start + nrow(batch_data) - 1
+  h5write(batch_data, h5file, "bigmatrix", index = list(row_start:row_end, 1:rows_per_file ))
+  cat(sprintf("Processed files %d to %d\n", i, i + length(batch_files) - 1))
+}
+
+myrownames <- sapply(strsplit(basename(file_list),"\\."),"[[",1)
+h5write(myrownames, h5file, "rownames")
+
+mycolnames <- rownames( read.table(file_list[1]) )
+h5write(mycolnames, h5file, "colnames")
+
+H5close()
+
+```
+
+Todo: move the h5 files to /mx and copy them to the server.
+
+```{r,dataagg_legacy}
 
 #aggregate se ke and qc data
 CMD=paste("./dee_pipeline.sh",org)
