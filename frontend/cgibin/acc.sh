@@ -7,6 +7,8 @@ tr '<>&*?/' ' '
 }
 export -f cleanit
 
+sleep 1
+
 echo "Content-type: text/html"
 echo ""
 echo '<html>'
@@ -37,15 +39,24 @@ fi
 ORG=$(echo "$QUERY_STRING" | cleanit | tr ' ' '\n' | grep -m1 ^ORG=  | cut -d '=' -f2)
 #ORG="ecoli"
 ORGLIST='athaliana
+bdistachyon
 celegans
 dmelanogaster
 drerio
 ecoli
+gmax
 hsapiens
+hvulgare
 mmusculus
 osativa
+ptrichocarpa
 rnorvegicus
+sbicolor
 scerevisiae
+slycopersicum
+stuberosum
+taestivum
+vvinifera
 zmays'
 
 ORG_OK=$(echo $ORGLIST | grep -cw $ORG )
@@ -63,11 +74,17 @@ fi
 DATA=/usr/lib/cgi-bin/acc_data
 Q=$DATA/${ORG}.queue.txt
 NEWQ=/home/ubuntu/Public/${ORG}.queue.txt
+ALT_QUEUE=/dee2_data/queue/${ORG}.queue.txt
 
 if [ -r $NEWQ ] ; then
   awk '{OFS="\t"}{print $0,$0}' $NEWQ | cut -c4-  | sort -k1 -gr | cut -f2 > $DATA/tmp
   mv $DATA/tmp $Q
   rm $NEWQ
+fi
+
+QLINES=$(wc -l < $Q)
+if [ $QLINES == 0 ] ; then
+  cp $ALT_QUEUE $Q
 fi
 
 ACCESSION=$(head -1 $Q)
