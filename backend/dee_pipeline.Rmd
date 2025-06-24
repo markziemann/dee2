@@ -126,7 +126,7 @@ MXDIR = normalizePath("../mx/")
 QUEUEWD = normalizePath("../queue/")
 
 ### Set years range
-YEARS=2000:2024
+YEARS=2000:2025
 
 ```
 
@@ -141,22 +141,22 @@ pysradb search --organism="Homo sapiens"  --publication-date 01-01-2015:31-12-20
 Using a helper bash script called metadata_dl.sh which uses pysradb.
 It grabs monthly batches of metadata.
 
-Previously I fetched all data 2023 and before, and so now I only need to get 2024 data fresh.
+Previously I fetched all data 2024 and before, and so now I only need to get 2025 data fresh.
 
 This means that each january this script should be updated.
 
 ```{r,fetchmetadata}
 
-CSVOLD=paste(SRADBWD,"/",org,"_2023.csv",sep="")
+CSVOLD=paste(SRADBWD,"/",org,"_2024.csv",sep="")
 
-CSVNEW=paste(SRADBWD,"/",org,"_2024.csv",sep="")
+CSVNEW=paste(SRADBWD,"/",org,"_2025.csv",sep="")
 
 if (file.exists(CSVNEW)) {
   FILENAME=gsub(".csv","_old.csv",CSVNEW)
   renameFile(CSVNEW,FILENAME,overwrite=TRUE)
 }
 
-MY_SRA_CMD <- paste('bash metadata_dl_2024.sh', org)
+MY_SRA_CMD <- paste('bash metadata_dl_2025.sh', org)
 MY_SRA_CMD
 system(MY_SRA_CMD)
 
@@ -318,10 +318,9 @@ fetch_esummary <- function(i) {
   )
 }
 
-
 ## Data for earlier years is already archived
 
-YEAR=2024
+YEAR=2025
 #YEAR <- sapply(strsplit(as.character(Sys.Date()),"-"),"[[",1)
 #MINDATE=paste(YEAR,"/01/01",sep="")
 MINDATE=paste("2006","/01/01",sep="")
@@ -369,7 +368,6 @@ colnames(gse) <- c("GEO_series","GEO_sample")
 gse$GEO_series[which(gse$GEO_series=="")] <- "NA"
 gse$GEO_series <- paste("GSE",sapply(strsplit(gse$GEO_series,";"),"[[",1),sep="")
 write.table(gse,GEOFILENAME,sep=",")
-
 
 # now join old and new
 PATTERN=paste(org,"_geo_20",sep="")
@@ -422,7 +420,6 @@ system(SCP_COMMAND)
 
 ```
 
-
 ## Quality control
 
 ```{r,qc1}
@@ -436,16 +433,15 @@ length(myaccessions)
 qc_res=NULL
 chunksize=200
 while (length(myaccessions) > chunksize ) {
-
-    qc_res_part<-unlist(mclapply(myaccessions[1:chunksize], qc_analysis, org=org,
-        mc.cores=1))
-    qc_res <- c(qc_res,qc_res_part)
-    myaccessions <- myaccessions[(chunksize+1):length(myaccessions)]
+  qc_res_part<-unlist(mclapply(myaccessions[1:chunksize], qc_analysis, org=org,
+    mc.cores=1))
+  qc_res <- c(qc_res,qc_res_part)
+  myaccessions <- myaccessions[(chunksize+1):length(myaccessions)]
 }
 
 if (length(myaccessions) > 0 ) {
-    qc_res_part<-unlist(mclapply(myaccessions, qc_analysis, org=org,mc.cores=1))
-    qc_res <- c(qc_res,qc_res_part)
+  qc_res_part<-unlist(mclapply(myaccessions, qc_analysis, org=org,mc.cores=1))
+  qc_res <- c(qc_res,qc_res_part)
 }
 x2$QC_summary <- qc_res
 
@@ -495,7 +491,7 @@ mycolnames <- rownames( read.table(file_list[1]) )
 h5write(mycolnames, h5file, "colnames")
 H5close()
 system(paste('rsync -azh -e \"ssh -i  ~/.ssh/dee2_2025 \" ', h5file ,' ubuntu@dee2.io:/dee2_data/bulk/',sep=""))
-file.rename(h5file,"../mx/",overwrite=TRUE)
+renameFile(h5file,"../mx/",overwrite=TRUE)
 
 # NOW FOR THE KE TSV DATASET
 h5file <- paste(org,"_ke.h5",sep="")
@@ -506,7 +502,7 @@ batch_size <- 1000
 num_files <- length(file_list)
 rows_per_file <- nrow(read.table(file_list[1],row.names=1,header=TRUE))
 num_cols <- 1
-h5createDataset(
+ h5createDataset(
   file = h5file,
   dataset = "bigmatrix",
   dims = c(num_files, rows_per_file),
@@ -531,7 +527,7 @@ mycolnames <- rownames( read.table(file_list[1]) )
 h5write(mycolnames, h5file, "colnames")
 H5close()
 system(paste('rsync -azh -e \"ssh -i  ~/.ssh/dee2_2025 \" ', h5file ,' ubuntu@dee2.io:/dee2_data/bulk/',sep=""))
-file.rename(h5file,"../mx/",overwrite=TRUE)
+renameFile(h5file,"../mx/",overwrite=TRUE)
 
 ## Next is the QC data
 h5file <- paste(org,"_qc.h5",sep="")
@@ -571,7 +567,7 @@ mycolnames <- rownames( read.table(file_list[1]) )
 h5write(mycolnames, h5file, "colnames")
 H5close()
 system(paste('rsync -azh -e \"ssh -i  ~/.ssh/dee2_2025 \" ', h5file ,' ubuntu@dee2.io:/dee2_data/bulk/',sep=""))
-file.rename(h5file,"../mx/",overwrite=TRUE)
+renameFile(h5file,"../mx/",overwrite=TRUE)
 
 ```
 
@@ -580,8 +576,8 @@ Todo: move the h5 files to /mx and copy them to the server.
 ```{r,dataagg_legacy}
 
 #aggregate se ke and qc data
-CMD=paste("./dee_pipeline.sh",org)
-system(CMD)
+#CMD=paste("./dee_pipeline.sh",org)
+#system(CMD)
 
 ```
 
