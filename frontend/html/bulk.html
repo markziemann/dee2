@@ -163,12 +163,22 @@ li {
 <p>Bulk data dumps for each species are available via http <a href="/mx">here</a>. 
 </p>
 
-<p>The data are in 'long format' tables with the columns: 'dataset', 'gene', 'count'.
-Long tables are prefered for loading into databases as compared to wide matrix format.
-STAR counts have the prefix 'se.tsv.bz2' while kallisto estimated counts have the 'ke.tsv.bz2' prefix.
-</p>
-<p>QC metrics are also available in long table format with the columns 'dataset','QC metric type', 
-'QC metric result'.
+<p>The data are in HDF5 format.
+HDF5 is ideal for storing and and accessing large and complex datasets.
+Within each of the HDF5 files, there will be three objects.
+"Bigmatrix" is the main data object and contains the gene expression data.
+In this type of data, the rows represent SRA runs, and the columns represent genes.
+The other two objects are the column names and row names.
+Changing format to HDF5 provides a few key benefits.
+Firstly, the old format was computationally very expensive to convert from long to wide format
+for downstream analysis.
+HDF5 allows for random access without loading the entire object into memory.
+This will be a great benefit for end-users who want to analyse subsets of the bulk data.
+Also, HDF5 occupies less disk space.
+For kallito counts (floating point), the saving is ~25%, but for STAR counts it can be up to
+75% disk space saved.
+This change will allow us to continue adding samples to the database without the need to
+purchase additional cloud storage.
 </p>
 
 <hr>
