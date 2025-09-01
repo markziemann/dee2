@@ -217,6 +217,7 @@ DISK=$(df . | awk 'END{print$4}')
 MEM=$(echo $(free | awk '$1 ~ /Mem:/  {print $2-$3}') \
   $(free | awk '$1 ~ /Swap:/  {print $2-$3}') \
   | awk '{print $1+$2}' )
+STAR_RAM=31000000000
 
 ##########################################################################
 #Initial disk space check
@@ -474,6 +475,7 @@ if [ ! -r $STAR_DIR/SA ] || [ ! -r $STAR_DIR/SAindex ] ; then
   --genomeDir $CWD  \
   --genomeFastaFiles $CWD/$(basename $GDNA) \
   --runThreadN $THREADS
+  --limitGenomeGenerateRAM $STAR_RAM
   MY_STAR_MD5=$(md5sum SAindex | awk '{print $1}')
   if [ $MY_STAR_MD5 != $STAR_MD5 ] ; then
     echo "Error in STAR index found. quitting."
