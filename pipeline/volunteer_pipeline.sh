@@ -79,7 +79,7 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 shopt -s expand_aliases
-MEM_FACTOR=2
+MEM_FACTOR=1.5
 
 #handling verbosity setting
 if [ $VERBOSE == "TRUE" ] ; then
