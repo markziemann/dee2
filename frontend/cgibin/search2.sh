@@ -117,21 +117,17 @@ MDCUT=$DIR/${ORG}_srp.tsv.cut
 #save some awk functions for tabulation
 # note that the shell functions are used when less than 500 results as the tooltip can be used
 tblx(){
-echo "<table border="1"><tr><th>SRA Project Accession</th><th> <a href=\"https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md\">QC summary </a> <a href=\"https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md\" target=\"_blank\"> <img src=\"/images/question.png\" alt=\"alttext\" title=\"Learn more about the quality metrics\" style=\"width:30px;height:30px;\"> </a> </th><th>COL3</th><th>COL4</th><th>COL5</th><th>COL6</th><th>COL7</th><th>COL8</th><th>COL9</th><th>COL10th><th>COL11</th></tr>"
+echo "<table border="1"><tr><th>SRA Project Accession</th><th> <a href=\"https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md\">QC summary </a> <a href=\"https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md\" target=\"_blank\"> <img src=\"/images/question.png\" alt=\"alttext\" title=\"Learn more about the quality metrics\" style=\"width:30px;height:30px;\"> </a> </th><th>Project Title</th><th>Project Description</th><th>Study Type</th><th>GEO Series</th></tr>"
 while read line ; do
   C1=$(echo "$line" | cut -f1 | tr -d '"')
-  ZIPURL=https://dee2.io/$(find /dee2_data/huge/$ORG | cut -d '/' -f3- | grep ${C1}_ )
-  C2=$(echo "$line" | cut -f2)
+#  ZIPURL=https://dee2.io/$(find /dee2_data/huge/$ORG | cut -d '/' -f3- | grep ${C1}_ )
   C3=$(echo "$line" | cut -f3 | tr -d '"' )
   C4=$(echo "$line" | cut -f4 | tr -d '"' )
-  C5=$(echo "$line" | cut -f5 | tr -d '"' )
   C6=$(echo "$line" | cut -f6 | tr -d '"' )
-  C7=$(echo "$line" | cut -f7 | tr -d '"' )
-  C8=$(echo "$line" | cut -f8)
-  C9=$(echo "$line" | cut -f9)
-  C10=$(echo "$line" | cut -f10)
+  C9=$(echo "$line" | cut -f9 | tr -d '"' )
+  C10=$(echo "$line" | cut -f10 | tr -d '"' )
   C11=$(echo "$line" | cut -f11)
-  echo "<tr><td>" $C1 "<br><br> <a href=$ZIPURL target=_blank >" DEE2 data bundle link "</a> <br><br> <a href=https://trace.ncbi.nlm.nih.gov/Traces/?view=study&acc=$C1 target=_blank >"SRA link" </a> </td><td>" Put $C1 QC here "</td><td>" $C3 "</td><td>" $C5 "</td><td>" $C6"</td><td>" $C7 "</td><td>" $C8 "</td><td>" $C9 "</td><td>" $C10 "</td></tr>"
+  echo "<tr><td>" $C1 "<br><br> <a href=$C11 target=_blank >" DEE2 data bundle link "</a> <br><br> <a href=https://trace.ncbi.nlm.nih.gov/Traces/?view=study&acc=$C1 target=_blank >"SRA link" </a> </td><td>" Put $C1 QC here "</td><td>" $C3 "</td><td>" $C4 "</td><td>" $C6"</td><td>" $C10 "</td></tr>"
 done
 }
 export -f tblx
@@ -225,7 +221,7 @@ fi
 #Accession number workflow
 if [ -n "$ACC" -a -z "$KEY" ] ; then
   Q=`echo $ACC | sed 's/\%2C/\|/g' | sed 's/^/\(/' | sed 's/$/\)/'`
-  CNT=$(cut -f-9 $MD | awk '!arr[$1]++' | egrep -wc "$Q")
+  CNT=$(cut -f-9 $MD | awk '!arr[$1]++' | egrep -iwc "$Q")
 
   echo "<script type=\"text/javascript\"> function toggle(source) { checkboxes = document.getElementsByName('x'); for(var i=0, n=checkboxes.length;i<n;i++) { checkboxes[i].checked = source.checked; } } </script>"
   echo '<form action="request.sh" method="get">'
@@ -252,13 +248,13 @@ if [ -n "$ACC" -a -z "$KEY" ] ; then
     echo "<br>"
     echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
     #display all results
-    cut -f-8 $MD | egrep -w "$Q" | awk '!arr[$1]++' | sort -k1 | tbl1
+    cut -f-8 $MD | egrep -iw "$Q" | awk '!arr[$1]++' | sort -k1 | tbl1
     echo '</table>'
     exit
   fi
 
   echo ${CNT} datasets found.
-  cut -f-10 $MD | egrep -w "$Q" | awk '!arr[$1]++' | sort -k1 | tblx
+  cut -f-10 $MD | egrep -iw "$Q" | awk '!arr[$1]++' | sort -k1 | tblx
   echo '</table>'
 
   echo '<input type="submit" value="Get Counts" class="tfbutton" style="font-size : 22px;" >'
