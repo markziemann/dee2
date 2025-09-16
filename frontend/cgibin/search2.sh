@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -x
+set -x
 echo "Content-type: text/html"
 echo ''
 echo '<!DOCTYPE html>
@@ -113,21 +113,22 @@ KEY=`echo $QUERY_STRING | cut -d '&' -f3 | cut -d '=' -f2`
 #echo "<br>"
 
 MD=$DIR/${ORG}_srp.tsv
-MDCUT=$DIR/${ORG}_srp.tsv.cut
+MDCUT=$DIR/${ORG}_metadata.tsv.cut
 
 #save some awk functions for tabulation
 # note that the shell functions are used when less than 500 results as the tooltip can be used
 tblx(){
-echo "<table border="1"><tr><th>SRA Project Accession</th><th> <a href=\"https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md\">QC summary </a> <a href=\"https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md\" target=\"_blank\"> <img src=\"/images/question.png\" alt=\"alttext\" title=\"Learn more about the quality metrics\" style=\"width:30px;height:30px;\"> </a> </th><th>Project Title</th><th>Project Description</th><th>Study Type</th><th>GEO Series</th></tr>"
+echo "<table border=\"1\"><tr><th style=\"width:10%\" >SRA Project Accession</th><th> <a href=\"https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md\">QC summary </a> <a href=\"https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md\" target=\"_blank\"> <img src=\"/images/question.png\" alt=\"alttext\" title=\"Learn more about the quality metrics\" style=\"width:30px;height:30px;\"> </a> </th><th style=\"width:10%\" >Project Title</th><th style=\"width:500%\" >Project Description _________________________________________ </th><th style=\"width:10%\" >Study Type</th><th style=\"width:10%\" >GEO Series</th></tr>"
 while read line ; do
   C1=$(echo "$line" | cut -f1 | tr -d '"')
   ZIPURL=https://dee2.io/$(find /dee2_data/huge/$ORG | cut -d '/' -f3- | grep ${C1}_ )
+  QCINFO=$(grep -w $C1 $MDCUT | cut -f2 | cut -d '(' -f1 | sort | uniq -c | awk '{print $2":", $1}')
   C3=$(echo "$line" | cut -f3 | tr -d '"' )
   C4=$(echo "$line" | cut -f4 | tr -d '"' )
   C6=$(echo "$line" | cut -f6 | tr -d '"' )
   C9=$(echo "$line" | cut -f9 | tr -d '"' )
   C10=$(echo "$line" | cut -f10 | tr -d '"' )
-  echo "<tr><td>" $C1 "<br><br> <a href=$ZIPURL target=_blank >" DEE2 data bundle link "</a> <br><br> <a href=https://trace.ncbi.nlm.nih.gov/Traces/?view=study&acc=$C1 target=_blank >"SRA link" </a> </td><td>" Put $C1 QC here "</td><td>" $C3 "</td><td>" $C4 "</td><td>" $C6"</td><td>" $C10 "</td></tr>"
+  echo "<tr><td>" $C1 "<br><br> <a href=$ZIPURL target=_blank >" DEE2 data bundle link "</a> <br><br> <a href=https://trace.ncbi.nlm.nih.gov/Traces/?view=study&acc=$C1 target=_blank >"SRA link" </a> </td><td>" $QCINFO "</td><td>" $C3 "</td><td>" $C4 "</td><td>" $C6"</td><td>" $C10 "</td></tr>"
 done
 }
 export -f tblx
@@ -259,13 +260,7 @@ if [ -n "$ACC" -a -z "$KEY" ] ; then
 
   echo '<input type="submit" value="Get Counts" class="tfbutton" style="font-size : 22px;" >'
   echo '<br>'
-  echo 'Send data to the Degust analysis tool: '
-  echo '<input type="submit" formaction="request2.sh" method="get" value="Degust (STAR gene counts)" class="tfbutton" style="font-size : 22px;" >'
-  echo '<input type="submit" formaction="request3.sh" method="get" value="Degust (Kallisto tx counts)" class="tfbutton" style="font-size : 22px;" >'
-  echo '<input type="submit" formaction="request4.sh" method="get" value="Degust (Kallisto tx2gene counts)" class="tfbutton" style="font-size : 22px;" >'
-  echo '<br>'
   echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
-  echo Please hit the submit button just once. Retrieval time is about 1 dataset per second.
   exit
 fi
 
@@ -310,13 +305,7 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
 
   echo '<input type="submit" value="Get Counts" class="tfbutton" style="font-size : 22px;" >'
   echo '<br>'
-  echo 'Send data to the Degust analysis tool: '
-  echo '<input type="submit" formaction="request2.sh" method="get" value="Degust (STAR gene counts)" class="tfbutton" style="font-size : 22px;" >'
-  echo '<input type="submit" formaction="request3.sh" method="get" value="Degust (Kallisto tx counts)" class="tfbutton" style="font-size : 22px;" >'
-  echo '<input type="submit" formaction="request4.sh" method="get" value="Degust (Kallisto tx2gene counts)" class="tfbutton" style="font-size : 22px;" >'
-  echo '<br>'
   echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
-  echo Please hit the submit button just once. Retrieval time is about 1 dataset per second.
   exit
 fi
 rm -f $TMP
