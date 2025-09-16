@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+
+<html xml:lang="en" lang="en">
+<link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Digital Expression Explorer 2
+</title>
+<style type="text/css">
+
+ body{
+  -webkit-text-size-adjust:none;
+  margin: 20px auto;
+  max-width:760px;
+  line-height:1.6;
+  font:normal normal normal 100% verdana,sans-serif;
+  font-size:22px;
+  color:#3a3a3a;
+  padding:0 10px
+ }
+
+ h1,h2,h3{
+  line-height:1.2;
+  color:#406fef ;
+ }
+
+ aside,p,ul{
+  color:#3a3a3a;
+ }
+
+ table,th,tr,td{
+   line-height:1.2;
+   font-family:sans-serif;
+   font-size:20px;
+   background-color:transparent;
+   padding: 2px;
+   border: 1px solid black;
+   border-collapse: collapse;
+  }
+
+ul {
+    list-style-type: none;
+    margin: 0ex;
+    padding: 0;
+}
+
+li {
+    display: inline;
+}
+
+.button {
+    background-color: #999999;
+    color: white;
+    padding: 8px 25px;
+    leading: 3;
+    line-height: 2em;
+    text-decoration: none;
+#    font-size: 1.8vmax;
+    cursor: pointer;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+}
+
+.button:hover {
+    background-color: #406fef; /* blue */
+    color: white;
+}
+
+ input,text,tfbutton{
+#  font-size:3vmax;
+  font-size:150%;
+
+ }
+
+
+
+/* The container */
+.container {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 22px;
+    color:#3a3a3a;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Hide the browser's default radio button */
+.container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Create a custom radio button */
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: #eee;
+    border-radius: 50%;
+}
+
+/* On mouse-over, add a grey background color */
+.container:hover input ~ .checkmark {
+    background-color: #ccc;
+}
+
+/* When the radio button is checked, add a blue background */
+.container input:checked ~ .checkmark {
+    background-color: #406fef;
+}
+
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+/* Show the indicator (dot/circle) when checked */
+.container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+/* Style the indicator (dot/circle) */
+.container .checkmark:after {
+ 	top: 9px;
+	left: 9px;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: white;
+}
+
+.illustration img {
+  width: 100%;
+  display: block;
+}
+</style>
+</head>
+
+<body>
+
+<ul>
+<a href="/index.html" class="button">HOME</a>
+<a href="/about.html" class="button">ABOUT</a>
+<a href="/help.html" class="button">HELP</a>
+<a href="/bulk.html" class="button">BULK DATA</a>
+<a href="/contribute.html" class="button">CONTRIBUTE</a>
+</ul>
+
+
+<header>
+
+<h1> 
+<! -- for Xmas   &#127876; &#127876; &#127876; >
+Digital Expression Explorer 2  
+</h1>
+
+<p>Digital Expression Explorer 2 (DEE2) is a repository of uniformly processed RNA-seq data mined from public data obtained from <a href="http://www.ncbi.nlm.nih.gov/sra" target="_blank"> NCBI Sequence
+Read Archive.</a></p>
+
+<hr>
+
+<p> Did you know that DEE2 has an R package which enables convenient access of these data?
+Visit <a href="https://bioconductor.org/packages/release/bioc/html/getDEE2.html"> getDEE2 on Bioconductor </a> to learn more.
+
+</p>
+
+<hr>
+
+<h2>Hosted RNA-seq data
+</h2>
+
+<div class='section content'>
+  <div class='illustration'>
+    <img src="/images/dee_datasets.png" style='max-width: 600px'/>
+  </div>
+</div>
+
+<h2 id="content">Select an organism of interest
+</h2>
+<form action="cgi-bin/search2.sh" method="get">
+
+<h3 id="content">Animals
+</h3>
+
+<label class="container" ><strong><em>Caenorhabditis elegans</em></strong>
+  <input type="radio" checked="checked" name="org" value="celegans">
+  <span class="checkmark"></span>
+</label>
+<label class="container" ><strong><em>Drosophila melanogaster</em></strong>
+  <input type="radio" name="org" value="dmelanogaster" >
+  <span class="checkmark"></span>
+</label>
+<label class="container" ><strong><em>Danio rerio</em></strong>
+  <input type="radio" name="org" value="drerio">
+  <span class="checkmark"></span>
+</label>
+<label class="container" ><strong><em>Homo sapiens</em></strong>
+  <input type="radio" name="org" value="hsapiens">
+  <span class="checkmark"></span>
+</label>
+<label class="container" ><strong><em>Mus musculus</em></strong>
+  <input type="radio" name="org" value="mmusculus">
+  <span class="checkmark"></span>
+</label>
+<label class="container" ><strong><em>Rattus norvegicus</em></strong>
+  <input type="radio" name="org" value="rnorvegicus">
+  <span class="checkmark"></span>
+</label>
+
+<h3 id="content">Plants
+</h3>
+
+<label class="container" ><strong><em>Arabidopsis thaliana</em></strong>
+  <input type="radio" name="org"  value="athaliana">
+  <span class="checkmark"></span>
+</label>
+
+<label class="container" ><strong><em>Brachypodium distachyon</em></strong>
+  <input type="radio" name="org"  value="bdistachyon">
+  <span class="checkmark"></span>
+</label>
+
+<label class="container" ><strong><em>Glycine max</em></strong>
+  <input type="radio" name="org"  value="gmax">
+  <span class="checkmark"></span>
+</label>
+
+<label class="container" ><strong><em>Hordeum vulgare</em></strong>
+  <input type="radio" name="org"  value="hvulgare">
+  <span class="checkmark"></span>
+</label>
+
+<label class="container" ><strong><em>Oryza sativa</em></strong>
+  <input type="radio" name="org" value="osativa">
+  <span class="checkmark"></span>
+</label>
+
+<label class="container" ><strong><em>Populus trichocarpa</em></strong>
+  <input type="radio" name="org"  value="ptrichocarpa">
+  <span class="checkmark"></span>
+</label>
+
+<label class="container" ><strong><em>Sorghum bicolor</em></strong>
+  <input type="radio" name="org"  value="sbicolor">
+  <span class="checkmark"></span>
+</label>
+
+<label class="container" ><strong><em>Solanum lycopersicum</em></strong>
+  <input type="radio" name="org"  value="slycopersicum">
+  <span class="checkmark"></span>
+</label>
+
+<label class="container" ><strong><em>Solanum tuberosum</em></strong>
+  <input type="radio" name="org"  value="stuberosum">
+  <span class="checkmark"></span>
+</label>
+
+<label class="container" ><strong><em>Triticum aestivum</em></strong>
+  <input type="radio" name="org"  value="taestivum">
+  <span class="checkmark"></span>
+</label>
+
+<label class="container" ><strong><em>Vitis vinifera</em></strong>
+  <input type="radio" name="org"  value="vvinifera">
+  <span class="checkmark"></span>
+</label>
+
+<label class="container" ><strong><em>Zea mays</em></strong>
+  <input type="radio" name="org" value="zmays">
+  <span class="checkmark"></span>
+</label>
+
+<h3 id="content">Microbes
+</h3>
+
+<label class="container" ><strong><em>Escherichia coli</em></strong>
+  <input type="radio" name="org" value="ecoli">
+  <span class="checkmark"></span>
+</label>
+<label class="container" ><strong><em>Saccharomyces cerevisiae</em></strong>
+  <input type="radio" name="org" value="scerevisiae">
+  <span class="checkmark"></span>
+</label>
+
+<h2 id="content">Search for data sets of interest
+</h2>
+
+<strong>Search SRA Project and GEO Series accession numbers </strong> <br> Performs exact word matches.
+Query terms can separated by commas.
+Try GSE63462,SRP070529 for <em>A. thaliana</em>.
+
+<br>
+<input type="text" name="accessionsearch"></input><input type="submit" value="Submit" class="tfbutton">
+
+<br><br>
+
+<strong>Search for keywords</strong> <br>
+Try <em>abiotic stress<em> for <em>B. distachyon</em>.<br>
+<input type="text" name="keywordsearch"></input><input type="submit" value="Submit" class="tfbutton">
+</form>
+
+<p>
+Keyword searches in mouse and human take up to a minute to complete.
+</p>
+
+<hr>
+
+<p> Browse the metadata catalogue <a href="metadata" target="_blank">here</a>.
+</p>
+
+<hr>
+
+<p><s> Can't find your project of interest in our dataset?
+Try requesting a SRA project to be added to the express queue 
+<a href="request.html" target="_blank">here</a> (experimental).
+</s></p>
+<p>The express queue feature is out of order for now.
+</p>
+
+<hr>
+
+<h2>Citation</h2>
+
+<p>Ziemann M, Kaspi A, El-Osta A. Digital expression explorer 2: a repository of uniformly processed RNA sequencing data. Gigascience. 2019 Apr 1;8(4). pii: 
+giz022. <a href="https://doi.org/10.1093/gigascience/giz022" target="_blank">DOI:10.1093/gigascience/giz022</a>.
+</p>
+
+
+<hr>
+
+<h2>License and commercial use</h2>
+
+<p> DEE2 software and data are provided under the <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GPLv3 public license</a> which allows academic and commercial use.
+If your organisation uses DEE2 data for financial benefit, consider supporting DEE2 with a financial contribution which will help the long term viability, expand the dataset and enable new features.
+</p>
+
+<hr>
+<hr>
+<script async="" src="http://www.google-analytics.com/analytics.js">
+</script>
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-46163202-2','auto');ga('send','pageview');
+</script> 
+</body>
+</html>
