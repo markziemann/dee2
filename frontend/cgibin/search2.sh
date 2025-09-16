@@ -1,4 +1,5 @@
 #!/bin/bash
+#set -x
 echo "Content-type: text/html"
 echo ''
 echo '<!DOCTYPE html>
@@ -99,7 +100,7 @@ if [ "$STRING_LEN" -gt 200 ] ; then
   exit
 fi
 
-#QUERY_STRING="org=sbicolor&accessionsearch=abiotic&keywordsearch="
+#QUERY_STRING="org=bdistachyon&accessionsearch=&keywordsearch=abiotic"
 #QUERY_STRING="org=scerevisiae&accessionsearch=&keywordsearch=metaboli"
 
 ORG=`echo $QUERY_STRING | cut -d '&' -f1 | cut -d '=' -f2`
@@ -120,14 +121,13 @@ tblx(){
 echo "<table border="1"><tr><th>SRA Project Accession</th><th> <a href=\"https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md\">QC summary </a> <a href=\"https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md\" target=\"_blank\"> <img src=\"/images/question.png\" alt=\"alttext\" title=\"Learn more about the quality metrics\" style=\"width:30px;height:30px;\"> </a> </th><th>Project Title</th><th>Project Description</th><th>Study Type</th><th>GEO Series</th></tr>"
 while read line ; do
   C1=$(echo "$line" | cut -f1 | tr -d '"')
-#  ZIPURL=https://dee2.io/$(find /dee2_data/huge/$ORG | cut -d '/' -f3- | grep ${C1}_ )
+  ZIPURL=https://dee2.io/$(find /dee2_data/huge/$ORG | cut -d '/' -f3- | grep ${C1}_ )
   C3=$(echo "$line" | cut -f3 | tr -d '"' )
   C4=$(echo "$line" | cut -f4 | tr -d '"' )
   C6=$(echo "$line" | cut -f6 | tr -d '"' )
   C9=$(echo "$line" | cut -f9 | tr -d '"' )
   C10=$(echo "$line" | cut -f10 | tr -d '"' )
-  C11=$(echo "$line" | cut -f11)
-  echo "<tr><td>" $C1 "<br><br> <a href=$C11 target=_blank >" DEE2 data bundle link "</a> <br><br> <a href=https://trace.ncbi.nlm.nih.gov/Traces/?view=study&acc=$C1 target=_blank >"SRA link" </a> </td><td>" Put $C1 QC here "</td><td>" $C3 "</td><td>" $C4 "</td><td>" $C6"</td><td>" $C10 "</td></tr>"
+  echo "<tr><td>" $C1 "<br><br> <a href=$ZIPURL target=_blank >" DEE2 data bundle link "</a> <br><br> <a href=https://trace.ncbi.nlm.nih.gov/Traces/?view=study&acc=$C1 target=_blank >"SRA link" </a> </td><td>" Put $C1 QC here "</td><td>" $C3 "</td><td>" $C4 "</td><td>" $C6"</td><td>" $C10 "</td></tr>"
 done
 }
 export -f tblx
@@ -214,13 +214,13 @@ fi
 if [ -n "$ACC" -a -n "$KEY" ] ; then
   echo 'Please enter an accession number OR keyword, not both.'
   echo "<br>"
-  echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
++  echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
   exit
 fi
 
 #Accession number workflow
 if [ -n "$ACC" -a -z "$KEY" ] ; then
-  Q=`echo $ACC | sed 's/\%2C/\|/g' | sed 's/^/\(/' | sed 's/$/\)/'`
+  Q=$(echo $ACC | sed 's/\%2C/\|/g' | sed 's/^/\(/' | sed 's/$/\)/' | tr '+' ' ')
   CNT=$(cut -f-9 $MD | awk '!arr[$1]++' | egrep -iwc "$Q")
 
   echo "<script type=\"text/javascript\"> function toggle(source) { checkboxes = document.getElementsByName('x'); for(var i=0, n=checkboxes.length;i<n;i++) { checkboxes[i].checked = source.checked; } } </script>"
@@ -271,60 +271,43 @@ fi
 
 #keyword workflow
 if [ -n "$KEY" -a -z "$ACC" ] ; then
+  Q=$(echo $KEY | sed 's/\%2C/\|/g' | sed 's/^/\(/' | sed 's/$/\)/' | tr '+' ' ')
+  CNT=$(cut -f-9 $MD | awk '!arr[$1]++' | egrep -ic "$Q")
+
   echo "<script type=\"text/javascript\"> function toggle(source) { checkboxes = document.getElementsByName('x'); for(var i=0, n=checkboxes.length;i<n;i++) { checkboxes[i].checked = source.checked; } } </script>"
   echo '<form action="request.sh" method="get">'
   echo '<input type="hidden" name="org" value="ORG">' | sed "s/ORG/${ORG}/"
 
-  Q=`echo $KEY | tr '+' ' '`
-  STR=`< /dev/urandom tr -dc A-Za-z0-9 | head -c${1:-32};echo;`
-  TMP=/tmp/TMP_${STR}.txt
-  TMP_TSV=/tmp/TMP_${STR}.tsv
-
-  Q=$(echo $Q | tr '[:upper:]' '[:lower:]' | sed 's/ and / AND /')
-  QQ=$(echo $Q | sed 's/ and /\n/gI' | tail -1)
-  AWK_CMD=$(echo $Q | tr -s ' ' | sed 's#^#/#' | sed 's#AND#/ \&\& /#g' | sed 's#$#/#' )
-  CMD="awk ' tolower(\$0) ~ "${AWK_CMD}" '"
-  CNT=$(eval $CMD $MD | awk '!arr[$1]++'| wc -l)
-
-  if [ $CNT -eq 0 ]; then
+  if [ $CNT -eq 0 ] ; then
     echo No results found
     echo "<br>"
-    echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size:22px;" ></FORM>'
-    exit
-  fi
-
-  if [ $CNT -gt 5000 ]; then
-    echo Too many results found \(${CNT}\). The webserver is limited to 500 datasets per search. \
-    Try a stricter keyword or accession number search, or a '<a href="/bulk">bulk download</a>.' "<br>"
-    echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size:22px;" ></FORM>'
-    exit
-  fi
-
-  AWK_CMD=$(echo $Q | tr -s ' ' | sed 's#^#/#' | sed 's#AND#/ \&\& /#g' | sed 's#$#/#' )
-  CMD="awk ' tolower(\$0) ~ "${AWK_CMD}" '"
-  eval $CMD $MD > $TMP
-
-  if [ $CNT -gt 500 ]; then
-    HL=$(echo "<a href=\"${TMP_TSV}\"> here</a>")
-    echo "SRA_run_accession Keyword_context QC_summary SRA_experiment_accession SRA_sample_accession SRA_project_accession GEO_series_accession GEO_sample_accession Experiment.title" | tr ' ' '\t' >$TMP_TSV
-    echo Too many results found \(${CNT}\). The webserver is limited to 500 datasets per search. \
-    Try a stricter keyword or accession number search, or a '<a href="/bulk">bulk download</a>.' \
-    Click $HL to download the search results as a tab separated file \(TSV\). "<br>"
     echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;"></FORM>'
-    #display all results
-    sed "s#${QQ}#x@x#I" $TMP |  egrep -io ".{0,30}x@x.{0,30}" | tr '\t' ' ' | sed "s/x@x/${QQ}/g" \
-    | tr '\t' ' ' | paste - $TMP | cut -f-9 \
-    | awk -F'\t' 'BEGIN{OFS=FS} {print $2,$1,$3,$4,$5,$6,$7,$8,$9}' \
-    | sort -k1 | awk '!arr[$1]++'| tee -a $TMP_TSV | tbl3
     exit
   fi
 
-  echo ${CNT} datasets found. Use the checkboxes to select ones of interest.
-  sed "s#${QQ}#x@x#I" $TMP |  egrep -io ".{0,30}x@x.{0,30}" | tr '\t' ' ' | sed "s/x@x/${QQ}/g" \
-  | tr '\t' ' ' | paste - $TMP | cut -f-9 \
-  | awk -F'\t' 'BEGIN{OFS=FS} ;{print $2,$1,$3,$4,$5,$6,$7,$8,$9}' \
-  | sort -k1 | awk '!arr[$1]++' | tbl2x
+  if [ $CNT -gt 3000 ]; then
+    echo Too many results found \(${CNT}\). The webserver is limited to 500 datasets per search. \
+    Try a stricter accession number search, or consider a '<a href="/bulk">bulk data download</a>.'
+    echo "<br>"
+    echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
+    exit
+  fi
+
+  if [ $CNT -gt 500 ] ; then
+    echo Too many results found \(${CNT}\). The webserver is limited to 500 datasets per search. \
+    Try a stricter accession number search, or a '<a href="/bulk">bulk data download</a>.'
+    echo "<br>"
+    echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
+    #display all results
+    cut -f-8 $MD | egrep -i "$Q" | awk '!arr[$1]++' | sort -k1 | tbl1
+    echo '</table>'
+    exit
+  fi
+
+  echo ${CNT} datasets found.
+  cut -f-10 $MD | egrep -i "$Q" | awk '!arr[$1]++' | sort -k1 | tblx
   echo '</table>'
+
   echo '<input type="submit" value="Get Counts" class="tfbutton" style="font-size : 22px;" >'
   echo '<br>'
   echo 'Send data to the Degust analysis tool: '
@@ -334,10 +317,13 @@ if [ -n "$KEY" -a -z "$ACC" ] ; then
   echo '<br>'
   echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
   echo Please hit the submit button just once. Retrieval time is about 1 dataset per second.
-  rm -f $TMP
-
+  exit
 fi
 rm -f $TMP
+
+
+
+
 echo '</body>
 </html>'
 
