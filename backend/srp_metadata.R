@@ -95,11 +95,13 @@ harvest_bundle_metadata <- function(org) {
   bundle_path <- paste("/mnt/md0/dee2/sradb/big_proj/",org,sep="")
   zips <- list.files(bundle_path,pattern="zip$")
   srps <- sapply(strsplit(zips,"_"),"[[",1)
+  zips <- zips[which(! duplicated(srps))] # exclude duplicate bundles without GSE info
+  srps <- srps[which(! duplicated(srps))]
   gse <- gsub(".zip","",sapply(strsplit(zips,"_"),"[[",2))
   res2 <- get_sra_studies_metadata_xml2(srps)
   res2df <- metadata_to_dataframe(res2)
   res2df$GSE <- gse[which(srps %in% res2df$query_accession)]
-  zips2 <- zips[which(srps %in% res2df$query_accession)]
+  zips2 <- zips[which(srps %in% res2df$query_accession)] # only include bundles with metadata
   res2df$URL <- paste("https://dee2.io/huge/",org,"/",zips2,sep="")
   myfilename <- paste(org,"_srp.tsv",sep="")
   write.table(x=res2df,file=myfilename,sep="\t",row.names=FALSE)
@@ -109,11 +111,9 @@ harvest_bundle_metadata <- function(org) {
   unlink(myfilename)
 }
 
-org="sbicolor"
-
 #orgs <- c("athaliana", "bdistachyon", "celegans", "dmelanogaster", "drerio",
 #  "ecoli", "gmax", "hsapiens", "hvulgare", "mmusculus", "osativa", "ptrichocarpa",
 #  "rnorvegicus", "sbicolor", "scerevisiae", "slycopersicum", "stuberosum",
 #  "taestivum", "vvinifera", "zmays")
-
-lapply(orgs,harvest_bundle_metadata)
+#lapply(orgs,harvest_bundle_metadata)
+harvest_bundle_metadata(org)
