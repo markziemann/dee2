@@ -98,8 +98,9 @@ harvest_bundle_metadata <- function(org) {
   gse <- gsub(".zip","",sapply(strsplit(zips,"_"),"[[",2))
   res2 <- get_sra_studies_metadata_xml2(srps)
   res2df <- metadata_to_dataframe(res2)
-  res2df$GSE <- gse
-  res2df$URL <- paste("https://dee2.io/huge/",org,"/",zips,sep="")
+  res2df$GSE <- gse[which(srps %in% res2df$query_accession)]
+  zips2 <- zips[which(srps %in% res2df$query_accession)]
+  res2df$URL <- paste("https://dee2.io/huge/",org,"/",zips2,sep="")
   myfilename <- paste(org,"_srp.tsv",sep="")
   write.table(x=res2df,file=myfilename,sep="\t",row.names=FALSE)
   SYSCOMMAND <- gsub("myorg",org,"scp -i ~/.ssh/dee2_2025 myorg_srp.tsv ubuntu@dee2.io:/dee2_data/metadata/")
@@ -108,11 +109,11 @@ harvest_bundle_metadata <- function(org) {
   unlink(myfilename)
 }
 
-org="bdistachyon"
+org="sbicolor"
 
-orgs <- c("athaliana", "bdistachyon", "celegans", "dmelanogaster", "drerio",
-  "ecoli", "gmax", "hsapiens", "hvulgare", "mmusculus", "osativa", "ptrichocarpa",
-  "rnorvegicus", "sbicolor", "scerevisiae", "slycopersicum", "stuberosum",
-  "taestivum", "vvinifera", "zmays")
+#orgs <- c("athaliana", "bdistachyon", "celegans", "dmelanogaster", "drerio",
+#  "ecoli", "gmax", "hsapiens", "hvulgare", "mmusculus", "osativa", "ptrichocarpa",
+#  "rnorvegicus", "sbicolor", "scerevisiae", "slycopersicum", "stuberosum",
+#  "taestivum", "vvinifera", "zmays")
 
 lapply(orgs,harvest_bundle_metadata)
