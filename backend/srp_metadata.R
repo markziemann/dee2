@@ -98,17 +98,21 @@ harvest_bundle_metadata <- function(org) {
   zips <- zips[which(! duplicated(srps))] # exclude duplicate bundles without GSE info
   srps <- srps[which(! duplicated(srps))]
   gse <- gsub(".zip","",sapply(strsplit(zips,"_"),"[[",2))
-  res2 <- get_sra_studies_metadata_xml2(srps)
+  myfilename <- paste("../sradb/",org,"_srp.tsv",sep="")
+  file.copy(myfilename,"tmp0",overwrite=TRUE)
+  system("cut -f1 tmp0  > tmp1")
+  srp_existing <- gsub('"',"",readLines("tmp1"))
+  srps_new <- setdiff(srps,srp_existing)
+  res2 <- get_sra_studies_metadata_xml2(srps_new)
   res2df <- metadata_to_dataframe(res2)
   res2df$GSE <- gse[which(srps %in% res2df$query_accession)]
   zips2 <- zips[which(srps %in% res2df$query_accession)] # only include bundles with metadata
   res2df$URL <- paste("https://dee2.io/huge/",org,"/",zips2,sep="")
-  myfilename <- paste(org,"_srp.tsv",sep="")
-  write.table(x=res2df,file=myfilename,sep="\t",row.names=FALSE)
-  SYSCOMMAND <- gsub("myorg",org,"scp -i ~/.ssh/dee2_2025 myorg_srp.tsv ubuntu@dee2.io:/dee2_data/metadata/")
+  write.table(x=res2df,file=myfilename,sep="\t",row.names=FALSE, append=TRUE)
+  SYSCOMMAND <- gsub("myorg",org,"scp -i ~/.ssh/dee2_2025 ../sradb/myorg_srp.tsv ubuntu@dee2.io:/dee2_data/metadata/")
   system(SYSCOMMAND)
-  file.copy(myfilename,"../sradb/",overwrite=TRUE)
-  unlink(myfilename)
+  unlink("tmp1")
+  unlink("tmp0")
 }
 
 #orgs <- c("athaliana", "bdistachyon", "celegans", "dmelanogaster", "drerio",
