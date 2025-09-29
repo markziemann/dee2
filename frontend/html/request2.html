@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+
+<html xml:lang="en" lang="en">
+<link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Digital Expression Explorer 2
+</title>
+<style type="text/css">
+
+ body{
+  -webkit-text-size-adjust:none;
+  margin: 20px auto;
+  max-width:760px;
+  line-height:1.6;
+  font:normal normal normal 100% verdana,sans-serif;
+  font-size:22px;
+  color:#3a3a3a;
+  padding:0 10px
+ }
+
+ h1,h2,h3{
+  line-height:1.2;
+  color:#406fef ;
+ }
+
+ aside,p,ul{
+  color:#3a3a3a;
+ }
+
+ table,th,tr,td{
+   line-height:1.2;
+   font-family:sans-serif;
+   font-size:20px;
+   background-color:transparent;
+   padding: 2px;
+   border: 1px solid black;
+   border-collapse: collapse;
+  }
+
+ul {
+    list-style-type: none;
+    margin: 0ex;
+    padding: 0;
+}
+
+li {
+    display: inline;
+}
+
+.button {
+    background-color: #999999;
+    color: white;
+    padding: 8px 25px;
+    leading: 3;
+    line-height: 2em;
+    text-decoration: none;
+#    font-size: 1.8vmax;
+    cursor: pointer;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+}
+
+.button:hover {
+    background-color: #406fef; /* blue */
+    color: white;
+}
+
+ input,text,tfbutton{
+#  font-size:3vmax;
+  font-size:150%;
+
+ }
+
+
+
+/* The container */
+.container {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 22px;
+    color:#3a3a3a;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Hide the browser's default radio button */
+.container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Create a custom radio button */
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: #eee;
+    border-radius: 50%;
+}
+
+/* On mouse-over, add a grey background color */
+.container:hover input ~ .checkmark {
+    background-color: #ccc;
+}
+
+/* When the radio button is checked, add a blue background */
+.container input:checked ~ .checkmark {
+    background-color: #406fef;
+}
+
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+/* Show the indicator (dot/circle) when checked */
+.container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+/* Style the indicator (dot/circle) */
+.container .checkmark:after {
+ 	top: 9px;
+	left: 9px;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: white;
+}
+
+</style>
+</head>
+
+<body>
+
+<ul>
+<a href="/index.html" class="button">HOME</a>
+<a href="/about.html" class="button">ABOUT</a>
+<a href="/help.html" class="button">HELP</a>
+<a href="/bulk.html" class="button">BULK DATA</a>
+<a href="/contribute.html" class="button">CONTRIBUTE</a>
+</ul>
+
+
+<header>
+
+<h1>Request@DEE2
+</h1>
+
+This feature is experimental and under active development. 
+It may change significantly without warning.
+<br><br>
+Use this form to schedule the analysis of particular SRA projects. 
+A list of projects in the queue is found <a href="srpqueue" target="_blank">here</a>.
+<br><br>
+If your project of interest is not in this list, it might be because it isn't RNA-seq, the organism
+specified is wrong or is so new it hasn't been incorporated into the queue yet.
+
+<h2 id="content">Select your organism
+</h2>
+<form action="cgi-bin/newrequest2.sh" method="get">
+
+<label class="container" ><strong><em>Arabidopsis thaliana</em></strong>
+  <input type="radio" checked="checked" name="org"  value="athaliana">
+  <span class="checkmark"></span>
+</label>
+<label class="container" ><strong><em>Caenorhabditis elegans</em></strong>
+  <input type="radio" name="org" value="celegans">
+  <span class="checkmark"></span>
+</label>
+<label class="container" ><strong><em>Drosophila melanogaster</em></strong>
+  <input type="radio" name="org" value="dmelanogaster" >
+  <span class="checkmark"></span>
+</label>
+<label class="container" ><strong><em>Danio rerio</em></strong>
+  <input type="radio" name="org" value="drerio">
+  <span class="checkmark"></span>
+</label>
+<label class="container" ><strong><em>Escherichia coli</em></strong>
+  <input type="radio" name="org" value="ecoli">
+  <span class="checkmark"></span>
+</label>
+<label class="container" ><strong><em>Homo sapiens</em></strong>
+  <input type="radio" name="org" value="hsapiens">
+  <span class="checkmark"></span>
+</label>
+<label class="container" ><strong><em>Mus musculus</em></strong>
+  <input type="radio" name="org" value="mmusculus">
+  <span class="checkmark"></span>
+</label>
+<label class="container" ><strong><em>Oryza sativa</em></strong>
+  <input type="radio" name="org" value="osativa">
+  <span class="checkmark"></span>
+</label>
+<label class="container" ><strong><em>Rattus norvegicus</em></strong>
+  <input type="radio" name="org" value="rnorvegicus">
+  <span class="checkmark"></span>
+</label>
+<label class="container" ><strong><em>Saccharomyces cerevisiae</em></strong>
+  <input type="radio" name="org" value="scerevisiae">
+  <span class="checkmark"></span>
+</label>
+<label class="container" ><strong><em>Zea mays</em></strong>
+  <input type="radio" name="org" value="zmays">
+  <span class="checkmark"></span>
+</label>
+
+
+<h2 id="content">Specify your accession numbers
+</h2>
+
+<strong>Request SRA one project accession number </strong>
+Eg: SRP070529 for <i>A. thaliana</i>.
+
+<br>
+<input type="text" name="accessionsearch"></input><input type="submit" value="Submit" class="tfbutton">
+<br>
+<strong>Provide an email address </strong>for notification (optional).
+<br>
+<input type="text" name="emailaddress"></input><input type="submit" value="Submit" class="tfbutton">
+</form>
+Requests may take a while depending on how many datasets and how large they are. Please ensure that the
+email address is correct and check the spam folder before contacting admins for help.
+To prevent the alert going in your spam folder add mdz@dee2.io to your safe list.
+<br>
+Completed requests data will be stored <a href=http://dee2.io/requests/>here</a> for one month only.
+</p>
+<hr>
+<hr>
+</body>
+</html>
