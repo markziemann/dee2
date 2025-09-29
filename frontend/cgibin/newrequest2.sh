@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 echo "Content-type: text/html"
 echo ''
 echo '<!DOCTYPE html>
@@ -192,15 +193,16 @@ TMPFILE=/home/ubuntu/dee2_data/newrequests/$TMPFILE
 echo $EMAIL >> $TMPFILE
 chmod 664 $TMPFILE
 
-echo "We've sent an email to your nominated address. Please follow the information in there to initiate the data processing."
+echo "We've sent an email to your nominated address.
+Please follow the information in there to initiate the data processing."
 echo "<br>"
 echo "<br>"
 
+#echo "BODY:test2" | mailx -s "SUBJECT:test2" $EMAIL && echo "Email sent!"
 
-
-
+sudo -u www-data sh -c 'echo "BODY:test3" | mailx -s "SUBJECT:test3" mark.ziemann@gmail.com' \
+  && echo "Email sent!" \
+  || echo "Email failed!"
 
 echo '</body>
 </html>'
-
-
