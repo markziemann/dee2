@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html xml:lang="en" lang="en">
+<link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Digital Expression Explorer 2
+</title>
+<style type="text/css">
+
+ body{
+  -webkit-text-size-adjust:none;
+  margin: 20px auto;
+  max-width:760px;
+  line-height:1.6;
+  font:normal normal normal 100% verdana,sans-serif;
+  font-size:22px;
+  color:#3a3a3a;
+  padding:0 10px
+ }
+
+ h1,h2,h3{
+  line-height:1.2;
+  color:#406fef ;
+ }
+
+ aside,p,ul{
+  color:#3a3a3a;
+ }
+
+ table,th,tr,td{
+   line-height:1.2;
+   font-family:sans-serif;
+   font-size:20px;
+   background-color:transparent;
+   padding: 2px;
+   border: 1px solid black;
+   border-collapse: collapse;
+  }
+
+ul {
+    list-style-type: none;
+    margin: 0ex;
+    padding: 0;
+}
+
+li {
+    display: inline;
+}
+
+.button {
+    background-color: #999999;
+    color: white;
+    padding: 8px 25px;
+    leading: 3;
+    line-height: 2em;
+    text-decoration: none;
+#    font-size: 1.8vmax;
+    cursor: pointer;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+}
+
+.button:hover {
+    background-color: #406fef; /* blue */
+    color: white;
+}
+
+ input{
+  #font-size:4vmax;
+  #font-size:400%;
+
+ }
+
+/* The container */
+.container {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 22px;
+    color:#3a3a3a;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Hide the browser's default radio button */
+.container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Create a custom radio button */
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: #eee;
+    border-radius: 50%;
+}
+
+/* On mouse-over, add a grey background color */
+.container:hover input ~ .checkmark {
+    background-color: #ccc;
+}
+
+/* When the radio button is checked, add a blue background */
+.container input:checked ~ .checkmark {
+    background-color: #406fef;
+}
+
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+/* Show the indicator (dot/circle) when checked */
+.container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+/* Style the indicator (dot/circle) */
+.container .checkmark:after {
+ 	top: 9px;
+	left: 9px;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: white;
+}
+
+
+	</style>
+</head>
+<body>
+
+<ul>
+<a href="/index.html" class="button">HOME</a>
+<a href="/about.html" class="button">ABOUT</a>
+<a href="/help.html" class="button">HELP</a>
+<a href="/bulk.html" class="button">BULK DATA</a>
+<a href="/contribute.html" class="button">CONTRIBUTE</a>
+</ul>
+
+<h1 id="content">Confirm data request</h1>
+
+
+<form action="cgi-bin/search2.sh" method="get">
+
+Dataset Study Accession (SRP):
+<br>
+<input type="text" name="accession"></input>
+<br>
+<br>
+Confirmation combination:
+<br>
+<input type="text" name="confirmcode"></input>
+<br>
+<br>
+<input type="submit" value="Submit" class="tfbutton">
+</form>
+<hr>
+</body>
+</html>
