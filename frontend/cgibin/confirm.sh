@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 echo "Content-type: text/html"
 echo ''
 echo '<!DOCTYPE html>
@@ -79,9 +80,8 @@ input[type=checkbox] {
 <body>
 '
 
-DIR=/var/www/dee2.io/srpqueue
+#QUERY_STRING="accession=SRP514223&confirmcode=xt26"
 
-#SPEC=$(echo $QUERY_STRING  | egrep -c '(:|;|}|\{|\[|\]|\/|\\|\@|\<|\>)')
 SPEC=$(echo $QUERY_STRING  | egrep -c '(:|;|}|\{|\[|\]|\/|\\|\@)')
 
 if [ $SPEC -gt 0 ] ; then
@@ -130,7 +130,7 @@ if [ ! -r "$METADATAFILE" ] ; then
 fi
 
 # check that the combos match
-FILECOMBO=$(tail -1 "$METADATAFILE")
+FILECOMBO=$(grep "COMBO=" "$METADATAFILE" | cut -d '=' -f2)
 if [ "$FILECOMBO" != "$COMBO" ] ; then
   echo "Error: It seems the combinations don't match what we sent by email. Check the spelling and try again."
   echo "<br>"
@@ -140,7 +140,7 @@ if [ "$FILECOMBO" != "$COMBO" ] ; then
 fi
 
 #check the number of requests in the last 370 days
-EMAIL_ADDRESS=$(tail -2 "$METADATAFILE" | head -1)
+EMAIL_ADDRESS=$(grep "EMAIL=" "$METADATAFILE" | cut -d '=' -f2)
 USERFILE="/usr/lib/cgi-bin/newrequests/$EMAIL_ADDRESS"
 CURRENT_DATE=$(date +%s | awk '{print $1/86400}' | cut -d '.' -f1)
 LAST_YEAR_DATE=$(echo "$CURRENT_DATE" | awk '{print $1 - 370}')
@@ -162,3 +162,5 @@ fi
 
 echo '</body>
 </html>'
+
+echo "CONFIRMED=TRUE" >> $METADATAFILE

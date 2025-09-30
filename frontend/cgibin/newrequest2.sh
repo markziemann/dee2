@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 echo "Content-type: text/html"
 echo ''
 echo '<!DOCTYPE html>
@@ -80,9 +79,6 @@ input[type=checkbox] {
 <body>
 '
 
-DIR=/var/www/dee2.io/srpqueue
-
-#SPEC=$(echo $QUERY_STRING  | egrep -c '(:|;|}|\{|\[|\]|\/|\\|\@|\<|\>)')
 SPEC=$(echo $QUERY_STRING  | egrep -c '(:|;|}|\{|\[|\]|\/|\\|\@)')
 
 if [ $SPEC -gt 0 ] ; then
@@ -107,11 +103,20 @@ echo "<br>"
 
 #Error handling if no input provided
 if [ -z "$ACC" ] ; then
-  echo 'No search term provided.'
+  echo 'Error: No accession number provided.'
   echo "<br>"
   echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
   exit
 fi
+
+#Error handlingif no email address provided
+if [ -z "$EMAIL" ] ; then
+  echo 'Error: No email address provided.'
+  echo "<br>"
+  echo '<FORM><INPUT Type="button" VALUE="Search again" onClick="history.go(-1);return true;" style="font-size : 22px;" ></FORM>'
+  exit
+fi
+
 
 # check previously analysed data
 PRESENT=$(find /dee2_data/huge/hsapiens/ | grep -c ${ACC}_)
@@ -187,22 +192,45 @@ else
   exit
 fi
 
-mv $TMPFILE /home/ubuntu/dee2_data/newrequests
+mv $TMPFILE /usr/lib/cgi-bin/newrequests
 TMPFILE=$(basename $TMPFILE)
-TMPFILE=/home/ubuntu/dee2_data/newrequests/$TMPFILE
-echo $EMAIL >> $TMPFILE
+TMPFILE=/usr/lib/cgi-bin/newrequests/$TMPFILE
+echo "EMAIL=$EMAIL" >> $TMPFILE
 chmod 664 $TMPFILE
 
 echo "We've sent an email to your nominated address.
-Please follow the information in there to initiate the data processing."
+Please follow the information in there to initiate the data processing.
+If you didn't receive it, then check your spam folder and add www-data@dee2.io to your
+contacts."
 echo "<br>"
 echo "<br>"
 
-#echo "BODY:test2" | mailx -s "SUBJECT:test2" $EMAIL && echo "Email sent!"
+COMBO=$(echo {a..z}{a..z}{0..9}{0..9} | tr ' ' '\n' | shuf | head -1)
 
-sudo -u www-data sh -c 'echo "BODY:test3" | mailx -s "SUBJECT:test3" mark.ziemann@gmail.com' \
-  && echo "Email sent!" \
-  || echo "Email failed!"
+echo "COMBO=$COMBO" >> $TMPFILE
+
+EMAIL_BODY=$(cat <<'EOF'
+Hello DEE2 user,
+
+A request was made to process dataset ACC from this email address.
+Please confirm it by visiting the link <a href="confirm.html">here</a> and providing the combination COMBO.
+Data processing won't begin unless it is validated.
+
+Best wishes,
+
+Mark and the DEE2 Team
+
+EOF
+)
+
+echo "$EMAIL_BODY" \
+| sed "s/ACC/$ACC/" \
+| sed "s/COMBO/$COMBO/" \
+| mailx -s "Confirm $ACC data processing for DEE2" "$EMAIL" \
+&& echo "email success" \
+|| echo "email failed"
 
 echo '</body>
 </html>'
+
+cp $TMPFILE /usr/lib/cgi-bin/newrequests/$ACC
