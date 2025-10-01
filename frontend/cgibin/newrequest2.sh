@@ -213,7 +213,7 @@ EMAIL_BODY=$(cat <<'EOF'
 Hello DEE2 user,
 
 A request was made to process dataset ACC from this email address.
-Please confirm it by visiting the link <a href="confirm.html">here</a> and providing the combination COMBO.
+Please confirm it by visiting the link https:/dee2.io/confirm.html and providing the combination COMBO.
 Data processing won't begin unless it is validated.
 
 Best wishes,
