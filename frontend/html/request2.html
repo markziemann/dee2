@@ -158,7 +158,6 @@ li {
 
 <h1>Request@DEE2
 </h1>
-
 This feature is experimental and under active development. 
 It may change significantly without warning.
 <br><br>
@@ -170,16 +169,16 @@ this will work.
 Each user is limited to 10 datasets (SRPs) per year currently.
 <br>
 
+
 <h2 id="content">Select your organism
 </h2>
 <form action="cgi-bin/newrequest2.sh" method="get">
 
-<label class="container" ><strong><em>Arabidopsis thaliana</em></strong>
-  <input type="radio" checked="checked" name="org"  value="athaliana">
-  <span class="checkmark"></span>
-</label>
+<h3 id="content">Animals
+</h3>
+
 <label class="container" ><strong><em>Caenorhabditis elegans</em></strong>
-  <input type="radio" name="org" value="celegans">
+  <input type="radio" checked="checked" name="org" value="celegans">
   <span class="checkmark"></span>
 </label>
 <label class="container" ><strong><em>Drosophila melanogaster</em></strong>
@@ -190,10 +189,6 @@ Each user is limited to 10 datasets (SRPs) per year currently.
   <input type="radio" name="org" value="drerio">
   <span class="checkmark"></span>
 </label>
-<label class="container" ><strong><em>Escherichia coli</em></strong>
-  <input type="radio" name="org" value="ecoli">
-  <span class="checkmark"></span>
-</label>
 <label class="container" ><strong><em>Homo sapiens</em></strong>
   <input type="radio" name="org" value="hsapiens">
   <span class="checkmark"></span>
@@ -202,23 +197,83 @@ Each user is limited to 10 datasets (SRPs) per year currently.
   <input type="radio" name="org" value="mmusculus">
   <span class="checkmark"></span>
 </label>
+<label class="container" ><strong><em>Rattus norvegicus</em></strong>
+  <input type="radio" name="org" value="rnorvegicus">
+  <span class="checkmark"></span>
+</label>
+
+
+<h3 id="content">Plants
+</h3>
+
+<label class="container" ><strong><em>Arabidopsis thaliana</em></strong>
+  <input type="radio" name="org"  value="athaliana">
+  <span class="checkmark"></span>
+</label>
+
+<label class="container" ><strong><em>Brachypodium distachyon</em></strong>
+  <input type="radio" name="org"  value="bdistachyon">
+  <span class="checkmark"></span>
+</label>
+
+<label class="container" ><strong><em>Glycine max</em></strong>
+  <input type="radio" name="org"  value="gmax">
+  <span class="checkmark"></span>
+</label>
+
+<label class="container" ><strong><em>Hordeum vulgare</em></strong>
+  <input type="radio" name="org"  value="hvulgare">
+  <span class="checkmark"></span>
+</label>
+
 <label class="container" ><strong><em>Oryza sativa</em></strong>
   <input type="radio" name="org" value="osativa">
   <span class="checkmark"></span>
 </label>
-<label class="container" ><strong><em>Rattus norvegicus</em></strong>
-  <input type="radio" name="org" value="rnorvegicus">
+
+<label class="container" ><strong><em>Populus trichocarpa</em></strong>
+  <input type="radio" name="org"  value="ptrichocarpa">
+  <span class="checkmark"></span>
+</label>
+
+<label class="container" ><strong><em>Sorghum bicolor</em></strong>
+  <input type="radio" name="org"  value="sbicolor">
+  <span class="checkmark"></span>
+</label>
+
+<label class="container" ><strong><em>Solanum lycopersicum</em></strong>
+  <input type="radio" name="org"  value="slycopersicum">
+  <span class="checkmark"></span>
+</label>
+
+<label class="container" ><strong><em>Solanum tuberosum</em></strong>
+  <input type="radio" name="org"  value="stuberosum">
+  <span class="checkmark"></span>
+</label>
+
+<strong><em>Triticum aestivum</em></strong> is not available for request at this time.
+
+<label class="container" ><strong><em>Vitis vinifera</em></strong>
+  <input type="radio" name="org"  value="vvinifera">
+  <span class="checkmark"></span>
+</label>
+
+<label class="container" ><strong><em>Zea mays</em></strong>
+  <input type="radio" name="org" value="zmays">
+  <span class="checkmark"></span>
+</label>
+
+<h3 id="content">Microbes
+</h3>
+
+<label class="container" ><strong><em>Escherichia coli</em></strong>
+  <input type="radio" name="org" value="ecoli">
   <span class="checkmark"></span>
 </label>
 <label class="container" ><strong><em>Saccharomyces cerevisiae</em></strong>
   <input type="radio" name="org" value="scerevisiae">
   <span class="checkmark"></span>
 </label>
-<label class="container" ><strong><em>Zea mays</em></strong>
-  <input type="radio" name="org" value="zmays">
-  <span class="checkmark"></span>
-</label>
-
 
 <h2 id="content">Specify your accession numbers
 </h2>
