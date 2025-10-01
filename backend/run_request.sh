@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 if [ -r LOCK ] ; then
   echo LOCK file present. Exiting now.
   exit
@@ -22,8 +24,9 @@ for FILE  in  $(cat CONFIRMED) ; do
     mkdir $SRP
     cp $FILE $SRP
     cd $SRP
-    RUNS=$(grep -w $SRP $SRP | cut -f22)
-    ORG=$(grep -w $SRP $SRP | head -1 | cut -f7)
+    RUNS=$(grep -w $SRP $FILE | cut -f22)
+    NRUNS=$(echo $RUNS | wc -w)
+    ORG=$(grep -w $SRP $FILE | head -1 | cut -f7)
     L1=$(echo $ORG | cut -c1 | tr '[:upper:]' '[:lower:]') ; echo $L1
     W2=$(echo $ORG | cut -d ' ' -f2)
     ORG2=$L1$W2
@@ -34,9 +37,78 @@ for FILE  in  $(cat CONFIRMED) ; do
     done
 
     # RUN
-    ORG3=$echo $ORG2 | cut -c -3)
+    ORG3=$(echo $ORG2 | cut -c -3)
     ln -s ../tallyup .
     apptainer run -w -B ${PWD}:/dee2/mnt/ tallyup -s $ORG2 -t 8 -d
+
+    for ZIP in *zip ; do
+      unzip $ZIP
+    done
+
+    mkdir $SRP
+    ORG3=$(echo $ORG2 | cut -c-3)
+    # get gene and tx info
+    cp /mnt/md0/dee2/gene_info/${ORG3}_gene_info.tsv $SRP/GeneInfo.tsv
+    cp /mnt/md0/dee2/gene_info/${ORG3}_tx_info.tsv $SRP/TxInfo.tsv
+
+    # get star gene counts
+    SE=$(find . | grep se.tsv)
+    NUMSE=$(echo $SE | wc -w)
+    NUMCOL=$(echo $((NUMSE * 2)) )
+    COLS=$(seq 2 2 $NUMCOL)
+    COLS=$(echo $COLS | tr ' ' ',')
+    echo GeneID $ACCS2 | tr '| ' '\t' > $SRP/GeneCountMatrix.tsv
+    paste $SE | sed 1d | cut -f1,$COLS >> $SRP/GeneCountMatrix.tsv
+    ERROR_CNT=0
+    RES_COL=$(head $SRP/GeneCountMatrix.tsv | tail -1 | wc -w )
+    RES_COL=$((RES_COL-1))
+    if [ $RES_COL -ne $NRUNS ] ; then
+      ERROR_CNT=$((ERROR_CNT+1))
+    fi
+
+    # get kallisto tx counts
+    KE=$(find . | grep ke)
+    NUMKE=$(echo $KE | wc -w)
+    NUMCOL=$(echo $((NUMKE * 5)) )
+    COLS=$(seq 4 5 $NUMCOL)
+    COLS=$(echo $COLS | tr ' ' ',')
+    paste $KE | cut -f$COLS | head -1 | sed 's/^/TranscriptID\t/' \
+    | sed 's/_est_counts//g' > $SRP/TxCountMatrix.tsv
+    paste $KE | sed 1d | cut -f1,$COLS >> $SRP/TxCountMatrix.tsv
+    RES_COL=$(head $SRP/TxCountMatrix.tsv | tail -1 | wc -w )
+    RES_COL=$((RES_COL-1))
+    if [ $RES_COL -ne $NRUNS ] ; then
+      ERROR_CNT=$((ERROR_CNT+1))
+    fi
+
+    # get QC data
+    QC=$(find . | grep qc)
+    NUMQC=$(echo $QC | wc -w)
+    NUMQC=$(echo $((NUMQC * 2)) )
+    COLS=$(seq 2 2 $NUMQC)
+    COLS=$(echo 1 $COLS | tr ' ' ',')
+    echo QCmetric $ACCS2 | tr '| ' '\t' > $SRP/QC_Matrix.tsv
+    paste $QC | tr ':' '\t' | head -28 | cut -f$COLS >> $SRP/QC_Matrix.tsv
+    RES_COL=$(head $SRP/QC_Matrix.tsv | tail -1 | wc -w )
+    RES_COL=$((RES_COL-1))
+    if [ $RES_COL -ne $NRUNS ] ; then
+      ERROR_CNT=$((ERROR_CNT+1))
+    fi
+
+    # get logs
+    LOG=$(find . | grep log )
+    mkdir -p $SRP/log
+    cp $LOG $SRP/log
+    RES_COL=$(echo $LOG | wc -w )
+    if [ $RES_COL -ne $NRUNS ] ; then
+      ERROR_CNT=$((ERROR_CNT+1))
+    fi
+
+    cp ../contents.md $SRP/README.md
+
+    zip -r $SRP.zip $SRP
+    scp -i ~/.ssh/dee2_2025 $SRP.zip ubuntu@dee2.io:/dee2_data/requests
+
     cd ..
     rm LOCK
   fi
