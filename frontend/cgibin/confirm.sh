@@ -150,17 +150,66 @@ echo "Number of requests in past year:$USER_REQUEST_COUNT_IN_LAST_YEAR"
 echo "<br>"
 echo "<br>"
 
-if [ "$USER_REQUEST_COUNT_IN_LAST_YEAR" -le 10 ] ; then
-  echo "Starting the analysis!"
-  echo "<br>"
-  echo "<br>"
+FREE_LIM=5
+PREMIUM_LIM=200
+SUPER_LIM=5000
+
+PREMIUM_MEMBER=$(grep -c $EMAIL_ADDRESS /usr/lib/cgi-bin/newrequests/premium)
+SUPER_MEMBER=$(grep -c $EMAIL_ADDRESS /usr/lib/cgi-bin/newrequests/super)
+
+if [ $SUPER_MEMBER -eq 1 ] ; then
+  echo "Welcome back SUPER member. Thanks for your support!"
+  if [ "$USER_REQUEST_COUNT_IN_LAST_YEAR" -le "$SUPER_LIM" ] ; then
+  echo "Starting the analysis for you now."
+    echo "<br>"
+    echo "<br>"
+    CONFIRMED="TRUE"
+  else
+    echo "Sorry, can't start the analysis. Premium membership has a maximum of $SUPER_LIM datasets per year."
+    echo "Get in touch with the DEE2 team to make other arrangements"
+    echo "<br>"
+    echo "<br>"
+    CONFIRMED="FALSE"
+  fi
+fi
+
+if [ $PREMIUM_MEMBER -eq 1 ] ; then
+  echo "Welcome back premium member. Thanks for your support!"
+  if [ "$USER_REQUEST_COUNT_IN_LAST_YEAR" -le "$PREMIUM_LIM" ] ; then
+  echo "Starting the analysis for you now."
+    echo "<br>"
+    echo "<br>"
+    CONFIRMED="TRUE"
+  else
+    echo "Sorry, can't start the analysis. Premium membership has a maximum of $PREMIUM_LIM datasets per year."
+    echo "Get in touch with the DEE2 team to arrange Super membership, giving $SUPER_LIM datasets per year."
+    echo "<br>"
+    echo "<br>"
+    CONFIRMED="FALSE"
+  fi
+fi
+
+if [ $PREMIUM_MEMBER -eq 0 ] -a [ $SUPER_MEMBER -eq 0 ] ; then
+  if [ "$USER_REQUEST_COUNT_IN_LAST_YEAR" -le $FREE_LIM ] ; then
+    echo "Starting the analysis!"
+    echo "<br>"
+    echo "<br>"
+    CONFIRMED="TRUE"
+  else
+    echo "Sorry, can't start the analysis. Free level has a maximum of $FREE_LIM datasets per year."
+    echo "Get in touch with the DEE2 team to arrange premium membership."
+    echo "<br>"
+    echo "<br>"
+    CONFIRMED="FALSE"
+  fi
+fi
+
+if [ $CONFIRMED == "TRUE" ] ; then
+  mv $METADATAFILE $METADATAFILE.confirmed
 else
-  echo "Sorry, can't start the analysis, user has requested >10 datasets alredy this year."
-  echo "<br>"
-  echo "<br>"
+  rm $METADATAFILE
 fi
 
 echo '</body>
 </html>'
 
-echo "CONFIRMED=TRUE" >> $METADATAFILE
