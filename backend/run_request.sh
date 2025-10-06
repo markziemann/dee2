@@ -1,5 +1,5 @@
 #!/bin/bash
-
+cd /home/mdz/dee2/request
 set -x
 
 if [ -r LOCK ] ; then
@@ -57,6 +57,7 @@ for FILE  in  $(cat CONFIRMED) ; do
     NUMCOL=$(echo $((NUMSE * 2)) )
     COLS=$(seq 2 2 $NUMCOL)
     COLS=$(echo $COLS | tr ' ' ',')
+    ACCS2=$(find . | grep se | cut -d '/' -f2)
     echo GeneID $ACCS2 | tr '| ' '\t' > $SRP/GeneCountMatrix.tsv
     paste $SE | sed 1d | cut -f1,$COLS >> $SRP/GeneCountMatrix.tsv
     ERROR_CNT=0
@@ -87,6 +88,7 @@ for FILE  in  $(cat CONFIRMED) ; do
     NUMQC=$(echo $((NUMQC * 2)) )
     COLS=$(seq 2 2 $NUMQC)
     COLS=$(echo 1 $COLS | tr ' ' ',')
+    ACCS2=$(find . | grep se | cut -d '/' -f2)
     echo QCmetric $ACCS2 | tr '| ' '\t' > $SRP/QC_Matrix.tsv
     paste $QC | tr ':' '\t' | head -28 | cut -f$COLS >> $SRP/QC_Matrix.tsv
     RES_COL=$(head $SRP/QC_Matrix.tsv | tail -1 | wc -w )
