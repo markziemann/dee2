@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/svg+xml" href="/genomics_favicon.svg"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEE2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background: #0a0a0a;
+            padding: 0;
+            overflow-x: hidden;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body.light-mode {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #0f0f0f;
+            position: relative;
+            transition: background 0.3s;
+        }
+
+        body.light-mode .container {
+            background: #ffffff;
+        }
+
+        .navbar {
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 255, 194, 0.2);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        body.light-mode .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+        }
+
+        .theme-toggle {
+            background: linear-gradient(135deg, #00ffc2 0%, #a855f7 100%);
+            border: none;
+            color: #000;
+            font-weight: 700;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.85em;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 255, 194, 0.4);
+        }
+
+        .nav-logo {
+            font-size: 1.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00ffc2 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #888;
+            text-decoration: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        body.light-mode .nav-links a {
+            color: #666;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #00ffc2, #a855f7);
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #00ffc2;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            padding: 80px 40px 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: background 0.3s;
+        }
+
+        body.light-mode .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 194, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.1) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo {
+            font-size: 3.5em;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 20px rgba(0, 255, 194, 0.5));
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00ffc2 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.8;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .header .issue {
+            margin-top: 20px;
+            font-size: 0.9em;
+            opacity: 0.6;
+            letter-spacing: 1px;
+        }
+
+        .content {
+            padding: 60px 40px;
+            background: #0f0f0f;
+            transition: background 0.3s;
+        }
+
+        body.light-mode .content {
+            background: #ffffff;
+        }
+
+        .section {
+            margin-bottom: 60px;
+        }
+
+        .section-title {
+            font-size: 2em;
+            background: linear-gradient(135deg, #00ffc2 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 30px;
+            font-weight: 700;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 80%;
+            background: linear-gradient(180deg, #00ffc2 0%, #a855f7 100%);
+            border-radius: 2px;
+        }
+
+        .featured-article {
+            background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(15, 52, 96, 0.6) 100%);
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 255, 194, 0.2);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s, background 0.3s, border-color 0.3s;
+        }
+
+        body.light-mode .featured-article {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        .featured-article::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 255, 194, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .featured-article:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 255, 194, 0.2);
+        }
+
+        .featured-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .featured-article h3 {
+            color: #00ffc2;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            font-weight: 700;
+            transition: color 0.3s;
+        }
+
+        body.light-mode .featured-article h3 {
+            color: #667eea;
+        }
+
+        .featured-article .meta {
+            font-size: 0.9em;
+            color: #888;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .featured-article p {
+            color: #b0b0b0;
+            margin-bottom: 25px;
+            font-size: 1.05em;
+            line-height: 1.8;
+            transition: color 0.3s;
+        }
+
+        body.light-mode .featured-article p {
+            color: #555;
+        }
+
+        .read-more {
+            display: inline-block;
+            padding: 14px 30px;
+            background: linear-gradient(135deg, #00ffc2 0%, #a855f7 100%);
+            color: #000;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 700;
+            transition: transform 0.3s, box-shadow 0.3s;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.85em;
+        }
+
+        .read-more:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 255, 194, 0.4);
+        }
+
+        .article-list {
+            list-style: none;
+        }
+
+        .article-list li {
+            padding: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(26, 26, 46, 0.3);
+            margin-bottom: 15px;
+            border-radius: 12px;
+            border-left: 3px solid transparent;
+            transition: border-color 0.3s, background 0.3s, transform 0.3s;
+        }
+
+        body.light-mode .article-list li {
+            background: rgba(102, 126, 234, 0.05);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .article-list li:hover {
+            border-left-color: #a855f7;
+            background: rgba(26, 26, 46, 0.5);
+            transform: translateX(5px);
+        }
+
+        body.light-mode .article-list li:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .article-list li:last-child {
+            border-bottom: none;
+        }
+
+        .article-list h4 {
+            color: #00ffc2;
+            margin-bottom: 8px;
+            font-size: 1.3em;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        body.light-mode .article-list h4 {
+            color: #667eea;
+        }
+
+        .article-list .description {
+            color: #888;
+            font-size: 0.95em;
+            transition: color 0.3s;
+        }
+
+        body.light-mode .article-list .description {
+            color: #666;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .tool-card {
+            background: linear-gradient(135deg, rgba(26, 26, 46, 0.5) 0%, rgba(15, 52, 96, 0.3) 100%);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s, background 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.light-mode .tool-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #a855f7, transparent);
+            transform: translateX(-100%);
+            transition: transform 0.5s;
+        }
+
+        .tool-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(168, 85, 247, 0.3);
+            border-color: #a855f7;
+        }
+
+        .tool-card h4 {
+            color: #a855f7;
+            margin-bottom: 12px;
+            font-size: 1.2em;
+            font-weight: 700;
+            transition: color 0.3s;
+        }
+
+        body.light-mode .tool-card h4 {
+            color: #764ba2;
+        }
+
+        .tool-card p {
+            color: #888;
+            font-size: 0.95em;
+            line-height: 1.6;
+            transition: color 0.3s;
+        }
+
+        body.light-mode .tool-card p {
+            color: #666;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0a0a0a 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            border-top: 1px solid rgba(0, 255, 194, 0.2);
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        body.light-mode .footer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-top: 1px solid rgba(168, 85, 247, 0.2);
+        }
+
+        .footer p {
+            margin-bottom: 12px;
+            color: #888;
+        }
+
+        a {
+            color: #00ffc2;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer a {
+            color: #00ffc2;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer a:hover {
+            color: #a855f7;
+        }
+
+        .social-links {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(0, 255, 194, 0.1);
+            color: #00ffc2;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s;
+            border: 1px solid rgba(0, 255, 194, 0.2);
+        }
+
+        .social-links a:hover {
+            background: #00ffc2;
+            color: #000;
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(0, 255, 194, 0.4);
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .content {
+                padding: 40px 20px;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                padding: 60px 20px 40px;
+            }
+
+            .navbar {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-links {
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar">
+            <div class="nav-logo"><a href="index3.html">DEE2</a></div>
+            <ul class="nav-links">
+                <li><a href="#search">Search</a></li>
+                <li><a href="#request">Request</a></li>
+            </ul>
+            <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+        </nav>
+        
+        <div class="header">
+            <div class="header-content">
+                <h1>News & Updates</h1>
+            </div>
+        </div>
+
+        <div class="content">
+
+            <div class="section">
+                <h2 class="section-title">Latest News</h2>
+                <ul class="article-list">
+                    <li>
+                        <h4>25th June 2025 - Changes to bulk data files</h4>
+                        <p class="description">There are new changes to announce about the bulk data dumps. From now on, these bulk data dumps will be provided in HDF5 format, which is better suited for most downstream users and occupies less space. Visit the bulk data page for more info. Thanks to A/Prof Alexey Sergushichev for the suggestion.</p>
+                    </li>
+                    <li>
+                        <h4>5th June 2025 - More plant species available</h4>
+                        <p class="description">Thanks to Dr Wen-Dar Lin and his team, we have received RNA-seq data for several new plant species including Brachypodium dystachion, Glycine max (soya), Hordeum vulgare (barley), Populus trichocarpa (poplar, black cottonwood), Sorghum bicolor (sorghum),Solanum lycopersicum (tomato), Solanum tuberosum (potato), Triticum aestivum (common wheat) and Vitis vinifera (grapevine). Over the next few weeks, we will start uploading the data to the server and making it available. Stay tuned for updates.</p>
+                    </li>
+                    <li>
+                        <h4>22nd Jan 2025 - Rice and maize available!</h4>
+                        <p class="description">Big news! We added two new species to DEE2, rice (Oryza sativa) and maize (Zea mays ), two staple crops that together feed billions of people. This was only possible with a huge contribution from <a href="https://ipmb.sinica.edu.tw/en/people/ipmb_specialist_researchers/lin-wen-dar">Dr Wen-Dar Lin's team at Institute of Plant and Microbial Biology</a>. Further updates to the data processing pipeline have been made and are described on the <a href="http://genomespot.blogspot.com/2025/01/dee2-2025-updates-growth-and-development.html">GenomeSpot blog</a>.</p>
+                    </li>
+
+                <h3 class="section-title">2024</h3>
+
+                    <li>
+                        <h4>10th Sep 2024 - Operating system upgrade</h4>
+                        <p class="description">Just completed an operating system upgrade, we should be good for another 2 years.</p>
+                    </li>
+
+                <h3 class="section-title">2022</h3>
+
+                    <li>
+                        <h4>14th March 2022 - DEE2 operational again</h4>
+                        <p class="description">Data has been transferred and dee2 is operational again. You will notice that we have https enabled.
+                           We confirm that the R package getDEE2 is also functioning properly.
+                           On the other hand, transfering analyses to Degust is not working and we will be addressing this next.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>9th March 2022 - Recovery update</h4>
+                        <p class="description">We now have control of the webserver and we are transferring data to a new 4TB volume.
+                        We estimate that DEE2 will be fully operational on Monday 14th March.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>1st March 2022 - Cybersecurity issue</h4>
+                        <p class="description">DEE2 was taken down by the cloud provider due to a cybersecurity issue. Apparently the server was found to be sending spam emails. DEE2 team will restore the service once allowed by cloud provider.
+                        </p>
+                    </li>
+
+                <h3 class="section-title">2021</h3>
+
+                    <li>
+                        <h4>11th May 2021 - Hardware update</h4>
+                        <p class="description">We have just completed a migration of DEE2 webserver from older Intel Xeon to a new AMD Epyc system.
+                        </p>
+                    </li>
+
+                <h3 class="section-title">2020</h3>
+
+                    <li>
+                        <h4>3rd Oct 2020 - Gene signatures</h4>
+                        <p class="description">We have curated a number of human disease gene signatures that you can use in enrichment analysis.
+                        More information here: http://dee2.io/genesets.html.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>1st May 2020 - MD5 checksums for bulk data</h4>
+                        <p class="description">Due to popular demand we have made available md5 checksums for the bulk data dumps. The file name is "checksums.md5". These will be updated with each addition of new datasets. Link: http://dee2.io/mx/
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>12th March 2020 - Milestone!</h4>
+                        <p class="description">At 11pm today we recorded 1000043 SRA run datasets uploaded to DEE2 servers. We're expecting the 1 millionth DEE2 dataset to become publicly available within the next 1-2 weeks.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>9th January 2020 - Happy New Year!</h4>
+                        <p class="description">Here is a new <a href="https://genomespot.blogspot.com/2020/01/dee2-project-update-jan-2020.html">blog post</a> describing recent updates and high priority issues for the next few months:
+                        <p class="description">* Data processing - a work in progress</p>
+                        <p class="description">* Getting a new source of metadata - completed</p>
+                        <p class="description">Future areas for improvement:</p>
+                        <p class="description">* The problem of studies missing runs</p>
+                        <p class="description">* Increasing queue efficiency</p>
+                        <p class="description">* Making the R package more efficient</p>
+                        <p class="description">* Website metadata search imptovements</p>
+                        <p class="description">* Call for compute resources</p>
+                    </li>
+
+                <h3 class="section-title">2019</h3>
+
+                    <li>
+                        <h4>5th November 2019 - Webserver issues</h4>
+                        <p class="description">the webserver has had a few hiccups recently, but all is restored to normal operation.
+                          In the next few weeks we will be trying to complete the rest of the outstanding mouse and human datasets and then moving to a new source of metadata.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>20th October 2019 - Unscheduled outage</h4>
+                        <p class="description">We suffered an unscheduled outage 16-18th Oct 2019 due to human error (sorry!) which was compounded by hardware issues on the Nectar cloud. All seems to be working now.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>19th June 2019 - Updates</h4>
+                        <p class="description">This update to DEE2 has new datasets, new features and new challenges.
+                          Highlights include new integration with Degust and iDEP and >200k new runs added for human and mouse.
+                          SRAdbV2 is now permanently dead, so DEE2 wil not be adding any new SRA runs until an alternative is found.
+                          For the complete story, read on <a href="https://genomespot.blogspot.com/2019/06/dee2-project-update-june-2019.html">here</a>.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>8th April 2019 - DEE2 Publication</h4>
+                        <p class="description">Very proud to have DEE2 published in Gigascience.
+                        Thanks to everyone who has contributed, including reviewers who made several important suggestions. Link <a href="https://doi.org/10.1093/gigascience/giz022">here</a>.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>11th January 2019 - New features</h4>
+                        <p class="description">In response to feedback we are unveiling several new features:</p>
+                        <p class="description">• Data bundles: any project with >200 runs we've collected into bundles which can be downloaded <a href="https://dee2.io/bundles">here</a>.</p>
+                        <p class="description">• Keyword searches: users can now string together multiple keywords with "and" to restrict the search results. Multiple word search terms also wrk better now.</p>
+                        <p class="description">• Metadata: Now when you perform a search with the web UI, the experiment.name from SRA is shown and hopefully this will make it easier to perform downstream analysis. Also we have included full and summary metadata in each DEE2 download. The metadata are also available for download from the bulk page.</p>
+                        <p class="description">• R API: previously the API code was sourced from GitHub, due to some security concerns we now have a package on github which can be installed with devtools.</p>
+                        <p class="description">• You will also notice two new files in each download GeneInfo.tsv and TxInfo.tsv. These contain the gene symbols information as well as the gene and transcript lengths for FPKM calculation. Importantly, the TxInfo.tsv contains the tx-->parent gene information so that transcript data can be easily aggregated to the gene level. In the R package, there is a new function called Tx2Gene which performs aggregation (sum) with a single command "x<-Tx2Gene(x)".</p>
+                        <p class="description">• QC classification: We have just implemented QC thresholds to classify datasets as pass, warn or fail. More infor on this can be found <a href="https://github.com/markziemann/dee2/blob/master/qc/qc_metrics.md">here</a>.</p>
+                        <p class="description">• Kallisto TPM: In addition to being able to caluculate FPKM using the R API, you can get Kallisto TPM from the repository for individual runs. Here is an example: <a href="http://dee2.io/data/dmelanogaster/SRR1991949">SRR1991949</a>. The kallisto output file has the "ke.tsv.gz" suffix.</p>
+                    </li>
+
+                <h3 class="section-title">2018</h3>
+
+                    <li>
+                        <h4>28th November 2018 - ABACBS Conference</h4>
+                        <p class="description">DEE2 was presented at the ABACBS2018 conference in Melbourne. See the <a href="https://doi.org/10.5281/zenodo.1561839">Poster</a>.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>28th November 2018 - Bulk data analysis blog</h4>
+                        <p class="description">A guide to loading in bulk dumps had been added to my <a href="https://genomespot.blogspot.com/2018/11/using-dee2-bulk-data-dumps.html">Blog</a>.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>12th November 2018 - Benchmarks</h4>
+                        <p class="description">Ever wondered how accurate DEE2 data actially is? Well we have just undertaken a simulation study and comparison to GEO deposited data to demonstrate the quality of DEE2 data.
+                        More details <a href="https://github.com/markziemann/dee2/tree/master/validation">here</a>.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>26th October 2018 - Bundles</h4>
+                        <p class="description">Recently there have been many projects with ≥500 SRA runs, meaning that they have not been
+readily available from the webserver as one file.
+In order to address this, I've packaged these SRA projects with ≥200 SRA run numbers into zip files.
+Only projects with EVERY run processed successfully by DEE2 are included.
+These are now available <a href="https://dee2.io/bundles">here</a>.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>7th October 2018 - QC information</h4>
+                        <p class="description">QC information is now linked in the search results and available by hovering the mouse over the QC link.
+Note that all the datasets are currently classified as "PASS" but this will be chenging soon.
+Also we moved to another nectar server with storage so there have been some updates to webserver cgi scripts.
+Also the keyword search is now case insensitive.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>22nd September 2018 - Bulk data http</h4>
+                        <p class="description">the bulk data dumps are now available via http.
+                          Dat turned out to be too slow and unreliable for files of this size.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>21st September 2018 - Several small bits of news</h4>
+                        <p class="description">
+                          Firstly a new domain name server that is working much better than the last one.
+                          Still unable to get https working so this will not likely happen while using Nectar servers.
+                          Secondly the domain name sever change broke the docker image so it was modified and rebuilt.
+                          Thirdly the data processing is progressing steadily with the torrent of new datasets that became visible upon integration with the newest SRAdbV2.
+                          Lastly, the R interface hs undergone several improvements and should be more robust now.
+                          The new documentation has been added (link).
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>14th March 2018 - Search restored</h4>
+                        <p class="description">                           
+                          search functionality has been restored, so feel free to test it out.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>1st March 2018 - Responsive page design</h4>
+                        <p class="description">
+                          Hope you like the new mobile friendly webpage
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>31st January 2018 - Progress</h4>
+                        <p class="description">
+                          DEE2 data pipeline is finalised and processing is underway. For more information, see the recent blog post.
+                        </p>
+                    </li>
+
+                <h3 class="section-title">2017</h3>
+
+                    <li>
+                        <h4>18th October 2017 - Preparing for DEE2</h4>
+                        <p class="description">As of a month ago, the original DEE site has been down and we've been working towards DEE version 2,
+which will be hosted by Monash Uni.
+This app is still under construction, but stay tuned for the official release at the end of 2017.
+                        </p>
+                    </li>
+
+                <h3 class="section-title">2016</h3>
+
+                    <li>
+                        <h4>15th December 2016 - Moving time</h4>
+                        <p class="description">Our lab is moving to Monash Central Clinical School.
+                          Stay tuned for a revamped DEE in 2017 with new data and features.
+                          This URL could go dead anytime next year so please finalise your work.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>13th August 2016 - Bodymap</h4>
+                        <p class="description">
+                          Looking for Illumina bodymap2 count data? Try searching ERP000546 for human.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>13th August 2016 - Bulk data dumps are back online.</h4>
+                        <p class="description">
+                           An issue with the count matrix headers was resolved.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>12th August 2016 - Bulk data issue</h4>
+                        <p class="description">
+                          Due to an issue with the bulk data dumps, these have been taken down until the problem is resolved. We apologize for the inconvenience.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>14th July 2016 - Harware upgrades</h4>
+                        <p class="description">
+Our analysis servers are undergoing upgrades and the July database update will be delayed by approx 2 weeks.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>19th Jan 2016 - More quality control measures are being added to DEE.</h4>
+                        <p class="description">
+This will enable users to view basic QC info such as base qualities, number of reads, proportion uniquely mapped, etc. before downloading. These data will be provided to users in parallel with the expression count matrices. Enhanced QC data are already available for E coli, C elegans and A thaliana, but are in progress for other species.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>8th Jan 2016 - Problem with too many datasets found by search</h4>
+                        <p class="description">
+Ever searched for datasets and got the error "Too many results found"? We've modified the interface to display all search results when over the >500 datasets limit. This should allow users to select accession numbers of interest.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>8th Jan 2016 - A bug in the R function has been resolved.</h4>
+                        <p class="description">
+If you had trouble with it before, give it another try and let us know if you encounter any issues getting your data into R.
+                        </p>
+                    </li>
+
+                <h3 class="section-title">2015</h3>
+
+                    <li>
+                        <h4>31st Dec 2015 - Update</h4>
+                        <p class="description">
+The latest update run is underway and looking to add about 37k human and 17k mouse datasets. We have all available servers on the job :)
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>23rd Dec 2015 - Metadata upgrade</h4>
+                        <p class="description">
+We've performed an upgrade to SRAdb integration to release some further datasets that were previously missing. Thanks for your support in 2015 and making it such a successful year. Thanks to your fedback, we're looking forward to a bunch of new features in 2016. Happy holidays, Merry Christmas and a happy/successful year to you all!
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>20th Oct 2015 - Public announcement of DEE</h4>
+                        <p class="description">
+See my <a href="http://genomespot.blogspot.com.au/2015/10/introducing-digital-expression-explorer.html">blog post</a>.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>24th Sept 2015 - DEE2 is live</h4>
+                        <p class="description">
+As of yesterday our site is public, but still in the testing phase.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>26th Aug 2015 - Bulk data in zip format</h4>
+                        <p class="description">
+Bulk and query data are now available in .zip format to improve access for windows and mac users.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>24th Aug 2015 - Update cycle</h4>
+                        <p class="description">
+Datasets are now updated weekly based on SRAdb entries.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4>5th Aug 2015 - Metadata formatting has been streamlined with SRAdb integration.</h4>
+                    </li>
+
+                    <li>
+                        <h4>17th Jul 2015 - More data</h4>
+                        <p class="description">
+Data from human, mouse, Arabidopsis, fruitfly and worm have been added.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h4> 9th Feb 2015 - The website is under construction.</h4>
+                    </li>
+
+                </ul>
+            </div>
+
+        </div>
+
+        <div class="footer">
+            <p>Questions or feedback? <a href="contact.html">→Contact</a></p>
+        </div>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+        }
+    </script>
+</body>
+</html>
