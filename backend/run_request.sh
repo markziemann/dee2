@@ -33,13 +33,34 @@ for FILE  in  $(cat CONFIRMED) ; do
 
     # DOWNLOAD
     for SRR in $RUNS ; do
-      prefetch -X 9999999999999 -o ${ORG2}_${SRR}.sra $SRR
-    done
 
-    # RUN
-    ORG3=$(echo $ORG2 | cut -c -3)
-    ln -s ../tallyup .
-    apptainer run -w -B ${PWD}:/dee2/mnt/ tallyup -s $ORG2 -t 8 -d
+      SRACNT=$(find . -maxdepth 1 | grep -c sra$ )
+
+      while [ $SRACNT -gt 3 ] ; do
+        sleep 10
+        SRACNT=$(find . -maxdepth 1 | grep -c sra$ )
+      done
+
+      while [ -r LOCK1 ] ; do
+        sleep 1
+      done
+
+      touch LOCK1
+      prefetch -X 9999999999999 -o ${ORG}_${SRR}.sra $SRR
+      rm LOCK1
+
+      {
+        while [ -r LOCK2 ] ; do
+          sleep 1
+        done
+
+        touch LOCK2
+        apptainer run -w -B ${PWD}:/dee2/mnt/ tallyup -s $ORG -t 16 -d
+        rm LOCK2
+      } &
+
+    done
+    wait
 
     for ZIP in *zip ; do
       unzip $ZIP
