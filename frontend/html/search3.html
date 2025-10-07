@@ -538,7 +538,121 @@
             .nav-links {
                 gap: 20px;
             }
+
         }
+
+/*the container must be positioned relative:*/
+.custom-select {
+  position: relative;
+  font-family: Arial;
+}
+
+.custom-select select {
+  display: none; /*hide original SELECT element:*/
+}
+
+.select-selected {
+  background-color: #7b00ff;
+}
+
+/*style the arrow inside the select element:*/
+.select-selected:after {
+  position: absolute;
+  content: "";
+  top: 14px;
+  right: 10px;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-color: #fff transparent transparent transparent;
+}
+
+/*point the arrow upwards when the select box is open (active):*/
+.select-selected.select-arrow-active:after {
+  border-color: transparent transparent #fff transparent;
+  top: 7px;
+}
+
+/*style the items (options), including the selected item:*/
+.select-items div,.select-selected {
+  color: #ffffff;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
+  cursor: pointer;
+  user-select: none;
+}
+
+/*style items (options):*/
+.select-items {
+  position: absolute;
+  background-color: #7b00ff;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 99;
+}
+
+/*hide the items when the select box is closed:*/
+.select-hide {
+  display: none;
+}
+
+.select-items div:hover, .same-as-selected {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons inside the tab */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+  font-size: 17px;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #b583eb;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+
+/* Style the close button */
+.topright {
+  float: right;
+  cursor: pointer;
+  font-size: 28px;
+}
+
+.topright:hover {color: red;}
+
+  input,text,tfbutton{
+ #  font-size:3vmax;
+    font-size:150%;
+}
+
     </style>
 </head>
 <body>
@@ -554,66 +668,212 @@
         
         <div class="header">
             <div class="header-content">
-                <h1>About us</h1>
+                <div class="logo">🔎</div>
+                <h1>DEE2 Search Tool</h1>
             </div>
         </div>
 
         <div class="content">
 
             <div class="section">
-                <div class="featured-article">
-                    <div class="featured-content">
-                        <h3>Our mission</h3>
-                        <p>The goal of DEE2 is to make large scale gene expression data sets accessible to bioinformaticians, biologists and students alike. We use open-source bioinformatics tools and computational resources provided by our academic partners and supporters to provide many thousands of public RNA-seq data sets from a variety of organisms and make them freely accessible under a permissive licence.</p>
-                    </div>
-                </div>
+                <h2 class="section-title">Step 1: select an organism</h2>
+                <p>Choose from Animals, Plants or Microbes then use the drop-down menu.</p>
+<div class="tab">
+  <button class="tablinks" onclick="openCity(event, 'Animals')" id="defaultOpen">Animals</button>
+  <button class="tablinks" onclick="openCity(event, 'Plants')">Plants</button>
+  <button class="tablinks" onclick="openCity(event, 'Microbes')">Microbes</button>
+</div>
+
+<div id="Animals" class="tabcontent">
+  <span onclick="this.parentElement.style.display='none'" class="topright">&times</span>
+  <h3>Animals</h3>
+<div class="custom-select" style="width:200px;">
+  <select>
+    <option value="">Select species:</option>
+    <option value="celegans">🪱 <i>C. elegans</i></option>
+    <option value="dmelanogaster">🪰 <i>D. melanogaster</i></option>
+    <option value="drerio">🐟 <i>D. rerio</i></option>
+    <option value="hsapiens">👫<i>H. sapiens</i></option>
+    <option value="mmusculus">🐁<i>M. musculus</i></option>
+    <option value="rnorvegicus">🐀<i>R. norvegicus</i></option>
+  </select>
+</div>
+</div>
+
+<div id="Plants" class="tabcontent">
+  <span onclick="this.parentElement.style.display='none'" class="topright">&times</span>
+  <h3>Plants</h3>
+  <div class="custom-select" style="width:200px;">
+  <select>
+    <option value="">Select species:</option>
+    <option value="athaliana">🌱<i>A. thaliana</i></option>
+    <option value="bdistachyon">🌾 <i>B. distachyon</i></option>
+    <option value="gmax">🫘 <i>G. max</i></option>
+    <option value="hvulgare">🌾 <i>H. vulgare</i></option>
+    <option value="osativa">🌾 <i>O. sativa</i></option>
+    <option value="ptrichocarpa">🌳 <i>P. trichocarpa</i></option>
+    <option value="sbicolor">🌾 <i>S. bicolor</i></option>
+    <option value="slycopersicum">🍅 <i>S. lycopersicum</i></option>
+    <option value="stuberosum">🥔 <i>S. tuberosum</i></option>
+    <option value="taestivum">🌾 <i>T. aestivum</i></option>
+    <option value="vvinifera">🍇 <i>V. vinifera</i></option>
+    <option value="zmays">🌽 <i>Z. mays</i></option>
+  </select>
+</div>
+</div>
+
+<div id="Microbes" class="tabcontent">
+  <span onclick="this.parentElement.style.display='none'" class="topright">&times</span>
+  <h3>Microbes</h3>
+  <div class="custom-select" style="width:200px;">
+  <select>
+    <option value="">Select species</option>
+    <option value="ecoli">🦠 <i>E. coli</i></option>
+    <option value="scerevisiae">🍺 <i>S. cerevisiae</i></option>
+  </select>
+</div>
+        </div>
+    </div>
+
+            <div class="section">
+                <h2 class="section-title">Step 2: search with accession numbers or keywords</h2>
+                <p>
+<strong>Search SRA Project and GEO Series accession numbers </strong> <br> Performs exact word matches.
+Query terms can separated by commas.
+Try GSE63462,SRP070529 for <em>A. thaliana</em>.
+                </p>
+<input type="text" name="accessionsearch"></input><input type="submit" value="Submit" class="tfbutton">
+                 <p>
+                 OR
+                 </p>
+                 <p>
+<strong>Search for keywords</strong> <br>
+Try <em>abiotic stress</em> for <em>B. distachyon</em>.<br>
+                 </p>
+<input type="text" name="keywordsearch"></input><input type="submit" value="Submit" class="tfbutton">
+                 <br><br>
+                 <p>
+                 Hit <i>Submit</i> to start the search.
+                 </p>
             </div>
 
             <div class="section">
-                <div class="featured-article">
-                    <div class="featured-content">
-                        <h3>Who we are</h3>
-                        <p>DEE2 is maintained by Dr Mark Ziemann. Mark is Head of Bioinformatics at Burnet Institute and honorary faculty member of Deakin University. He leads the Bioinformatics working group at Burnet Institute with strong collaborations at Deakin Uni and elsewhere. For more info about his work, visit the group's <a href="https://ziemann-lab.net/">website</a>.</p>
-                    </div>
-                </div>
+                <ul class="article-list">
+                    <li>
+                        <h4>Search tips</h4>
+                        <p class="description">Some tips for you.</p>
+                    </li>
+                </ul>
             </div>
+        </div>
 
-            <div class="section">
-                <div class="featured-article">
-                    <div class="featured-content">
-                        <h3>Contributors</h3>
-                        <p>DEE2 has benefited from support of institutions including:</p>
-                        <ul>
-                          <li><a href="https://ardc.edu.au/services/ardc-nectar-research-cloud/">Nectar Research Cloud</a>, a collaborative Australian research platform supported by the National Collaborative Research Infrastructure Strategy (NCRIS).</li>
-                          <li><a href="https://www.burnet.edu.au/">Burnet Institute</a>, an Australian independent research institute focused on global health equality. Provides computational and salary support.</li>
-                          <li><a href="https://www.deakin.edu.au/">Deakin University</a>, a Geelong and Melbourne based University supports DEE2 through collaboration, computing and infrastructure. Particular support is provided by <a href="https://www.deakin.edu.au/faculty-of-science-engineering-and-built-environment/school-of-life-and-environmental-sciences">School of Life and Environmental Sciences</a>.</li>  
-                          <li><a href="https://nci.org.au/">National Computational Infrastructure Australia</a>, providing access to high performance computing facilities including the GADI supercomputer. NCI is an Australian research platform supported by the National Collaborative Research Infrastructure Strategy (NCRIS).</li>
-                          <li>We also recognise previous contributions from Monash University (MASSIVE) and Baker Heart and Diabetes Institute.</li>
-                          <li>This research would not have been possible without facilities and help from NCBI. In particular, we acknowledge support from <a href="https://www.ncbi.nlm.nih.gov/sra">SRA</a> and <a href="https://www.ncbi.nlm.nih.gov/geo/">GEO</a> for curating and hosting these data.</li>
-                          <li>Dr Antony Kaspi, Dr Wen-Dar Lin (IPMB, Academia Sinica, Taiwan) and everyone who has provided feedback and suggestions.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section">
-                <div class="featured-article">
-                    <div class="featured-content">
-                        <h3>Contact</h3>
-                        <ul>
-                        <li>✉️ For questions and feedback: mark.ziemann[at]gmail.com</li>
-                        <li>Mastodon: <a href="https://genomic.social/@mdziemann">https://genomic.social/@mdziemann</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
+        <div class="footer">
+            <p>Questions or feedback? <a href="contact.html">→Contact</a></p>
+        </div>
     </div>
 
     <script>
         function toggleTheme() {
             document.body.classList.toggle('light-mode');
         }
+
+
+var x, i, j, l, ll, selElmnt, a, b, c;
+/*look for any elements with the class "custom-select":*/
+x = document.getElementsByClassName("custom-select");
+l = x.length;
+for (i = 0; i < l; i++) {
+  selElmnt = x[i].getElementsByTagName("select")[0];
+  ll = selElmnt.length;
+  /*for each element, create a new DIV that will act as the selected item:*/
+  a = document.createElement("DIV");
+  a.setAttribute("class", "select-selected");
+  a.innerHTML = selElmnt.options[selElmnt.selectedIndex].innerHTML;
+  x[i].appendChild(a);
+  /*for each element, create a new DIV that will contain the option list:*/
+  b = document.createElement("DIV");
+  b.setAttribute("class", "select-items select-hide");
+  for (j = 1; j < ll; j++) {
+    /*for each option in the original select element,
+    create a new DIV that will act as an option item:*/
+    c = document.createElement("DIV");
+    c.innerHTML = selElmnt.options[j].innerHTML;
+    c.addEventListener("click", function(e) {
+        /*when an item is clicked, update the original select box,
+        and the selected item:*/
+        var y, i, k, s, h, sl, yl;
+        s = this.parentNode.parentNode.getElementsByTagName("select")[0];
+        sl = s.length;
+        h = this.parentNode.previousSibling;
+        for (i = 0; i < sl; i++) {
+          if (s.options[i].innerHTML == this.innerHTML) {
+            s.selectedIndex = i;
+            h.innerHTML = this.innerHTML;
+            y = this.parentNode.getElementsByClassName("same-as-selected");
+            yl = y.length;
+            for (k = 0; k < yl; k++) {
+              y[k].removeAttribute("class");
+            }
+            this.setAttribute("class", "same-as-selected");
+            break;
+          }
+        }
+        h.click();
+    });
+    b.appendChild(c);
+  }
+  x[i].appendChild(b);
+  a.addEventListener("click", function(e) {
+      /*when the select box is clicked, close any other select boxes,
+      and open/close the current select box:*/
+      e.stopPropagation();
+      closeAllSelect(this);
+      this.nextSibling.classList.toggle("select-hide");
+      this.classList.toggle("select-arrow-active");
+    });
+}
+function closeAllSelect(elmnt) {
+  /*a function that will close all select boxes in the document,
+  except the current select box:*/
+  var x, y, i, xl, yl, arrNo = [];
+  x = document.getElementsByClassName("select-items");
+  y = document.getElementsByClassName("select-selected");
+  xl = x.length;
+  yl = y.length;
+  for (i = 0; i < yl; i++) {
+    if (elmnt == y[i]) {
+      arrNo.push(i)
+    } else {
+      y[i].classList.remove("select-arrow-active");
+    }
+  }
+  for (i = 0; i < xl; i++) {
+    if (arrNo.indexOf(i)) {
+      x[i].classList.add("select-hide");
+    }
+  }
+}
+/*if the user clicks anywhere outside the select box,
+then close all select boxes:*/
+document.addEventListener("click", closeAllSelect);
+
+function openCity(evt, cityName) {
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(cityName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+
+// Get the element with id="defaultOpen" and click on it
+document.getElementById("defaultOpen").click();
+
     </script>
 </body>
 </html>
