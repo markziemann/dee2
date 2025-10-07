@@ -222,7 +222,7 @@ fi
 #Accession number workflow
 if [ -n "$ACC" -a -z "$KEY" ] ; then
   Q=$(echo $ACC | sed 's/\%2C/\|/g' | sed 's/^/\(/' | sed 's/$/\)/' | tr '+' ' ')
-  CNT=$(cut -f-9 $MD | awk '!arr[$1]++' | egrep -iwc "$Q")
+  CNT=$(cut -f-10 $MD | awk '!arr[$1]++' | egrep -wic "$ACC")
 
   echo "<script type=\"text/javascript\"> function toggle(source) { checkboxes = document.getElementsByName('x'); for(var i=0, n=checkboxes.length;i<n;i++) { checkboxes[i].checked = source.checked; } } </script>"
   echo '<form action="request.sh" method="get">'
