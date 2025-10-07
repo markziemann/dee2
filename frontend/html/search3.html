@@ -678,17 +678,20 @@
             <div class="section">
                 <h2 class="section-title">Step 1: select an organism</h2>
                 <p>Choose from Animals, Plants or Microbes then use the drop-down menu.</p>
+
 <div class="tab">
   <button class="tablinks" onclick="openCity(event, 'Animals')" id="defaultOpen">Animals</button>
   <button class="tablinks" onclick="openCity(event, 'Plants')">Plants</button>
   <button class="tablinks" onclick="openCity(event, 'Microbes')">Microbes</button>
 </div>
 
+<form action="cgi-bin/search2.sh" method="get">
+
 <div id="Animals" class="tabcontent">
   <span onclick="this.parentElement.style.display='none'" class="topright">&times</span>
   <h3>Animals</h3>
 <div class="custom-select" style="width:200px;">
-  <select>
+  <select name="org">
     <option value="">Select species:</option>
     <option value="celegans">🪱 <i>C. elegans</i></option>
     <option value="dmelanogaster">🪰 <i>D. melanogaster</i></option>
@@ -698,45 +701,9 @@
     <option value="rnorvegicus">🐀<i>R. norvegicus</i></option>
   </select>
 </div>
-</div>
-
-<div id="Plants" class="tabcontent">
-  <span onclick="this.parentElement.style.display='none'" class="topright">&times</span>
-  <h3>Plants</h3>
-  <div class="custom-select" style="width:200px;">
-  <select>
-    <option value="">Select species:</option>
-    <option value="athaliana">🌱<i>A. thaliana</i></option>
-    <option value="bdistachyon">🌾 <i>B. distachyon</i></option>
-    <option value="gmax">🫘 <i>G. max</i></option>
-    <option value="hvulgare">🌾 <i>H. vulgare</i></option>
-    <option value="osativa">🌾 <i>O. sativa</i></option>
-    <option value="ptrichocarpa">🌳 <i>P. trichocarpa</i></option>
-    <option value="sbicolor">🌾 <i>S. bicolor</i></option>
-    <option value="slycopersicum">🍅 <i>S. lycopersicum</i></option>
-    <option value="stuberosum">🥔 <i>S. tuberosum</i></option>
-    <option value="taestivum">🌾 <i>T. aestivum</i></option>
-    <option value="vvinifera">🍇 <i>V. vinifera</i></option>
-    <option value="zmays">🌽 <i>Z. mays</i></option>
-  </select>
-</div>
-</div>
-
-<div id="Microbes" class="tabcontent">
-  <span onclick="this.parentElement.style.display='none'" class="topright">&times</span>
-  <h3>Microbes</h3>
-  <div class="custom-select" style="width:200px;">
-  <select>
-    <option value="">Select species</option>
-    <option value="ecoli">🦠 <i>E. coli</i></option>
-    <option value="scerevisiae">🍺 <i>S. cerevisiae</i></option>
-  </select>
-</div>
-        </div>
-    </div>
-
+<br>
             <div class="section">
-                <h2 class="section-title">Step 2: search with accession numbers or keywords</h2>
+                <h3 class="section-title">Step 2: search with accession numbers or keywords</h3>
                 <p>
 <strong>Search SRA Project and GEO Series accession numbers </strong> <br> Performs exact word matches.
 Query terms can separated by commas.
@@ -750,12 +717,96 @@ Try GSE63462,SRP070529 for <em>A. thaliana</em>.
 <strong>Search for keywords</strong> <br>
 Try <em>abiotic stress</em> for <em>B. distachyon</em>.<br>
                  </p>
+
 <input type="text" name="keywordsearch"></input><input type="submit" value="Submit" class="tfbutton">
-                 <br><br>
+</form>
+
+</div>
+</div>
+
+<form action="cgi-bin/search2.sh" method="get">
+
+<div id="Plants" class="tabcontent">
+  <span onclick="this.parentElement.style.display='none'" class="topright">&times</span>
+  <h3>Plants</h3>
+<div class="custom-select" style="width:200px;">
+  <select name="org">
+    <option value="">Select species:</option>
+    <option value="athaliana">🌱<i>A. thaliana</i></option>
+    <option value="bdistachyon">🌾 <i>B. distachyon</i></option>
+    <option value="gmax">🫘 <i>G. max</i></option>
+    <option value="hvulgare">🌾 <i>H. vulgare</i></option>
+    <option value="osativa">🌾 <i>O. sativa</i></option>
+    <option value="ptrichocarpa">🌳 <i>P. trichocarpa</i></option>
+    <option value="sbicolor">🌾 <i>S. bicolor</i></option>
+    <option value="slycopersicum">🍅 <i>S. lycopersicum</i></option>
+    <option value="stuberosum">🥔 <i>S. tuberosum</i></option>
+    <option value="taestivum">🌾 <i>T. aestivum</i></option>
+    <option value="vvinifera">🍇 <i>V. vinifera</i></option>
+    <option value="zmays">🌽 <i>Z. mays</i></option>
+
+  </select>
+</div>
+<br>
+            <div class="section">
+                <h3 class="section-title">Step 2: search with accession numbers or keywords</h3>
+                <p>
+<strong>Search SRA Project and GEO Series accession numbers </strong> <br> Performs exact word matches.
+Query terms can separated by commas.
+Try GSE63462,SRP070529 for <em>A. thaliana</em>.
+                </p>
+<input type="text" name="accessionsearch"></input><input type="submit" value="Submit" class="tfbutton">
                  <p>
-                 Hit <i>Submit</i> to start the search.
+                 OR
                  </p>
-            </div>
+                 <p>
+<strong>Search for keywords</strong> <br>
+Try <em>abiotic stress</em> for <em>B. distachyon</em>.<br>
+                 </p>
+
+<input type="text" name="keywordsearch"></input><input type="submit" value="Submit" class="tfbutton">
+</form>
+
+</div>
+</div>
+
+<form action="cgi-bin/search2.sh" method="get">
+
+<div id="Microbes" class="tabcontent">
+  <span onclick="this.parentElement.style.display='none'" class="topright">&times</span>
+  <h3>Microbes</h3>
+<div class="custom-select" style="width:200px;">
+  <select name="org">
+    <option value="">Select species:</option>
+    <option value="">Select species</option>
+    <option value="ecoli">🦠 <i>E. coli</i></option>
+    <option value="scerevisiae">🍺 <i>S. cerevisiae</i></option>
+  </select>
+</div>
+<br>
+            <div class="section">
+                <h3 class="section-title">Step 2: search with accession numbers or keywords</h3>
+                <p>
+<strong>Search SRA Project and GEO Series accession numbers </strong> <br> Performs exact word matches.
+Query terms can separated by commas.
+Try GSE63462,SRP070529 for <em>A. thaliana</em>.
+                </p>
+<input type="text" name="accessionsearch"></input><input type="submit" value="Submit" class="tfbutton">
+                 <p>
+                 OR
+                 </p>
+                 <p>
+<strong>Search for keywords</strong> <br>
+Try <em>abiotic stress</em> for <em>B. distachyon</em>.<br>
+                 </p>
+
+<input type="text" name="keywordsearch"></input><input type="submit" value="Submit" class="tfbutton">
+</form>
+
+</div>
+</div>
+
+</div>
 
             <div class="section">
                 <ul class="article-list">
