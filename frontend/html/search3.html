@@ -677,7 +677,7 @@
 
             <div class="section">
                 <h2 class="section-title">Step 1: select an organism</h2>
-                <p>Choose from Animals, Plants or Microbes then use the drop-down menu.</p>
+                <h4>Choose from Animals, Plants or Microbes.</h4>
 
 <div class="tab">
   <button class="tablinks" onclick="openCity(event, 'Animals')" id="defaultOpen">Animals</button>
@@ -689,16 +689,16 @@
 
 <div id="Animals" class="tabcontent">
   <span onclick="this.parentElement.style.display='none'" class="topright">&times</span>
-  <h3>Animals</h3>
+  <h4>Select an animal from the drop-down menu</h4>
 <div class="custom-select" style="width:200px;">
   <select name="org">
     <option value="">Select species:</option>
     <option value="celegans">🪱 <i>C. elegans</i></option>
     <option value="dmelanogaster">🪰 <i>D. melanogaster</i></option>
     <option value="drerio">🐟 <i>D. rerio</i></option>
-    <option value="hsapiens">👫<i>H. sapiens</i></option>
-    <option value="mmusculus">🐁<i>M. musculus</i></option>
-    <option value="rnorvegicus">🐀<i>R. norvegicus</i></option>
+    <option value="hsapiens">👫 <i>H. sapiens</i></option>
+    <option value="mmusculus">🐁 <i>M. musculus</i></option>
+    <option value="rnorvegicus">🐀 <i>R. norvegicus</i></option>
   </select>
 </div>
 <br>
@@ -707,7 +707,7 @@
                 <p>
 <strong>Search SRA Project and GEO Series accession numbers </strong> <br> Performs exact word matches.
 Query terms can separated by commas.
-Try GSE63462,SRP070529 for <em>A. thaliana</em>.
+Try GSE272581 for <em>D. melanogaster</em>.
                 </p>
 <input type="text" name="accessionsearch"></input><input type="submit" value="Submit" class="tfbutton">
                  <p>
@@ -715,7 +715,7 @@ Try GSE63462,SRP070529 for <em>A. thaliana</em>.
                  </p>
                  <p>
 <strong>Search for keywords</strong> <br>
-Try <em>abiotic stress</em> for <em>B. distachyon</em>.<br>
+Try <em>SGLT2 inhibitor</em> for <em>R. norvegicus</em>.<br>
                  </p>
 
 <input type="text" name="keywordsearch"></input><input type="submit" value="Submit" class="tfbutton">
@@ -728,11 +728,11 @@ Try <em>abiotic stress</em> for <em>B. distachyon</em>.<br>
 
 <div id="Plants" class="tabcontent">
   <span onclick="this.parentElement.style.display='none'" class="topright">&times</span>
-  <h3>Plants</h3>
+  <h4>Select a plant from the drop-down menu</h4>
 <div class="custom-select" style="width:200px;">
   <select name="org">
     <option value="">Select species:</option>
-    <option value="athaliana">🌱<i>A. thaliana</i></option>
+    <option value="athaliana">🌱 <i>A. thaliana</i></option>
     <option value="bdistachyon">🌾 <i>B. distachyon</i></option>
     <option value="gmax">🫘 <i>G. max</i></option>
     <option value="hvulgare">🌾 <i>H. vulgare</i></option>
@@ -753,7 +753,7 @@ Try <em>abiotic stress</em> for <em>B. distachyon</em>.<br>
                 <p>
 <strong>Search SRA Project and GEO Series accession numbers </strong> <br> Performs exact word matches.
 Query terms can separated by commas.
-Try GSE63462,SRP070529 for <em>A. thaliana</em>.
+Try GSE152690 or SRP070529 for <em>A. thaliana</em>.
                 </p>
 <input type="text" name="accessionsearch"></input><input type="submit" value="Submit" class="tfbutton">
                  <p>
@@ -774,11 +774,10 @@ Try <em>abiotic stress</em> for <em>B. distachyon</em>.<br>
 
 <div id="Microbes" class="tabcontent">
   <span onclick="this.parentElement.style.display='none'" class="topright">&times</span>
-  <h3>Microbes</h3>
+  <h4>Select a microbe from the drop-down menu</h4>
 <div class="custom-select" style="width:200px;">
   <select name="org">
     <option value="">Select species:</option>
-    <option value="">Select species</option>
     <option value="ecoli">🦠 <i>E. coli</i></option>
     <option value="scerevisiae">🍺 <i>S. cerevisiae</i></option>
   </select>
@@ -789,7 +788,7 @@ Try <em>abiotic stress</em> for <em>B. distachyon</em>.<br>
                 <p>
 <strong>Search SRA Project and GEO Series accession numbers </strong> <br> Performs exact word matches.
 Query terms can separated by commas.
-Try GSE63462,SRP070529 for <em>A. thaliana</em>.
+Try GSE220559 or SRP446135 for <em>E. coli</em>.
                 </p>
 <input type="text" name="accessionsearch"></input><input type="submit" value="Submit" class="tfbutton">
                  <p>
@@ -797,7 +796,7 @@ Try GSE63462,SRP070529 for <em>A. thaliana</em>.
                  </p>
                  <p>
 <strong>Search for keywords</strong> <br>
-Try <em>abiotic stress</em> for <em>B. distachyon</em>.<br>
+Try <em>hypoxia</em> for <em>S. cerevisiae</em>.<br>
                  </p>
 
 <input type="text" name="keywordsearch"></input><input type="submit" value="Submit" class="tfbutton">
