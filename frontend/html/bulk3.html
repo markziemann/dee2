@@ -546,7 +546,7 @@
         <nav class="navbar">
             <div class="nav-logo"><a href="index3.html">DEE2</a></div>
             <ul class="nav-links">
-                <li><a href="#search">Search</a></li>
+                <li><a href="search3.html">Search</a></li>
                 <li><a href="#request">Request</a></li>
             </ul>
             <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
@@ -554,7 +554,8 @@
         
         <div class="header">
             <div class="header-content">
-                <h1>About us</h1>
+                <div class="logo">💪</div>
+                <h1>DEE2 Bulk Data Resources</h1>
             </div>
         </div>
 
@@ -562,50 +563,69 @@
 
             <div class="section">
                 <div class="featured-article">
-                    <div class="featured-content">
-                        <h3>Our mission</h3>
-                        <p>The goal of DEE2 is to make large scale gene expression data sets accessible to bioinformaticians, biologists and students alike. We use open-source bioinformatics tools and computational resources provided by our academic partners and supporters to provide many thousands of public RNA-seq data sets from a variety of organisms and make them freely accessible under a permissive licence.</p>
-                    </div>
+                    <div class="featured-content"><a href="mx">
+                        <h3>Bulk transcriptome data files</h3>
+                        <p>
+Bulk data dumps for each species are available via http here.
+The data are in HDF5 format.
+There are three HDF5 files for each species.
+STAR counts have the suffix 'se.h5'. STAR counts will always be integers.
+Kallisto estimated counts have the 'ke.h5' suffix and are commonly
+floating point numbers.
+QC metrics are available in the file with the 'qc.h5' suffix.
+                        </p>
+                        <p> 
+HDF5 is ideal for storing and and accessing large and complex datasets.
+Within each of the HDF5 files, there will be three objects.
+"Bigmatrix" is the main data object and contains the gene expression data.
+In this type of data, the rows represent SRA runs, and the columns represent genes.
+The other two objects are the column names and row names.
+HDF5 allows for random access without loading the entire object into memory.
+                    </p>
+                    <p>
+The checksums.md5 file is available for you to check that the downloads have worked
+properly
+                    </p>
+                    <p>
+For guidance working with HDF5 data, I suggest using the rhdf5 R package from Bioconductor.
+                    </p>
+                    </a></div>
                 </div>
             </div>
 
             <div class="section">
                 <div class="featured-article">
-                    <div class="featured-content">
-                        <h3>Who we are</h3>
-                        <p>DEE2 is maintained by Dr Mark Ziemann. Mark is Head of Bioinformatics at Burnet Institute and honorary faculty member of Deakin University. He leads the Bioinformatics working group at Burnet Institute with strong collaborations at Deakin Uni and elsewhere. For more info about his work, visit the group's <a href="https://ziemann-lab.net/">website</a>.</p>
-                    </div>
+                    <div class="featured-content"><a href="metadata">
+                        <h3>Bulk metadata files</h3>
+                        <p>
+There are three types of metadata files.
+Files with the "metadata.tsv" suffix are based on individual SRR runs, and the data contains
+corresponding SRA experiments, SRA project, Experiment Title and GEO information (if 
+available).
+Files with the "metadata.tsv.cut" suffix are similar, but have a cut-down number of columns.
+Files with the "srp.tsv" suffix contain the metadata of SRA projects including the abstract
+of the study.
+                    </p>
+                    </a></div>
                 </div>
             </div>
 
             <div class="section">
-                <div class="featured-article">
-                    <div class="featured-content">
-                        <h3>Contributors</h3>
-                        <p>DEE2 has benefited from support of institutions and individuals including:</p>
-                        <ul>
-                          <li><a href="https://ardc.edu.au/services/ardc-nectar-research-cloud/">Nectar Research Cloud</a>, a collaborative Australian research platform supported by the National Collaborative Research Infrastructure Strategy (NCRIS).</li>
-                          <li><a href="https://www.burnet.edu.au/">Burnet Institute</a>, an Australian independent research institute focused on global health equality. Provides computational and salary support.</li>
-                          <li><a href="https://www.deakin.edu.au/">Deakin University</a>, a Geelong and Melbourne based University supports DEE2 through collaboration, computing and infrastructure. Particular support is provided by <a href="https://www.deakin.edu.au/faculty-of-science-engineering-and-built-environment/school-of-life-and-environmental-sciences">School of Life and Environmental Sciences</a>.</li>  
-                          <li><a href="https://nci.org.au/">National Computational Infrastructure Australia</a>, providing access to high performance computing facilities including the GADI supercomputer. NCI is an Australian research platform supported by the National Collaborative Research Infrastructure Strategy (NCRIS).</li>
-                          <li>We also recognise previous contributions from Monash University (MASSIVE) and Baker Heart and Diabetes Institute.</li>
-                          <li>This research would not have been possible without facilities and help from NCBI. In particular, we acknowledge support from <a href="https://www.ncbi.nlm.nih.gov/sra">SRA</a> and <a href="https://www.ncbi.nlm.nih.gov/geo/">GEO</a> for curating and hosting these data.</li>
-                          <li>Dr Antony Kaspi, Dr Wen-Dar Lin (IPMB, Academia Sinica, Taiwan) and everyone who has provided feedback and suggestions.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+                <ul class="article-list">
+                    <li><a href="https://genomespot.blogspot.com/2025/06/dee2-database-gets-hdf5.html">
+                        <h4>Working with bulk transcriptome data files</h4>
+                        <p class="description">
+A tutorial for working with DEE2's HDF5 files is currently on the GenomeSpot blog.
+                     </p>
+                    </a></li>
 
-            <div class="section">
-                <div class="featured-article">
-                    <div class="featured-content">
-                        <h3>Contact</h3>
-                        <p>✉️ For questions and feedback: mark.ziemann[at]gmail.com</p>
-                        <p>Mastodon: <a href="https://genomic.social/@mdziemann">https://genomic.social/@mdziemann</a></p>
-                    </div>
-                </div>
+                </ul>
             </div>
+        </div>
 
+        <div class="footer">
+            <p>Questions or feedback? <a href="contact.html">→Contact</a></p>
+        </div>
     </div>
 
     <script>
