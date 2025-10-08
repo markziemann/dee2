@@ -538,7 +538,121 @@
             .nav-links {
                 gap: 20px;
             }
+
         }
+
+/*the container must be positioned relative:*/
+.custom-select {
+  position: relative;
+  font-family: Arial;
+}
+
+.custom-select select {
+  display: none; /*hide original SELECT element:*/
+}
+
+.select-selected {
+  background-color: #7b00ff;
+}
+
+/*style the arrow inside the select element:*/
+.select-selected:after {
+  position: absolute;
+  content: "";
+  top: 14px;
+  right: 10px;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-color: #fff transparent transparent transparent;
+}
+
+/*point the arrow upwards when the select box is open (active):*/
+.select-selected.select-arrow-active:after {
+  border-color: transparent transparent #fff transparent;
+  top: 7px;
+}
+
+/*style the items (options), including the selected item:*/
+.select-items div,.select-selected {
+  color: #ffffff;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
+  cursor: pointer;
+  user-select: none;
+}
+
+/*style items (options):*/
+.select-items {
+  position: absolute;
+  background-color: #7b00ff;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 99;
+}
+
+/*hide the items when the select box is closed:*/
+.select-hide {
+  display: none;
+}
+
+.select-items div:hover, .same-as-selected {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons inside the tab */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+  font-size: 17px;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #b583eb;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+
+/* Style the close button */
+.topright {
+  float: right;
+  cursor: pointer;
+  font-size: 28px;
+}
+
+.topright:hover {color: red;}
+
+  input,text,tfbutton{
+ #  font-size:3vmax;
+    font-size:150%;
+}
+
     </style>
 </head>
 <body>
@@ -554,95 +668,144 @@
         
         <div class="header">
             <div class="header-content">
-                <div class="logo">🧬</div>
-                <h1>Digital Expression Explorer 2</h1>
-                <p class="subtitle">A repository of uniformly processed RNA-seq data</p>
+                <div class="logo">🛒</div>
+                <h1>DEE2 Request Tool</h1>
+                <p class="subtitle">Add a dataset to be run in the express queue</p>
             </div>
         </div>
 
         <div class="content">
             <div class="section">
-                <div class="featured-article">
-                    <div class="featured-content">
-                        <h3>Search data</h3>
-                        <p>DEE2 hosts data from >40k projects involving more than a million samples. It includes widely used model organisms. If you're after data from only one or a few studies, this is the tool to try.</p>
-                        <a href="search3.html" class="read-more">Use the data search tool →</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section">
-                <h2 class="section-title">Data resources</h2>
-                <ul class="article-list">
-                    <li><a href="bulk3.html">
-                        <h4>Bulk data access</h4>
-                        <p class="description">Processed transcriptome data and metadata for your data mining pleasure.</p>
-                    </a></li>
-                    <li><a href="request3.html">
-                        <h4>Data-on-demand request service</h4>
-                        <p class="description">Can't find a dataset in DEE2? Never fear, we have set up a system to fulfil your requests.</p>
-                    </a></li>
-                    <li><a href="huge">
-                        <h4>Browse the catalog of bundles</h4>
-                        <p class="description">Each zip file represents an SRA Project.</p>
-                    </a></li>
-                    <li><a href="legacy.html">
-                        <h4>Legacy DEE2 search</h4>
-                        <p class="description">The old search tool based on individual runs. This is only useful if you want a few samples out of a larger study. It is also much slower than the main search tool.</p>
-                    </a></li>
-
-                </ul>
-            </div>
-
-            <div class="section">
-                <h2 class="section-title">Documentation</h2>
-                <div class="tools-grid">
-
-                    <div class="tool-card">
-                        <h4>Tutorials</h4>
-                        <p>Guides for using all our data tools including web search, on-demand, bulk data and the getDEE2 R package.</p>
-                    </div>
-
-                    <div class="tool-card"><a href="pipeline3.html">
-                        <h4>About the pipeline</h4>
-                        <p>Information about the software, reference genomes and the data quality metrics.</p>
-                    </a></div>
-
-                    <div class="tool-card"><a href="news3.html">
-                        <h4>News</h4>
-                        <p>Check the news archive.</p>
-                    </a></div>
-
-                    <div class="tool-card"><a href="aboutus3.html">
-                        <h4>About Us</h4>
-                        <p>Learn about our team and mission.</p>
-                    </a></div>
-
-                    <div class="tool-card">
-                        <h4>Contribute</h4>
-                        <p>Follow these guides to put your computer to work processing data for DEE2. </p>
-                    </div>
-
-                    <div class="tool-card"><a href="https://bioconductor.org/packages/release/bioc/html/getDEE2.html">
-                        <h4>DEE2 R/bioconductor package</h4>
-                        <p>Learn more about <code>getDEE2</code>, the Bioconductor package enabling full access to the data catalog from the R command line. </p>
-                    </a></div>
-
-                </div>
-            </div>
-
-            <div class="section">
                 <ul class="article-list">
                     <li>
-                        <h4>Citation</h4>
-                        <p class="description">Ziemann M, Kaspi A, El-Osta A. Digital expression explorer 2: a repository of uniformly processed RNA sequencing data. Gigascience. 2019 Apr 1;8(4). pii: giz022. DOI:10.1093/gigascience/giz022. <a href="https://doi.org/10.1093/gigascience/giz022">LINK</a></p>
-                    </li>
-                    <li>
-                        <h4>License and commercial use</h4>
-                        <p class="description">DEE2 software and data are provided under the <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GPLv3 public license</a> which allows academic and commercial use. If your organisation uses DEE2 data for financial benefit, consider supporting DEE2 with a financial contribution which will help the long term viability, expand the dataset and enable new features.</p>
+                        <h4>README</h4>
+                        <p class="description">
+Use this form to schedule the analysis of particular SRA projects. Typically, these start with "SRP", "ERP" or "DRP". So long as pysradb can find the runs belonging to this project, this will work.
+Users are limited to free 5 datasets (SRPs) per year. Premium members can have 200 datasets per year, which costs US$100. email mark.ziemann{at}gmail.com to apply.
+All funds are invested into hardware and staff to maintain the resource.
+A combination code will be sent to the email address to confirm that the request originated with that person. Instructions for confirmation are given by email. Requests may take a while depending on how many datasets and how large they are. Please ensure that the email address is correct and check the spam folder before contacting admins for help. To prevent the alert going in your spam folder add www-data@dee2.io and ubuntu@dee2.io to your safe list.
+Completed requests data will be stored for one month only.
+If the server isn't that busy, it will take ~1 hr per dataset of standard size (30M reads).
+                        </p> 
                     </li>
                 </ul>
             </div>
+
+
+            <div class="section">
+                <h2 class="section-title">Step 1: Select an organism</h2>
+                <h4>Choose from Animals, Plants or Microbes.</h4>
+
+<div class="tab">
+  <button class="tablinks" onclick="openCity(event, 'Animals')" id="defaultOpen">Animals</button>
+  <button class="tablinks" onclick="openCity(event, 'Plants')">Plants</button>
+  <button class="tablinks" onclick="openCity(event, 'Microbes')">Microbes</button>
+</div>
+
+<form action="cgi-bin/newrequest2.sh" method="get">
+
+<div id="Animals" class="tabcontent">
+  <span onclick="this.parentElement.style.display='none'" class="topright">&times</span>
+  <h4>Select an animal from the drop-down menu</h4>
+<div class="custom-select" style="width:200px;">
+  <select name="org">
+    <option value="">Select species:</option>
+    <option value="celegans">🪱 <i>C. elegans</i></option>
+    <option value="dmelanogaster">🪰 <i>D. melanogaster</i></option>
+    <option value="drerio">🐟 <i>D. rerio</i></option>
+    <option value="hsapiens">👫 <i>H. sapiens</i></option>
+    <option value="mmusculus">🐁 <i>M. musculus</i></option>
+    <option value="rnorvegicus">🐀 <i>R. norvegicus</i></option>
+  </select>
+</div>
+<br>
+            <div class="section">
+                <h3 class="section-title">Step 2: Specify an SRA Project</h3>
+                <p>
+<b>Request one SRA</b> project accession number Eg: SRP622484 for <i>H. sapiens</i>.
+                </p>
+<input type="text" name="accessionsearch"></input><br><br>
+                <h3 class="section-title">Step 3: Provide your email address</h3>
+                <p>
+For notification. This is mandatory.
+                </p>
+<input type="text" name="emailaddress"></input><input type="submit" value="Submit" class="tfbutton">
+</form>
+
+</div>
+</div>
+
+<form action="cgi-bin/newrequest2.sh" method="get">
+
+<div id="Plants" class="tabcontent">
+  <span onclick="this.parentElement.style.display='none'" class="topright">&times</span>
+  <h4>Select a plant from the drop-down menu.</h4>
+  <h4>Unfortunately, <i>T. aestivum</i> isn't available for request at this time.</h4>
+<div class="custom-select" style="width:200px;">
+  <select name="org">
+    <option value="">Select species:</option>
+    <option value="athaliana">🌱 <i>A. thaliana</i></option>
+    <option value="bdistachyon">🌾 <i>B. distachyon</i></option>
+    <option value="gmax">🫘 <i>G. max</i></option>
+    <option value="hvulgare">🌾 <i>H. vulgare</i></option>
+    <option value="osativa">🌾 <i>O. sativa</i></option>
+    <option value="ptrichocarpa">🌳 <i>P. trichocarpa</i></option>
+    <option value="sbicolor">🌾 <i>S. bicolor</i></option>
+    <option value="slycopersicum">🍅 <i>S. lycopersicum</i></option>
+    <option value="stuberosum">🥔 <i>S. tuberosum</i></option>
+    <option value="vvinifera">🍇 <i>V. vinifera</i></option>
+    <option value="zmays">🌽 <i>Z. mays</i></option>
+
+  </select>
+</div>
+<br>
+            <div class="section">
+                <h3 class="section-title">Step 2: Specify an SRA Project</h3>
+                <p>
+<b>Request one SRA</b> project accession number Eg: SRP521984 for <i>A. thaliana</i>.
+                </p>
+<input type="text" name="accessionsearch"></input><br><br>
+                <h3 class="section-title">Step 3: Provide your email address</h3>
+                <p>
+For notification. This is mandatory.
+                </p>
+<input type="text" name="emailaddress"></input><input type="submit" value="Submit" class="tfbutton">
+</form>
+
+</div>
+</div>
+
+<form action="cgi-bin/newrequest2.sh" method="get">
+
+<div id="Microbes" class="tabcontent">
+  <span onclick="this.parentElement.style.display='none'" class="topright">&times</span>
+  <h4>Select a microbe from the drop-down menu</h4>
+<div class="custom-select" style="width:200px;">
+  <select name="org">
+    <option value="">Select species:</option>
+    <option value="ecoli">🦠 <i>E. coli</i></option>
+    <option value="scerevisiae">🍺 <i>S. cerevisiae</i></option>
+  </select>
+</div>
+<br>
+            <div class="section">
+                <h3 class="section-title">Step 2: Specify an SRA Project</h3>
+                <p>
+<b>Request one SRA</b> project accession number Eg: SRP592228 for <i>S. cerevisiae</i>.
+                </p>
+<input type="text" name="accessionsearch"></input><br><br>
+                <h3 class="section-title">Step 3: Provide your email address</h3>
+                <p>
+For notification. This is mandatory.
+                </p>
+<input type="text" name="emailaddress"></input><input type="submit" value="Submit" class="tfbutton">
+</form>
+
+</div>
+</div>
+
+</div>
+
         </div>
 
         <div class="footer">
@@ -654,6 +817,104 @@
         function toggleTheme() {
             document.body.classList.toggle('light-mode');
         }
+
+
+var x, i, j, l, ll, selElmnt, a, b, c;
+/*look for any elements with the class "custom-select":*/
+x = document.getElementsByClassName("custom-select");
+l = x.length;
+for (i = 0; i < l; i++) {
+  selElmnt = x[i].getElementsByTagName("select")[0];
+  ll = selElmnt.length;
+  /*for each element, create a new DIV that will act as the selected item:*/
+  a = document.createElement("DIV");
+  a.setAttribute("class", "select-selected");
+  a.innerHTML = selElmnt.options[selElmnt.selectedIndex].innerHTML;
+  x[i].appendChild(a);
+  /*for each element, create a new DIV that will contain the option list:*/
+  b = document.createElement("DIV");
+  b.setAttribute("class", "select-items select-hide");
+  for (j = 1; j < ll; j++) {
+    /*for each option in the original select element,
+    create a new DIV that will act as an option item:*/
+    c = document.createElement("DIV");
+    c.innerHTML = selElmnt.options[j].innerHTML;
+    c.addEventListener("click", function(e) {
+        /*when an item is clicked, update the original select box,
+        and the selected item:*/
+        var y, i, k, s, h, sl, yl;
+        s = this.parentNode.parentNode.getElementsByTagName("select")[0];
+        sl = s.length;
+        h = this.parentNode.previousSibling;
+        for (i = 0; i < sl; i++) {
+          if (s.options[i].innerHTML == this.innerHTML) {
+            s.selectedIndex = i;
+            h.innerHTML = this.innerHTML;
+            y = this.parentNode.getElementsByClassName("same-as-selected");
+            yl = y.length;
+            for (k = 0; k < yl; k++) {
+              y[k].removeAttribute("class");
+            }
+            this.setAttribute("class", "same-as-selected");
+            break;
+          }
+        }
+        h.click();
+    });
+    b.appendChild(c);
+  }
+  x[i].appendChild(b);
+  a.addEventListener("click", function(e) {
+      /*when the select box is clicked, close any other select boxes,
+      and open/close the current select box:*/
+      e.stopPropagation();
+      closeAllSelect(this);
+      this.nextSibling.classList.toggle("select-hide");
+      this.classList.toggle("select-arrow-active");
+    });
+}
+function closeAllSelect(elmnt) {
+  /*a function that will close all select boxes in the document,
+  except the current select box:*/
+  var x, y, i, xl, yl, arrNo = [];
+  x = document.getElementsByClassName("select-items");
+  y = document.getElementsByClassName("select-selected");
+  xl = x.length;
+  yl = y.length;
+  for (i = 0; i < yl; i++) {
+    if (elmnt == y[i]) {
+      arrNo.push(i)
+    } else {
+      y[i].classList.remove("select-arrow-active");
+    }
+  }
+  for (i = 0; i < xl; i++) {
+    if (arrNo.indexOf(i)) {
+      x[i].classList.add("select-hide");
+    }
+  }
+}
+/*if the user clicks anywhere outside the select box,
+then close all select boxes:*/
+document.addEventListener("click", closeAllSelect);
+
+function openCity(evt, cityName) {
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(cityName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+
+// Get the element with id="defaultOpen" and click on it
+document.getElementById("defaultOpen").click();
+
     </script>
 </body>
 </html>
