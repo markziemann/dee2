@@ -634,7 +634,7 @@ SUPER_MEMBER=$(grep -c $EMAIL_ADDRESS /usr/lib/cgi-bin/newrequests/super)
 if [ $SUPER_MEMBER -eq 1 ] ; then
   echo "Welcome back SUPER member. Thanks for your support!"
   if [ "$USER_REQUEST_COUNT_IN_LAST_YEAR" -le "$SUPER_LIM" ] ; then
-  echo "Starting the analysis for you now."
+  echo "Starting the analysis for you now. You will receive a notification email when the data is ready."
     echo "<br>"
     echo "<br>"
     CONFIRMED="TRUE"
@@ -650,7 +650,7 @@ fi
 if [ $PREMIUM_MEMBER -eq 1 ] ; then
   echo "Welcome back premium member. Thanks for your support!"
   if [ "$USER_REQUEST_COUNT_IN_LAST_YEAR" -le "$PREMIUM_LIM" ] ; then
-  echo "Starting the analysis for you now."
+  echo "Starting the analysis for you now. You will receive a notification email when the data is ready."
     echo "<br>"
     echo "<br>"
     CONFIRMED="TRUE"
@@ -666,7 +666,7 @@ fi
 if [ $PREMIUM_MEMBER -eq 0 ] ;then
   if [ $SUPER_MEMBER -eq 0 ] ; then
     if [ "$USER_REQUEST_COUNT_IN_LAST_YEAR" -le $FREE_LIM ] ; then
-      echo "Starting the analysis!"
+      echo "Starting the analysis! You will receive a notification email when the data is ready."
       echo "<br>"
       echo "<br>"
       CONFIRMED="TRUE"
