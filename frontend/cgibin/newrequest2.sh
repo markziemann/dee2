@@ -683,7 +683,7 @@ contacts."
 echo "<br>"
 echo "<br>"
 
-COMBO=$(echo {a..z}{a..z}{0..9}{0..9} | tr ' ' '\n' | shuf | head -1)
+COMBO=$(for i in {1..10} ; do echo {a..z} {0..9} | tr ' ' '\n' | shuf | head -1 ; done | paste -s -d '')
 
 echo "COMBO=$COMBO" >> $TMPFILE
 
@@ -691,7 +691,9 @@ EMAIL_BODY=$(cat <<'EOF'
 Hello DEE2 user,
 
 A request was made to process dataset ACC from this email address.
-Please confirm it by visiting the link https:/dee2.io/confirm.html and providing the combination COMBO.
+
+Please confirm it by visiting the link https://dee2.io/cgi-bin/confirm.sh?accession=ACC&confirmcode=COMBO
+
 Data processing won't begin unless it is validated.
 
 Best wishes,
