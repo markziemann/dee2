@@ -539,7 +539,6 @@
                 gap: 20px;
             }
         }
-
     </style>
 </head>
 <body>
@@ -547,15 +546,16 @@
         <nav class="navbar">
             <div class="nav-logo"><a href="index3.html">DEE2</a></div>
             <ul class="nav-links">
-                <li><a href="search3.html">Search</a></li>
-                <li><a href="request3.html">Request</a></li>
+                <li><a href="#search">Search</a></li>
+                <li><a href="#request">Request</a></li>
             </ul>
             <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
         </nav>
         
         <div class="header">
             <div class="header-content">
-                <h1>About us</h1>
+                <div class="logo">📊 </div>
+                <h1>Dataset statistics</h1>
             </div>
         </div>
 
@@ -564,50 +564,24 @@
             <div class="section">
                 <div class="featured-article">
                     <div class="featured-content">
-                        <h3>Our mission</h3>
-                        <p>The goal of DEE2 is to make large scale gene expression data sets accessible to bioinformaticians, biologists and students alike. We use open-source bioinformatics tools and computational resources provided by our academic partners and supporters to provide many thousands of public RNA-seq data sets from a variety of organisms and make them freely accessible under a permissive licence.</p>
+                        <h3>Stats by runs</h3>
+                        <p>The DEE2 pipeline is organised around SRA runs. A sample may be represented in one or more runs. A project is likely to have many runs.
+In the below table, you'll see just how many transcriptome runs are available in SRA and what proportion we have been able to process.
+                        </p>
+                        <img src="/images/dee_datasets2.png" style='max-width: 100%'; height: auto; display: block; />
+
+                        <h3>Stats by project</h3>
+                        <p>DEE2 offers many SRA projects as bundled zip files.</p>
+                        <img src="/images/dee_bundles.png" style='max-width: 100%'; height: auto; display: block; />
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="section">
-                <div class="featured-article">
-                    <div class="featured-content">
-                        <h3>Who we are</h3>
-                        <p>DEE2 is maintained by Dr Mark Ziemann. Mark is Head of Bioinformatics at Burnet Institute and honorary faculty member of Deakin University. He leads the Bioinformatics working group at Burnet Institute with strong collaborations at Deakin Uni and elsewhere. For more info about his work, visit the group's <a href="https://ziemann-lab.net/">website</a>.</p>
-                    </div>
-                </div>
-            </div>
 
-            <div class="section">
-                <div class="featured-article">
-                    <div class="featured-content">
-                        <h3>Contributors</h3>
-                        <p>DEE2 has benefited from support of institutions and individuals including:</p>
-                        <ul>
-                          <li><a href="https://ardc.edu.au/services/ardc-nectar-research-cloud/">Nectar Research Cloud</a>, a collaborative Australian research platform supported by the National Collaborative Research Infrastructure Strategy (NCRIS).</li>
-                          <li><a href="https://www.burnet.edu.au/">Burnet Institute</a>, an Australian independent research institute focused on global health equality. Provides computational and salary support.</li>
-                          <li><a href="https://www.deakin.edu.au/">Deakin University</a>, a Geelong and Melbourne based University supports DEE2 through collaboration, computing and infrastructure. Particular support is provided by <a href="https://www.deakin.edu.au/faculty-of-science-engineering-and-built-environment/school-of-life-and-environmental-sciences">School of Life and Environmental Sciences</a>.</li>  
-                          <li><a href="https://nci.org.au/">National Computational Infrastructure Australia</a>, providing access to high performance computing facilities including the GADI supercomputer. NCI is an Australian research platform supported by the National Collaborative Research Infrastructure Strategy (NCRIS).</li>
-                          <li>We also recognise previous contributions from Monash University (MASSIVE) and Baker Heart and Diabetes Institute.</li>
-                          <li>This research would not have been possible without facilities and help from NCBI. In particular, we acknowledge support from <a href="https://www.ncbi.nlm.nih.gov/sra">SRA</a> and <a href="https://www.ncbi.nlm.nih.gov/geo/">GEO</a> for curating and hosting these data.</li>
-                          <li>Dr Antony Kaspi, Dr Wen-Dar Lin (IPMB, Academia Sinica, Taiwan) and everyone who has provided feedback and suggestions.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section">
-                <div class="featured-article">
-                    <div class="featured-content">
-                        <h3 id=Contact><a href="aboutus3.html#Contact"><br>Contact</a></h3>
-                        <p>✉️ For questions and feedback: mark.ziemann[at]gmail.com</p>
-                        <p>👨🏻‍💻To report a problem with DEE2 tool or contribute improvements, raise an issue on our <a href="https://github.com/markziemann/dee2">GitHub Repo</a></p>
-                        <p>Follow Mark on Mastodon: <a href="https://genomic.social/@mdziemann">https://genomic.social/@mdziemann</a></p>
-                    </div>
-                </div>
-            </div>
-
+        <div class="footer">
+            <p>Questions or feedback? <a href="https://dee2.io/aboutus3.html#Contact">→Contact</a></p>
+        </div>
     </div>
 
     <script>
