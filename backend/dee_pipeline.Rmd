@@ -55,6 +55,7 @@ library("reutils")
 library("XML")
 library("rjson")
 library("rhdf5")
+library("reutils")
 
 IPADD="118.138.235.221"
 
@@ -68,7 +69,7 @@ CORES=5
 
 args = commandArgs(trailingOnly=TRUE)
 org=args[1]
-org="osativa"
+org="athaliana"
 
 species_list <- c("3702", "4530", "4577", "6239", "7227", "7955",
   "562", "9606", "10090", "10116", "4932",
@@ -235,7 +236,7 @@ tre<-dim( read.table(paste(DATAWD,"/rownames_tx.txt",sep=""),header=TRUE, commen
 message("run the check of new datasets")
 source("dee_pipeline_functions.R")
 
-mclapply(fin_new,check_contents,gre,tre,mc.cores=8)
+mclapply(fin_new,check_contents,gre,tre,mc.cores=CORES)
 message("done")
 
 val<-paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "validated" ,
@@ -262,7 +263,7 @@ SCP_COMMAND=paste("scp -i ~/.ssh/dee2_2025 ",queue_name ," ubuntu@118.138.235.22
 system(SCP_COMMAND)
 
 #Update metadata on webserver
-accessions_done<-accessions[which(accessions$run %in% runs_done),]
+accessions_done<-accessions[which(accessions$run %in% runs_done),] #thisline audit
 write.table(accessions_done,file=paste(SRADBWD,"/",org,"_accessions.tsv",sep=""),quote=F,row.names=F)
 
 save.image(file = paste(org,".RData",sep=""))
@@ -323,7 +324,7 @@ fetch_esummary <- function(i) {
 YEAR=2025
 #YEAR <- sapply(strsplit(as.character(Sys.Date()),"-"),"[[",1)
 #MINDATE=paste(YEAR,"/01/01",sep="")
-MINDATE=paste("2006","/01/01",sep="")
+MINDATE=paste("2024","/01/01",sep="")
 MAXDATE=paste(YEAR,"/12/31",sep="")
 GEOFILENAME=paste(SRADBWD,"/",org,"_geo_",YEAR,".csv",sep="")
 Sys.sleep(1)
@@ -384,7 +385,11 @@ write.table(gse,GEONEW,sep=",")
 
 ## Now to tidy up the metadata from GEO
 
-```{r,tigymetadata1}
+```{r,tidymetadata1}
+
+GEONEW=paste(SRADBWD,"/",org,"_all.csv",sep="")
+
+gse <- read.table(GEONEW,sep=",")
 
 resx <- merge(res,gse,by.x="sample_alias",by.y="GEO_sample",all.x=TRUE)
 
@@ -434,13 +439,13 @@ qc_res=NULL
 chunksize=200
 while (length(myaccessions) > chunksize ) {
   qc_res_part<-unlist(mclapply(myaccessions[1:chunksize], qc_analysis, org=org,
-    mc.cores=1))
+    mc.cores=CORES))
   qc_res <- c(qc_res,qc_res_part)
   myaccessions <- myaccessions[(chunksize+1):length(myaccessions)]
 }
 
 if (length(myaccessions) > 0 ) {
-  qc_res_part<-unlist(mclapply(myaccessions, qc_analysis, org=org,mc.cores=1))
+  qc_res_part<-unlist(mclapply(myaccessions, qc_analysis, org=org,mc.cores=CORES))
   qc_res <- c(qc_res,qc_res_part)
 }
 x2$QC_summary <- qc_res
@@ -457,12 +462,14 @@ SE, KE, then QC files in HDF5 format.
 
 ```{r,dataagg_hdf5}
 
+CORES=4
+
 h5file <- paste(org,"_se.h5",sep="")
 if (file.exists(h5file)) { file.remove(h5file) }
 h5createFile(h5file)
 srr <- x2$SRR_accession
 file_list <- paste("/mnt/md0/dee2/data/",org,"/",srr,"/",srr,".se.tsv.gz",sep="")
-batch_size <- 1000
+batch_size <- 500
 num_files <- length(file_list)
 rows_per_file <- nrow(read.table(file_list[1],row.names=1,header=TRUE))
 num_cols <- 1
@@ -476,9 +483,9 @@ h5createDataset(
 )
 for (i in seq(1, length(file_list), by = batch_size)) {
   batch_files <- file_list[i:min(i + batch_size - 1, length(file_list))]
-  data_list <- lapply(batch_files, function(f) {
+  data_list <- mclapply(batch_files, function(f) {
     t(as.matrix(read.table(f,header=TRUE,row.names=1)[,1]))
-  } )
+  } , mc.cores=CORES )
   batch_data <- do.call(rbind, data_list)
   row_start <- (i - 1) + 1
   row_end <- row_start + nrow(batch_data) - 1
@@ -491,14 +498,15 @@ mycolnames <- rownames( read.table(file_list[1]) )
 h5write(mycolnames, h5file, "colnames")
 H5close()
 system(paste('rsync -azh -e \"ssh -i  ~/.ssh/dee2_2025 \" ', h5file ,' ubuntu@dee2.io:/dee2_data/bulk/',sep=""))
-renameFile(h5file,"../mx/",overwrite=TRUE)
+copyFile(h5file,"../mx/",overwrite=TRUE)
+unlink(h5file)
 
 # NOW FOR THE KE TSV DATASET
 h5file <- paste(org,"_ke.h5",sep="")
 if (file.exists(h5file)) { file.remove(h5file) }
 h5createFile(h5file)
 file_list <- paste("/mnt/md0/dee2/data/",org,"/",srr,"/",srr,".ke.tsv.gz",sep="")
-batch_size <- 1000
+batch_size <- 500
 num_files <- length(file_list)
 rows_per_file <- nrow(read.table(file_list[1],row.names=1,header=TRUE))
 num_cols <- 1
@@ -512,9 +520,9 @@ num_cols <- 1
 )
 for (i in seq(1, length(file_list), by = batch_size)) {
   batch_files <- file_list[i:min(i + batch_size - 1, length(file_list))]
-  data_list <- lapply(batch_files, function(f) {
+  data_list <- mclapply(batch_files, function(f) {
     t(as.matrix(read.table(f,header=TRUE,row.names=1)[,3]) )
-  } )
+  } , mc.cores=CORES )
   batch_data <- do.call(rbind, data_list)
   row_start <- (i - 1) + 1
   row_end <- row_start + nrow(batch_data) - 1
@@ -527,7 +535,9 @@ mycolnames <- rownames( read.table(file_list[1]) )
 h5write(mycolnames, h5file, "colnames")
 H5close()
 system(paste('rsync -azh -e \"ssh -i  ~/.ssh/dee2_2025 \" ', h5file ,' ubuntu@dee2.io:/dee2_data/bulk/',sep=""))
-renameFile(h5file,"../mx/",overwrite=TRUE)
+copyFile(h5file,"../mx/",overwrite=TRUE)
+unlink(h5file)
+
 
 ## Next is the QC data
 h5file <- paste(org,"_qc.h5",sep="")
@@ -535,9 +545,6 @@ if (file.exists(h5file)) { file.remove(h5file) }
 h5createFile(h5file)
 file_list <- paste("/mnt/md0/dee2/data/",org,"/",srr,"/",srr,".qc",sep="")
 batch_size <- 10000
-num_files <- length(file_list)
-rows_per_file <- nrow(read.table(file_list[1],row.names=1,header=TRUE))
-num_cols <- 1
 qc <- read.csv(file_list[1],row.names=1,header=FALSE,sep=":")
 num_files <- length(file_list)
 rows_per_file <- nrow(read.csv(file_list[1],row.names=1,header=FALSE,sep=":"))
@@ -552,9 +559,9 @@ h5createDataset(
 )
 for (i in seq(1, length(file_list), by = batch_size)) {
   batch_files <- file_list[i:min(i + batch_size - 1, length(file_list))]
-  data_list <- lapply(batch_files, function(f) {
+  data_list <- mclapply(batch_files, function(f) {
     t(as.matrix( read.csv(file_list[1],row.names=1,header=FALSE,sep=":") ) )
-  } )
+  } , mc.cores=CORES )
   batch_data <- do.call(rbind, data_list)
   row_start <- (i - 1) + 1
   row_end <- row_start + nrow(batch_data) - 1
@@ -567,17 +574,18 @@ mycolnames <- rownames( read.table(file_list[1]) )
 h5write(mycolnames, h5file, "colnames")
 H5close()
 system(paste('rsync -azh -e \"ssh -i  ~/.ssh/dee2_2025 \" ', h5file ,' ubuntu@dee2.io:/dee2_data/bulk/',sep=""))
-renameFile(h5file,"../mx/",overwrite=TRUE)
+copyFile(h5file,"../mx/",overwrite=TRUE)
+unlink(h5file)
 
 ```
 
-Todo: move the h5 files to /mx and copy them to the server.
+Make md5sums and send to server.
 
 ```{r,dataagg_legacy}
 
 #aggregate se ke and qc data
-#CMD=paste("./dee_pipeline.sh",org)
-#system(CMD)
+CMD=paste("./dee_pipeline.sh",org)
+system(CMD)
 
 ```
 
@@ -721,5 +729,302 @@ dev.off()
 
 system("scp -i ~/.ssh/dee2_2025 dee_datasets.png ubuntu@dee2.io:/home/ubuntu/dee2/frontend/html/images")
 
+
+animaldf$group="Animal"
+plantdf$group="Plant"
+microbedf$group="Microbe"
+df <- rbind(animaldf,plantdf,microbedf)
+df$pc_complete <- signif(df$completed /  (df$completed +  df$queued) *100 ,3)
+
+df <- df[,c(3,1,2,4)]
+colnames(df) <- c("Group","Queued","Completed","% Complete")
+
+library(gridExtra)
+library(gtable)
+library(grid)
+
+# Sample data
+data <- data.frame(
+  System = c("Neural Link", "Cyber Deck", "Bio Monitor", "Optic Array"),
+  Status = c("ACTIVE", "STANDBY", "ACTIVE", "OFFLINE"),
+  Capacity = c("98%", "76%", "100%", "0%"),
+  Uptime = c("247h", "180h", "312h", "0h")
+)
+
+# Cyberpunk color scheme
+bg_dark <- "#0a0e27"
+bg_header <- "#1a1f3a"
+text_cyan <- "#00ffff"
+text_magenta <- "#ff00ff"
+text_green <- "#39ff14"
+text_red <- "#ff0055"
+border_neon <- "#00ffff"
+
+# Custom theme function
+cyberpunk_theme <- ttheme_minimal(
+  core = list(
+    fg_params = list(
+      col = text_cyan,
+      fontface = "bold",
+      fontfamily = "mono",
+      cex = 1.1
+    ),
+    bg_params = list(
+      fill = c(rep(c(bg_dark, "#0f1435"), length.out = nrow(data))),
+      col = border_neon,
+      lwd = 2
+    )
+  ),
+  colhead = list(
+    fg_params = list(
+      col = text_magenta,
+      fontface = "bold",
+      fontfamily = "mono",
+      cex = 1.2
+    ),
+    bg_params = list(
+      fill = bg_header,
+      col = border_neon,
+      lwd = 3
+    )
+  ),
+  rowhead = list(
+    fg_params = list(col = text_green),
+    bg_params = list(
+      fill = bg_header,
+      col = border_neon
+    )
+  )
+)
+
+# Draw the table
+png("dee_datasets2.png",width=480,height=550,bg=NA)
+grid.newpage()
+grid.rect(gp = gpar(fill = bg_dark, col = NA))
+g <- tableGrob(df, theme = cyberpunk_theme)
+
+# Add neon glow effect (outer border)
+g <- gtable_add_grob(
+  g,
+  grobs = rectGrob(gp = gpar(col = text_magenta, fill = NA, lwd = 4)),
+  t = 1, l = 1, b = nrow(g), r = ncol(g),
+  z = 0
+)
+grid.draw(g)
+
+# Add title with glow effect
+grid.text(
+  "⚡ DEE2 Data by SRA Run ⚡",
+  x = 0.5, y = 0.95,
+  gp = gpar(
+    col = text_cyan,
+    fontsize = 20,
+    fontface = "bold",
+    fontfamily = "mono"
+  )
+)
+
+dev.off()
+system("scp -i ~/.ssh/dee2_2025 dee_datasets2.png ubuntu@dee2.io:/home/ubuntu/dee2/frontend/html/images")
+
 ```
 
+
+Grab bundles
+
+```{r,}
+
+bundles <- list.files("../sradb/big_proj/",pattern="*zip$",recursive=TRUE)
+
+bundle_tbl <- table(sapply(strsplit(bundles,"/"),"[[",1))
+
+names(bundle_tbl) <- c("A. thaliana", "B. distachyon", "C. elegans",
+  "D. melanogaster","D. rerio", "E. coli", "G. max",
+  "H. sapiens", "H. vulgare", "M. musculus", "O. sativa",
+  "P. trichocarpa", "R. norvegicus", "S. bicolor",
+  "S. cerevisiae", "S. lycopersicum", "S. tuberosum",
+  "T. aestivum", "V. vinifera", "Z. mays")
+
+animal_bundles <- bundle_tbl[names(bundle_tbl) %in% animals]
+plant_bundles <- bundle_tbl[names(bundle_tbl) %in% plants]
+microbe_bundles <- bundle_tbl[names(bundle_tbl) %in% microbes]
+
+animal_bundles <- data.frame(animal_bundles,row.names=names(animal_bundles))
+plant_bundles <- data.frame(plant_bundles,row.names=names(plant_bundles))
+microbe_bundles <- data.frame(microbe_bundles,row.names=names(microbe_bundles))
+
+animal_bundles$Var1 <- "Animal"
+plant_bundles$Var1 <- "Plant"
+microbe_bundles$Var1 <- "Microbe"
+
+bundle_tbl2 <- rbind(animal_bundles,plant_bundles,microbe_bundles)
+colnames(bundle_tbl2) <- c("Group","No. bundles")
+
+df2 <- bundle_tbl2
+
+# Draw the table
+png("dee_bundles.png",width=480,height=550,bg=NA)
+grid.newpage()
+grid.rect(gp = gpar(fill = bg_dark, col = NA))
+g <- tableGrob(df2, theme = cyberpunk_theme)
+
+# Add neon glow effect (outer border)
+g <- gtable_add_grob(
+  g,
+  grobs = rectGrob(gp = gpar(col = text_magenta, fill = NA, lwd = 4)),
+  t = 1, l = 1, b = nrow(g), r = ncol(g),
+  z = 0
+)
+grid.draw(g)
+
+# Add title with glow effect
+grid.text(
+  "⚡ DEE2 Data Bundles ⚡",
+  x = 0.5, y = 0.95,
+  gp = gpar(
+    col = text_cyan,
+    fontsize = 20,
+    fontface = "bold",
+    fontfamily = "mono"
+  )
+)
+
+dev.off()
+system("scp -i ~/.ssh/dee2_2025 dee_bundles.png ubuntu@dee2.io:/home/ubuntu/dee2/frontend/html/images")
+
+```
+
+```{r,bundles}
+
+CMD_BUNDLES <- paste("system bundles.sh",org)
+system(CMD_BUNDLES)
+
+library(rentrez)
+library(xml2)
+library(jsonlite)
+
+get_sra_studies_metadata_xml2 <- function(study_accessions) {
+  results <- list()
+
+  for (accession in study_accessions) {
+    cat("Fetching:", accession, "\n")
+
+    tryCatch({
+      # Search for the study
+      search_result <- entrez_search(
+        db = "sra",
+        term = paste0(accession, "[Accession]"),
+        retmax = 100
+      )
+
+      if (length(search_result$ids) > 0) {
+        # Fetch XML data
+        xml_data <- entrez_fetch(
+          db = "sra",
+          id = search_result$ids[1],
+          rettype = "xml"
+        )
+
+        # Parse XML with xml2
+        doc <- read_xml(xml_data)
+
+        # Helper function to safely extract values
+        safe_extract_xml2 <- function(xpath_expr, doc) {
+          result <- xml_find_all(doc, xpath_expr)
+          if (length(result) == 0) {
+            return(NA)
+          } else if (grepl("@", xpath_expr)) {
+            # It's an attribute
+            return(xml_text(result[1]))
+          } else {
+            # It's an element
+            return(xml_text(result[1]))
+          }
+        }
+
+        study_info <- list(
+          accession = accession,
+          study_accession = xml_attr(xml_find_first(doc, "//STUDY"), "accession"),
+          title = safe_extract_xml2("//STUDY_TITLE", doc),
+          abstract = safe_extract_xml2("//STUDY_ABSTRACT", doc),
+          description = safe_extract_xml2("//STUDY_DESCRIPTION", doc),
+          study_type = xml_attr(xml_find_first(doc, "//STUDY_TYPE"), "existing_study_type"),
+          center = xml_attr(xml_find_first(doc, "//STUDY"), "center_name"),
+          submission_date = xml_attr(xml_find_first(doc, "//STUDY"), "created")
+        )
+
+        results[[accession]] <- study_info
+
+      } else {
+        cat("No results found for", accession, "\n")
+        results[[accession]] <- list(accession = accession, error = "No results found")
+      }
+
+    }, error = function(e) {
+      cat("Error processing", accession, ":", e$message, "\n")
+      results[[accession]] <- list(accession = accession, error = e$message)
+    })
+
+    Sys.sleep(3)  # Rate limiting
+  }
+
+  return(results)
+}
+
+metadata_to_dataframe <- function(metadata_list) {
+  df_list <- lapply(names(metadata_list), function(acc) {
+    study <- metadata_list[[acc]]
+    data.frame(
+      query_accession = acc,
+      study_accession = ifelse(is.null(study$study_accession) || is.na(study$study_accession),
+                              acc, study$study_accession),
+      title = ifelse(is.null(study$title), NA, study$title),
+      abstract = ifelse(is.null(study$abstract), NA, study$abstract),
+      description = ifelse(is.null(study$description), NA, study$description),
+      study_type = ifelse(is.null(study$study_type), NA, study$study_type),
+      center = ifelse(is.null(study$center), NA, study$center),
+      submission_date = ifelse(is.null(study$submission_date), NA, study$submission_date),
+      error = ifelse(is.null(study$error), NA, study$error),
+      stringsAsFactors = FALSE
+    )
+  })
+
+  do.call(rbind, df_list)
+}
+
+harvest_bundle_metadata <- function(org) {
+  bundle_path <- paste("/mnt/md0/dee2/sradb/big_proj/",org,sep="")
+  zips <- list.files(bundle_path,pattern="zip$")
+  srps <- sapply(strsplit(zips,"_"),"[[",1)
+  zips <- zips[which(! duplicated(srps))] # exclude duplicate bundles without GSE info
+  srps <- srps[which(! duplicated(srps))]
+  gse <- gsub(".zip","",sapply(strsplit(zips,"_"),"[[",2))
+  myfilename <- paste("../sradb/",org,"_srp.tsv",sep="")
+  file.copy(myfilename,"tmp0",overwrite=TRUE)
+  system("cut -f1 tmp0  > tmp1")
+  srp_existing <- gsub('"',"",readLines("tmp1"))
+  srps_new <- setdiff(srps,srp_existing)
+  res2 <- get_sra_studies_metadata_xml2(srps_new)
+  res2df <- metadata_to_dataframe(res2)
+  res2df$GSE <- gse[which(srps %in% res2df$query_accession)]
+  zips2 <- zips[which(srps %in% res2df$query_accession)] # only include bundles with metadata
+  res2df$URL <- paste("https://dee2.io/huge/",org,"/",zips2,sep="")
+  write.table(x=res2df,file=myfilename,sep="\t",row.names=FALSE, append=TRUE)
+  SYSCOMMAND <- gsub("myorg",org,"scp -i ~/.ssh/dee2_2025 ../sradb/myorg_srp.tsv ubuntu@dee2.io:/dee2_data/metadata/")
+  system(SYSCOMMAND)
+  unlink("tmp1")
+  unlink("tmp0")
+}
+
+harvest_bundle_metadata(org)
+
+```
+
+
+## Session information
+
+```{r,session}
+
+sessionInfo()
+
+```
