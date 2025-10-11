@@ -30,6 +30,7 @@ for FILE  in  $(cat CONFIRMED) ; do
     L1=$(echo $ORG | cut -c1 | tr '[:upper:]' '[:lower:]') ; echo $L1
     W2=$(echo $ORG | cut -d ' ' -f2)
     ORG2=$L1$W2
+    ln -s ../tallyup .
 
     # DOWNLOAD
     for SRR in $RUNS ; do
@@ -46,7 +47,7 @@ for FILE  in  $(cat CONFIRMED) ; do
       done
 
       touch LOCK1
-      prefetch -X 9999999999999 -o ${ORG}_${SRR}.sra $SRR
+      prefetch -X 9999999999999 -o ${ORG2}_${SRR}.sra $SRR
       rm LOCK1
 
       {
@@ -55,7 +56,7 @@ for FILE  in  $(cat CONFIRMED) ; do
         done
 
         touch LOCK2
-        apptainer run -w -B ${PWD}:/dee2/mnt/ tallyup -s $ORG -t 16 -d
+        apptainer run -w -B ${PWD}:/dee2/mnt/ tallyup -s $ORG2 -t 16 -d
         rm LOCK2
       } &
 
@@ -136,3 +137,5 @@ for FILE  in  $(cat CONFIRMED) ; do
     rm LOCK
   fi
 done
+
+Rscript getmetadata.R
