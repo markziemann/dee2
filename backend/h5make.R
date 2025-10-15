@@ -13,7 +13,7 @@ h5file <- paste(org,"_se.h5",sep="")
 if (file.exists(h5file)) { file.remove(h5file) }
 h5createFile(h5file)
 
-input_dir <- paste("/mnt/md0/dee2/data/",org,sep="")
+input_dir <- paste("/mnt/hdd1/dee2/data/",org,sep="")
 file_list <- list.files(input_dir, pattern = "se.tsv.gz$", recursive=TRUE, full.names = TRUE)
 batch_size <- 1000
 
@@ -54,7 +54,7 @@ h5file <- paste(org,"_ke.h5",sep="")
 if (file.exists(h5file)) { file.remove(h5file) }
 h5createFile(h5file)
 
-input_dir <- paste("/mnt/md0/dee2/data/",org,sep="")
+input_dir <- paste("/mnt/hdd1/dee2/data/",org,sep="")
 file_list <- list.files(input_dir, pattern = "ke.tsv.gz$", recursive=TRUE, full.names = TRUE)
 batch_size <- 1000
 
@@ -95,7 +95,7 @@ h5file <- paste(org,"_qc.h5",sep="")
 if (file.exists(h5file)) { file.remove(h5file) }
 h5createFile(h5file)
 
-input_dir <- paste("/mnt/md0/dee2/data/",org,sep="")
+input_dir <- paste("/mnt/hdd1/dee2/data/",org,sep="")
 file_list <- list.files(input_dir, pattern = "\\.qc$", recursive=TRUE, full.names = TRUE)
 batch_size <- 1000
 
