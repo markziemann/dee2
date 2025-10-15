@@ -46,7 +46,7 @@ done
 
 ```{r,begin}
 
-setwd("/mnt/md0/dee2/code")
+setwd("/mnt/hdd1/dee2/code")
 
 library("parallel")
 library("data.table")
@@ -468,7 +468,7 @@ h5file <- paste(org,"_se.h5",sep="")
 if (file.exists(h5file)) { file.remove(h5file) }
 h5createFile(h5file)
 srr <- x2$SRR_accession
-file_list <- paste("/mnt/md0/dee2/data/",org,"/",srr,"/",srr,".se.tsv.gz",sep="")
+file_list <- paste("/mnt/hdd1/dee2/data/",org,"/",srr,"/",srr,".se.tsv.gz",sep="")
 batch_size <- 500
 num_files <- length(file_list)
 rows_per_file <- nrow(read.table(file_list[1],row.names=1,header=TRUE))
@@ -505,7 +505,7 @@ unlink(h5file)
 h5file <- paste(org,"_ke.h5",sep="")
 if (file.exists(h5file)) { file.remove(h5file) }
 h5createFile(h5file)
-file_list <- paste("/mnt/md0/dee2/data/",org,"/",srr,"/",srr,".ke.tsv.gz",sep="")
+file_list <- paste("/mnt/hdd1/dee2/data/",org,"/",srr,"/",srr,".ke.tsv.gz",sep="")
 batch_size <- 500
 num_files <- length(file_list)
 rows_per_file <- nrow(read.table(file_list[1],row.names=1,header=TRUE))
@@ -543,7 +543,7 @@ unlink(h5file)
 h5file <- paste(org,"_qc.h5",sep="")
 if (file.exists(h5file)) { file.remove(h5file) }
 h5createFile(h5file)
-file_list <- paste("/mnt/md0/dee2/data/",org,"/",srr,"/",srr,".qc",sep="")
+file_list <- paste("/mnt/hdd1/dee2/data/",org,"/",srr,"/",srr,".qc",sep="")
 batch_size <- 10000
 qc <- read.csv(file_list[1],row.names=1,header=FALSE,sep=":")
 num_files <- length(file_list)
@@ -645,7 +645,7 @@ This is the last step.
 
 ```{r, updatepng}
 
-FILES1 <- list.files(pattern="*metadata.complete.tsv.cut$",path="/mnt/md0/dee2/sradb/",full.names=T)
+FILES1 <- list.files(pattern="*metadata.complete.tsv.cut$",path="/mnt/hdd1/dee2/sradb/",full.names=T)
 x <- as.data.frame(sapply(FILES1,rowcnt2),stringsAsFactors=FALSE)
 
 rownames(x)=c("A. thaliana", "B. distachyon", "C. elegans",
@@ -657,7 +657,7 @@ rownames(x)=c("A. thaliana", "B. distachyon", "C. elegans",
 
 colnames(x)="queued"
 
-FILES2 <- list.files(pattern="*_metadata.tsv$",path="/mnt/md0/dee2/sradb/",full.names=T)
+FILES2 <- list.files(pattern="*_metadata.tsv$",path="/mnt/hdd1/dee2/sradb/",full.names=T)
 y <- as.data.frame(sapply(FILES2,rowcnt2),stringsAsFactors=FALSE)
 
 rownames(y)=c("A. thaliana", "B. distachyon", "C. elegans",
@@ -993,7 +993,7 @@ metadata_to_dataframe <- function(metadata_list) {
 }
 
 harvest_bundle_metadata <- function(org) {
-  bundle_path <- paste("/mnt/md0/dee2/sradb/big_proj/",org,sep="")
+  bundle_path <- paste("/mnt/hdd1/dee2/sradb/big_proj/",org,sep="")
   zips <- list.files(bundle_path,pattern="zip$")
   srps <- sapply(strsplit(zips,"_"),"[[",1)
   zips <- zips[which(! duplicated(srps))] # exclude duplicate bundles without GSE info

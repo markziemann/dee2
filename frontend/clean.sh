@@ -100,7 +100,7 @@ if [ ! -r started ] ; then
 
             if [ $CONNECT -eq 1 -a $STORAGE -eq 1 ] ; then
               unzip -o $FILE -d $TMPDATA/$ORG && \
-              scp -r -P 2210 $TMPDATA/$ORG/$SRR mdz@localhost:/mnt/md0/dee2/data/$ORG
+              scp -r -P 2210 $TMPDATA/$ORG/$SRR mdz@localhost:/mnt/hdd1/dee2/data/$ORG
               sudo rm -rf $TMPDATA/$ORG/$SRR $FILE
               #sleep 1s
             else

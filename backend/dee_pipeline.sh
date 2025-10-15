@@ -2,9 +2,9 @@
 
 CORES=16
 ORG=$1
-DIR=/mnt/md0/dee2/data/$ORG
-MDDIR=/mnt/md0/dee2/sradb
-MXDIR=/mnt/md0/dee2/mx
+DIR=/mnt/hdd1/dee2/data/$ORG
+MDDIR=/mnt/hdd1/dee2/sradb
+MXDIR=/mnt/hdd1/dee2/mx
 SEH5=$MXDIR/${ORG}_se.h5
 KEH5=$MXDIR/${ORG}_ke.h5
 QCH5=$MXDIR/${ORG}_qc.h5
@@ -40,7 +40,7 @@ pbzip2 -c $MD > $MDC
 # checksums
 rm  $MXDIR/checksums.md5
 wait
-cat $MXDIR/*md5 | sed 's#/mnt/md0/dee2/mx/##' > $MXDIR/checksums.md5
+cat $MXDIR/*md5 | sed 's#/mnt/hdd1/dee2/mx/##' > $MXDIR/checksums.md5
 # transfer to webserver
 scp -i ~/.ssh/dee2_2025 $SEH5 $KEH5 $QCH5 $MDC $MXDIR/checksums.md5 \
 ubuntu@118.138.235.221:/dee2_data/bulk/

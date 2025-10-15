@@ -70,8 +70,8 @@ for FILE  in  $(cat CONFIRMED) ; do
     mkdir $SRP
     ORG3=$(echo $ORG2 | cut -c-3)
     # get gene and tx info
-    cp /mnt/md0/dee2/gene_info/${ORG3}_gene_info.tsv $SRP/GeneInfo.tsv
-    cp /mnt/md0/dee2/gene_info/${ORG3}_tx_info.tsv $SRP/TxInfo.tsv
+    cp /mnt/hdd1/dee2/gene_info/${ORG3}_gene_info.tsv $SRP/GeneInfo.tsv
+    cp /mnt/hdd1/dee2/gene_info/${ORG3}_tx_info.tsv $SRP/TxInfo.tsv
 
     # get star gene counts
     SE=$(find . | grep se.tsv)
