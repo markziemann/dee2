@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -x
+set -e
+
 # ulimit issue
 #if [ $(ulimit -n) -lt 1000000 ] ; then
 #  echo Error: need to increase ULIMIT for this to work properly
@@ -40,6 +43,7 @@ cut -d ' ' -f2 $DEE2_ACCESSIONS \
 
       #package the gene and tx info
       PFX=$(echo $ORG | cut -c-3)
+      pwd
       cp ../gene_info/${PFX}_gene_info.tsv  $SRP_DIR/GeneInfo.tsv
       cp ../gene_info/${PFX}_tx_info.tsv $SRP_DIR/TxInfo.tsv
 
