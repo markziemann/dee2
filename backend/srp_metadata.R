@@ -92,7 +92,7 @@ metadata_to_dataframe <- function(metadata_list) {
 }
 
 harvest_bundle_metadata <- function(org) {
-  bundle_path <- paste("/mnt/md0/dee2/sradb/big_proj/",org,sep="")
+  bundle_path <- paste("/mnt/hdd1/dee2/sradb/big_proj/",org,sep="")
   zips <- list.files(bundle_path,pattern="zip$")
   srps <- sapply(strsplit(zips,"_"),"[[",1)
   zips <- zips[which(! duplicated(srps))] # exclude duplicate bundles without GSE info
