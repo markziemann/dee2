@@ -76,11 +76,11 @@ Q=$DATA/${ORG}.queue.txt
 NEWQ=/home/ubuntu/Public/${ORG}.queue.txt
 ALT_QUEUE=/dee2_data/queue/${ORG}.queue.txt
 
-if [ -r $NEWQ ] ; then
-  awk '{OFS="\t"}{print $0,$0}' $NEWQ | cut -c4-  | sort -k1 -gr | cut -f2 > $DATA/tmp
-  mv $DATA/tmp $Q
-  rm $NEWQ
-fi
+#if [ -r $NEWQ ] ; then
+#  awk '{OFS="\t"}{print $0,$0}' $NEWQ | cut -c4-  | sort -k1 -gr | cut -f2 > $DATA/tmp
+#  mv $DATA/tmp $Q
+#  rm $NEWQ
+#fi
 
 QLINES=$(wc -l < $Q)
 if [ $QLINES == 0 ] ; then
