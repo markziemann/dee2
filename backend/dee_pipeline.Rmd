@@ -47,7 +47,7 @@ done
 It can also be run in R like this:
 
 ```
-rmarkdown::render("dee_pipeline.Rmd",params=list(org = "ecoli"))
+#rmarkdown::render("dee_pipeline.Rmd",params=list(org = "ecoli"))
 ```
 
 
@@ -75,8 +75,8 @@ CORES=5
 #"rnorvegicus", "scerevisiae" , "mmusculus", "ecoli", "hsapiens" )) {
 
 args = commandArgs(trailingOnly=TRUE)
-org=args[1]
-org="ecoli"
+#org=args[1]
+org="athaliana"
 
 species_list <- c("3702", "4530", "4577", "6239", "7227", "7955",
   "562", "9606", "10090", "10116", "4932",
@@ -468,7 +468,7 @@ h5createDataset(
 for (i in seq(1, length(file_list), by = batch_size)) {
   batch_files <- file_list[i:min(i + batch_size - 1, length(file_list))]
   data_list <- mclapply(batch_files, function(f) {
-    t(as.matrix( read.csv(file_list[1],row.names=1,header=FALSE,sep=":") ) )
+    t(as.matrix( read.csv(f,row.names=1,header=FALSE,sep=":") ) )
   } , mc.cores=CORES )
   batch_data <- do.call(rbind, data_list)
   row_start <- (i - 1) + 1
@@ -740,7 +740,7 @@ system("scp -i ~/.ssh/dee2_2025 dee_datasets2.png ubuntu@dee2.io:/home/ubuntu/de
 
 Grab bundles
 
-```{r,}
+```{r,bundles1}
 
 bundles <- list.files("../sradb/big_proj/",pattern="*zip$",recursive=TRUE)
 
@@ -804,7 +804,7 @@ system("scp -i ~/.ssh/dee2_2025 dee_bundles.png ubuntu@dee2.io:/home/ubuntu/dee2
 
 ```{r,bundles}
 
-CMD_BUNDLES <- paste("system bundles.sh",org)
+CMD_BUNDLES <- paste("bash bundles.sh",org)
 system(CMD_BUNDLES)
 
 library(rentrez)
@@ -912,16 +912,19 @@ harvest_bundle_metadata <- function(org) {
   system("cut -f1 tmp0  > tmp1")
   srp_existing <- gsub('"',"",readLines("tmp1"))
   srps_new <- setdiff(srps,srp_existing)
-  res2 <- get_sra_studies_metadata_xml2(srps_new)
-  res2df <- metadata_to_dataframe(res2)
-  res2df$GSE <- gse[which(srps %in% res2df$query_accession)]
-  zips2 <- zips[which(srps %in% res2df$query_accession)] # only include bundles with metadata
-  res2df$URL <- paste("https://dee2.io/huge/",org,"/",zips2,sep="")
-  write.table(x=res2df,file=myfilename,sep="\t",row.names=FALSE, append=TRUE)
-  SYSCOMMAND <- gsub("myorg",org,"scp -i ~/.ssh/dee2_2025 ../sradb/myorg_srp.tsv ubuntu@dee2.io:/dee2_data/metadata/")
-  system(SYSCOMMAND)
-  unlink("tmp1")
-  unlink("tmp0")
+
+  if ( length(srps_new) > 0 ) {
+    res2 <- get_sra_studies_metadata_xml2(srps_new)
+    res2df <- metadata_to_dataframe(res2)
+    res2df$GSE <- gse[which(srps %in% res2df$query_accession)]
+    zips2 <- zips[which(srps %in% res2df$query_accession)] # only include bundles with metadata
+    res2df$URL <- paste("https://dee2.io/huge/",org,"/",zips2,sep="")
+    write.table(x=res2df,file=myfilename,sep="\t",row.names=FALSE, append=TRUE)
+    SYSCOMMAND <- gsub("myorg",org,"scp -i ~/.ssh/dee2_2025 ../sradb/myorg_srp.tsv ubuntu@dee2.io:/dee2_data/metadata/")
+    system(SYSCOMMAND)
+    unlink("tmp1")
+    unlink("tmp0")
+  }
 }
 
 harvest_bundle_metadata(org)
