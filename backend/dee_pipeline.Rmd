@@ -68,15 +68,9 @@ IPADD="118.138.235.221"
 
 CORES=5
 
-#start the analysis
-
-#for ( org in c( "athaliana", "osativa", "zmays",
-# "celegans", "dmelanogaster", "drerio",
-#"rnorvegicus", "scerevisiae" , "mmusculus", "ecoli", "hsapiens" )) {
-
 args = commandArgs(trailingOnly=TRUE)
-#org=args[1]
-org="athaliana"
+org=args[1]
+org="ecoli"
 
 species_list <- c("3702", "4530", "4577", "6239", "7227", "7955",
   "562", "9606", "10090", "10116", "4932",
@@ -499,33 +493,31 @@ system(CMD)
 
 ## Transfer the data files to the webserver
 
+Calculate which datasets need to be uploaded, then collect them in a single folder on the host.
+Then copy them all over in one rsync command.
+
 ```{r,transfer1}
 
-#delete *e.tsv.gz after each chunk of 10000
-#not needed if --exclude \"*.gz\" is used
-CMD2=paste('ssh -i ~/.ssh/dee2_2025 ubuntu@dee2.io "find /dee2_data/data/',org,' | grep e.tsv.gz | parallel -j1 rm {}"',sep="")
+CMDX=paste('ssh -i ~/.ssh/dee2_2025 ubuntu@dee2.io "ls /dee2_data/data/',org,'"' , sep="")
+svr_contents <- system2(CMDX, intern=TRUE)
+rr_contents <- svr_contents[grep("RR",svr_contents)]
+to_transfer <- x2$SRR_accession[which(!x2$SRR_accession %in% rr_contents)]
 
-#here we rsync files to server in chunks of 50000
-rsync<-function(d,org) {
-  while ( length(d)>0 ) {
-    CHUNKSIZE=10000
-    if ( length(d)>CHUNKSIZE ) {
-      chunk<-paste(d[1:CHUNKSIZE],collapse=" ")
-      d<-setdiff(d,d[1:CHUNKSIZE])
-    } else {
-      chunk<-paste(d[1:length(d)],collapse=" ")
-      d<-setdiff(d,d[1:CHUNKSIZE])
-    }
-    CMD=paste('rsync -azh -e \"ssh -i  ~/.ssh/dee2_2025 \" --exclude \"*.gz\" ', chunk ,' ubuntu@dee2.io:/dee2_data/data/',org,sep="")
-    writeLines(CMD,"cmd")
-    system("bash cmd")
-    unlink("cmd")
-    system(CMD2)
-    message(length(d))
-  }
-}
-d<-val
-rsync(d,org)
+if ( ! file.exists(dest_path) ) { dir.create(dest_path) }
+
+lapply(to_transfer, function(srr) {
+  origin_path <- paste("/mnt/hdd1/dee2/data/",org,"/",srr,sep="")
+  dest_path <- paste("/mnt/hdd1/dee2/tmp","/",org,sep="")
+  file.copy(origin_path,dest_path,recursive=TRUE)
+})
+
+ll <- list.files(dest_path,recursive=TRUE,full.names=TRUE)
+to_delete <- ll[grep("gz$",ll)]
+lapply(to_delete,unlink)
+rsync_command <- "rsync -azh -e \"ssh -i  ~/.ssh/dee2_2025 \" ORG ubuntu@dee2.io:/dee2_data/data/"
+rsync_command <- gsub("ORG",org,rsync_command)
+system(rsync_command)
+unlink(dest_path,recursive=TRUE)
 
 #now attach the additional metadata and upload
 x<-res[, !(colnames(res) %in%
