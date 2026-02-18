@@ -70,7 +70,7 @@ CORES=5
 
 args = commandArgs(trailingOnly=TRUE)
 org=args[1]
-org="ecoli"
+org="celegans"
 
 species_list <- c("3702", "4530", "4577", "6239", "7227", "7955",
   "562", "9606", "10090", "10116", "4932",
@@ -273,13 +273,34 @@ save.image(file = paste(org,".RData",sep=""))
 
 ## Get GEO metadata information
 
-Again any data from 2022 or earlier has been previously downloaded so we only need to download 2023 data.
+Any data from earlier years has been previously downloaded so we only need to download current year data.
 
 ```{r,geoquery1}
 
-gq <- paste("Rscript geoquery.R",org)
+pysra_cmd <- paste("~/miniconda3/bin/python -m pysradb search -d geo -m 10000 -O ", species_name, " -C TRANSCRIPTOMIC -D 01-01-2025:31-12-2025 --detailed ")
+pysrares <- system(pysra_cmd,intern=TRUE)
+pysrares2 <- do.call(rbind,strsplit(pysrares,"\t"))
+colnames(pysrares2) <- pysrares2[1,]
+pysrares2 <- pysrares2[-1,]
 
-system(gq)
+GEOFILENAME = paste(SRADBWD,"/",org,"_geo_2025.csv",sep="")
+
+GSE <- pysrares2[,"study_alias"]
+GSM <- pysrares2[,"sample_alias"]
+gse <- unique(data.frame(GSE,GSM))
+colnames(gse) <- c("GEO_series","GEO_sample")
+write.table(gse,GEOFILENAME,sep=",")
+
+# now join old and new
+PATTERN=paste(org,"_geo_20",sep="")
+geofiles <- list.files("../sradb/", pattern=PATTERN,full.names=TRUE)
+gf <- lapply(geofiles,read.csv)
+gf <- do.call(rbind,gf)
+gse <- unique(gf)
+
+# write a backup of GEO data
+GEONEW=paste(SRADBWD,"/",org,"_all.csv",sep="")
+write.table(gse,GEONEW,sep=",")
 
 ```
 
@@ -499,15 +520,15 @@ Then copy them all over in one rsync command.
 ```{r,transfer1}
 
 CMDX=paste('ssh -i ~/.ssh/dee2_2025 ubuntu@dee2.io "ls /dee2_data/data/',org,'"' , sep="")
-svr_contents <- system2(CMDX, intern=TRUE)
+svr_contents <- system(CMDX, intern=TRUE)
 rr_contents <- svr_contents[grep("RR",svr_contents)]
 to_transfer <- x2$SRR_accession[which(!x2$SRR_accession %in% rr_contents)]
 
+dest_path <- paste("/mnt/hdd1/dee2/tmp","/",org,sep="")
 if ( ! file.exists(dest_path) ) { dir.create(dest_path) }
 
 lapply(to_transfer, function(srr) {
   origin_path <- paste("/mnt/hdd1/dee2/data/",org,"/",srr,sep="")
-  dest_path <- paste("/mnt/hdd1/dee2/tmp","/",org,sep="")
   file.copy(origin_path,dest_path,recursive=TRUE)
 })
 
