@@ -70,7 +70,7 @@ CORES=5
 
 args = commandArgs(trailingOnly=TRUE)
 org=args[1]
-org="celegans"
+org="dmelanogaster"
 
 species_list <- c("3702", "4530", "4577", "6239", "7227", "7955",
   "562", "9606", "10090", "10116", "4932",

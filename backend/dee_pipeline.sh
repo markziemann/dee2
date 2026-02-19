@@ -26,7 +26,7 @@ echo "fix permissions"
 ####
 perm775(){
 ACC=$1
-chmod 775 $ACC
+chmod 775 $ACC 2> /dev/null
 }
 export -f perm775
 parallel -j$CORES perm775 :::: $MD.tmp
@@ -35,7 +35,7 @@ parallel -j$CORES perm775 :::: $MD.tmp
 rm $MD.tmp
 
 # metadata
-pbzip2 -c $MD > $MDC
+pbzip2 -p$CORES -c $MD > $MDC
 
 # checksums
 rm  $MXDIR/checksums.md5
