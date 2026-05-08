@@ -87,7 +87,7 @@ cut -d ' ' -f2 $DEE2_ACCESSIONS \
 
       cp $SRRLIST $SRP_DIR/logs
 
-      #zip up folder
+      #zip up folderACTUAL BOWTIE2 MD5
       cd $DIR
       zip -r ${SRP}_${GSE}.zip ${SRP}_${GSE} ../README.md
       rm -rf ${SRP}_${GSE}

@@ -1,0 +1,16 @@
+### /usr/local/bin/STAR   --runMode genomeGenerate   --runThreadN 8   --genomeDir /dee2/ref/kphaffii/ensembl/star   --genomeFastaFiles /dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.dna.toplevel.fa      --limitGenomeGenerateRAM 31000000000   --sjdbGTFfile /dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.62.gtf
+### GstrandBit 32
+versionGenome	20201
+genomeFastaFiles	/dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.dna.toplevel.fa 
+genomeSAindexNbases	14
+genomeChrBinNbits	18
+genomeSAsparseD	1
+sjdbOverhang	100
+sjdbFileChrStartEnd	- 
+sjdbGTFfile	/dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.62.gtf
+sjdbGTFchrPrefix	-
+sjdbGTFfeatureExon	exon
+sjdbGTFtagExonParentTranscript	transcript_id
+sjdbGTFtagExonParentGene	gene_id
+sjdbInsertSave	Basic
+genomeFileSizes	9815506 76980696

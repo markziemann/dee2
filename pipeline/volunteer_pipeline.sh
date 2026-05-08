@@ -383,6 +383,13 @@ elif [ $ORG == "bdistachyon" ] ; then
   BT2_MD5="705148d9b39518787321d91462038421"
   KAL_MD5="e21a952f8f32064d08c0ca35179f00c2"
   STAR_MD5="814ff96269d7bc3f29156fbef398c1c3"
+elif [ $ORG == "kphaffii" ] ; then
+  GTFURL="https://ftp.ebi.ac.uk/ensemblgenomes/pub/fungi/release-62/gtf/komagataella_pastoris/Komagataella_pastoris.GCA_000027005.1.62.gtf.gz"
+  GDNAURL="https://ftp.ebi.ac.uk/ensemblgenomes/pub/fungi/release-62/fasta/komagataella_pastoris/dna/Komagataella_pastoris.GCA_000027005.1.dna.toplevel.fa.gz "
+  CDNAURL="https://ftp.ebi.ac.uk/ensemblgenomes/pub/fungi/release-62/fasta/komagataella_pastoris/cdna/Komagataella_pastoris.GCA_000027005.1.cdna.all.fa.gz"
+  BT2_MD5="dummy_bt2_md5"
+  KAL_MD5="dummy_kallisto_md5"
+  STAR_MD5="dummy_star_md5"
 fi
 
 # download the necessary reference files
@@ -431,6 +438,7 @@ if [ -z $BT2_REF ] || [ ! -r $BT2_REF  ] ; then
   ${BOWTIE2_BUILD} --quiet --threads $THREADS -f $(basename $CDNA) $(basename $CDNA)
   ENS_REFT_BT2=$BT2_DIR/$(basename $CDNA)
   MY_BT2_MD5=$(md5sum $(ls *bt2 | head -1) | awk '{print $1}')
+  echo "ACTUAL BOWTIE2 MD5: $MY_BT2_MD5"
   if [ $MY_BT2_MD5 != $BT2_MD5 ] ; then
     echo "Error in bowtie2 index found. quitting."
     echo "Solution: Try deleting and reindexing the ref transcriptome."
@@ -452,6 +460,7 @@ if [ -z $KAL_REF ] || [ ! -r $KAL_REF  ] ; then
   for IDX in *idx ; do grep -c '>' $(basename $CDNA) > $IDX.cnt ; done
   KAL_REF=$KAL_DIR/$(basename $CDNA).idx
   MY_KAL_MD5=$(md5sum $(ls *idx | head -1) | awk '{print $1}')
+  echo "ACTUAL KALLISTO MD5: $MY_KAL_MD5"
   if [ $MY_KAL_MD5 != $KAL_MD5 ] ; then
     echo "Error in kallisto index found. quitting."
     echo "Solution: Try deleting and reindexing the ref transcriptome."
@@ -477,6 +486,7 @@ if [ ! -r $STAR_DIR/SA ] || [ ! -r $STAR_DIR/SAindex ] ; then
   --runThreadN $THREADS \
   --limitGenomeGenerateRAM $STAR_RAM
   MY_STAR_MD5=$(md5sum SAindex | awk '{print $1}')
+  echo "ACTUAL STAR MD5: $MY_STAR_MD5"
   if [ $MY_STAR_MD5 != $STAR_MD5 ] ; then
     echo "Error in STAR index found. quitting."
     echo "Solution: Try deleting and reindexing the ref genome."
@@ -1446,7 +1456,7 @@ ACC_URL="http://dee2.io/acc.html"
 ACC_REQUEST="http://dee2.io/cgi-bin/acc.sh"
 
 if [ ! -z $MY_ORG ] ; then
-  ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae osativa zmays taestivum slycopersicum sbicolor gmax ptrichocarpa vvinifera hvulgare stuberosum bdistachyon' \
+  ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae osativa zmays taestivum slycopersicum sbicolor gmax ptrichocarpa vvinifera hvulgare stuberosum bdistachyon kphaffii' \
   | tr ' ' '\n' | grep -wc "$MY_ORG")
   if [ $ORG_CHECK -ne 1 ] ; then
     echo Organism not specified correctly. Check options and try again.
@@ -1462,6 +1472,7 @@ hsapiens        28968508
 mmusculus       26069664
 rnorvegicus     26913880
 scerevisiae     1644684
+kphaffii        2000000
 osativa         8000000
 zmays           22000000
 taestivum       39500000

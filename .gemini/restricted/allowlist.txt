@@ -1,0 +1,19 @@
+# Core API Requirements
+googleapis.com
+generativelanguage.googleapis.com
+
+# Bazel Central Registry & Downloads
+bcr.bazel.build
+github.com
+api.github.com
+objects.githubusercontent.com
+release-assets.githubusercontent.com
+registry.npmjs.org
+
+# Go bazel deps
+proxy.golang.org
+dl.google.com
+
+# Python Package Index (Rules Python)
+pypi.org
+files.pythonhosted.org

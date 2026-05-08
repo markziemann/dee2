@@ -22,6 +22,7 @@ if [ $ORG = "slycopersicum" ] ; then ORGANISM='Solanum lycopersicum' ; fi
 if [ $ORG = "stuberosum" ] ; then ORGANISM='Solanum tuberosum' ; fi
 if [ $ORG = "taestivum" ] ; then ORGANISM='Triticum aestivum' ; fi
 if [ $ORG = "vvinifera" ] ; then ORGANISM='Vitis vinifera' ; fi
+if [ $ORG = "kphaffii" ] ; then ORGANISM='Komagataella phaffii' ; fi
 
 > $ORG.csv
 for YEAR in $(seq 2007 2024) ; do

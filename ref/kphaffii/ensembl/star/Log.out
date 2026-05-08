@@ -1,0 +1,406 @@
+STAR version=STAR_2.6.1a_08-27
+STAR compilation time,server,dir=Mon Aug 27 18:20:13 EDT 2018 florence.cshl.edu:/sonas-hs/gingeras/nlsas_norepl/user/dobin/STAR/STAR.master/source
+##### DEFAULT parameters:
+versionSTAR                       20201
+versionGenome                     20101   20200   
+parametersFiles                   -   
+sysShell                          -
+runMode                           alignReads
+runThreadN                        1
+runDirPerm                        User_RWX
+runRNGseed                        777
+genomeDir                         ./GenomeDir/
+genomeLoad                        NoSharedMemory
+genomeFastaFiles                  -   
+genomeChainFiles                  -   
+genomeSAindexNbases               14
+genomeChrBinNbits                 18
+genomeSAsparseD                   1
+genomeSuffixLengthMax             18446744073709551615
+genomeFileSizes                   0   
+genomeConsensusFile               -
+readFilesType                     Fastx   
+readFilesIn                       Read1   Read2   
+readFilesPrefix                   -
+readFilesCommand                  -   
+readMatesLengthsIn                NotEqual
+readMapNumber                     18446744073709551615
+readNameSeparator                 /   
+inputBAMfile                      -
+bamRemoveDuplicatesType           -
+bamRemoveDuplicatesMate2basesN    0
+limitGenomeGenerateRAM            31000000000
+limitIObufferSize                 150000000
+limitOutSAMoneReadBytes           100000
+limitOutSJcollapsed               1000000
+limitOutSJoneRead                 1000
+limitBAMsortRAM                   0
+limitSjdbInsertNsj                1000000
+outFileNamePrefix                 ./
+outTmpDir                         -
+outTmpKeep                        None
+outStd                            Log
+outReadsUnmapped                  None
+outQSconversionAdd                0
+outMultimapperOrder               Old_2.4
+outSAMtype                        SAM   
+outSAMmode                        Full
+outSAMstrandField                 None
+outSAMattributes                  Standard   
+outSAMunmapped                    None   
+outSAMorder                       Paired
+outSAMprimaryFlag                 OneBestScore
+outSAMreadID                      Standard
+outSAMmapqUnique                  255
+outSAMflagOR                      0
+outSAMflagAND                     65535
+outSAMattrRGline                  -   
+outSAMheaderHD                    -   
+outSAMheaderPG                    -   
+outSAMheaderCommentFile           -
+outBAMcompression                 1
+outBAMsortingThreadN              0
+outBAMsortingBinsN                50
+outSAMfilter                      None   
+outSAMmultNmax                    18446744073709551615
+outSAMattrIHstart                 1
+outSAMtlen                        1
+outSJfilterReads                  All
+outSJfilterCountUniqueMin         3   1   1   1   
+outSJfilterCountTotalMin          3   1   1   1   
+outSJfilterOverhangMin            30   12   12   12   
+outSJfilterDistToOtherSJmin       10   0   5   10   
+outSJfilterIntronMaxVsReadN       50000   100000   200000   
+outWigType                        None   
+outWigStrand                      Stranded   
+outWigReferencesPrefix            -
+outWigNorm                        RPM   
+outFilterType                     Normal
+outFilterMultimapNmax             10
+outFilterMultimapScoreRange       1
+outFilterScoreMin                 0
+outFilterScoreMinOverLread        0.66
+outFilterMatchNmin                0
+outFilterMatchNminOverLread       0.66
+outFilterMismatchNmax             10
+outFilterMismatchNoverLmax        0.3
+outFilterMismatchNoverReadLmax    1
+outFilterIntronMotifs             None
+outFilterIntronStrands            RemoveInconsistentStrands
+clip5pNbases                      0   
+clip3pNbases                      0   
+clip3pAfterAdapterNbases          0   
+clip3pAdapterSeq                  -   
+clip3pAdapterMMp                  0.1   
+winBinNbits                       16
+winAnchorDistNbins                9
+winFlankNbins                     4
+winAnchorMultimapNmax             50
+winReadCoverageRelativeMin        0.5
+winReadCoverageBasesMin           0
+scoreGap                          0
+scoreGapNoncan                    -8
+scoreGapGCAG                      -4
+scoreGapATAC                      -8
+scoreStitchSJshift                1
+scoreGenomicLengthLog2scale       -0.25
+scoreDelBase                      -2
+scoreDelOpen                      -2
+scoreInsOpen                      -2
+scoreInsBase                      -2
+seedSearchLmax                    0
+seedSearchStartLmax               50
+seedSearchStartLmaxOverLread      1
+seedPerReadNmax                   1000
+seedPerWindowNmax                 50
+seedNoneLociPerWindow             10
+seedMultimapNmax                  10000
+seedSplitMin                      12
+alignIntronMin                    21
+alignIntronMax                    0
+alignMatesGapMax                  0
+alignTranscriptsPerReadNmax       10000
+alignSJoverhangMin                5
+alignSJDBoverhangMin              3
+alignSJstitchMismatchNmax         0   -1   0   0   
+alignSplicedMateMapLmin           0
+alignSplicedMateMapLminOverLmate    0.66
+alignWindowsPerReadNmax           10000
+alignTranscriptsPerWindowNmax     100
+alignEndsType                     Local
+alignSoftClipAtReferenceEnds      Yes
+alignEndsProtrude                 0   ConcordantPair   
+alignInsertionFlush               None
+peOverlapNbasesMin                0
+peOverlapMMp                      0.01
+chimSegmentMin                    0
+chimScoreMin                      0
+chimScoreDropMax                  20
+chimScoreSeparation               10
+chimScoreJunctionNonGTAG          -1
+chimMainSegmentMultNmax           10
+chimJunctionOverhangMin           20
+chimOutType                       Junctions   
+chimFilter                        banGenomicN   
+chimSegmentReadGapMax             0
+chimMultimapNmax                  0
+chimMultimapScoreRange            1
+chimNonchimScoreDropMin           20
+chimOutJunctionFormat             0   
+sjdbFileChrStartEnd               -   
+sjdbGTFfile                       -
+sjdbGTFchrPrefix                  -
+sjdbGTFfeatureExon                exon
+sjdbGTFtagExonParentTranscript    transcript_id
+sjdbGTFtagExonParentGene          gene_id
+sjdbOverhang                      100
+sjdbScore                         2
+sjdbInsertSave                    Basic
+varVCFfile                        -
+waspOutputMode                    None
+quantMode                         -   
+quantTranscriptomeBAMcompression    1
+quantTranscriptomeBan             IndelSoftclipSingleend
+twopass1readsN                    18446744073709551615
+twopassMode                       None
+##### Command Line:
+/usr/local/bin/STAR --runMode genomeGenerate --sjdbGTFfile /dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.62.gtf --genomeDir /dee2/ref/kphaffii/ensembl/star --genomeFastaFiles /dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.dna.toplevel.fa --runThreadN 8 --limitGenomeGenerateRAM 31000000000
+##### Initial USER parameters from Command Line:
+###### All USER parameters from Command Line:
+runMode                       genomeGenerate     ~RE-DEFINED
+sjdbGTFfile                   /dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.62.gtf     ~RE-DEFINED
+genomeDir                     /dee2/ref/kphaffii/ensembl/star     ~RE-DEFINED
+genomeFastaFiles              /dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.dna.toplevel.fa        ~RE-DEFINED
+runThreadN                    8     ~RE-DEFINED
+limitGenomeGenerateRAM        31000000000     ~RE-DEFINED
+##### Finished reading parameters from all sources
+
+##### Final user re-defined parameters-----------------:
+runMode                           genomeGenerate
+runThreadN                        8
+genomeDir                         /dee2/ref/kphaffii/ensembl/star
+genomeFastaFiles                  /dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.dna.toplevel.fa   
+limitGenomeGenerateRAM            31000000000
+sjdbGTFfile                       /dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.62.gtf
+
+-------------------------------
+##### Final effective command line:
+/usr/local/bin/STAR   --runMode genomeGenerate   --runThreadN 8   --genomeDir /dee2/ref/kphaffii/ensembl/star   --genomeFastaFiles /dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.dna.toplevel.fa      --limitGenomeGenerateRAM 31000000000   --sjdbGTFfile /dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.62.gtf
+
+##### Final parameters after user input--------------------------------:
+versionSTAR                       20201
+versionGenome                     20101   20200   
+parametersFiles                   -   
+sysShell                          -
+runMode                           genomeGenerate
+runThreadN                        8
+runDirPerm                        User_RWX
+runRNGseed                        777
+genomeDir                         /dee2/ref/kphaffii/ensembl/star
+genomeLoad                        NoSharedMemory
+genomeFastaFiles                  /dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.dna.toplevel.fa   
+genomeChainFiles                  -   
+genomeSAindexNbases               14
+genomeChrBinNbits                 18
+genomeSAsparseD                   1
+genomeSuffixLengthMax             18446744073709551615
+genomeFileSizes                   0   
+genomeConsensusFile               -
+readFilesType                     Fastx   
+readFilesIn                       Read1   Read2   
+readFilesPrefix                   -
+readFilesCommand                  -   
+readMatesLengthsIn                NotEqual
+readMapNumber                     18446744073709551615
+readNameSeparator                 /   
+inputBAMfile                      -
+bamRemoveDuplicatesType           -
+bamRemoveDuplicatesMate2basesN    0
+limitGenomeGenerateRAM            31000000000
+limitIObufferSize                 150000000
+limitOutSAMoneReadBytes           100000
+limitOutSJcollapsed               1000000
+limitOutSJoneRead                 1000
+limitBAMsortRAM                   0
+limitSjdbInsertNsj                1000000
+outFileNamePrefix                 ./
+outTmpDir                         -
+outTmpKeep                        None
+outStd                            Log
+outReadsUnmapped                  None
+outQSconversionAdd                0
+outMultimapperOrder               Old_2.4
+outSAMtype                        SAM   
+outSAMmode                        Full
+outSAMstrandField                 None
+outSAMattributes                  Standard   
+outSAMunmapped                    None   
+outSAMorder                       Paired
+outSAMprimaryFlag                 OneBestScore
+outSAMreadID                      Standard
+outSAMmapqUnique                  255
+outSAMflagOR                      0
+outSAMflagAND                     65535
+outSAMattrRGline                  -   
+outSAMheaderHD                    -   
+outSAMheaderPG                    -   
+outSAMheaderCommentFile           -
+outBAMcompression                 1
+outBAMsortingThreadN              0
+outBAMsortingBinsN                50
+outSAMfilter                      None   
+outSAMmultNmax                    18446744073709551615
+outSAMattrIHstart                 1
+outSAMtlen                        1
+outSJfilterReads                  All
+outSJfilterCountUniqueMin         3   1   1   1   
+outSJfilterCountTotalMin          3   1   1   1   
+outSJfilterOverhangMin            30   12   12   12   
+outSJfilterDistToOtherSJmin       10   0   5   10   
+outSJfilterIntronMaxVsReadN       50000   100000   200000   
+outWigType                        None   
+outWigStrand                      Stranded   
+outWigReferencesPrefix            -
+outWigNorm                        RPM   
+outFilterType                     Normal
+outFilterMultimapNmax             10
+outFilterMultimapScoreRange       1
+outFilterScoreMin                 0
+outFilterScoreMinOverLread        0.66
+outFilterMatchNmin                0
+outFilterMatchNminOverLread       0.66
+outFilterMismatchNmax             10
+outFilterMismatchNoverLmax        0.3
+outFilterMismatchNoverReadLmax    1
+outFilterIntronMotifs             None
+outFilterIntronStrands            RemoveInconsistentStrands
+clip5pNbases                      0   
+clip3pNbases                      0   
+clip3pAfterAdapterNbases          0   
+clip3pAdapterSeq                  -   
+clip3pAdapterMMp                  0.1   
+winBinNbits                       16
+winAnchorDistNbins                9
+winFlankNbins                     4
+winAnchorMultimapNmax             50
+winReadCoverageRelativeMin        0.5
+winReadCoverageBasesMin           0
+scoreGap                          0
+scoreGapNoncan                    -8
+scoreGapGCAG                      -4
+scoreGapATAC                      -8
+scoreStitchSJshift                1
+scoreGenomicLengthLog2scale       -0.25
+scoreDelBase                      -2
+scoreDelOpen                      -2
+scoreInsOpen                      -2
+scoreInsBase                      -2
+seedSearchLmax                    0
+seedSearchStartLmax               50
+seedSearchStartLmaxOverLread      1
+seedPerReadNmax                   1000
+seedPerWindowNmax                 50
+seedNoneLociPerWindow             10
+seedMultimapNmax                  10000
+seedSplitMin                      12
+alignIntronMin                    21
+alignIntronMax                    0
+alignMatesGapMax                  0
+alignTranscriptsPerReadNmax       10000
+alignSJoverhangMin                5
+alignSJDBoverhangMin              3
+alignSJstitchMismatchNmax         0   -1   0   0   
+alignSplicedMateMapLmin           0
+alignSplicedMateMapLminOverLmate    0.66
+alignWindowsPerReadNmax           10000
+alignTranscriptsPerWindowNmax     100
+alignEndsType                     Local
+alignSoftClipAtReferenceEnds      Yes
+alignEndsProtrude                 0   ConcordantPair   
+alignInsertionFlush               None
+peOverlapNbasesMin                0
+peOverlapMMp                      0.01
+chimSegmentMin                    0
+chimScoreMin                      0
+chimScoreDropMax                  20
+chimScoreSeparation               10
+chimScoreJunctionNonGTAG          -1
+chimMainSegmentMultNmax           10
+chimJunctionOverhangMin           20
+chimOutType                       Junctions   
+chimFilter                        banGenomicN   
+chimSegmentReadGapMax             0
+chimMultimapNmax                  0
+chimMultimapScoreRange            1
+chimNonchimScoreDropMin           20
+chimOutJunctionFormat             0   
+sjdbFileChrStartEnd               -   
+sjdbGTFfile                       /dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.62.gtf
+sjdbGTFchrPrefix                  -
+sjdbGTFfeatureExon                exon
+sjdbGTFtagExonParentTranscript    transcript_id
+sjdbGTFtagExonParentGene          gene_id
+sjdbOverhang                      100
+sjdbScore                         2
+sjdbInsertSave                    Basic
+varVCFfile                        -
+waspOutputMode                    None
+quantMode                         -   
+quantTranscriptomeBAMcompression    1
+quantTranscriptomeBan             IndelSoftclipSingleend
+twopass1readsN                    18446744073709551615
+twopassMode                       None
+----------------------------------------
+
+Finished loading and checking parameters
+May 08 20:44:04 ... starting to generate Genome files
+/dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.dna.toplevel.fa : chr # 0  "1" chrStart: 0
+/dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.dna.toplevel.fa : chr # 1  "2" chrStart: 2883584
+/dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.dna.toplevel.fa : chr # 2  "3" chrStart: 5505024
+/dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.dna.toplevel.fa : chr # 3  "4" chrStart: 7864320
+Estimated genome size=210699328   9699328   201000000
+GstrandBit=32
+Number of SA indices: 18430792
+May 08 20:44:04 ... starting to sort Suffix Array. This may take a long time...
+Number of chunks: 8;   chunks size limit: 21063760 bytes
+May 08 20:44:04 ... sorting Suffix Array chunks and saving them to disk...
+Writing 2621976 bytes into /dee2/ref/kphaffii/ensembl/star/SA_7 ; empty space on disk = 960648286208 bytes ... done
+Writing 20641656 bytes into /dee2/ref/kphaffii/ensembl/star/SA_6 ; empty space on disk = 960645656576 bytes ... done
+Writing 20820312 bytes into /dee2/ref/kphaffii/ensembl/star/SA_0 ; empty space on disk = 960625012736 bytes ... done
+Writing 20355896 bytes into /dee2/ref/kphaffii/ensembl/star/SA_3 ; empty space on disk = 960604188672 bytes ... done
+Writing 20811864 bytes into /dee2/ref/kphaffii/ensembl/star/SA_2 ; empty space on disk = 960583831552 bytes ... done
+Writing 20478984 bytes into /dee2/ref/kphaffii/ensembl/star/SA_1 ; empty space on disk = 960563015680 bytes ... done
+Writing 21028944 bytes into /dee2/ref/kphaffii/ensembl/star/SA_5 ; empty space on disk = 960542535680 bytes ...Writing 20686704 bytes into /dee2/ref/kphaffii/ensembl/star/SA_4 ; empty space on disk = 960522108928 bytes ... done
+ done
+May 08 20:44:06 ... loading chunks from disk, packing SA...
+May 08 20:44:06 ... finished generating suffix array
+May 08 20:44:06 ... generating Suffix Array index
+May 08 20:44:17 ... completed Suffix Array index
+May 08 20:44:17 ..... processing annotations GTF
+Processing pGe.sjdbGTFfile=/dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.62.gtf, found:
+		5392 transcripts
+		5970 exons (non-collapsed)
+		578 collapsed junctions
+May 08 20:44:17 ..... finished GTF processing
+May 08 20:44:17   Loaded database junctions from the GTF file: /dee2/ref/kphaffii/ensembl/star/Komagataella_pastoris.GCA_000027005.1.62.gtf: 578 total junctions
+
+May 08 20:44:17   Finished preparing junctions
+May 08 20:44:17 ..... inserting junctions into the genome indices
+May 08 20:44:18   Finished SA search: number of new junctions=578, old junctions=0
+May 08 20:44:18   Finished sorting SA indicesL nInd=231194
+Genome size with junctions=9815506  9699328   116178
+GstrandBit1=32   GstrandBit=32
+May 08 20:44:19   Finished inserting junction indices
+May 08 20:44:28   Finished SAi
+May 08 20:44:28 ..... finished inserting junctions into genome
+May 08 20:44:28 ... writing Genome to disk ...
+Writing 9815506 bytes into /dee2/ref/kphaffii/ensembl/star/Genome ; empty space on disk = 960647704576 bytes ... done
+SA size in bytes: 76980696
+May 08 20:44:28 ... writing Suffix Array to disk ...
+Writing 76980696 bytes into /dee2/ref/kphaffii/ensembl/star/SA ; empty space on disk = 960637886464 bytes ... done
+May 08 20:44:28 ... writing SAindex to disk
+Writing 8 bytes into /dee2/ref/kphaffii/ensembl/star/SAindex ; empty space on disk = 960560902144 bytes ... done
+Writing 120 bytes into /dee2/ref/kphaffii/ensembl/star/SAindex ; empty space on disk = 960560902144 bytes ... done
+Writing 1565873491 bytes into /dee2/ref/kphaffii/ensembl/star/SAindex ; empty space on disk = 960560902144 bytes ... done
+May 08 20:44:32 ..... finished successfully
+DONE: Genome generation, EXITING

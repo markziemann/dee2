@@ -17,7 +17,7 @@ usage() {
     echo
     echo "Usage: docker run mziemann/tallyup <-s SPECIES> [-a SRA ACCESSION] [-h] [-t THREADS] [-d] [-f FASTQ_READ1 FASTQ_READ2] [-v]"
     echo
-    echo "  -s  Species, supported ones include 'athaliana', 'celegans', 'dmelanogaster', 'drerio', 'ecoli', 'hsapiens', 'mmusculus', 'osativa', 'rnorvegicus', 'scerevisiae' and 'zmays' "
+    echo "  -s  Species, supported ones include 'athaliana', 'celegans', 'dmelanogaster', 'drerio', 'ecoli', 'hsapiens', 'kphaffii', 'mmusculus', 'osativa', 'rnorvegicus', 'scerevisiae' and 'zmays' "
     echo "  -a  SRA run accession, a text string matching an SRA run accession. eg: SRR10861665 or ERR3281011"
     echo "  -h  Help. Display this message and quit."
     echo "  -t  Number of parallel threads. Default is 8."
@@ -317,6 +317,13 @@ elif [ $ORG == "zmays" ] ; then
   BT2_MD5="7dc6bbdf600fd4305af72600b4c417f9"
   KAL_MD5="00ecbba2360b5ffdd24a3be6b0aa0acd"
   STAR_MD5="4a44ab4db80dcc1e887f6861dc48eae9"
+elif [ $ORG == "kphaffii" ] ; then
+  GTFURL="https://ftp.ebi.ac.uk/ensemblgenomes/pub/fungi/release-62/gtf/komagataella_phaffii_cbs_7435_gca_900235035/Komagataella_phaffii_cbs_7435_gca_900235035.ASM90023503v1.62.gtf.gz"
+  GDNAURL="https://ftp.ebi.ac.uk/ensemblgenomes/pub/fungi/release-62/fasta/komagataella_phaffii_cbs_7435_gca_900235035/dna/Komagataella_phaffii_cbs_7435_gca_900235035.ASM90023503v1.dna.toplevel.fa.gz"
+  CDNAURL="https://ftp.ebi.ac.uk/ensemblgenomes/pub/fungi/release-62/fasta/komagataella_phaffii_cbs_7435_gca_900235035/cdna/Komagataella_phaffii_cbs_7435_gca_900235035.ASM90023503v1.cdna.all.fa.gz"
+  BT2_MD5="10b4c15e82d7179bef7d814d3036a21b"
+  KAL_MD5="61d76019143672094e0eff2fc7728f09"
+  STAR_MD5="d89290d86698b55da00b3b3f529f49de"
 fi
 
 # download the necessary reference files
@@ -1379,7 +1386,7 @@ ACC_URL="http://dee2.io/acc.html"
 ACC_REQUEST="http://dee2.io/cgi-bin/acc.sh"
 
 if [ ! -z $MY_ORG ] ; then
-  ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae osativa zmays' \
+  ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens kphaffii mmusculus rnorvegicus scerevisiae osativa zmays' \
   | tr ' ' '\n' | grep -wc "$MY_ORG")
   if [ $ORG_CHECK -ne 1 ] ; then
     echo Organism not specified correctly. Check options and try again.
@@ -1392,6 +1399,7 @@ dmelanogaster   3403644
 drerio  14616592
 ecoli   1576132
 hsapiens        28968508
+kphaffii        2000000
 mmusculus       26069664
 rnorvegicus     26913880
 scerevisiae     1644684
