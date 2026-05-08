@@ -1,6 +1,0 @@
-[PROXY] Sandbox Proxy listening on :::8877
-[PROXY] Loaded static allowlist from /proxy/allowlist.txt
-[PROXY] REDIRECTING (GCP Metadata) to STUB: 169.254.169.254:443
-[PROXY] REDIRECTING (GCP Metadata) to STUB: 169.254.169.254:443
-[PROXY] DENIED (Add to allowlist.txt): eutils.ncbi.nlm.nih.gov
-[PROXY] REDIRECTING (GCP Metadata) to STUB: 169.254.169.254:443

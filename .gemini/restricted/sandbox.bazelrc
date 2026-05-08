@@ -1,3 +1,0 @@
-# Override strategy for Docker compatibility
-build --spawn_strategy=sandboxed,local
-test --spawn_strategy=sandboxed,local
