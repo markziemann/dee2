@@ -387,9 +387,9 @@ elif [ $ORG == "kphaffii" ] ; then
   GTFURL="https://ftp.ebi.ac.uk/ensemblgenomes/pub/fungi/release-62/gtf/komagataella_pastoris/Komagataella_pastoris.GCA_000027005.1.62.gtf.gz"
   GDNAURL="https://ftp.ebi.ac.uk/ensemblgenomes/pub/fungi/release-62/fasta/komagataella_pastoris/dna/Komagataella_pastoris.GCA_000027005.1.dna.toplevel.fa.gz "
   CDNAURL="https://ftp.ebi.ac.uk/ensemblgenomes/pub/fungi/release-62/fasta/komagataella_pastoris/cdna/Komagataella_pastoris.GCA_000027005.1.cdna.all.fa.gz"
-  BT2_MD5="dummy_bt2_md5"
-  KAL_MD5="dummy_kallisto_md5"
-  STAR_MD5="dummy_star_md5"
+  BT2_MD5="10b4c15e82d7179bef7d814d3036a21b"
+  KAL_MD5="61d76019143672094e0eff2fc7728f09"
+  STAR_MD5="d89290d86698b55da00b3b3f529f49de"
 fi
 
 # download the necessary reference files
