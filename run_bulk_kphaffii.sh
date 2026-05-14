@@ -36,7 +36,7 @@ for SRR in $(cat "$LIST_FILE"); do
 
     # We name the container so we can reliably extract data from it before deleting it.
     # Note: No --rm flag, otherwise it deletes itself before we can copy the ZIP file out!
-docker run --name "dee2_${SRR}" \
+    docker run --name "dee2_${SRR}" \
         -v "/home/user/x-alife/user/dee2/pipeline/volunteer_pipeline.sh:/dee2/code/volunteer_pipeline.sh" \
         -v "/home/user/x-alife/user/dee2/ref:/dee2/ref" \
         mziemann/tallyup -s $ORG -a $SRR
