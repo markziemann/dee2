@@ -244,3 +244,100 @@ JFJJF777<AJ<J-FFFFJJJJA-FJJJJJ-<AJFAJA-FFF7<-AAJJFFJJAJJ<FA-F7FJJ<J7AJA<FJJJ<FA7
 May 14 20:49:59 ..... started STAR run
 May 14 20:49:59 ..... loading genome
 May 14 20:49:59 ..... started mapping
+May 14 20:54:01 ..... finished successfully
+                                 Started job on |	May 14 20:49:59
+                             Started mapping on |	May 14 20:49:59
+                                    Finished on |	May 14 20:54:01
+       Mapping speed, Million of reads per hour |	182.88
+
+                          Number of input reads |	12293936
+                      Average input read length |	191
+                                    UNIQUE READS:
+                   Uniquely mapped reads number |	11683717
+                        Uniquely mapped reads % |	95.04%
+                          Average mapped length |	191.56
+                       Number of splices: Total |	352016
+            Number of splices: Annotated (sjdb) |	265488
+                       Number of splices: GT/AG |	347059
+                       Number of splices: GC/AG |	1433
+                       Number of splices: AT/AC |	36
+               Number of splices: Non-canonical |	3488
+                      Mismatch rate per base, % |	0.12%
+                         Deletion rate per base |	0.00%
+                        Deletion average length |	1.25
+                        Insertion rate per base |	0.00%
+                       Insertion average length |	1.10
+                             MULTI-MAPPING READS:
+        Number of reads mapped to multiple loci |	27334
+             % of reads mapped to multiple loci |	0.22%
+        Number of reads mapped to too many loci |	902
+             % of reads mapped to too many loci |	0.01%
+                                  UNMAPPED READS:
+       % of reads unmapped: too many mismatches |	0.00%
+                 % of reads unmapped: too short |	4.73%
+                     % of reads unmapped: other |	0.00%
+                                  CHIMERIC READS:
+                       Number of chimeric reads |	0
+                            % of chimeric reads |	0.00%
+N_unmapped	582885	582885	582885
+N_multimapping	27334	27334	27334
+N_noFeature	487905	6081803	6028215
+N_ambiguous	72660	5819	5708
+SRR10303419 diagnose strandedness now
+UnstrandedReadsAssigned:11123152 PositiveStrandReadsAssigned:5596095 NegativeStrandReadsAssigned:5649794
+Dataset is classified unstranded
+KALLISTO_STRAND_PARAMETER=
+SRR10303419 checking readlengths now for kmer selection
+MeadianReadLen=100 20thPercentileLength=100 echo kmer=95
+SRR10303419 running kallisto now
+SRR10303419 Starting Kallisto paired end mapping to ensembl reference transcriptome
+
+[quant] fragment length distribution will be estimated from the data
+[index] k-mer length: 31
+[index] number of targets: 5,040
+[index] number of k-mers: 7,056,067
+[index] number of equivalence classes: 5,100
+[quant] running in paired-end mode
+[quant] will process pair 1: SRR10303419-trimmed-pair1.fastq
+                             SRR10303419-trimmed-pair2.fastq
+[quant] finding pseudoalignments for the reads ... done
+[quant] processed 12,293,936 reads, 11,425,572 reads pseudoaligned
+[quant] estimated average fragment length: 170.173
+[   em] quantifying the abundances ... done
+[   em] the Expectation-Maximization algorithm ran for 52 rounds
+
+  5041 SRR10303419.ke.tsv
+  5392 SRR10303419.se.tsv
+ 10433 total
+==> SRR10303419.ke.tsv <==
+target_id	length	eff_length	est_counts	tpm
+CAY71250	894	724.827	249	17.6446
+CAY72068	897	727.827	1395	98.4446
+CAY71877	2319	2149.83	1539	36.7689
+CAY71955	2865	2695.83	847	16.1375
+CAY71631	525	355.887	396	57.1517
+CAY71680	717	547.827	1395	130.791
+CAY71844	1770	1600.83	1217	39.0474
+CAY71647	567	397.859	363	46.8623
+CAY71610	672	502.827	344	35.1387
+
+==> SRR10303419.se.tsv <==
+PAS_chr1-3_0272	427
+PAS_chr1-4_0485	363
+PAS_chr1-3_0038	841
+PAS_chr1-4_0481	46
+PAS_chr1-1_0419	3064
+PAS_chr1-4_0432	1547
+PAS_chr1-3_0114	1024
+PAS_chr1-4_0555	1175
+PAS_chr1-3_0288	160
+PAS_chr1-1_0224	634
+SRR10303419 completed mapping pipeline successfully
+  adding: SRR10303419/ (stored 0%)
+  adding: SRR10303419/SRR10303419.qc (deflated 52%)
+  adding: SRR10303419/SRR10303419.se.tsv (deflated 75%)
+  adding: SRR10303419/SRR10303419.ke.tsv (deflated 62%)
+  adding: SRR10303419/SRR10303419.finished (stored 0%)
+  adding: SRR10303419/volunteer_pipeline.sh (deflated 77%)
+  adding: SRR10303419/SRR10303419.log (deflated 72%)
+  adding: SRR10303419/SRR10303419.attempts.txt (deflated 6%)
