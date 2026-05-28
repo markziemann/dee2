@@ -10,6 +10,8 @@ output:
     fig_width: 7
     fig_height: 7
 theme: cosmo
+params:
+  org: "NULL"
 ---
 
 ## Intro
@@ -38,7 +40,7 @@ We could run this as a for loop from bash
 for ORG in athaliana osativa zmays celegans dmelanogaster drerio rnorvegicus scerevisiae ecoli hsapiens mmusculus
 bdistachyon gmax hvulgare ptrichocarpa sbicolor slycopersicum stuberosum taestivum vvinifera ; do
 
-  Rscript -e "rmarkdown::render('dee_pipeline.Rmd')" $ORG
+  Rscript -e rmarkdown::render('dee_pipeline.Rmd',params=list(org = "$ORG"))
 
 done
 
@@ -63,14 +65,16 @@ library("XML")
 library("rjson")
 library("rhdf5")
 library("reutils")
+library("ff")
 
 IPADD="118.138.235.221"
 
 CORES=5
 
 args = commandArgs(trailingOnly=TRUE)
-org=args[1]
-org="dmelanogaster"
+org=params$org
+#org
+#org="ecoli"
 
 species_list <- c("3702", "4530", "4577", "6239", "7227", "7955",
   "562", "9606", "10090", "10116", "4932",
@@ -128,7 +132,7 @@ MXDIR = normalizePath("../mx/")
 QUEUEWD = normalizePath("../queue/")
 
 ### Set years range
-YEARS=2000:2025
+YEARS=2000:2026
 
 ```
 
@@ -143,22 +147,22 @@ pysradb search --organism="Homo sapiens"  --publication-date 01-01-2015:31-12-20
 Using a helper bash script called metadata_dl.sh which uses pysradb.
 It grabs monthly batches of metadata.
 
-Previously I fetched all data 2024 and before, and so now I only need to get 2025 data fresh.
+Previously I fetched all data 2025 and before, and so now I only need to get 2026 data fresh.
 
 This means that each january this script should be updated.
 
 ```{r,fetchmetadata}
 
-CSVOLD=paste(SRADBWD,"/",org,"_2024.csv",sep="")
+CSVOLD=paste(SRADBWD,"/",org,"_2025.csv",sep="")
 
-CSVNEW=paste(SRADBWD,"/",org,"_2025.csv",sep="")
+CSVNEW=paste(SRADBWD,"/",org,"_2026.csv",sep="")
 
 if (file.exists(CSVNEW)) {
   FILENAME=gsub(".csv","_old.csv",CSVNEW)
   renameFile(CSVNEW,FILENAME,overwrite=TRUE)
 }
 
-MY_SRA_CMD <- paste('bash metadata_dl_2025.sh', org)
+MY_SRA_CMD <- paste('bash metadata_dl_2026.sh', org)
 MY_SRA_CMD
 system(MY_SRA_CMD)
 
@@ -213,26 +217,29 @@ source("dee_pipeline_functions.R")
 
 unlink(list.files(DATAWD,pattern="_STARtmp",recursive=T))
 
-folders<-list.files(DATAWD,full.names=T,pattern="RR")
-fin_new<-paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "finished" ,
+folders <- list.files(DATAWD,full.names=T,pattern="RR")
+fin_new <- paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "finished" ,
   full.names = T, recursive = T),"/"),"[[",7),sep="/")
-fin_new<-fin_new[grep("RR",fin_new)]
-val_old<-paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "validated" ,
+fin_new <- fin_new[grep("RR",fin_new)]
+val_old <- paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "validated" ,
   full.names = T, recursive = T),"/"),"[[",7),sep="/")
 
 # delete folders that are not expected as they are not in known runs
-expected_folders<-paste(DATAWD,runs,sep="/")
-unexpected_folders<-setdiff(folders,expected_folders)
+expected_folders <- paste(DATAWD,runs,sep="/")
+unexpected_folders <- setdiff(folders,expected_folders)
 write(unexpected_folders,file=paste(DATAWD,"/unexpected_folders.txt",sep=""))
 
 # delete folders without finished or validated files
-allocated<-union(fin_new,val_old)
-unalloc<-setdiff(folders,allocated)
-unlink(unalloc,recursive=TRUE)
+allocated <- union(fin_new,val_old)
+unalloc <- setdiff(folders,allocated)
+lapply( unalloc, function(x) {
+  file.move( x ,  paste(DATAWD,"/trash/",basename(x),sep="") )
+} )
+#unlink(unalloc,recursive=TRUE)
 
 #Expected rows of se and ke files
-gre<-dim( read.table(paste(DATAWD,"/rownames_gene.txt",sep=""),header=TRUE, comment.char="") )[1]
-tre<-dim( read.table(paste(DATAWD,"/rownames_tx.txt",sep=""),header=TRUE, comment.char="") )[1]
+gre <- dim( read.table(paste(DATAWD,"/rownames_gene.txt",sep=""),header=TRUE, comment.char="") )[1]
+tre <- dim( read.table(paste(DATAWD,"/rownames_tx.txt",sep=""),header=TRUE, comment.char="") )[1]
 
 message("run the check of new datasets")
 source("dee_pipeline_functions.R")
@@ -240,31 +247,31 @@ source("dee_pipeline_functions.R")
 mclapply(fin_new,check_contents,gre,tre,mc.cores=CORES)
 message("done")
 
-val<-paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "validated" ,
-  full.names = T, recursive = T),"/"),"[[",7),sep="/")
-runs_done<-sapply(strsplit(val,"/"),"[[",7)
+val <- unique(paste(DATAWD,sapply(strsplit(list.files(path = DATAWD, pattern = "validated" ,
+  full.names = T, recursive = T),"/"),"[[",7),sep="/"))
+runs_done <- sapply(strsplit(val,"/"),"[[",7)
 
-se_files<-paste( DATAWD , "/" , runs_done , "/" , runs_done , ".se.tsv.gz",sep="")
+se_files <- paste( DATAWD , "/" , runs_done , "/" , runs_done , ".se.tsv.gz",sep="")
 
 print(paste(length(runs_done),"runs completed"))
-runs_todo<-base::setdiff(runs, runs_done)
+runs_todo <- base::setdiff(runs, runs_done)
 print(paste(length(runs_todo),"requeued runs"))
 
 # Cut the queue and flip order sometimes, so that we can analyse different runs
 # and not just process the same ones again and again
-CUTPOINT=sample(1:length(runs_todo),1)
+CUTPOINT = sample(1:length(runs_todo),1)
 runs_todo <- runs_todo[c(CUTPOINT:length(runs_todo),1:(CUTPOINT-1))]
 ORIENTATION <- as.numeric(format(Sys.time(), "%s")) %% 2
 if ( ORIENTATION == 0 ) {  runs_todo <- rev(runs_todo) }
 
 #Update queue on webserver if older than
-queue_name=paste(QUEUEWD,"/",org,".queue.txt",sep="")
+queue_name = paste(QUEUEWD,"/",org,".queue.txt",sep="")
 write.table(runs_todo,queue_name,quote=F,row.names=F,col.names=F)
-SCP_COMMAND=paste("scp -i ~/.ssh/dee2_2025 ",queue_name ," ubuntu@118.138.235.221:~/Public")
+SCP_COMMAND = paste("scp -i ~/.ssh/dee2_2026 ",queue_name ," ubuntu@118.138.235.221:~/Public")
 system(SCP_COMMAND)
 
 #Update metadata on webserver
-accessions_done<-accessions[which(accessions$run %in% runs_done),] #thisline audit
+accessions_done <- accessions[which(accessions$run %in% runs_done),] #thisline audit
 write.table(accessions_done,file=paste(SRADBWD,"/",org,"_accessions.tsv",sep=""),quote=F,row.names=F)
 
 save.image(file = paste(org,".RData",sep=""))
@@ -277,16 +284,38 @@ Any data from earlier years has been previously downloaded so we only need to do
 
 ```{r,geoquery1}
 
-pysra_cmd <- paste("~/miniconda3/bin/python -m pysradb search -d geo -m 10000 -O ", species_name, " -C TRANSCRIPTOMIC -D 01-01-2025:31-12-2025 --detailed ")
-pysrares <- system(pysra_cmd,intern=TRUE)
-pysrares2 <- do.call(rbind,strsplit(pysrares,"\t"))
-colnames(pysrares2) <- pysrares2[1,]
-pysrares2 <- pysrares2[-1,]
+mydates <- apply(X=(expand.grid(sprintf('%0.2d', 1:31),sprintf('%0.2d', 1:12))),MAR=1,FUN=function(x) {paste(x[1],x[2],sep="-" ) }  )
 
-GEOFILENAME = paste(SRADBWD,"/",org,"_geo_2025.csv",sep="")
+pysrares2 <- lapply(mydates,function(mydate) {
+  pysra_cmd <- paste("~/miniconda3/bin/python -m pysradb search -d geo -m 10000 -O ", species_name, " -C TRANSCRIPTOMIC -D ",mydate,"-2026:",mydate,"-2026 --detailed ",sep="")
+  pysrares <- system(pysra_cmd,intern=TRUE)
+  pysrares2 <- do.call(rbind,strsplit(pysrares,"\t"))
+  colnames(pysrares2) <- pysrares2[1,]
+  pysrares2 <- pysrares2[-1,]
+  Sys.sleep(1)
+  return(pysrares2)
+})
 
-GSE <- pysrares2[,"study_alias"]
-GSM <- pysrares2[,"sample_alias"]
+# remove elements with no data
+pysrares2 <-  pysrares2[which(unlist(lapply(pysrares2,function(x) { class(x)[1] } ))=="matrix")]
+
+GEOFILENAME = paste(SRADBWD,"/",org,"_geo_2026.csv",sep="")
+
+# Grab the GSE and GSM data
+GSE <- unlist(lapply(pysrares2,function(x) {x[,"study_alias"] } ))
+GSM <- unlist(lapply(pysrares2,function(x) {x[,"sample_alias"] } ))
+gse <- unique(data.frame(GSE,GSM))
+colnames(gse) <- c("GEO_series","GEO_sample")
+write.table(gse,GEOFILENAME,sep=",")
+
+#pysra_cmd <- paste("~/miniconda3/bin/python -m pysradb search -d geo -m 10000 -O ", species_name, " -C TRANSCRIPTOMIC -D 01-01-2026:31-12-2026 --detailed ")
+#pysrares <- system(pysra_cmd,intern=TRUE)
+#pysrares2 <- do.call(rbind,strsplit(pysrares,"\t"))
+#colnames(pysrares2) <- pysrares2[1,]
+#pysrares2 <- pysrares2[-1,]
+#GEOFILENAME = paste(SRADBWD,"/",org,"_geo_2026.csv",sep="")
+#GSE <- pysrares2[,"study_alias"]
+#GSM <- pysrares2[,"sample_alias"]
 gse <- unique(data.frame(GSE,GSM))
 colnames(gse) <- c("GEO_series","GEO_sample")
 write.table(gse,GEOFILENAME,sep=",")
@@ -321,11 +350,11 @@ res<-res[order(res$run_1_accession),]
 QC_summary <- "NA"
 
 #extract out the important accessions in order
-x2<-as.data.frame(cbind(res$run_1_accession, QC_summary, res$experiment_accession,
+x2 <- as.data.frame(cbind(res$run_1_accession, QC_summary, res$experiment_accession,
   res$sample_accession, res$study_accession,res$experiment_title,
   res$GEO_series), stringsAsFactors=FALSE)
 
-colnames(x2)<-c("SRR_accession","QC_summary","SRX_accession","SRS_accession",
+colnames(x2) <- c("SRR_accession","QC_summary","SRX_accession","SRS_accession",
   "SRP_accession","Experiment_title","GEO_series")
 
 # NA values replaced with blank
@@ -334,7 +363,7 @@ x2[is.na(x2)] <- ""
 #write out the accession number info and upload to webserver
 write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.complete.tsv.cut",sep=""),
   quote=F,sep="\t",row.names=F)
-x2<-x2[which(x2$SRR_accession %in% runs_done),]
+x2 <- x2[which(x2$SRR_accession %in% runs_done),]
 
 # write the srpqueue to enable new request from users
 srpqueue <- accessions[which(! accessions$run %in% x2$SRR_accession),2]
@@ -342,7 +371,7 @@ srpqueue <- unique(srpqueue)
 srpqueue <- srpqueue[order(srpqueue)]
 srpqueuename = paste(SRADBWD,"/",org,"_srpqueue.txt",sep="")
 writeLines(srpqueue,con=srpqueuename)
-SCP_COMMAND=paste("scp -i ~/.ssh/dee2_2025", srpqueuename ,
+SCP_COMMAND=paste("scp -i ~/.ssh/dee2_2026", srpqueuename ,
     " ubuntu@118.138.235.221:/dee2_data/srpqueue")
 system(SCP_COMMAND)
 
@@ -355,23 +384,22 @@ system(SCP_COMMAND)
 source("dee_pipeline_functions.R")
 library("parallel")
 
+CORES=4
+
 # this line was giving some errors with mouse data - now executes in batches
 myaccessions <- x2$SRR_accession
 length(myaccessions)
 qc_res=NULL
 chunksize=200
-while (length(myaccessions) > chunksize ) {
-  qc_res_part<-unlist(mclapply(myaccessions[1:chunksize], qc_analysis, org=org,
-    mc.cores=CORES))
-  qc_res <- c(qc_res,qc_res_part)
-  myaccessions <- myaccessions[(chunksize+1):length(myaccessions)]
-}
 
-if (length(myaccessions) > 0 ) {
-  qc_res_part<-unlist(mclapply(myaccessions, qc_analysis, org=org,mc.cores=CORES))
-  qc_res <- c(qc_res,qc_res_part)
-}
+qc_res <- lapply(myaccessions, qc_analysis, org=org)
+
 x2$QC_summary <- qc_res
+
+# select datasets with qcfile
+dim(x2)
+x2 <- x2[which(x2$QC_summary!="QC FILE NOT FOUND"),]
+dim(x2)
 
 # write metadata
 write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep=""),
@@ -385,7 +413,7 @@ SE, KE, then QC files in HDF5 format.
 
 ```{r,dataagg_hdf5}
 
-CORES=4
+CORES=8
 
 h5file <- paste(org,"_se.h5",sep="")
 if (file.exists(h5file)) { file.remove(h5file) }
@@ -420,7 +448,7 @@ h5write(myrownames, h5file,"rownames")
 mycolnames <- rownames( read.table(file_list[1]) )
 h5write(mycolnames, h5file, "colnames")
 H5close()
-system(paste('rsync -azh -e \"ssh -i  ~/.ssh/dee2_2025 \" ', h5file ,' ubuntu@dee2.io:/dee2_data/bulk/',sep=""))
+system(paste('rsync -azh -e \"ssh -i  ~/.ssh/dee2_2026 \" ', h5file ,' ubuntu@dee2.io:/dee2_data/bulk/',sep=""))
 copyFile(h5file,"../mx/",overwrite=TRUE)
 unlink(h5file)
 
@@ -457,7 +485,7 @@ h5write(myrownames, h5file, "rownames")
 mycolnames <- rownames( read.table(file_list[1]) )
 h5write(mycolnames, h5file, "colnames")
 H5close()
-system(paste('rsync -azh -e \"ssh -i  ~/.ssh/dee2_2025 \" ', h5file ,' ubuntu@dee2.io:/dee2_data/bulk/',sep=""))
+system(paste('rsync -azh -e \"ssh -i  ~/.ssh/dee2_2026 \" ', h5file ,' ubuntu@dee2.io:/dee2_data/bulk/',sep=""))
 copyFile(h5file,"../mx/",overwrite=TRUE)
 unlink(h5file)
 
@@ -496,7 +524,7 @@ h5write(myrownames, h5file, "rownames")
 mycolnames <- rownames( read.table(file_list[1]) )
 h5write(mycolnames, h5file, "colnames")
 H5close()
-system(paste('rsync -azh -e \"ssh -i  ~/.ssh/dee2_2025 \" ', h5file ,' ubuntu@dee2.io:/dee2_data/bulk/',sep=""))
+system(paste('rsync -azh -e \"ssh -i  ~/.ssh/dee2_2026 \" ', h5file ,' ubuntu@dee2.io:/dee2_data/bulk/',sep=""))
 copyFile(h5file,"../mx/",overwrite=TRUE)
 unlink(h5file)
 
@@ -519,7 +547,7 @@ Then copy them all over in one rsync command.
 
 ```{r,transfer1}
 
-CMDX=paste('ssh -i ~/.ssh/dee2_2025 ubuntu@dee2.io "ls /dee2_data/data/',org,'"' , sep="")
+CMDX=paste('ssh -i ~/.ssh/dee2_2026 ubuntu@dee2.io "ls /dee2_data/data/',org,'"' , sep="")
 svr_contents <- system(CMDX, intern=TRUE)
 rr_contents <- svr_contents[grep("RR",svr_contents)]
 to_transfer <- x2$SRR_accession[which(!x2$SRR_accession %in% rr_contents)]
@@ -535,7 +563,7 @@ lapply(to_transfer, function(srr) {
 ll <- list.files(dest_path,recursive=TRUE,full.names=TRUE)
 to_delete <- ll[grep("gz$",ll)]
 lapply(to_delete,unlink)
-rsync_command <- "rsync -azh -e \"ssh -i  ~/.ssh/dee2_2025 \" ORG ubuntu@dee2.io:/dee2_data/data/"
+rsync_command <- "rsync -azh -e \"ssh -i  ~/.ssh/dee2_2026 \" /mnt/hdd1/dee2/tmp/ORG ubuntu@dee2.io:/dee2_data/data/"
 rsync_command <- gsub("ORG",org,rsync_command)
 system(rsync_command)
 unlink(dest_path,recursive=TRUE)
@@ -550,10 +578,10 @@ x <- apply(x,2,as.character)
 x<-gsub("\r?\n|\r", " ", x)
 write.table(x,file=paste(SRADBWD,"/",org,"_metadata.tsv",sep=""),quote=F,sep="\t",row.names=F)
 
-SCP_COMMAND=paste("scp -i ~/.ssh/dee2_2025 ", paste(SRADBWD,"/",org,"_metadata.tsv",sep="") , " ubuntu@dee2.io:/dee2_data/metadata")
+SCP_COMMAND=paste("scp -i ~/.ssh/dee2_2026 ", paste(SRADBWD,"/",org,"_metadata.tsv",sep="") , " ubuntu@dee2.io:/dee2_data/metadata")
 system(SCP_COMMAND)
 
-SCP_COMMAND=paste("scp -i ~/.ssh/dee2_2025 ", paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") , " ubuntu@dee2.io:/dee2_data/metadata")
+SCP_COMMAND=paste("scp -i ~/.ssh/dee2_2026 ", paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") , " ubuntu@dee2.io:/dee2_data/metadata")
 system(SCP_COMMAND)
 
 save.image(file = paste(org,".RData",sep=""))
@@ -648,8 +676,7 @@ text( cbind(as.numeric(z2[,1])+8000 ,as.numeric(z2[,2])+8000 ),
 
 dev.off()
 
-system("scp -i ~/.ssh/dee2_2025 dee_datasets.png ubuntu@dee2.io:/home/ubuntu/dee2/frontend/html/images")
-
+system("scp -i ~/.ssh/dee2_2026 dee_datasets.png ubuntu@dee2.io:/home/ubuntu/dee2/frontend/html/images")
 
 animaldf$group="Animal"
 plantdf$group="Plant"
@@ -746,7 +773,7 @@ grid.text(
 )
 
 dev.off()
-system("scp -i ~/.ssh/dee2_2025 dee_datasets2.png ubuntu@dee2.io:/home/ubuntu/dee2/frontend/html/images")
+system("scp -i ~/.ssh/dee2_2026 dee_datasets2.png ubuntu@dee2.io:/home/ubuntu/dee2/frontend/html/images")
 
 ```
 
@@ -811,7 +838,7 @@ grid.text(
 )
 
 dev.off()
-system("scp -i ~/.ssh/dee2_2025 dee_bundles.png ubuntu@dee2.io:/home/ubuntu/dee2/frontend/html/images")
+system("scp -i ~/.ssh/dee2_2026 dee_bundles.png ubuntu@dee2.io:/home/ubuntu/dee2/frontend/html/images")
 
 ```
 
@@ -933,7 +960,7 @@ harvest_bundle_metadata <- function(org) {
     zips2 <- zips[which(srps %in% res2df$query_accession)] # only include bundles with metadata
     res2df$URL <- paste("https://dee2.io/huge/",org,"/",zips2,sep="")
     write.table(x=res2df,file=myfilename,sep="\t",row.names=FALSE, append=TRUE)
-    SYSCOMMAND <- gsub("myorg",org,"scp -i ~/.ssh/dee2_2025 ../sradb/myorg_srp.tsv ubuntu@dee2.io:/dee2_data/metadata/")
+    SYSCOMMAND <- gsub("myorg",org,"scp -i ~/.ssh/dee2_2026 ../sradb/myorg_srp.tsv ubuntu@dee2.io:/dee2_data/metadata/")
     system(SYSCOMMAND)
     unlink("tmp1")
     unlink("tmp0")
