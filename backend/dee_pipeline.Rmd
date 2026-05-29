@@ -392,7 +392,7 @@ length(myaccessions)
 qc_res=NULL
 chunksize=200
 
-qc_res <- lapply(myaccessions, qc_analysis, org=org)
+qc_res <- unlist(lapply(myaccessions, qc_analysis, org=org))
 
 x2$QC_summary <- qc_res
 
