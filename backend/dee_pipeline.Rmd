@@ -138,72 +138,50 @@ YEARS=2000:2026
 
 ## Get metadata 
 
-For human and mouse, we may need to fetch the metadata in chunks that are grouped by year.
-
-`
-pysradb search --organism="Homo sapiens"  --publication-date 01-01-2015:31-12-2020 --source="transcriptomic" --max=999000 --saveto hsapiens_test2020.csv
-`
-
-Using a helper bash script called metadata_dl.sh which uses pysradb.
-It grabs monthly batches of metadata.
-
-Previously I fetched all data 2025 and before, and so now I only need to get 2026 data fresh.
-
-This means that each january this script should be updated.
+The metadata is obtained by date to make each request smaller and more reliable.
+This also allows for quicker updates, as dates that have already been fetched do not need to be done again.
 
 ```{r,fetchmetadata}
 
-CSVOLD=paste(SRADBWD,"/",org,"_2025.csv",sep="")
-
-CSVNEW=paste(SRADBWD,"/",org,"_2026.csv",sep="")
-
-if (file.exists(CSVNEW)) {
-  FILENAME=gsub(".csv","_old.csv",CSVNEW)
-  renameFile(CSVNEW,FILENAME,overwrite=TRUE)
-}
-
-MY_SRA_CMD <- paste('bash metadata_dl_2026.sh', org)
+MY_SRA_CMD <- paste('bash metadata_dl_full.sh', org)
 MY_SRA_CMD
 system(MY_SRA_CMD)
 
-if (!file.exists(CSVNEW)) {
-    stop("Error: the metadata CSV file does not exist")
+mdfiles <- list.files(paste(SRADBWD,"/",org,sep=""),recursive=TRUE,full.names=TRUE)
+
+metadata_lines <-  lapply(mdfiles, function(x) {
+  readLines(x)
+})
+
+mdfiles <- mdfiles[which(lapply(metadata_lines,length)>1)]
+
+sra_metadata <-  lapply(mdfiles, function(x) {
+  y <- read.csv(x)
+  z <- length(which(colnames(y) == "pool_member_spots"))
+  if ( z == 1 ) {
+    y$pool_member_spots = NULL
+  }
+
+  if ( ncol(y) == 15 ) {
+    return(y)
+  }
+})
+
+md_df <- do.call(rbind,sra_metadata)
+CSVOLD=paste(SRADBWD,"/",org,"_old.csv",sep="")
+CSVNEW=paste(SRADBWD,"/",org,"_new.csv",sep="")
+
+if (file.exists(CSVNEW)) {
+  renameFile(CSVNEW,CSVOLD,overwrite=TRUE)
 }
 
-res1 <- read.csv(CSVNEW,stringsAsFactors=FALSE)
-res0 <- read.csv(CSVOLD,stringsAsFactors=FALSE,header=FALSE)
-colnames(res0) <- colnames(res1)
-res0 <- res0[which(res0$study_accession!="study_accession"),]
-res <- rbind(res0,res1)
-COLS <- colnames(res)
+write.csv(md_df,CSVNEW)
 
-if ( "run_1_accession" %in% COLS ) {
+accessions <- as.data.frame(cbind(md_df$experiment_accession,
+  md_df$study_accession,
+  md_df$sample_accession,
+  md_df$run_1_accession))
 
-  res <-res[order(res$run_1_accession),]
-  dim(res)
-  res <- unique(res)
-  dim(res)
-
-  accessions <- as.data.frame(cbind(res$experiment_accession,
-    res$study_accession,
-    res$sample_accession,
-    res$run_1_accession))
-
-} else {
-
-  res <-res[order(res$Run),]
-  dim(res)
-  res <- unique(res)
-  dim(res)
-
-  accessions <- as.data.frame(cbind(res$Experiment,
-    res$SRAStudy,
-    res$Sample,
-    res$Run))
-
-}
-
-accessions <- unique(accessions)
 nrow(accessions)
 colnames(accessions) <- c("experiment","study","sample","run")
 runs <- accessions$run
@@ -229,7 +207,7 @@ expected_folders <- paste(DATAWD,runs,sep="/")
 unexpected_folders <- setdiff(folders,expected_folders)
 write(unexpected_folders,file=paste(DATAWD,"/unexpected_folders.txt",sep=""))
 
-# delete folders without finished or validated files
+# move unexpected folders to a trash location
 allocated <- union(fin_new,val_old)
 unalloc <- setdiff(folders,allocated)
 lapply( unalloc, function(x) {
@@ -292,7 +270,7 @@ pysrares2 <- lapply(mydates,function(mydate) {
   pysrares2 <- do.call(rbind,strsplit(pysrares,"\t"))
   colnames(pysrares2) <- pysrares2[1,]
   pysrares2 <- pysrares2[-1,]
-  Sys.sleep(1)
+  Sys.sleep(5)
   return(pysrares2)
 })
 
