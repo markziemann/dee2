@@ -72,7 +72,7 @@ while [[ $start < $end ]] ;  do
   DD=$(echo $start | cut -d '-' -f3)
   OUTFILE=../sradb/${ORG}_geo/$YEAR/${YEAR}-${MM}-${DD}.csv
 
-  if [ ! -d ../sradb/${ORG}/$YEAR ] ; then
+  if [ ! -d ../sradb/${ORG}_geo/$YEAR ] ; then
     mkdir ../sradb/${ORG}_geo/$YEAR
   fi
 
@@ -80,7 +80,8 @@ while [[ $start < $end ]] ;  do
     sleep 3
     python -m pysradb.cli search -d geo --organism="${ORGANISM}" \
       --publication-date ${DD}-${MM}-${YEAR}:${DD}-${MM}-${YEAR} \
-      -C="TRANSCRIPTOMIC" --max=999000 --query="Public[Access]" --saveto $OUTFILE
+      -C="TRANSCRIPTOMIC" --max=999000 --query="Public[Access]" \
+      --detailed --saveto $OUTFILE
   fi
 
   # set date

@@ -136,7 +136,7 @@ YEARS=2000:2026
 
 ```
 
-## Get metadata 
+## Get metadata from SRA
 
 The metadata is obtained by date to make each request smaller and more reliable.
 This also allows for quicker updates, as dates that have already been fetched do not need to be done again.
@@ -211,7 +211,8 @@ write(unexpected_folders,file=paste(DATAWD,"/unexpected_folders.txt",sep=""))
 allocated <- union(fin_new,val_old)
 unalloc <- setdiff(folders,allocated)
 lapply( unalloc, function(x) {
-  file.move( x ,  paste(DATAWD,"/trash/",basename(x),sep="") )
+  file.copy( x ,  paste(DATAWD,"/trash/",sep="") , recursive=TRUE )
+  unlink(x,recursive=TRUE)
 } )
 #unlink(unalloc,recursive=TRUE)
 
@@ -233,7 +234,7 @@ se_files <- paste( DATAWD , "/" , runs_done , "/" , runs_done , ".se.tsv.gz",sep
 
 print(paste(length(runs_done),"runs completed"))
 runs_todo <- base::setdiff(runs, runs_done)
-print(paste(length(runs_todo),"requeued runs"))
+print(paste(length(runs_todo),"runs in the queue"))
 
 # Cut the queue and flip order sometimes, so that we can analyse different runs
 # and not just process the same ones again and again
@@ -262,52 +263,29 @@ Any data from earlier years has been previously downloaded so we only need to do
 
 ```{r,geoquery1}
 
-mydates <- apply(X=(expand.grid(sprintf('%0.2d', 1:31),sprintf('%0.2d', 1:12))),MAR=1,FUN=function(x) {paste(x[1],x[2],sep="-" ) }  )
+geofiles <- list.files(paste(SRADBWD,"/",org,"_geo",sep=""),recursive=TRUE,full.names=TRUE)
 
-pysrares2 <- lapply(mydates,function(mydate) {
-  pysra_cmd <- paste("~/miniconda3/bin/python -m pysradb search -d geo -m 10000 -O ", species_name, " -C TRANSCRIPTOMIC -D ",mydate,"-2026:",mydate,"-2026 --detailed ",sep="")
-  pysrares <- system(pysra_cmd,intern=TRUE)
-  pysrares2 <- do.call(rbind,strsplit(pysrares,"\t"))
-  colnames(pysrares2) <- pysrares2[1,]
-  pysrares2 <- pysrares2[-1,]
-  Sys.sleep(5)
-  return(pysrares2)
+geo_metadata_lines <-  lapply(geofiles, function(x) {
+  readLines(x)
 })
 
-# remove elements with no data
-pysrares2 <-  pysrares2[which(unlist(lapply(pysrares2,function(x) { class(x)[1] } ))=="matrix")]
+geofiles <- geofiles[which(lapply(geo_metadata_lines,length)>1)]
 
-GEOFILENAME = paste(SRADBWD,"/",org,"_geo_2026.csv",sep="")
+geo_metadata <-  lapply(geofiles, function(x) {
+  read.csv(x)
+})
 
-# Grab the GSE and GSM data
-GSE <- unlist(lapply(pysrares2,function(x) {x[,"study_alias"] } ))
-GSM <- unlist(lapply(pysrares2,function(x) {x[,"sample_alias"] } ))
+GSM <- unlist(lapply(geo_metadata,function(x) { x[,"sample_alias"] } ) )
+GSE <- unlist(lapply(geo_metadata,function(x) { x[,"study_alias"] } ) )
 gse <- unique(data.frame(GSE,GSM))
 colnames(gse) <- c("GEO_series","GEO_sample")
-write.table(gse,GEOFILENAME,sep=",")
 
-#pysra_cmd <- paste("~/miniconda3/bin/python -m pysradb search -d geo -m 10000 -O ", species_name, " -C TRANSCRIPTOMIC -D 01-01-2026:31-12-2026 --detailed ")
-#pysrares <- system(pysra_cmd,intern=TRUE)
-#pysrares2 <- do.call(rbind,strsplit(pysrares,"\t"))
-#colnames(pysrares2) <- pysrares2[1,]
-#pysrares2 <- pysrares2[-1,]
-#GEOFILENAME = paste(SRADBWD,"/",org,"_geo_2026.csv",sep="")
-#GSE <- pysrares2[,"study_alias"]
-#GSM <- pysrares2[,"sample_alias"]
-gse <- unique(data.frame(GSE,GSM))
-colnames(gse) <- c("GEO_series","GEO_sample")
-write.table(gse,GEOFILENAME,sep=",")
-
-# now join old and new
-PATTERN=paste(org,"_geo_20",sep="")
-geofiles <- list.files("../sradb/", pattern=PATTERN,full.names=TRUE)
-gf <- lapply(geofiles,read.csv)
-gf <- do.call(rbind,gf)
-gse <- unique(gf)
-
-# write a backup of GEO data
-GEONEW=paste(SRADBWD,"/",org,"_all.csv",sep="")
-write.table(gse,GEONEW,sep=",")
+GEOFILENAMENEW = paste(SRADBWD,"/",org,"_geo_new.csv",sep="")
+GEOFILENAMEOLD = paste(SRADBWD,"/",org,"_geo_old.csv",sep="")
+if (file.exists(GEOFILENAMENEW)) {
+  renameFile(GEOFILENAMENEW,GEOFILENAMEOLD,overwrite=TRUE)
+}
+write.table(gse,GEOFILENAMENEW,sep=",")
 
 ```
 
@@ -315,11 +293,7 @@ write.table(gse,GEONEW,sep=",")
 
 ```{r,tidymetadata1}
 
-GEONEW=paste(SRADBWD,"/",org,"_all.csv",sep="")
-
-gse <- read.table(GEONEW,sep=",")
-
-resx <- merge(res,gse,by.x="sample_alias",by.y="GEO_sample",all.x=TRUE)
+resx <- merge(md_df,gse,by.x="sample_alias",by.y="GEO_sample",all.x=TRUE)
 
 # here is a good opportunity to check that the join has worked
 res<-resx
