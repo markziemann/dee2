@@ -269,14 +269,24 @@ geo_metadata_lines <-  lapply(geofiles, function(x) {
   readLines(x)
 })
 
-geofiles <- geofiles[which(lapply(geo_metadata_lines,length)>1)]
+geofiles <- geofiles[which(unlist(lapply(geo_metadata_lines,length))>1)]
 
 geo_metadata <-  lapply(geofiles, function(x) {
   read.csv(x)
 })
 
 GSM <- unlist(lapply(geo_metadata,function(x) { x[,"sample_alias"] } ) )
-GSE <- unlist(lapply(geo_metadata,function(x) { x[,"study_alias"] } ) )
+
+# Sometimes the study alias colname is not there !?
+GSE <- unlist(lapply(geo_metadata,function(x) {
+  if ( length(which(colnames(x)=="study_alias")) == 1 ) {
+    x[,"study_alias"]
+  }
+  else {
+    x[,"submission_alias"]
+  }
+}))
+
 gse <- unique(data.frame(GSE,GSM))
 colnames(gse) <- c("GEO_series","GEO_sample")
 
@@ -441,7 +451,6 @@ system(paste('rsync -azh -e \"ssh -i  ~/.ssh/dee2_2026 \" ', h5file ,' ubuntu@de
 copyFile(h5file,"../mx/",overwrite=TRUE)
 unlink(h5file)
 
-
 ## Next is the QC data
 h5file <- paste(org,"_qc.h5",sep="")
 if (file.exists(h5file)) { file.remove(h5file) }
@@ -535,6 +544,10 @@ system(SCP_COMMAND)
 
 SCP_COMMAND=paste("scp -i ~/.ssh/dee2_2026 ", paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep="") , " ubuntu@dee2.io:/dee2_data/metadata")
 system(SCP_COMMAND)
+
+CHMOD_COMMAND <- paste("ssh -i ~/.ssh/dee2_2026 ubuntu@118.138.235.221 'chmod +x /dee2_data/data/ORG'")
+CHMOD_COMMAND <- gsub("ORG",org,CHMOD_COMMAND)
+system(CHMOD_COMMAND)
 
 save.image(file = paste(org,".RData",sep=""))
 
