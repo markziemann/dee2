@@ -818,10 +818,8 @@ library(jsonlite)
 
 get_sra_studies_metadata_xml2 <- function(study_accessions) {
   results <- list()
-
   for (accession in study_accessions) {
     cat("Fetching:", accession, "\n")
-
     tryCatch({
       # Search for the study
       search_result <- entrez_search(
@@ -829,7 +827,6 @@ get_sra_studies_metadata_xml2 <- function(study_accessions) {
         term = paste0(accession, "[Accession]"),
         retmax = 100
       )
-
       if (length(search_result$ids) > 0) {
         # Fetch XML data
         xml_data <- entrez_fetch(
@@ -837,10 +834,8 @@ get_sra_studies_metadata_xml2 <- function(study_accessions) {
           id = search_result$ids[1],
           rettype = "xml"
         )
-
         # Parse XML with xml2
         doc <- read_xml(xml_data)
-
         # Helper function to safely extract values
         safe_extract_xml2 <- function(xpath_expr, doc) {
           result <- xml_find_all(doc, xpath_expr)
@@ -854,7 +849,6 @@ get_sra_studies_metadata_xml2 <- function(study_accessions) {
             return(xml_text(result[1]))
           }
         }
-
         study_info <- list(
           accession = accession,
           study_accession = xml_attr(xml_find_first(doc, "//STUDY"), "accession"),
@@ -865,22 +859,17 @@ get_sra_studies_metadata_xml2 <- function(study_accessions) {
           center = xml_attr(xml_find_first(doc, "//STUDY"), "center_name"),
           submission_date = xml_attr(xml_find_first(doc, "//STUDY"), "created")
         )
-
         results[[accession]] <- study_info
-
       } else {
         cat("No results found for", accession, "\n")
         results[[accession]] <- list(accession = accession, error = "No results found")
       }
-
     }, error = function(e) {
       cat("Error processing", accession, ":", e$message, "\n")
       results[[accession]] <- list(accession = accession, error = e$message)
     })
-
-    Sys.sleep(3)  # Rate limiting
+    Sys.sleep(10)  # Rate limiting
   }
-
   return(results)
 }
 
@@ -901,7 +890,6 @@ metadata_to_dataframe <- function(metadata_list) {
       stringsAsFactors = FALSE
     )
   })
-
   do.call(rbind, df_list)
 }
 
