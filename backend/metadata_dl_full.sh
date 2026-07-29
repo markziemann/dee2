@@ -1,8 +1,7 @@
-#!/bin/bash -l
+#!/bin/bash
 
-#set -e
-#set -x
-source /home/mdz/app/pysradb/.venv/bin/activate
+set -e
+set -x
 
 ORG=$1
 
@@ -27,14 +26,20 @@ if [ $ORG = "stuberosum" ] ; then ORGANISM='Solanum tuberosum' ; fi
 if [ $ORG = "taestivum" ] ; then ORGANISM='Triticum aestivum' ; fi
 if [ $ORG = "vvinifera" ] ; then ORGANISM='Vitis vinifera' ; fi
 
-PAUSE=10
+PAUSE=3
+BATCH_SIZE=5000
+API_KEY=$(cat /mnt/hdd1/dee2/sradb/API_KEY)
+ESEARCH_URL="https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+EFETCH_URL="https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+BATCH_DIR="sra_batches_${DATE_SAFE}"
+
 # SRA metadata
 
-if [ !  -d ../sradb/${ORG} ] ; then
-  mkdir ../sradb/${ORG}
+if [ !  -d ../sradb_new/${ORG} ] ; then
+  mkdir -p ../sradb_new/${ORG}
 fi
 
-start="2007-01-01"
+start="2026-01-01"
 end=$(date --date="2 days ago" +"%Y-%m-%d")
 
 while [[ $start < $end ]] ;  do
@@ -42,49 +47,65 @@ while [[ $start < $end ]] ;  do
   YEAR=$(echo $start | cut -d '-' -f1)
   MM=$(echo $start | cut -d '-' -f2)
   DD=$(echo $start | cut -d '-' -f3)
-  OUTFILE=../sradb/${ORG}/$YEAR/${YEAR}-${MM}-${DD}.csv
+  DATE_SAFE=${YEAR}-${MM}-${DD}
+  OUTFILE=../sradb_new/${ORG}/$YEAR/${DATE_SAFE}.csv
 
-  if [ ! -d ../sradb/${ORG}/$YEAR ] ; then
-    mkdir ../sradb/${ORG}/$YEAR
+  if [ ! -d ../sradb_new/${ORG}/$YEAR ] ; then
+    mkdir ../sradb_new/${ORG}/$YEAR
   fi
 
   if [ ! -r ${OUTFILE} ] ; then
     sleep $PAUSE
-    python -m pysradb.cli search --organism="${ORGANISM}" \
-      --publication-date ${DD}-${MM}-${YEAR}:${DD}-${MM}-${YEAR} \
-      --source="transcriptomic" --max=999000 --query="Public[Access]" --saveto $OUTFILE
-  fi
+#    python -m pysradb.cli search --organism="${ORGANISM}" \
+#      --publication-date ${DD}-${MM}-${YEAR}:${DD}-${MM}-${YEAR} \
+#      --source="transcriptomic" --max=999000 --query="Public[Access]" --saveto $OUTFILE
 
-  # set date
-  start=$(date -d "$start + 1 day" +"%Y-%m-%d")
-done
+    TERM="${ORGANISM}[Organism] AND transcriptomic[Source] AND ${YEAR}/${MM}/${DD}[PDAT] : ${YEAR}/${MM}/${DD}[PDAT]"
+    SEARCH_XML=$(curl -s -G "$ESEARCH_URL" \
+      --data-urlencode "db=sra" \
+      --data-urlencode "term=${TERM}" \
+      --data-urlencode "usehistory=y" \
+      --data-urlencode "retmax=0" \
+      ${API_KEY:+--data-urlencode "api_key=${API_KEY}"} )
 
-# GEO metadata
 
-if [ !  -d ../sradb/${ORG}_geo ] ; then
-  mkdir ../sradb/${ORG}_geo
-fi
+    WEBENV=$(grep -oP '(?<=<WebEnv>)[^<]+' <<< "$SEARCH_XML")
+    QUERY_KEY=$(grep -oP '(?<=<QueryKey>)[^<]+' <<< "$SEARCH_XML")
+    COUNT=$(grep -oP '(?<=<Count>)[^<]+' <<< "$SEARCH_XML")
+    COUNT=$(echo $COUNT | cut -d ' ' -f1)
 
-start="2007-01-01"
-end=$(date --date="2 days ago" +"%Y-%m-%d")
+    BATCH_DIR="sra_batches_${DATE_SAFE}"
 
-while [[ $start < $end ]] ;  do
-  echo "$start"
-  YEAR=$(echo $start | cut -d '-' -f1)
-  MM=$(echo $start | cut -d '-' -f2)
-  DD=$(echo $start | cut -d '-' -f3)
-  OUTFILE=../sradb/${ORG}_geo/$YEAR/${YEAR}-${MM}-${DD}.csv
+    if [[ "$COUNT" -eq 0 ]]; then
+      touch $OUTFILE
+    else
+      mkdir $BATCH_DIR
+      BATCH_FILES=()
+      for ((RETSTART=0; RETSTART<COUNT; RETSTART+=BATCH_SIZE)); do
+        BATCH_FILE="${BATCH_DIR}/batch_${RETSTART}.xml"
 
-  if [ ! -d ../sradb/${ORG}_geo/$YEAR ] ; then
-    mkdir ../sradb/${ORG}_geo/$YEAR
-  fi
+        echo "Fetching records ${RETSTART}-$((RETSTART+BATCH_SIZE-1)) of ${COUNT}..." >&2
 
-  if [ ! -r ${OUTFILE} ] ; then
-    sleep $PAUSE
-    python -m pysradb.cli search -d geo --organism="${ORGANISM}" \
-      --publication-date ${DD}-${MM}-${YEAR}:${DD}-${MM}-${YEAR} \
-      -C="TRANSCRIPTOMIC" --max=999000 --query="Public[Access]" \
-      --detailed --saveto $OUTFILE
+        curl -s -G "$EFETCH_URL" \
+          --data-urlencode "db=sra" \
+          --data-urlencode "query_key=${QUERY_KEY}" \
+          --data-urlencode "WebEnv=${WEBENV}" \
+          --data-urlencode "retstart=${RETSTART}" \
+          --data-urlencode "retmax=${BATCH_SIZE}" \
+          --data-urlencode "rettype=full" \
+          --data-urlencode "retmode=xml" \
+          -o "$BATCH_FILE" \
+          ${API_KEY:+--data-urlencode "api_key=${API_KEY}"}
+
+          BATCH_FILES+=("$BATCH_FILE")
+          sleep $PAUSE
+      done
+
+      echo "Parsing ${#BATCH_FILES[@]} batch file(s) into CSV..." >&2
+      python3 parse_sra_xml.py "${BATCH_FILES[@]}" "$OUTFILE"
+      rm -rf $BATCH_DIR
+    fi
+
   fi
 
   # set date
