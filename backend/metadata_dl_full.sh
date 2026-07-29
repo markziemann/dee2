@@ -1,5 +1,8 @@
-#!/bin/bash
-source .venv/bin/activate
+#!/bin/bash -l
+
+#set -e
+#set -x
+source /home/mdz/app/pysradb/.venv/bin/activate
 
 ORG=$1
 
@@ -24,7 +27,7 @@ if [ $ORG = "stuberosum" ] ; then ORGANISM='Solanum tuberosum' ; fi
 if [ $ORG = "taestivum" ] ; then ORGANISM='Triticum aestivum' ; fi
 if [ $ORG = "vvinifera" ] ; then ORGANISM='Vitis vinifera' ; fi
 
-
+PAUSE=10
 # SRA metadata
 
 if [ !  -d ../sradb/${ORG} ] ; then
@@ -46,7 +49,7 @@ while [[ $start < $end ]] ;  do
   fi
 
   if [ ! -r ${OUTFILE} ] ; then
-    sleep 3
+    sleep $PAUSE
     python -m pysradb.cli search --organism="${ORGANISM}" \
       --publication-date ${DD}-${MM}-${YEAR}:${DD}-${MM}-${YEAR} \
       --source="transcriptomic" --max=999000 --query="Public[Access]" --saveto $OUTFILE
@@ -77,7 +80,7 @@ while [[ $start < $end ]] ;  do
   fi
 
   if [ ! -r ${OUTFILE} ] ; then
-    sleep 3
+    sleep $PAUSE
     python -m pysradb.cli search -d geo --organism="${ORGANISM}" \
       --publication-date ${DD}-${MM}-${YEAR}:${DD}-${MM}-${YEAR} \
       -C="TRANSCRIPTOMIC" --max=999000 --query="Public[Access]" \
