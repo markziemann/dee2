@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+#set -e
 set -x
 
 ORG=$1
@@ -35,11 +35,11 @@ BATCH_DIR="sra_batches_${DATE_SAFE}"
 
 # SRA metadata
 
-if [ !  -d ../sradb_new/${ORG} ] ; then
-  mkdir -p ../sradb_new/${ORG}
+if [ !  -d ../sradb/${ORG} ] ; then
+  mkdir -p ../sradb/${ORG}
 fi
 
-start="2026-01-01"
+start="2007-01-01"
 end=$(date --date="2 days ago" +"%Y-%m-%d")
 
 while [[ $start < $end ]] ;  do
@@ -48,10 +48,10 @@ while [[ $start < $end ]] ;  do
   MM=$(echo $start | cut -d '-' -f2)
   DD=$(echo $start | cut -d '-' -f3)
   DATE_SAFE=${YEAR}-${MM}-${DD}
-  OUTFILE=../sradb_new/${ORG}/$YEAR/${DATE_SAFE}.csv
+  OUTFILE=../sradb/${ORG}/$YEAR/${DATE_SAFE}.csv
 
-  if [ ! -d ../sradb_new/${ORG}/$YEAR ] ; then
-    mkdir ../sradb_new/${ORG}/$YEAR
+  if [ ! -d ../sradb/${ORG}/$YEAR ] ; then
+    mkdir ../sradb/${ORG}/$YEAR
   fi
 
   if [ ! -r ${OUTFILE} ] ; then
@@ -67,7 +67,6 @@ while [[ $start < $end ]] ;  do
       --data-urlencode "usehistory=y" \
       --data-urlencode "retmax=0" \
       ${API_KEY:+--data-urlencode "api_key=${API_KEY}"} )
-
 
     WEBENV=$(grep -oP '(?<=<WebEnv>)[^<]+' <<< "$SEARCH_XML")
     QUERY_KEY=$(grep -oP '(?<=<QueryKey>)[^<]+' <<< "$SEARCH_XML")
