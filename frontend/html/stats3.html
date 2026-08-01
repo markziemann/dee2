@@ -568,9 +568,11 @@
             <div class="section">
                 <div class="featured-article">
                     <div class="featured-content">
-                        <h3>Stats by runs</h3>
-                        <p>The DEE2 pipeline is organised around SRA runs. A sample may be represented in one or more runs. A project is likely to have many runs.
-In the below table, you'll see just how many transcriptome runs are available in SRA and what proportion we have been able to process.
+                        <p>
+We're attempting to include each SRA project as a bundle in DEE2.
+So far we have included >60k SRA projects and this grows each month.
+Each SRA project has one or more runs, as you can see there are over 4.4 Million in SRA.
+Overall we have completed 46% of these as of July 2026 and our servers are working hard to deliver more.
                         </p>
                         <div id="header-placeholder"></div>
                         <script>
@@ -580,12 +582,6 @@ In the below table, you'll see just how many transcriptome runs are available in
                             document.getElementById('header-placeholder').innerHTML = data;
                             });
                         </script>
-
-                        <img src="/images/dee_datasets2.png" style='max-width: 100%'; height: auto; display: block; />
-                        <h3>Stats by project</h3>
-                        <p>DEE2 offers many SRA projects as bundled zip files.</p>
-                        <img src="/images/dee_bundles.png" style='max-width: 100%'; height: auto; display: block; />
-
                     </div>
                 </div>
             </div>
