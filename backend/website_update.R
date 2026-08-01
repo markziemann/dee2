@@ -1,5 +1,6 @@
 
 # UPDATE WEBPAGE
+rowcnt2 <- function( file) { z<-system(paste("cat ",file, "| cut -f1 | sed 1d | sort -u | wc -l" ) , intern=TRUE) ; z}
 
 FILES1 <- list.files(pattern="*metadata.complete.tsv.cut$",path="/mnt/hdd1/dee2/sradb/",full.names=T)
 x <- as.data.frame(sapply(FILES1,rowcnt2),stringsAsFactors=FALSE)
@@ -158,29 +159,10 @@ grid.newpage()
 grid.rect(gp = gpar(fill = bg_dark, col = NA))
 g <- tableGrob(df, theme = cyberpunk_theme)
 
-# Add neon glow effect (outer border)
-g <- gtable_add_grob(
-  g,
-  grobs = rectGrob(gp = gpar(col = text_magenta, fill = NA, lwd = 4)),
-  t = 1, l = 1, b = nrow(g), r = ncol(g),
-  z = 0
-)
-grid.draw(g)
-
-# Add title with glow effect
-grid.text(
-  "⚡ DEE2 Data by SRA Run ⚡",
-  x = 0.5, y = 0.95,
-  gp = gpar(
-    col = text_cyan,
-    fontsize = 20,
-    fontface = "bold",
-    fontfamily = "mono"
-  )
-)
-
-dev.off()
-system("scp -i ~/.ssh/dee2_2026 dee_datasets2.png ubuntu@dee2.io:/home/ubuntu/dee2/frontend/html/images")
+df2 <- as.data.frame(apply(df,2,as.character))
+rownames(df2) <- rownames(df)
+print(xtable(df2), type = "html",file = 'table1.html')
+system("scp -i ~/.ssh/dee2_2026 table1.html ubuntu@dee2.io:/home/ubuntu/dee2/frontend/html/table1.html")
 
 ## UPDATE BUNDLES
 
