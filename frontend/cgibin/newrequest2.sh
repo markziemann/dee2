@@ -565,7 +565,7 @@ if [ $SPEC -gt 0 ] ; then
   echo '<FORM><INPUT Type="button" VALUE="Go back" onClick="history.go(-1);return true;"></FORM>'
   exit
 fi
-QUERY_STRING=$(echo $QUERY_STRING | tr -d ':;{}()[]\/<>' )
+QUERY_STRING=$(echo $QUERY_STRING | tr -d ':;{}()[]\/<> +' )
 
 ORG=$(echo $QUERY_STRING | cut -d '&' -f1 | cut -d '=' -f2)
 ACC=$(echo $QUERY_STRING | cut -d '&' -f2 | cut -d '=' -f2)
