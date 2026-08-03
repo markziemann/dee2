@@ -4,15 +4,23 @@ The aim of DEE2 is to make all RNA-seq data freely available to everyone. DEE2 c
 * Pipeline that can download and process SRA data as well as users' own fastq files.
 * Back-end that collects, filters and organises data provided by contributing worker nodes.
 
-DEE2 currently supports analysis of several major species including A. thaliana , C. elegans, D. melanogaster, D. rerio, E. coli, H. sapiens, M. musculus, R. norvegicus and S. cerevisiae. The DEE2 pipeline downloads data from SRA and processes it, providing tabulated data that can be used in downstream statistical analysis.
+DEE2 currently supports analysis of several major species including *A. thaliana* , *C. elegans*,
+*D. melanogaster*, *D. rerio*, *E. coli*, *H. sapiens*, *M. musculus*, *R. norvegicus* and *S. cerevisiae*.
+The DEE2 pipeline downloads data from SRA and processes it, providing tabulated data that can be used in
+downstream statistical analysis.
 
-We have recently added support for B. distachyon, G. max, H. vulgare, O. sativa, P. trichocarpa, S. bicolor, S. lycopersicum, S. tuberosum, T. aestivum, V. vinifera and Z. mays.
+We have recently added support for several plants: *B. distachyon*, *G. max*, *H. vulgare*, *O. sativa*,
+*P. trichocarpa*, *S. bicolor*, *S. lycopersicum*, *S. tuberosum*, *T. aestivum*, *V. vinifera* and *Z. mays*.
 
 ## How can I access the processed data?
-The processed data is available at http://dee2.io and can be also accessed using our specially developed [R interface](https://bioconductor.org/packages/getDEE2/).
-Project bundles are available [here](https://dee2.io/huge/), and bulk data dumps are available [here](https://dee2.io/mx/).
+The processed data is available at http://dee2.io and can be also accessed using our specially developed
+[R interface](https://bioconductor.org/packages/getDEE2/).
 
-<s>If there is a particular dataset of interest missing from DEE2, you can use the [request webform](http://dee2.io/request.html) to have it expedited.</s>
+Project bundles are available [here](https://dee2.io/huge/), and bulk data dumps are available
+[here](https://dee2.io/mx/).
+
+If there is a particular dataset of interest missing from DEE2, you can use the
+[request webform](http://dee2.io/request.html) to have it expedited.
 
 ## Want to learn more?
 For information on different parts of the app, see the specific documentation:
