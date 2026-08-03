@@ -565,11 +565,25 @@
                 <ul class="article-list">
 
                     <li>
-                        <h4>11th October 2025 - Several upgrades</h4>
-                        <p class="description">You may see there are some changes about. Apart from the new front-end theme design, the search app has changed to be focus on SRA projects instead of individual samples. Also, we have a new data-on-demand request tool. If you see a study of interest on GEO or SRA and want to look at the data, use the tool to have the data processed on our server and you'll get an email to notify you that it has been completed.</p>
+                        <h4>3rd August 2026 - Changes to metadata handling in the backend</h4>
+                        <p class="description">We recently conducted changes to how DEE2 handles SRA metadata.
+                        This is mostly due to the increasing volume of metadata and the limitations of the tools we were
+                        Previously using.
+                        In our previous backend pipeline, we had metadata organised by species with each year having its own
+                        csv file.
+                        In the new pipeline, metadata is organised with each calendar date having its own file.
+                        This makes updating metadata much quicker, as only the missing days are fetched, rather than the
+                        entire year of metadata.
+                        This approach is also more robust to errors.
+                        This change is part of our goal to make database updates faster and more frequent.
+                        </p>
                     </li>
 
 
+                    <li>
+                        <h4>11th October 2025 - Several upgrades</h4>
+                        <p class="description">You may see there are some changes about. Apart from the new front-end theme design, the search app has changed to be focus on SRA projects instead of individual samples. Also, we have a new data-on-demand request tool. If you see a study of interest on GEO or SRA and want to look at the data, use the tool to have the data processed on our server and you'll get an email to notify you that it has been completed.</p>
+                    </li>
 
                     <li>
                         <h4>25th June 2025 - Changes to bulk data files</h4>
