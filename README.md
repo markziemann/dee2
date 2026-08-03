@@ -20,7 +20,7 @@ Project bundles are available [here](https://dee2.io/huge/), and bulk data dumps
 [here](https://dee2.io/mx/).
 
 If there is a particular dataset of interest missing from DEE2, you can use the
-[request webform](http://dee2.io/request.html) to have it expedited.
+[request webform](http://dee2.io/request) to have it expedited and the results will be emailed to you.
 
 ## Want to learn more?
 For information on different parts of the app, see the specific documentation:
