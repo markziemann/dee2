@@ -44,6 +44,18 @@ bundles <- list.files("../sradb/big_proj/",pattern="*zip$",recursive=TRUE)
 bundle_tbl <- table(sapply(strsplit(bundles,"/"),"[[",1))
 z$n_bundles <- bundle_tbl
 
+## Add date of last update
+
+myfiles <- list.files("../mx/",pattern="_qc.h5$")
+
+get_mod_date <- function( myfile) {
+  z <- system( paste("stat -c %y ../mx/",myfile," | cut -d ' ' -f1",sep="") , intern=TRUE)
+  return(z)
+}
+
+z$mod_date <- unlist(lapply(myfiles,get_mod_date))
+
+# Reorder the data
 plants <- c("Z. mays", "V. vinifera", "T. aestivum","S. tuberosum","S. lycopersicum", "S. bicolor",
   "P. trichocarpa","O. sativa","H. vulgare","G. max","B. distachyon","A. thaliana")
 
@@ -60,9 +72,10 @@ plantdf$group="Plant"
 microbedf$group="Microbe"
 df <- rbind(animaldf,plantdf,microbedf)
 
-df <- df[,c(6,1:5)]
+df <- df[,c(7,1:6)]
 
-colnames(df) <- c("Group","Runs total","Runs completed","Runs queued","% Runs completed","No. bundles completed")
+colnames(df) <- c("Group","Runs total","Runs completed","Runs queued","% Runs completed",
+  "No. bundles completed","Last updated")
 
 ## Chart of 
 png("dee_datasets.png",width=600,height=520)
