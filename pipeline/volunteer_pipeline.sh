@@ -18,7 +18,7 @@ usage() {
     echo
     echo "Usage: docker run mziemann/tallyup <-s SPECIES> [-a SRA ACCESSION] [-h] [-t THREADS] [-d] [-f FASTQ_READ1 FASTQ_READ2] [-v]"
     echo
-    echo "  -s  Species, supported ones include 'athaliana', 'celegans', 'dmelanogaster', 'drerio', 'ecoli', 'hsapiens', 'mmusculus', 'osativa', 'rnorvegicus', 'scerevisiae', 'zmays', 'bdistachyon', 'gmax', 'hvulgare', 'ptrichocarpa', 'sbicolor', 'slycopersicum', 'stuberosum', 'taestivum' and 'vvinifera' "
+    echo "  -s  Species, supported ones include 'athaliana', 'celegans', 'dmelanogaster', 'drerio', 'ecoli', 'hsapiens', 'mmusculus', 'osativa', 'rnorvegicus', 'scerevisiae', 'zmays', 'bdistachyon', 'gmax', 'hvulgare', 'ptrichocarpa', 'sbicolor', 'slycopersicum', 'stuberosum', 'taestivum', 'vvinifera', 'mmulatta', 'ggallus', 'sscrofa', 'btaurus', 'oaries', 'mfascicularis', 'pfalciparum', 'pvivax' "
     echo "  -a  SRA run accession, a text string matching an SRA run accession. eg: SRR10861665 or ERR3281011"
     echo "  -h  Help. Display this message and quit."
     echo "  -t  Number of parallel threads. Default is 8."
@@ -383,6 +383,62 @@ elif [ $ORG == "bdistachyon" ] ; then
   BT2_MD5="705148d9b39518787321d91462038421"
   KAL_MD5="e21a952f8f32064d08c0ca35179f00c2"
   STAR_MD5="814ff96269d7bc3f29156fbef398c1c3"
+elif [ $ORG == "mmulatta" ] ; then
+  GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/003/339/765/3/ensembl/2019_12/geneset/genes.gtf.gz"
+  GDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/003/339/765/3/ensembl/2019_12/genome/softmasked.fa.bgz"
+  CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/003/339/765/3/ensembl/2019_12/geneset/cdna.fa.bgz"
+  BT2_MD5="ec5f6f1d03a2f285fc1d90c8c5bd79cf"
+  KAL_MD5="6f3740a4cf839a3dd176589536d652aa"
+  STAR_MD5="951e33abe66dde03c29a0c09e425eec9"
+elif [ $ORG == "ggallus" ] ; then
+  GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/016/699/485/1/ensembl/2022_01/geneset/genes.gtf.bgz"
+  GDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/016/699/485/1/ensembl/2022_01/genome/softmasked.fa.bgz"
+  CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/016/699/485/1/ensembl/2022_01/geneset/cdna.fa.bgz"
+  BT2_MD5="e3606d7f9e3975a105923112ec478219"
+  KAL_MD5="d5a35a058f71683ab91dbbf760d7f349"
+  STAR_MD5="4b6e865d6bf989d53aba1a95cd3f7baa"
+elif [ $ORG == "sscrofa" ] ; then
+  GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/003/025/6/ensembl/2022_02/geneset/genes.gtf.bgz"
+  GDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/003/025/6/ensembl/2022_02/genome/softmasked.fa.bgz"
+  CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/003/025/6/ensembl/2022_02/geneset/cdna.fa.bgz"
+  BT2_MD5="90dd97cb00307b2bd8eb0a6789fa66d3"
+  KAL_MD5="c3b2431cdaa2217a1fe683bd3027c04c"
+  STAR_MD5="8f2c6594fea0ad442b47df237fa58576"
+elif [ $ORG == "btaurus" ] ; then
+  GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/002/263/795/4/ensembl/2024_11/geneset/genes.gtf.bgz"
+  GDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/002/263/795/4/ensembl/2024_11/genome/softmasked.fa.bgz"
+  CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/002/263/795/4/ensembl/2024_11/geneset/cdna.fa.bgz"
+  BT2_MD5="a1cb7058c4fe9a7ba396bbe2799edc00"
+  KAL_MD5="75fe2b6a83d71138838fa759923dbc82"
+  STAR_MD5="e4bf7bc05d601cf221340627d906b9bc"
+elif [ $ORG == "oaries" ] ; then
+  GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/016/772/045/2/ensembl/2024_12/geneset/genes.gtf.bgz"
+  GDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/016/772/045/2/ensembl/2024_12/genome/softmasked.fa.bgz"
+  CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/016/772/045/2/ensembl/2024_12/geneset/cdna.fa.bgz"
+  BT2_MD5="73a5a84bad6c59aa6851883b47a2016f"
+  KAL_MD5="6a602ddb1c3d3a58f364e572ab469080"
+  STAR_MD5="ba6300c38c55f44b01af33e6f40a260f"
+elif [ $ORG == "mfascicularis" ] ; then
+  GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/011/100/615/1/ensembl/2020_08/geneset/genes.gtf.bgz"
+  GDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/011/100/615/1/ensembl/2020_08/genome/softmasked.fa.bgz"
+  CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/011/100/615/1/ensembl/2020_08/geneset/cdna.fa.bgz"
+  BT2_MD5="405801eed603764366f3971e47a1e881"
+  KAL_MD5="e417989ac53d70a275499cc61afc694a"
+  STAR_MD5="f0c71e4f8fd78137a4eaa74cbaa80fd5"
+elif [ $ORG == "pfalciparum" ] ; then
+  GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/002/765/2/community/2017_10/geneset/genes.gtf.bgz"
+  GDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/002/765/2/community/2017_10/genome/softmasked.fa.bgz"
+  CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/002/765/2/community/2017_10/geneset/cdna.fa.bgz"
+  BT2_MD5="a80b736ebbc90ac8df3340d1c9622ff9"
+  KAL_MD5="9ace1ce24f25853b18462c05c68ced1f"
+  STAR_MD5="59a9d71c664f15dd273fe6ae488c3eb0"
+elif [ $ORG == "pvivax" ] ; then
+  GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/900/093/535/1/ensembl/2022_12/geneset/genes.gtf.bgz"
+  GDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/900/093/535/1/ensembl/2022_12/genome/softmasked.fa.bgz"
+  CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/900/093/535/1/ensembl/2022_12/geneset/cdna.fa.bgz"
+  BT2_MD5="d83b8f2875c08d00bf6f116e5d6c254c"
+  KAL_MD5="801267345bcb87d3b3b5899f67aff7a7"
+  STAR_MD5="c84bb788f93a05904a767903192dfee0"
 fi
 
 # download the necessary reference files
@@ -391,6 +447,10 @@ if [ -z $GTF ] || [ ! -r $GTF  ] ; then
   cd $MYREF_DIR
   if [ -r $(basename $GTFURL) ] ; then rm $(basename $GTFURL) ; fi
   wget $GTFURL
+  if [ -r "genes.gtf.bgz" ] ; then
+    mv genes.gtf.bgz genes.gtf.gz
+    GTFURL=$(echo $GTFURL | sed 's/.bgz/.gz/')
+  fi
   gunzip -f $(basename $GTFURL)
   GTF=$MYREF_DIR/$(basename $GTFURL .gz)
   grep -cE "\sgene\s" $GTF > $GTF.cnt
@@ -402,6 +462,10 @@ if [ -z $GDNA ] || [ ! -r $GDNA  ] ; then
   cd $MYREF_DIR
   if [ -r $(basename $GDNAURL) ] ; then rm $(basename $GDNAURL) ; fi
   wget $GDNAURL
+  if [ -r "softmasked.fa.bgz" ] ; then
+    mv softmasked.fa.bgz softmasked.fa.gz
+    GDNAURL=$(echo $GDNAURL | sed 's/.bgz/.gz/')
+  fi
   gunzip -f $(basename $GDNAURL)
   GDNA=$MYREF_DIR/$(basename $GDNAURL .gz)
   cd -
@@ -412,6 +476,10 @@ if [ -z $CDNA ] || [ ! -r $CDNA  ] ; then
   cd $MYREF_DIR
   if [ -r $(basename $CDNAURL) ] ; then rm $(basename $CDNAURL) ; fi
   wget $CDNAURL
+  if [ -r "cdna.fa.bgz" ] ; then
+    mv cdna.fa.bgz cdna.fa.gz
+    CDNAURL=$(echo $CDNAURL | sed 's/.bgz/.gz/')
+  fi
   gunzip -f $(basename $CDNAURL)
   CDNA=$MYREF_DIR/$(basename $CDNAURL .gz)
   grep -c '>' $CDNA > $CDNA.cnt
@@ -1446,7 +1514,7 @@ ACC_URL="http://dee2.io/acc.html"
 ACC_REQUEST="http://dee2.io/cgi-bin/acc.sh"
 
 if [ ! -z $MY_ORG ] ; then
-  ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae osativa zmays taestivum slycopersicum sbicolor gmax ptrichocarpa vvinifera hvulgare stuberosum bdistachyon' \
+  ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae osativa zmays taestivum slycopersicum sbicolor gmax ptrichocarpa vvinifera hvulgare stuberosum bdistachyon mmulatta, ggallus, sscrofa, btaurus, oaries, mfascicularis, pfalciparum, pvivax' \
   | tr ' ' '\n' | grep -wc "$MY_ORG")
   if [ $ORG_CHECK -ne 1 ] ; then
     echo Organism not specified correctly. Check options and try again.
@@ -1472,7 +1540,15 @@ ptrichocarpa    3680000
 vvinifera       4460000
 hvulgare        39500000
 stuberosum      7590000
-bdistachyon     2550000' | grep -w $MY_ORG | awk -v f=$MEM_FACTOR '{print $2*f}')
+bdistachyon     2550000
+mmulatta        28968508
+mfascicularis	28968508
+ggallus	11484465
+sscrofa	26101057
+btaurus	28189142
+oaries	26101057
+pfalciparum	3044684
+pvivax	3044684' | grep -w $MY_ORG | awk -v f=$MEM_FACTOR '{print $2*f}')
 
   if [ $MEM_REQD -gt $MEM ] ; then
     echo Error, analysis of $ORG data requires at least $MEM_REQD $MEM_FACTOR kB in RAM, but there is only $MEM available.
