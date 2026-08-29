@@ -77,7 +77,6 @@ args = commandArgs(trailingOnly=TRUE)
 org=params$org
 #org
 #org="ecoli"
-mmulatta, ggallus, sscrofa, btaurus, oaries, mfascicularis, pfalciparum, pvivax
 
 species_list <- c("3702", "4530", "4577", "6239", "7227", "7955",
   "562", "9606", "10090", "10116", "4932",
