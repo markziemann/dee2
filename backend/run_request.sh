@@ -1,5 +1,7 @@
 #!/bin/bash
-cd /home/mdz/dee2/request
+# here is the crontab
+# */10 * * * * bash /home/user/dee2/request/run_request.sh
+cd /mnt/nvme1/projects/dee2/request
 set -x
 
 if [ -r LOCK ] ; then
@@ -8,19 +10,24 @@ if [ -r LOCK ] ; then
 fi
 
 # Start by `ls` then create the SRP folder, do analysis in there
-ssh -i ~/.ssh/dee2_2025 ubuntu@dee2.io "ls /usr/lib/cgi-bin/newrequests/*confirmed" \
+ssh -i ~/.ssh/dee2_2026 ubuntu@dee2.io "ls /usr/lib/cgi-bin/newrequests/*confirmed" \
 | sed 's#/usr/lib/cgi-bin/newrequests/##' > CONFIRMED
 
-for FILE  in  $(cat CONFIRMED) ; do
+# by default do not fetch metadata each time
+GETMETADATA=FALSE
+
+for FILE in $(cat CONFIRMED) ; do
   echo $FILE
   if [ ! -r $FILE ] ; then
     echo file $FILE not found
     FILE_PRESENT=FALSE
+    # only get metadata if there is work to do
+    GETMETADATA=TRUE
 
     #START ROUTINE
     touch LOCK
     SRP=$(echo $FILE | cut -d '.' -f1)
-    scp -i ~/.ssh/dee2_2025 ubuntu@dee2.io:/usr/lib/cgi-bin/newrequests/$FILE .
+    scp -i ~/.ssh/dee2_2026 ubuntu@dee2.io:/usr/lib/cgi-bin/newrequests/$FILE .
     mkdir $SRP
     cp $FILE $SRP
     cd $SRP
@@ -44,6 +51,11 @@ for FILE  in  $(cat CONFIRMED) ; do
 
       while [ -r LOCK1 ] ; do
         sleep 1
+      done
+
+      SRACNT=$(find . | grep -c .sra$)
+      while [ $SRACNT -gt 3 ] ; do
+        sleep 10
       done
 
       touch LOCK1
@@ -131,11 +143,14 @@ for FILE  in  $(cat CONFIRMED) ; do
     cp ../contents.md $SRP/README.md
 
     zip -r $SRP.zip $SRP
-    scp -i ~/.ssh/dee2_2025 $SRP.zip ubuntu@dee2.io:/dee2_data/requests
+    scp -i ~/.ssh/dee2_2026 $SRP.zip ubuntu@dee2.io:/dee2_data/requests
 
     cd ..
     rm LOCK
   fi
+
 done
 
-Rscript getmetadata.R
+if [ $GETMETADATA == TRUE ] ; then
+  Rscript getmetadata.R
+fi
