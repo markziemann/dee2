@@ -443,26 +443,24 @@ elif [ $ORG == "aaegypti" ] ; then
   GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/002/204/515/1/veupathdb/2020_06/geneset/genes.gtf.gz"
   GDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/002/204/515/1/veupathdb/2020_06/genome/softmasked.fa.bgz"
   CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/002/204/515/1/veupathdb/2020_06/geneset/cdna.fa.bgz"
-  BT2_MD5="
-  KAL_MD5="
-  STAR_MD5="
+  BT2_MD5="084c184409dcc1fc592401b8c31de429"
+  KAL_MD5="258c71943fd489d2a52d5b87d397cbe3"
+  STAR_MD5="431f2f06e81d77edee2749363f846f4e"
 elif [ $ORG == "aalbopictus" ] ; then
   GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCF/035/046/485/1/veupathdb/2025_06/geneset/genes.gtf.gz"
   GDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCF/035/046/485/1/veupathdb/2025_06/genome/softmasked.fa.bgz"
   CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCF/035/046/485/1/veupathdb/2025_06/geneset/cdna.fa.bgz"
-  BT2_MD5="
-  KAL_MD5="
-  STAR_MD5="
+  BT2_MD5="8bb8d3c49e426172620827e52be782e1"
+  KAL_MD5="f46a7625c81b28e3cc83f3da6833a6ab"
+  STAR_MD5="78c4c978feca9ecefe4f4327c49cdb44"
 elif [ $ORG == "agambiae" ] ; then
   GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/005/575/1/veupathdb/2015_10/geneset/genes.gtf.gz"
   GDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/005/575/1/veupathdb/2015_10/genome/softmasked.fa.bgz"
   CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/005/575/1/veupathdb/2015_10/geneset/cdna.fa.bgz"
-  BT2_MD5="
-  KAL_MD5="
-  STAR_MD5="
+  BT2_MD5="45697df72e67200f7b220e601799f69f"
+  KAL_MD5="7c43d392977dd0ac0bd7515dcded0800"
+  STAR_MD5="4826eae1da7863beab1da4dfd4905cd9"
 fi
-
-
 
 # download the necessary reference files
 GTF=$MYREF_DIR/$(basename $GTFURL .gz)
@@ -1537,7 +1535,7 @@ ACC_URL="http://dee2.io/acc.html"
 ACC_REQUEST="http://dee2.io/cgi-bin/acc.sh"
 
 if [ ! -z $MY_ORG ] ; then
-  ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae osativa zmays taestivum slycopersicum sbicolor gmax ptrichocarpa vvinifera hvulgare stuberosum bdistachyon mmulatta, ggallus, sscrofa, btaurus, oaries, mfascicularis, pfalciparum, pvivax' \
+  ORG_CHECK=$(echo 'athaliana celegans dmelanogaster drerio ecoli hsapiens mmusculus rnorvegicus scerevisiae osativa zmays taestivum slycopersicum sbicolor gmax ptrichocarpa vvinifera hvulgare stuberosum bdistachyon mmulatta ggallus sscrofa btaurus oaries mfascicularis pfalciparum pvivax aaegypti aalbopictus agambiae' \
   | tr ' ' '\n' | grep -wc "$MY_ORG")
   if [ $ORG_CHECK -ne 1 ] ; then
     echo Organism not specified correctly. Check options and try again.
@@ -1571,7 +1569,10 @@ sscrofa	26101057
 btaurus	28189142
 oaries	26101057
 pfalciparum	3044684
-pvivax	3044684' | grep -w $MY_ORG | awk -v f=$MEM_FACTOR '{print $2*f}')
+pvivax	3044684
+aaegypti	11484465
+aalbopictus	11484465
+agambiae	2550000' | grep -w $MY_ORG | awk -v f=$MEM_FACTOR '{print $2*f}')
 
   if [ $MEM_REQD -gt $MEM ] ; then
     echo Error, analysis of $ORG data requires at least $MEM_REQD $MEM_FACTOR kB in RAM, but there is only $MEM available.
