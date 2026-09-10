@@ -18,7 +18,7 @@ usage() {
     echo
     echo "Usage: docker run mziemann/tallyup <-s SPECIES> [-a SRA ACCESSION] [-h] [-t THREADS] [-d] [-f FASTQ_READ1 FASTQ_READ2] [-v]"
     echo
-    echo "  -s  Species, supported ones include 'athaliana', 'celegans', 'dmelanogaster', 'drerio', 'ecoli', 'hsapiens', 'mmusculus', 'osativa', 'rnorvegicus', 'scerevisiae', 'zmays', 'bdistachyon', 'gmax', 'hvulgare', 'ptrichocarpa', 'sbicolor', 'slycopersicum', 'stuberosum', 'taestivum', 'vvinifera', 'mmulatta', 'ggallus', 'sscrofa', 'btaurus', 'oaries', 'mfascicularis', 'pfalciparum', 'pvivax' "
+    echo "  -s  Species, supported ones include 'athaliana', 'celegans', 'dmelanogaster', 'drerio', 'ecoli', 'hsapiens', 'mmusculus', 'osativa', 'rnorvegicus', 'scerevisiae', 'zmays', 'bdistachyon', 'gmax', 'hvulgare', 'ptrichocarpa', 'sbicolor', 'slycopersicum', 'stuberosum', 'taestivum', 'vvinifera', 'mmulatta', 'ggallus', 'sscrofa', 'btaurus', 'oaries', 'mfascicularis', 'pfalciparum', 'pvivax', 'aaegypti', 'aalbopictus', 'agambiae' "
     echo "  -a  SRA run accession, a text string matching an SRA run accession. eg: SRR10861665 or ERR3281011"
     echo "  -h  Help. Display this message and quit."
     echo "  -t  Number of parallel threads. Default is 8."
@@ -439,7 +439,30 @@ elif [ $ORG == "pvivax" ] ; then
   BT2_MD5="d83b8f2875c08d00bf6f116e5d6c254c"
   KAL_MD5="801267345bcb87d3b3b5899f67aff7a7"
   STAR_MD5="c84bb788f93a05904a767903192dfee0"
+elif [ $ORG == "aaegypti" ] ; then
+  GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/002/204/515/1/veupathdb/2020_06/geneset/genes.gtf.gz"
+  GDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/002/204/515/1/veupathdb/2020_06/genome/softmasked.fa.bgz"
+  CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/002/204/515/1/veupathdb/2020_06/geneset/cdna.fa.bgz"
+  BT2_MD5="
+  KAL_MD5="
+  STAR_MD5="
+elif [ $ORG == "aalbopictus" ] ; then
+  GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCF/035/046/485/1/veupathdb/2025_06/geneset/genes.gtf.gz"
+  GDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCF/035/046/485/1/veupathdb/2025_06/genome/softmasked.fa.bgz"
+  CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCF/035/046/485/1/veupathdb/2025_06/geneset/cdna.fa.bgz"
+  BT2_MD5="
+  KAL_MD5="
+  STAR_MD5="
+elif [ $ORG == "agambiae" ] ; then
+  GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/005/575/1/veupathdb/2015_10/geneset/genes.gtf.gz"
+  GDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/005/575/1/veupathdb/2015_10/genome/softmasked.fa.bgz"
+  CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/005/575/1/veupathdb/2015_10/geneset/cdna.fa.bgz"
+  BT2_MD5="
+  KAL_MD5="
+  STAR_MD5="
 fi
+
+
 
 # download the necessary reference files
 GTF=$MYREF_DIR/$(basename $GTFURL .gz)
