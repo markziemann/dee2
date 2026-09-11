@@ -1,10 +1,12 @@
 #!/bin/bash
 
-#which gtftools > /dev/null || echo "GTFtools_0.6.5 is required"
-#which gtftools > /dev/null || exit 1
-#INSTALLED_VERSION=$(gtftools -v 2>&1 | tr -d ' ' )
-#REQUIRED_VERSION="GTFtoolsversion:0.8.5"
-#if [ $REQUIRED_VERSION != $INSTALLED_VERSION ] ; then echo "GTFtools_0.8.5 is required" ; exit 1 ; fi
+echo GTFtools version 0.9.0 from pip
+
+#which gtftools.py > /dev/null || echo "GTFtools_0.6.5 is required"
+#which gtftools.py > /dev/null || exit 1
+#INSTALLED_VERSION=$(gtftools.py -v 2>&1 | tr -d ' ' )
+#REQUIRED_VERSION="GTFtoolsversion:0.6.5"
+#if [ $REQUIRED_VERSION != $INSTALLED_VERSION ] ; then echo "GTFtools_0.6.5 is required" ; exit 1 ; fi
 
 ATH_GTFURL="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.36.gtf.gz"
 ATH_CDNAURL="ftp://ftp.ensemblgenomes.org/pub/release-36/plants/fasta/arabidopsis_thaliana/cdna/Arabidopsis_thaliana.TAIR10.cdna.all.fa.gz"
@@ -55,6 +57,13 @@ MMU_CDNA="Mus_musculus.GRCm38.cdna.all.fa"
 MMU_GENEINFO="mmu_gene_info.tsv"
 MMU_TXINFO="mmu_tx_info.tsv"
 
+OSA_GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/oryza_sativa/Oryza_sativa.IRGSP-1.0.59.gtf.gz"
+OSA_CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/oryza_sativa/cdna/Oryza_sativa.IRGSP-1.0.cdna.all.fa.gz"
+OSA_GTF="Oryza_sativa.IRGSP-1.0.59.gtf"
+OSA_CDNA="Oryza_sativa.IRGSP-1.0.cdna.all.fa"
+OSA_GENEINFO="osa_gene_info.tsv"
+OSA_TXINFO="osa_tx_info.tsv"
+
 RNO_GTFURL="ftp://ftp.ensembl.org/pub/release-90/gtf/rattus_norvegicus/Rattus_norvegicus.Rnor_6.0.90.gtf.gz"
 RNO_CDNAURL="ftp://ftp.ensembl.org/pub/release-90/fasta/rattus_norvegicus/cdna/Rattus_norvegicus.Rnor_6.0.cdna.all.fa.gz"
 RNO_GTF="Rattus_norvegicus.Rnor_6.0.90.gtf"
@@ -69,82 +78,100 @@ SCE_CDNA="Saccharomyces_cerevisiae.R64-1-1.cdna.all.fa"
 SCE_GENEINFO="sce_gene_info.tsv"
 SCE_TXINFO="sce_tx_info.tsv"
 
-OSA_GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/oryza_sativa/Oryza_sativa.IRGSP-1.0.59.gtf.gz"
-OSA_CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/oryza_sativa/cdna/Oryza_sativa.IRGSP-1.0.cdna.all.fa.gz"
-OSA_GTF="Oryza_sativa.IRGSP-1.0.59.gtf"
-OSA_CDNA="Oryza_sativa.IRGSP-1.0.cdna.all.fa"
-OSA_GENEINFO="osa_gene_info.tsv"
-OSA_TXINFO="osa_tx_info.tsv"
-
-ZMA_GTFURL="https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/gtf/zea_mays/Zea_mays.Zm-B73-REFERENCE-NAM-5.0.59.gtf.gz"
-ZMA_CDNAURL="https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-59/plants/fasta/zea_mays/cdna/Zea_mays.Zm-B73-REFERENCE-NAM-5.0.cdna.all.fa.gz"
+ZMA_GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/plants/gtf/zea_mays/Zea_mays.Zm-B73-REFERENCE-NAM-5.0.59.gtf.gz"
+ZMA_CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/zea_mays/cdna/Zea_mays.Zm-B73-REFERENCE-NAM-5.0.cdna.all.fa.gz"
 ZMA_GTF="Zea_mays.Zm-B73-REFERENCE-NAM-5.0.59.gtf"
 ZMA_CDNA="Zea_mays.Zm-B73-REFERENCE-NAM-5.0.cdna.all.fa"
 ZMA_GENEINFO="zma_gene_info.tsv"
 ZMA_TXINFO="zma_tx_info.tsv"
 
-TAE_GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/triticum_aestivum/Triticum_aestivum.IWGSC.59.gtf.gz"
-TAE_CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/triticum_aestivum/cdna/Triticum_aestivum.IWGSC.cdna.all.fa.gz"
-TAE_GTF="Triticum_aestivum.IWGSC.59.gtf"
-TAE_CDNA="Triticum_aestivum.IWGSC.cdna.all.fa"
-TAE_GENEINFO="tae_gene_info.tsv"
-TAE_TXINFO="tae_tx_info.tsv"
+#mmulatta
+MMUL_GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/003/339/765/3/ensembl/2019_12/geneset/genes.gtf.gz"
+MMUL_CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/003/339/765/3/ensembl/2019_12/geneset/cdna.fa.bgz"
+MMUL_GTF="mmul_genes.gtf"
+MMUL_CDNA="mmul_cdna.fa"
+MMUL_GENEINFO="mmul_gene_info.tsv"
+MMUL_TXINFO="mmul_tx_info.tsv"
 
-SLY_GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/solanum_lycopersicum/Solanum_lycopersicum.SL3.0.59.gtf.gz"
-SLY_CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/solanum_lycopersicum/cdna/Solanum_lycopersicum.SL3.0.cdna.all.fa.gz"
-SLY_GTF="Solanum_lycopersicum.SL3.0.59.gtf"
-SLY_CDNA="Solanum_lycopersicum.SL3.0.cdna.all.fa"
-SLY_GENEINFO="sly_gene_info.tsv"
-SLY_TXINFO="sly_tx_info.tsv"
+#ggallus
+GGA_GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/016/699/485/1/ensembl/2022_01/geneset/genes.gtf.bgz"
+GGA_CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/016/699/485/1/ensembl/2022_01/geneset/cdna.fa.bgz"
+GGA_GTF="gga_genes.gtf"
+GGA_CDNA="gga_cdna.fa"
+GGA_GENEINFO="gga_gene_info.tsv"
+GGA_TXINFO="gga_tx_info.tsv"
 
-SBI_GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/sorghum_bicolor/Sorghum_bicolor.Sorghum_bicolor_NCBIv3.59.gtf.gz"
-SBI_CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/sorghum_bicolor/cdna/Sorghum_bicolor.Sorghum_bicolor_NCBIv3.cdna.all.fa.gz"
-SBI_GTF="Sorghum_bicolor.Sorghum_bicolor_NCBIv3.59.gtf"
-SBI_CDNA="Sorghum_bicolor.Sorghum_bicolor_NCBIv3.cdna.all.fa"
-SBI_GENEINFO="sbi_gene_info.tsv"
-SBI_TXINFO="sbi_tx_info.tsv"
+#sscrofa
+SSC_GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/003/025/6/ensembl/2022_02/geneset/genes.gtf.bgz"
+SSC_CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/003/025/6/ensembl/2022_02/geneset/cdna.fa.bgz"
+SSC_GTF="ssc_genes.gtf"
+SSC_CDNA="ssc_cdna.fa"
+SSC_GENEINFO="ssc_gene_info.tsv"
+SSC_TXINFO="ssc_tx_info.tsv"
 
-GMA_GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/glycine_max/Glycine_max.Glycine_max_v2.1.59.gtf.gz"
-GMA_CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/glycine_max/cdna/Glycine_max.Glycine_max_v2.1.cdna.all.fa.gz"
-GMA_GTF="Glycine_max.Glycine_max_v2.1.59.gtf"
-GMA_CDNA="Glycine_max.Glycine_max_v2.1.cdna.all.fa"
-GMA_GENEINFO="gma_gene_info.tsv"
-GMA_TXINFO="gma_tx_info.tsv"
+#btaurus
+BTA_GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/002/263/795/4/ensembl/2024_11/geneset/genes.gtf.bgz"
+BTA_CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/002/263/795/4/ensembl/2024_11/geneset/cdna.fa.bgz"
+BTA_GTF="bta_genes.gtf"
+BTA_CDNA="bta_cdna.fa"
+BTA_GENEINFO="bta_gene_info.tsv"
+BTA_TXINFO="bta_tx_info.tsv"
 
-PTR_GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/populus_trichocarpa/Populus_trichocarpa.Pop_tri_v4.59.gtf.gz"
-PTR_CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/populus_trichocarpa/cdna/Populus_trichocarpa.Pop_tri_v4.cdna.all.fa.gz"
-PTR_GTF="Populus_trichocarpa.Pop_tri_v4.59.gtf"
-PTR_CDNA="Populus_trichocarpa.Pop_tri_v4.cdna.all.fa"
-PTR_GENEINFO="ptr_gene_info.tsv"
-PTR_TXINFO="ptr_tx_info.tsv"
+#oaries
+OAR_GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/016/772/045/2/ensembl/2024_12/geneset/genes.gtf.bgz"
+OAR_CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/016/772/045/2/ensembl/2024_12/geneset/cdna.fa.bgz"
+OAR_GTF="oar_genes.gtf"
+OAR_CDNA="oar_cdna.fa"
+OAR_GENEINFO="oar_gene_info.tsv"
+OAR_TXINFO="oar_tx_info.tsv"
 
-VVI_GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/vitis_vinifera/Vitis_vinifera.PN40024.v4.59.gtf.gz"
-VVI_CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/vitis_vinifera/cdna/Vitis_vinifera.PN40024.v4.cdna.all.fa.gz"
-VVI_GTF="Vitis_vinifera.PN40024.v4.59.gtf"
-VVI_CDNA="Vitis_vinifera.PN40024.v4.cdna.all.fa"
-VVI_GENEINFO="vvi_gene_info.tsv"
-VVI_TXINFO="vvi_tx_info.tsv"
+#mfascicularis
+MFA_GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/011/100/615/1/ensembl/2020_08/geneset/genes.gtf.bgz"
+MFA_CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/011/100/615/1/ensembl/2020_08/geneset/cdna.fa.bgz"
+MFA_GTF="mfa_genes.gtf"
+MFA_CDNA="mfa_cdna.fa"
+MFA_GENEINFO="mfa_gene_info.tsv"
+MFA_TXINFO="mfa_tx_info.tsv"
 
-HVU_GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/hordeum_vulgare/Hordeum_vulgare.MorexV3_pseudomolecules_assembly.59.gtf.gz"
-HVU_CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/hordeum_vulgare/cdna/Hordeum_vulgare.MorexV3_pseudomolecules_assembly.cdna.all.fa.gz"
-HVU_GTF="Hordeum_vulgare.MorexV3_pseudomolecules_assembly.59.gtf"
-HVU_CDNA="Hordeum_vulgare.MorexV3_pseudomolecules_assembly.cdna.all.fa"
-HVU_GENEINFO="hvu_gene_info.tsv"
-HVU_TXINFO="hvu_tx_info.tsv"
+#pfalciparum
+PFA_GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/002/765/2/community/2017_10/geneset/genes.gtf.bgz"
+PFA_CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/002/765/2/community/2017_10/geneset/cdna.fa.bgz"
+PFA_GTF="pfa_genes.gtf"
+PFA_CDNA="pfa_cdna.fa"
+PFA_GENEINFO="pfa_gene_info.tsv"
+PFA_TXINFO="pfa_tx_info.tsv"
 
-STU_GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/solanum_tuberosum/Solanum_tuberosum.SolTub_3.0.59.gtf.gz"
-STU_CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/solanum_tuberosum/cdna/Solanum_tuberosum.SolTub_3.0.cdna.all.fa.gz"
-STU_GTF="Solanum_tuberosum.SolTub_3.0.59.gtf"
-STU_CDNA="Solanum_tuberosum.SolTub_3.0.cdna.all.fa"
-STU_GENEINFO="stu_gene_info.tsv"
-STU_TXINFO="stu_tx_info.tsv"
+#pvivax
+PVI_GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/900/093/535/1/ensembl/2022_12/geneset/genes.gtf.bgz"
+PVI_CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/900/093/535/1/ensembl/2022_12/geneset/cdna.fa.bgz"
+PVI_GTF="pvi_genes.gtf"
+PVI_CDNA="pvi_cdna.fa"
+PVI_GENEINFO="pvi_gene_info.tsv"
+PVI_TXINFO="pvi_tx_info.tsv"
 
-BDI_GTFURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gtf/brachypodium_distachyon/Brachypodium_distachyon.Brachypodium_distachyon_v3.0.59.gtf.gz"
-BDI_CDNAURL="ftp://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/brachypodium_distachyon/cdna/Brachypodium_distachyon.Brachypodium_distachyon_v3.0.cdna.all.fa.gz"
-BDI_GTF="Brachypodium_distachyon.Brachypodium_distachyon_v3.0.59.gtf"
-BDI_CDNA="Brachypodium_distachyon.Brachypodium_distachyon_v3.0.cdna.all.fa"
-BDI_GENEINFO="bdi_gene_info.tsv"
-BDI_TXINFO="bdi_tx_info.tsv"
+#aaegypti
+AAE_GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/002/204/515/1/veupathdb/2020_06/geneset/genes.gtf.gz"
+AAE_CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/002/204/515/1/veupathdb/2020_06/geneset/cdna.fa.bgz"
+AAE_GTF="aae_genes.gtf"
+AAE_CDNA="aae_cdna.fa"
+AAE_GENEINFO="aae_gene_info.tsv"
+AAE_TXINFO="aae_tx_info.tsv"
+
+#aalbopictus
+AAL_GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCF/035/046/485/1/veupathdb/2025_06/geneset/genes.gtf.gz"
+AAL_CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCF/035/046/485/1/veupathdb/2025_06/geneset/cdna.fa.bgz"
+AAL_GTF="aal_genes.gtf"
+AAL_CDNA="aal_cdna.fa"
+AAL_GENEINFO="aal_gene_info.tsv"
+AAL_TXINFO="aal_tx_info.tsv"
+
+#agambiae
+AGA_GTFURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/005/575/1/veupathdb/2015_10/geneset/genes.gtf.gz"
+AGA_CDNAURL="https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/005/575/1/veupathdb/2015_10/geneset/cdna.fa.bgz"
+AGA_GTF="aga_genes.gtf"
+AGA_CDNA="aga_cdna.fa"
+AGA_GENEINFO="aga_gene_info.tsv"
+AGA_TXINFO="aga_tx_info.tsv"
 
 ###########################################################
 # ATH
@@ -192,7 +219,7 @@ awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'
 # prep the gene lengths
 grep '#' $CEL_GTF > $CEL_GTF.tmp
 grep -v '#' $CEL_GTF | awk '{OFS="\t"} $1=1' >> $CEL_GTF.tmp
-gtftools  -l $CEL_GTF.genelength  $CEL_GTF.tmp
+gtftools -l $CEL_GTF.genelength  $CEL_GTF.tmp
 rm $CEL_GTF.tmp
 
 # prep gene names
@@ -223,7 +250,7 @@ awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'
 # prep the gene lengths
 grep '#' $DME_GTF > $DME_GTF.tmp
 grep -v '#' $DME_GTF | awk '{OFS="\t"} $1=1' >> $DME_GTF.tmp
-gtftools  -l $DME_GTF.genelength  $DME_GTF.tmp
+gtftools -l $DME_GTF.genelength  $DME_GTF.tmp
 rm $DME_GTF.tmp
 
 # prep gene names
@@ -254,7 +281,7 @@ awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'
 # prep the gene lengths
 grep '#' $DRE_GTF > $DRE_GTF.tmp
 grep -v '#' $DRE_GTF | awk '{OFS="\t"} $1=1' >> $DRE_GTF.tmp
-gtftools  -l $DRE_GTF.genelength  $DRE_GTF.tmp
+gtftools -l $DRE_GTF.genelength  $DRE_GTF.tmp
 rm $DRE_GTF.tmp
 
 # prep gene names
@@ -265,7 +292,6 @@ echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $DRE
 awk '{print $0,NR}' $DRE_GTF.genenames | sort -k 1b,1 \
 | join -1 1 -2 1 - <(sort -k 1b,1 $DRE_GTF.genelength) \
 | sort -k3g | tr ' '  '\t' | cut -f-2,4- >> $DRE_GENEINFO
-
 
 ###########################################################
 # ECO
@@ -284,7 +310,7 @@ awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'
 # prep the gene lengths
 grep '#' $ECO_GTF > $ECO_GTF.tmp
 grep -v '#' $ECO_GTF | awk '{OFS="\t"} $1=1' >> $ECO_GTF.tmp
-gtftools  -l $ECO_GTF.genelength  $ECO_GTF.tmp
+gtftools -l $ECO_GTF.genelength  $ECO_GTF.tmp
 rm $ECO_GTF.tmp
 
 # prep gene names
@@ -315,7 +341,7 @@ awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'
 # prep the gene lengths
 grep '#' $HSA_GTF > $HSA_GTF.tmp
 grep -v '#' $HSA_GTF | awk '{OFS="\t"} $1=1' >> $HSA_GTF.tmp
-gtftools  -l $HSA_GTF.genelength  $HSA_GTF.tmp
+gtftools -l $HSA_GTF.genelength  $HSA_GTF.tmp
 rm $HSA_GTF.tmp
 
 # prep gene names
@@ -345,7 +371,7 @@ awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'
 # prep the gene lengths
 grep '#' $MMU_GTF > $MMU_GTF.tmp
 grep -v '#' $MMU_GTF | awk '{OFS="\t"} $1=1' >> $MMU_GTF.tmp
-gtftools  -l $MMU_GTF.genelength  $MMU_GTF.tmp
+gtftools -l $MMU_GTF.genelength  $MMU_GTF.tmp
 rm $MMU_GTF.tmp
 
 # prep gene names
@@ -357,6 +383,35 @@ awk '{print $0,NR}' $MMU_GTF.genenames | sort -k 1b,1 \
 | join -1 1 -2 1 - <(sort -k 1b,1 $MMU_GTF.genelength) \
 | sort -k3g | tr ' '  '\t' | cut -f-2,4- >> $MMU_GENEINFO
 
+
+###########################################################
+# OSA
+###########################################################
+wget -N $OSA_GTFURL && gunzip -kf $OSA_GTF.gz
+wget -N $OSA_CDNAURL && gunzip -kf $OSA_CDNA.gz
+
+# prep the cDNA lengths
+echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $OSA_TXINFO
+awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $OSA_CDNA \
+| sed 1d | sed '/>/s/$/ gene_symbol:NA/' | paste - - -d '!' | tr -d '>' \
+| sed 's/ gene:/\n/' | sed 's/ gene_symbol:/\n/' | sed 's/!/\n/' \
+| cut -d ' ' -f1  | paste - - - - \
+| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $OSA_TXINFO
+
+# prep the gene lengths
+grep '#' $OSA_GTF > $OSA_GTF.tmp
+grep -v '#' $OSA_GTF | awk '{OFS="\t"} $1=1' >> $OSA_GTF.tmp
+gtftools  -l $OSA_GTF.genelength $OSA_GTF.tmp
+rm $OSA_GTF.tmp
+
+# prep gene names
+grep -w gene $OSA_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
+| sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - - > $OSA_GTF.genenames
+# merge gene names
+echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $OSA_GENEINFO
+awk '{OFS="\t"}{print $0,NR}' $OSA_GTF.genenames | sed 's/ /_/g' | sort -k 1b,1 \
+| join -1 1 -2 1 - <(sort -k 1b,1 $OSA_GTF.genelength) \
+| sort -k3g | sort -k3g | cut -d ' ' -f-2,4- | tr ' ' '\t' >> $OSA_GENEINFO
 
 ###########################################################
 # RNO
@@ -375,7 +430,7 @@ awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'
 # prep the gene lengths
 grep '#' $RNO_GTF > $RNO_GTF.tmp
 grep -v '#' $RNO_GTF | awk '{OFS="\t"} $1=1' >> $RNO_GTF.tmp
-gtftools  -l $RNO_GTF.genelength  $RNO_GTF.tmp
+gtftools -l $RNO_GTF.genelength  $RNO_GTF.tmp
 rm $RNO_GTF.tmp
 
 # prep gene names
@@ -406,7 +461,7 @@ awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'
 # prep the gene lengths
 grep '#' $SCE_GTF > $SCE_GTF.tmp
 grep -v '#' $SCE_GTF | awk '{OFS="\t"} $1=1' >> $SCE_GTF.tmp
-gtftools  -l $SCE_GTF.genelength  $SCE_GTF.tmp
+gtftools -l $SCE_GTF.genelength  $SCE_GTF.tmp
 rm $SCE_GTF.tmp
 
 # prep gene names
@@ -436,316 +491,344 @@ awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'
 # prep the gene lengths
 grep '#' $ZMA_GTF > $ZMA_GTF.tmp
 grep -v '#' $ZMA_GTF | awk '{OFS="\t"} $1=1' >> $ZMA_GTF.tmp
-gtftools  -l $ZMA_GTF.genelength  $ZMA_GTF.tmp
+gtftools  -l $ZMA_GTF.genelength $ZMA_GTF.tmp
 rm $ZMA_GTF.tmp
 
 # prep gene names
 grep -w gene $ZMA_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
-|  sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - -  > $ZMA_GTF.genenames
-
+| sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - - > $ZMA_GTF.genenames
 # merge gene names
 echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $ZMA_GENEINFO
-awk '{print $0,NR}' $ZMA_GTF.genenames | sort -k 1b,1 \
+awk '{OFS="\t"}{print $0,NR}' $ZMA_GTF.genenames | sed 's/ /_/g' | sort -k 1b,1 \
 | join -1 1 -2 1 - <(sort -k 1b,1 $ZMA_GTF.genelength) \
-| sort -k3g | tr ' '  '\t' | cut -f-2,4- >> $ZMA_GENEINFO
+| sort -k3g | sort -k3g | cut -d ' ' -f-2,4- | tr ' ' '\t' >> $ZMA_GENEINFO
 
 ###########################################################
-# OSA
+# M. mulatta
 ###########################################################
-wget -N $OSA_GTFURL && gunzip -kf $OSA_GTF.gz
-wget -N $OSA_CDNAURL && gunzip -kf $OSA_CDNA.gz
+
+wget -N $MMUL_GTFURL && mv genes.gtf.gz $MMUL_GTF.gz && gunzip -kf $MMUL_GTF.gz
+wget -N $MMUL_CDNAURL && mv cdna.fa.bgz $MMUL_CDNA.gz && gunzip -kf $MMUL_CDNA.gz
 
 # prep the cDNA lengths
-echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $OSA_TXINFO
-awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $OSA_CDNA \
+echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $MMUL_TXINFO
+awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $MMUL_CDNA \
 | sed 1d | sed '/>/s/$/ gene_symbol:NA/' | paste - - -d '!' | tr -d '>' \
 | sed 's/ gene:/\n/' | sed 's/ gene_symbol:/\n/' | sed 's/!/\n/' \
 | cut -d ' ' -f1  | paste - - - - \
-| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $OSA_TXINFO
+| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $MMUL_TXINFO
 
 # prep the gene lengths
-grep '#' $OSA_GTF > $OSA_GTF.tmp
-grep -v '#' $OSA_GTF | awk '{OFS="\t"} $1=1' >> $OSA_GTF.tmp
-gtftools  -l $OSA_GTF.genelength  $OSA_GTF.tmp
-rm $OSA_GTF.tmp
+grep '#' $MMUL_GTF > $MMUL_GTF.tmp
+grep -v '#' $MMUL_GTF | awk '{OFS="\t"} $1=1' >> $MMUL_GTF.tmp
+gtftools  -l $MMUL_GTF.genelength $MMUL_GTF.tmp
+rm $MMUL_GTF.tmp
 
 # prep gene names
-grep -w gene $OSA_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
-|  sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - -  > $OSA_GTF.genenames
-
+grep -w gene $MMUL_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
+| sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - - > $MMUL_GTF.genenames
 # merge gene names
-echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $OSA_GENEINFO
-awk '{print $0,NR}' $OSA_GTF.genenames | sort -k 1b,1 \
-| join -1 1 -2 1 - <(sort -k 1b,1 $OSA_GTF.genelength) \
-| sort -k3g | tr ' '  '\t' | cut -f-2,4- >> $OSA_GENEINFO
+echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $MMUL_GENEINFO
+awk '{OFS="\t"}{print $0,NR}' $MMUL_GTF.genenames | sed 's/ /_/g' | sort -k 1b,1 \
+| join -1 1 -2 1 - <(sort -k 1b,1 $MMUL_GTF.genelength) \
+| sort -k3g | sort -k3g | cut -d ' ' -f-2,4- | tr ' ' '\t' >> $MMUL_GENEINFO
 
 ###########################################################
-# TAE
+# G. gallus
 ###########################################################
-wget -N $TAE_GTFURL && gunzip -kf $TAE_GTF.gz
-wget -N $TAE_CDNAURL && gunzip -kf $TAE_CDNA.gz
+
+wget -N $GGA_GTFURL && mv genes.gtf.bgz $GGA_GTF.gz && gunzip -kf $GGA_GTF.gz
+wget -N $GGA_CDNAURL && mv cdna.fa.bgz $GGA_CDNA.gz && gunzip -kf $GGA_CDNA.gz
 
 # prep the cDNA lengths
-echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $TAE_TXINFO
-awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $TAE_CDNA \
+echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $GGA_TXINFO
+awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $GGA_CDNA \
 | sed 1d | sed '/>/s/$/ gene_symbol:NA/' | paste - - -d '!' | tr -d '>' \
 | sed 's/ gene:/\n/' | sed 's/ gene_symbol:/\n/' | sed 's/!/\n/' \
 | cut -d ' ' -f1  | paste - - - - \
-| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $TAE_TXINFO
+| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $GGA_TXINFO
 
 # prep the gene lengths
-grep '#' $TAE_GTF > $TAE_GTF.tmp
-grep -v '#' $TAE_GTF | awk '{OFS="\t"} $1=1' >> $TAE_GTF.tmp
-gtftools  -l $TAE_GTF.genelength  $TAE_GTF.tmp
-rm $TAE_GTF.tmp
+grep '#' $GGA_GTF > $GGA_GTF.tmp
+grep -v '#' $GGA_GTF | awk '{OFS="\t"} $1=1' >> $GGA_GTF.tmp
+gtftools  -l $GGA_GTF.genelength $GGA_GTF.tmp
+rm $GGA_GTF.tmp
 
 # prep gene names
-grep -w gene $TAE_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
-|  sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - -  > $TAE_GTF.genenames
-
+grep -w gene $GGA_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
+| sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - - > $GGA_GTF.genenames
 # merge gene names
-echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $TAE_GENEINFO
-awk '{print $0,NR}' $TAE_GTF.genenames | sort -k 1b,1 \
-| join -1 1 -2 1 - <(sort -k 1b,1 $TAE_GTF.genelength) \
-| sort -k3g | tr ' '  '\t' | cut -f-2,4- >> $TAE_GENEINFO
-
+echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $GGA_GENEINFO
+awk '{OFS="\t"}{print $0,NR}' $GGA_GTF.genenames | sed 's/ /_/g' | sort -k 1b,1 \
+| join -1 1 -2 1 - <(sort -k 1b,1 $GGA_GTF.genelength) \
+| sort -k3g | sort -k3g | cut -d ' ' -f-2,4- | tr ' ' '\t' >> $GGA_GENEINFO
 
 ###########################################################
-# SLY
+# S. scrofa
 ###########################################################
-wget -N $SLY_GTFURL && gunzip -kf $SLY_GTF.gz
-wget -N $SLY_CDNAURL && gunzip -kf $SLY_CDNA.gz
+
+wget -N $SSC_GTFURL && mv genes.gtf.bgz $SSC_GTF.gz && gunzip -kf $SSC_GTF.gz
+wget -N $SSC_CDNAURL && mv cdna.fa.bgz $SSC_CDNA.gz && gunzip -kf $SSC_CDNA.gz
 
 # prep the cDNA lengths
-echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $SLY_TXINFO
-awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $SLY_CDNA \
+echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $SSC_TXINFO
+awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $SSC_CDNA \
 | sed 1d | sed '/>/s/$/ gene_symbol:NA/' | paste - - -d '!' | tr -d '>' \
 | sed 's/ gene:/\n/' | sed 's/ gene_symbol:/\n/' | sed 's/!/\n/' \
 | cut -d ' ' -f1  | paste - - - - \
-| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $SLY_TXINFO
+| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $SSC_TXINFO
 
 # prep the gene lengths
-grep '#' $SLY_GTF > $SLY_GTF.tmp
-grep -v '#' $SLY_GTF | awk '{OFS="\t"} $1=1' >> $SLY_GTF.tmp
-gtftools  -l $SLY_GTF.genelength  $SLY_GTF.tmp
-rm $SLY_GTF.tmp
+grep '#' $SSC_GTF > $SSC_GTF.tmp
+grep -v '#' $SSC_GTF | awk '{OFS="\t"} $1=1' >> $SSC_GTF.tmp
+gtftools  -l $SSC_GTF.genelength $SSC_GTF.tmp
+rm $SSC_GTF.tmp
 
 # prep gene names
-grep -w gene $SLY_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
-|  sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - -  > $SLY_GTF.genenames
-
+grep -w gene $SSC_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
+| sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - - > $SSC_GTF.genenames
 # merge gene names
-echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $SLY_GENEINFO
-awk '{print $0,NR}' $SLY_GTF.genenames | sort -k 1b,1 \
-| join -1 1 -2 1 - <(sort -k 1b,1 $SLY_GTF.genelength) \
-| sort -k3g | tr ' '  '\t' | cut -f-2,4- >> $SLY_GENEINFO
+echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $SSC_GENEINFO
+awk '{OFS="\t"}{print $0,NR}' $SSC_GTF.genenames | sed 's/ /_/g' | sort -k 1b,1 \
+| join -1 1 -2 1 - <(sort -k 1b,1 $SSC_GTF.genelength) \
+| sort -k3g | sort -k3g | cut -d ' ' -f-2,4- | tr ' ' '\t' >> $SSC_GENEINFO
 
 ###########################################################
-# SBI
+# B. taurus
 ###########################################################
-wget -N $SBI_GTFURL && gunzip -kf $SBI_GTF.gz
-wget -N $SBI_CDNAURL && gunzip -kf $SBI_CDNA.gz
+
+wget -N $BTA_GTFURL && mv genes.gtf.bgz $BTA_GTF.gz && gunzip -kf $BTA_GTF.gz
+wget -N $BTA_CDNAURL && mv cdna.fa.bgz $BTA_CDNA.gz && gunzip -kf $BTA_CDNA.gz
 
 # prep the cDNA lengths
-echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $SBI_TXINFO
-awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $SBI_CDNA \
+echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $BTA_TXINFO
+awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $BTA_CDNA \
 | sed 1d | sed '/>/s/$/ gene_symbol:NA/' | paste - - -d '!' | tr -d '>' \
 | sed 's/ gene:/\n/' | sed 's/ gene_symbol:/\n/' | sed 's/!/\n/' \
 | cut -d ' ' -f1  | paste - - - - \
-| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $SBI_TXINFO
+| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $BTA_TXINFO
 
 # prep the gene lengths
-grep '#' $SBI_GTF > $SBI_GTF.tmp
-grep -v '#' $SBI_GTF | awk '{OFS="\t"} $1=1' >> $SBI_GTF.tmp
-gtftools  -l $SBI_GTF.genelength  $SBI_GTF.tmp
-rm $SBI_GTF.tmp
+grep '#' $BTA_GTF > $BTA_GTF.tmp
+grep -v '#' $BTA_GTF | awk '{OFS="\t"} $1=1' >> $BTA_GTF.tmp
+gtftools  -l $BTA_GTF.genelength $BTA_GTF.tmp
+rm $BTA_GTF.tmp
 
 # prep gene names
-grep -w gene $SBI_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
-|  sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - -  > $SBI_GTF.genenames
-
+grep -w gene $BTA_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
+| sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - - > $BTA_GTF.genenames
 # merge gene names
-echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $SBI_GENEINFO
-awk '{print $0,NR}' $SBI_GTF.genenames | sort -k 1b,1 \
-| join -1 1 -2 1 - <(sort -k 1b,1 $SBI_GTF.genelength) \
-| sort -k3g | tr ' '  '\t' | cut -f-2,4- >> $SBI_GENEINFO
+echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $BTA_GENEINFO
+awk '{OFS="\t"}{print $0,NR}' $BTA_GTF.genenames | sed 's/ /_/g' | sort -k 1b,1 \
+| join -1 1 -2 1 - <(sort -k 1b,1 $BTA_GTF.genelength) \
+| sort -k3g | sort -k3g | cut -d ' ' -f-2,4- | tr ' ' '\t' >> $BTA_GENEINFO
 
 ###########################################################
-# GMA
+# O. aries
 ###########################################################
-wget -N $GMA_GTFURL && gunzip -kf $GMA_GTF.gz
-wget -N $GMA_CDNAURL && gunzip -kf $GMA_CDNA.gz
+
+wget -N $OAR_GTFURL && mv genes.gtf.bgz $OAR_GTF.gz && gunzip -kf $OAR_GTF.gz
+wget -N $OAR_CDNAURL && mv cdna.fa.bgz $OAR_CDNA.gz && gunzip -kf $OAR_CDNA.gz
 
 # prep the cDNA lengths
-echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $GMA_TXINFO
-awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $GMA_CDNA \
+echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $OAR_TXINFO
+awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $OAR_CDNA \
 | sed 1d | sed '/>/s/$/ gene_symbol:NA/' | paste - - -d '!' | tr -d '>' \
 | sed 's/ gene:/\n/' | sed 's/ gene_symbol:/\n/' | sed 's/!/\n/' \
 | cut -d ' ' -f1  | paste - - - - \
-| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $GMA_TXINFO
+| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $OAR_TXINFO
 
 # prep the gene lengths
-grep '#' $GMA_GTF > $GMA_GTF.tmp
-grep -v '#' $GMA_GTF | awk '{OFS="\t"} $1=1' >> $GMA_GTF.tmp
-gtftools  -l $GMA_GTF.genelength  $GMA_GTF.tmp
-rm $GMA_GTF.tmp
+grep '#' $OAR_GTF > $OAR_GTF.tmp
+grep -v '#' $OAR_GTF | awk '{OFS="\t"} $1=1' >> $OAR_GTF.tmp
+gtftools  -l $OAR_GTF.genelength $OAR_GTF.tmp
+rm $OAR_GTF.tmp
 
 # prep gene names
-grep -w gene $GMA_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
-|  sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - -  > $GMA_GTF.genenames
-
+grep -w gene $OAR_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
+| sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - - > $OAR_GTF.genenames
 # merge gene names
-echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $GMA_GENEINFO
-awk '{print $0,NR}' $GMA_GTF.genenames | sort -k 1b,1 \
-| join -1 1 -2 1 - <(sort -k 1b,1 $GMA_GTF.genelength) \
-| sort -k3g | tr ' '  '\t' | cut -f-2,4- >> $GMA_GENEINFO
+echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $OAR_GENEINFO
+awk '{OFS="\t"}{print $0,NR}' $OAR_GTF.genenames | sed 's/ /_/g' | sort -k 1b,1 \
+| join -1 1 -2 1 - <(sort -k 1b,1 $OAR_GTF.genelength) \
+| sort -k3g | sort -k3g | cut -d ' ' -f-2,4- | tr ' ' '\t' >> $OAR_GENEINFO
 
 ###########################################################
-# PTR
+# M. fascicularis
 ###########################################################
-wget -N $PTR_GTFURL && gunzip -kf $PTR_GTF.gz
-wget -N $PTR_CDNAURL && gunzip -kf $PTR_CDNA.gz
+
+wget -N $MFA_GTFURL && mv genes.gtf.bgz $MFA_GTF.gz && gunzip -kf $MFA_GTF.gz
+wget -N $MFA_CDNAURL && mv cdna.fa.bgz $MFA_CDNA.gz && gunzip -kf $MFA_CDNA.gz
 
 # prep the cDNA lengths
-echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $PTR_TXINFO
-awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $PTR_CDNA \
+echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $MFA_TXINFO
+awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $MFA_CDNA \
 | sed 1d | sed '/>/s/$/ gene_symbol:NA/' | paste - - -d '!' | tr -d '>' \
 | sed 's/ gene:/\n/' | sed 's/ gene_symbol:/\n/' | sed 's/!/\n/' \
 | cut -d ' ' -f1  | paste - - - - \
-| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $PTR_TXINFO
+| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $MFA_TXINFO
 
 # prep the gene lengths
-grep '#' $PTR_GTF > $PTR_GTF.tmp
-grep -v '#' $PTR_GTF | awk '{OFS="\t"} $1=1' >> $PTR_GTF.tmp
-gtftools  -l $PTR_GTF.genelength  $PTR_GTF.tmp
-rm $PTR_GTF.tmp
+grep '#' $MFA_GTF > $MFA_GTF.tmp
+grep -v '#' $MFA_GTF | awk '{OFS="\t"} $1=1' >> $MFA_GTF.tmp
+gtftools  -l $MFA_GTF.genelength $MFA_GTF.tmp
+rm $MFA_GTF.tmp
 
 # prep gene names
-grep -w gene $PTR_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
-|  sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - -  > $PTR_GTF.genenames
-
+grep -w gene $MFA_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
+| sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - - > $MFA_GTF.genenames
 # merge gene names
-echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $PTR_GENEINFO
-awk '{print $0,NR}' $PTR_GTF.genenames | sort -k 1b,1 \
-| join -1 1 -2 1 - <(sort -k 1b,1 $PTR_GTF.genelength) \
-| sort -k3g | tr ' '  '\t' | cut -f-2,4- >> $PTR_GENEINFO
+echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $MFA_GENEINFO
+awk '{OFS="\t"}{print $0,NR}' $MFA_GTF.genenames | sed 's/ /_/g' | sort -k 1b,1 \
+| join -1 1 -2 1 - <(sort -k 1b,1 $MFA_GTF.genelength) \
+| sort -k3g | sort -k3g | cut -d ' ' -f-2,4- | tr ' ' '\t' >> $MFA_GENEINFO
 
 ###########################################################
-# VVI
+# P. falciparum
 ###########################################################
-wget -N $VVI_GTFURL && gunzip -kf $VVI_GTF.gz
-wget -N $VVI_CDNAURL && gunzip -kf $VVI_CDNA.gz
+
+wget -N $PFA_GTFURL && mv genes.gtf.bgz $PFA_GTF.gz && gunzip -kf $PFA_GTF.gz
+wget -N $PFA_CDNAURL && mv cdna.fa.bgz $PFA_CDNA.gz && gunzip -kf $PFA_CDNA.gz
 
 # prep the cDNA lengths
-echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $VVI_TXINFO
-awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $VVI_CDNA \
+echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $PFA_TXINFO
+awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $PFA_CDNA \
 | sed 1d | sed '/>/s/$/ gene_symbol:NA/' | paste - - -d '!' | tr -d '>' \
 | sed 's/ gene:/\n/' | sed 's/ gene_symbol:/\n/' | sed 's/!/\n/' \
 | cut -d ' ' -f1  | paste - - - - \
-| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $VVI_TXINFO
+| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $PFA_TXINFO
 
 # prep the gene lengths
-grep '#' $VVI_GTF > $VVI_GTF.tmp
-grep -v '#' $VVI_GTF | awk '{OFS="\t"} $1=1' >> $VVI_GTF.tmp
-gtftools  -l $VVI_GTF.genelength  $VVI_GTF.tmp
-rm $VVI_GTF.tmp
+grep '#' $PFA_GTF > $PFA_GTF.tmp
+grep -v '#' $PFA_GTF | awk '{OFS="\t"} $1=1' >> $PFA_GTF.tmp
+gtftools  -l $PFA_GTF.genelength $PFA_GTF.tmp
+rm $PFA_GTF.tmp
 
 # prep gene names
-grep -w gene $VVI_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
-|  sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - -  > $VVI_GTF.genenames
-
+grep -w gene $PFA_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
+| sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - - > $PFA_GTF.genenames
 # merge gene names
-echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $VVI_GENEINFO
-awk '{print $0,NR}' $VVI_GTF.genenames | sort -k 1b,1 \
-| join -1 1 -2 1 - <(sort -k 1b,1 $VVI_GTF.genelength) \
-| sort -k3g | tr ' '  '\t' | cut -f-2,4- >> $VVI_GENEINFO
+echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $PFA_GENEINFO
+awk '{OFS="\t"}{print $0,NR}' $PFA_GTF.genenames | sed 's/ /_/g' | sort -k 1b,1 \
+| join -1 1 -2 1 - <(sort -k 1b,1 $PFA_GTF.genelength) \
+| sort -k3g | sort -k3g | cut -d ' ' -f-2,4- | tr ' ' '\t' >> $PFA_GENEINFO
 
 ###########################################################
-# HVU
+# P. vivax
 ###########################################################
-wget -N $HVU_GTFURL && gunzip -kf $HVU_GTF.gz
-wget -N $HVU_CDNAURL && gunzip -kf $HVU_CDNA.gz
+
+wget -N $PVI_GTFURL && mv genes.gtf.bgz $PVI_GTF.gz && gunzip -kf $PVI_GTF.gz
+wget -N $PVI_CDNAURL && mv cdna.fa.bgz $PVI_CDNA.gz && gunzip -kf $PVI_CDNA.gz
 
 # prep the cDNA lengths
-echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $HVU_TXINFO
-awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $HVU_CDNA \
+echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $PVI_TXINFO
+awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $PVI_CDNA \
 | sed 1d | sed '/>/s/$/ gene_symbol:NA/' | paste - - -d '!' | tr -d '>' \
 | sed 's/ gene:/\n/' | sed 's/ gene_symbol:/\n/' | sed 's/!/\n/' \
 | cut -d ' ' -f1  | paste - - - - \
-| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $HVU_TXINFO
+| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $PVI_TXINFO
 
 # prep the gene lengths
-grep '#' $HVU_GTF > $HVU_GTF.tmp
-grep -v '#' $HVU_GTF | awk '{OFS="\t"} $1=1' >> $HVU_GTF.tmp
-gtftools  -l $HVU_GTF.genelength  $HVU_GTF.tmp
-rm $HVU_GTF.tmp
+grep '#' $PVI_GTF > $PVI_GTF.tmp
+grep -v '#' $PVI_GTF | awk '{OFS="\t"} $1=1' >> $PVI_GTF.tmp
+gtftools  -l $PVI_GTF.genelength $PVI_GTF.tmp
+rm $PVI_GTF.tmp
 
 # prep gene names
-grep -w gene $HVU_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
-|  sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - -  > $HVU_GTF.genenames
-
+grep -w gene $PVI_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
+| sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - - > $PVI_GTF.genenames
 # merge gene names
-echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $HVU_GENEINFO
-awk '{print $0,NR}' $HVU_GTF.genenames | sort -k 1b,1 \
-| join -1 1 -2 1 - <(sort -k 1b,1 $HVU_GTF.genelength) \
-| sort -k3g | tr ' '  '\t' | cut -f-2,4- >> $HVU_GENEINFO
+echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $PVI_GENEINFO
+awk '{OFS="\t"}{print $0,NR}' $PVI_GTF.genenames | sed 's/ /_/g' | sort -k 1b,1 \
+| join -1 1 -2 1 - <(sort -k 1b,1 $PVI_GTF.genelength) \
+| sort -k3g | sort -k3g | cut -d ' ' -f-2,4- | tr ' ' '\t' >> $PVI_GENEINFO
 
 ###########################################################
-# STU
+# A. aegypti
 ###########################################################
-wget -N $STU_GTFURL && gunzip -kf $STU_GTF.gz
-wget -N $STU_CDNAURL && gunzip -kf $STU_CDNA.gz
+
+wget -N $AAE_GTFURL && mv genes.gtf.gz $AAE_GTF.gz && gunzip -kf $AAE_GTF.gz
+wget -N $AAE_CDNAURL && mv cdna.fa.bgz $AAE_CDNA.gz && gunzip -kf $AAE_CDNA.gz
 
 # prep the cDNA lengths
-echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $STU_TXINFO
-awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $STU_CDNA \
+echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $AAE_TXINFO
+awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $AAE_CDNA \
 | sed 1d | sed '/>/s/$/ gene_symbol:NA/' | paste - - -d '!' | tr -d '>' \
 | sed 's/ gene:/\n/' | sed 's/ gene_symbol:/\n/' | sed 's/!/\n/' \
 | cut -d ' ' -f1  | paste - - - - \
-| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $STU_TXINFO
+| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $AAE_TXINFO
 
 # prep the gene lengths
-grep '#' $STU_GTF > $STU_GTF.tmp
-grep -v '#' $STU_GTF | awk '{OFS="\t"} $1=1' >> $STU_GTF.tmp
-gtftools  -l $STU_GTF.genelength  $STU_GTF.tmp
-rm $STU_GTF.tmp
+grep '#' $AAE_GTF > $AAE_GTF.tmp
+grep -v '#' $AAE_GTF | awk '{OFS="\t"} $1=1' >> $AAE_GTF.tmp
+gtftools  -l $AAE_GTF.genelength $AAE_GTF.tmp
+rm $AAE_GTF.tmp
 
 # prep gene names
-grep -w gene $STU_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
-|  sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - -  > $STU_GTF.genenames
-
+grep -w gene $AAE_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
+| sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - - > $AAE_GTF.genenames
 # merge gene names
-echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $STU_GENEINFO
-awk '{print $0,NR}' $STU_GTF.genenames | sort -k 1b,1 \
-| join -1 1 -2 1 - <(sort -k 1b,1 $STU_GTF.genelength) \
-| sort -k3g | tr ' '  '\t' | cut -f-2,4- >> $STU_GENEINFO
+echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $AAE_GENEINFO
+awk '{OFS="\t"}{print $0,NR}' $AAE_GTF.genenames | sed 's/ /_/g' | sort -k 1b,1 \
+| join -1 1 -2 1 - <(sort -k 1b,1 $AAE_GTF.genelength) \
+| sort -k3g | sort -k3g | cut -d ' ' -f-2,4- | tr ' ' '\t' >> $AAE_GENEINFO
 
 ###########################################################
-# BDI
+# A. albopictus
 ###########################################################
-wget -N $BDI_GTFURL && gunzip -kf $BDI_GTF.gz
-wget -N $BDI_CDNAURL && gunzip -kf $BDI_CDNA.gz
+
+wget -N $AAL_GTFURL && mv genes.gtf.gz $AAL_GTF.gz && gunzip -kf $AAL_GTF.gz
+wget -N $AAL_CDNAURL && mv cdna.fa.bgz $AAL_CDNA.gz && gunzip -kf $AAL_CDNA.gz
 
 # prep the cDNA lengths
-echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $BDI_TXINFO
-awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $BDI_CDNA \
+echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $AAL_TXINFO
+awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $AAL_CDNA \
 | sed 1d | sed '/>/s/$/ gene_symbol:NA/' | paste - - -d '!' | tr -d '>' \
 | sed 's/ gene:/\n/' | sed 's/ gene_symbol:/\n/' | sed 's/!/\n/' \
 | cut -d ' ' -f1  | paste - - - - \
-| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $BDI_TXINFO
+| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $AAL_TXINFO
 
 # prep the gene lengths
-grep '#' $BDI_GTF > $BDI_GTF.tmp
-grep -v '#' $BDI_GTF | awk '{OFS="\t"} $1=1' >> $BDI_GTF.tmp
-gtftools  -l $BDI_GTF.genelength  $BDI_GTF.tmp
-rm $BDI_GTF.tmp
+grep '#' $AAL_GTF > $AAL_GTF.tmp
+grep -v '#' $AAL_GTF | awk '{OFS="\t"} $1=1' >> $AAL_GTF.tmp
+gtftools  -l $AAL_GTF.genelength $AAL_GTF.tmp
+rm $AAL_GTF.tmp
 
 # prep gene names
-grep -w gene $BDI_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
-|  sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - -  > $BDI_GTF.genenames
-
+grep -w gene $AAL_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
+| sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - - > $AAL_GTF.genenames
 # merge gene names
-echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $BDI_GENEINFO
-awk '{print $0,NR}' $BDI_GTF.genenames | sort -k 1b,1 \
-| join -1 1 -2 1 - <(sort -k 1b,1 $BDI_GTF.genelength) \
-| sort -k3g | tr ' '  '\t' | cut -f-2,4- >> $BDI_GENEINFO
+echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $AAL_GENEINFO
+awk '{OFS="\t"}{print $0,NR}' $AAL_GTF.genenames | sed 's/ /_/g' | sort -k 1b,1 \
+| join -1 1 -2 1 - <(sort -k 1b,1 $AAL_GTF.genelength) \
+| sort -k3g | sort -k3g | cut -d ' ' -f-2,4- | tr ' ' '\t' >> $AAL_GENEINFO
+
+###########################################################
+# A. gambiae
+###########################################################
+
+wget -N $AGA_GTFURL && mv genes.gtf.gz $AGA_GTF.gz && gunzip -kf $AGA_GTF.gz
+wget -N $AGA_CDNAURL && mv cdna.fa.bgz $AGA_CDNA.gz && gunzip -kf $AGA_CDNA.gz
+
+# prep the cDNA lengths
+echo "TxID GeneID GeneSymbol TxLength" | tr ' ' '\t' > $AGA_TXINFO
+awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' $AGA_CDNA \
+| sed 1d | sed '/>/s/$/ gene_symbol:NA/' | paste - - -d '!' | tr -d '>' \
+| sed 's/ gene:/\n/' | sed 's/ gene_symbol:/\n/' | sed 's/!/\n/' \
+| cut -d ' ' -f1  | paste - - - - \
+| awk '{OFS="\t"} {print $1,$2,$3,length($4)}' >> $AGA_TXINFO
+
+# prep the gene lengths
+grep '#' $AGA_GTF > $AGA_GTF.tmp
+grep -v '#' $AGA_GTF | awk '{OFS="\t"} $1=1' >> $AGA_GTF.tmp
+gtftools  -l $AGA_GTF.genelength $AGA_GTF.tmp
+rm $AGA_GTF.tmp
+
+# prep gene names
+grep -w gene $AGA_GTF | sed 's/$/gene_name "NA"/' | sed 's/gene_id "/\ngene_id "/' \
+| sed 's/gene_name "/\ngene_name "/' | grep ^gene | cut -d '"' -f2 | paste - - > $AGA_GTF.genenames
+# merge gene names
+echo "GeneID GeneSymbol mean median longest_isoform merged" | tr ' ' '\t' > $AGA_GENEINFO
+awk '{OFS="\t"}{print $0,NR}' $AGA_GTF.genenames | sed 's/ /_/g' | sort -k 1b,1 \
+| join -1 1 -2 1 - <(sort -k 1b,1 $AGA_GTF.genelength) \
+| sort -k3g | sort -k3g | cut -d ' ' -f-2,4- | tr ' ' '\t' >> $AGA_GENEINFO
