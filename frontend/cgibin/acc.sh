@@ -57,7 +57,18 @@ slycopersicum
 stuberosum
 taestivum
 vvinifera
-zmays'
+zmays
+mmulatta
+ggallus
+sscrofa
+btaurus
+oaries
+mfascicularis
+pfalciparum
+pvivax
+aaegypti
+aalbopictus
+agambiae'
 
 ORG_OK=$(echo $ORGLIST | grep -cw $ORG )
 
