@@ -109,7 +109,7 @@ harvest_bundle_metadata <- function(org) {
   zips2 <- zips[which(srps %in% res2df$query_accession)] # only include bundles with metadata
   res2df$URL <- paste("https://dee2.io/huge/",org,"/",zips2,sep="")
   write.table(x=res2df,file=myfilename,sep="\t",row.names=FALSE, append=TRUE)
-  SYSCOMMAND <- gsub("myorg",org,"scp -i ~/.ssh/dee2_2025 ../sradb/myorg_srp.tsv ubuntu@dee2.io:/dee2_data/metadata/")
+  SYSCOMMAND <- gsub("myorg",org,"scp -i ~/.ssh/dee2_2026 ../sradb/myorg_srp.tsv ubuntu@dee2.io:/dee2_data/metadata/")
   system(SYSCOMMAND)
   unlink("tmp1")
   unlink("tmp0")

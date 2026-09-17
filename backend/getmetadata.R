@@ -124,5 +124,5 @@ res2df <- res2df[order(res2df$`Date Processed`,decreasing=TRUE),]
 saveRDS(res2df,"metadata.rds")
 writeLines(kbl(res2df,row.names=FALSE),con="tbl.html")
 writeLines(kbl(head(res2df,5),row.names=FALSE),con="top.html")
-system("scp -i ~/.ssh/dee2_2025 *html ubuntu@dee2.io:~/dee2/frontend/html/")
+system("scp -i ~/.ssh/dee2_2026 *html ubuntu@dee2.io:~/dee2/frontend/html/")
 

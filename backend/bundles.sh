@@ -99,6 +99,6 @@ done
 echo rsync to webserver
 IP_ADD=$(dig +short dee2.io)
 chmod -R 775 $DIR
-rsync  --delete -azvh -e "ssh -i ~/.ssh/dee2_2025" $DIR ubuntu@${IP_ADD}:/dee2_data/huge
+rsync  --delete -azvh -e "ssh -i ~/.ssh/dee2_2026" $DIR ubuntu@${IP_ADD}:/dee2_data/huge
 
 cd ../code

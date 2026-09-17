@@ -42,6 +42,6 @@ rm  $MXDIR/checksums.md5
 wait
 cat $MXDIR/*md5 | sed 's#/mnt/hdd1/dee2/mx/##' > $MXDIR/checksums.md5
 # transfer to webserver
-scp -i ~/.ssh/dee2_2025 $SEH5 $KEH5 $QCH5 $MDC $MXDIR/checksums.md5 \
+scp -i ~/.ssh/dee2_2026 $SEH5 $KEH5 $QCH5 $MDC $MXDIR/checksums.md5 \
 ubuntu@118.138.235.221:/dee2_data/bulk/
 
