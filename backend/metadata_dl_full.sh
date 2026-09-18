@@ -3,6 +3,7 @@
 #set -e
 set -x
 
+ORGANISM=NULL
 ORG=$1
 
 if [ $ORG = "athaliana" ] ; then ORGANISM='Arabidopsis thaliana' ; fi
@@ -25,6 +26,23 @@ if [ $ORG = "slycopersicum" ] ; then ORGANISM='Solanum lycopersicum' ; fi
 if [ $ORG = "stuberosum" ] ; then ORGANISM='Solanum tuberosum' ; fi
 if [ $ORG = "taestivum" ] ; then ORGANISM='Triticum aestivum' ; fi
 if [ $ORG = "vvinifera" ] ; then ORGANISM='Vitis vinifera' ; fi
+
+if [ $ORG = "mmulatta" ] ; then ORGANISM='Macaca mulatta' ; fi
+if [ $ORG = "ggallus" ] ; then ORGANISM='Gallus gallus' ; fi
+if [ $ORG = "sscrofa" ] ; then ORGANISM='Sus scrofa' ; fi
+if [ $ORG = "btaurus" ] ; then ORGANISM='Bos taurus' ; fi
+if [ $ORG = "oaries" ] ; then ORGANISM='Ovis aries' ; fi
+if [ $ORG = "mfascicularis" ] ; then ORGANISM='Macaca fascicularis' ; fi
+if [ $ORG = "pfalciparum" ] ; then ORGANISM='Plasmodium falciparum' ; fi
+if [ $ORG = "pvivax" ] ; then ORGANISM='Plasmodium vivax' ; fi
+if [ $ORG = "aaegypti" ] ; then ORGANISM='Aedes aegypti' ; fi
+if [ $ORG = "aalbopictus" ] ; then ORGANISM='Aedes albopictus' ; fi
+if [ $ORG = "agambiae" ] ; then ORGANISM='Anopheles gambiae' ; fi
+
+if [ $ORGANISM == "NULL" ] ; then
+  echo Error: Organism not set properly.
+  exit
+fi
 
 PAUSE=3
 BATCH_SIZE=5000
