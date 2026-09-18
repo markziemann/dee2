@@ -478,7 +478,7 @@ if [ -z $GTF ] || [ ! -r $GTF  ] ; then
   cd -
 fi
 
-GDNA=$MYREF_DIR/$(basename $GDNAURL .gz)
+GDNA=$MYREF_DIR/$(basename $(echo $GDNAURL | sed 's/.bgz/.gz/' ) .gz)
 if [ -z $GDNA ] || [ ! -r $GDNA  ] ; then
   cd $MYREF_DIR
   if [ -r $(basename $GDNAURL) ] ; then rm $(basename $GDNAURL) ; fi
@@ -492,7 +492,7 @@ if [ -z $GDNA ] || [ ! -r $GDNA  ] ; then
   cd -
 fi
 
-CDNA=$MYREF_DIR/$(basename $CDNAURL .gz)
+CDNA=$MYREF_DIR/$(basename $(echo $CDNAURL | sed 's/.bgz/.gz/' ) .gz)
 if [ -z $CDNA ] || [ ! -r $CDNA  ] ; then
   cd $MYREF_DIR
   if [ -r $(basename $CDNAURL) ] ; then rm $(basename $CDNAURL) ; fi
