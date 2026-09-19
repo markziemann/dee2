@@ -463,7 +463,7 @@ elif [ $ORG == "agambiae" ] ; then
 fi
 
 # download the necessary reference files
-GTF=$MYREF_DIR/$(basename $GTFURL .gz)
+GTF=$MYREF_DIR/$(basename $(echo $GTFURL | sed 's/.bgz/.gz/' ) .gz)
 if [ -z $GTF ] || [ ! -r $GTF  ] ; then
   cd $MYREF_DIR
   if [ -r $(basename $GTFURL) ] ; then rm $(basename $GTFURL) ; fi
