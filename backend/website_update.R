@@ -10,13 +10,10 @@ rowcnt2 <- function( file) { z<-system(paste("cat ",file, "| cut -f1 | sed 1d | 
 FILES1 <- list.files(pattern="*metadata.complete.tsv.cut$",path="/mnt/hdd1/dee2/sradb/",full.names=T)
 x <- as.data.frame(sapply(FILES1,rowcnt2),stringsAsFactors=FALSE)
 
-orgnames <- c("A. thaliana", "B. distachyon", "C. elegans",
-  "D. melanogaster", "D. rerio", "E. coli", "G. max",
-  "H. sapiens", "H. vulgare", "M. musculus", "O. sativa",
-  "P. trichocarpa", "R. norvegicus", "S. bicolor",
-  "S. cerevisiae", "S. lycopersicum", "S. tuberosum",
-  "T. aestivum", "V. vinifera", "Z. mays")
-
+orgnames <- gsub("_metadata.complete.tsv.cut","",basename(rownames(x)))
+initial <- toupper(substr(orgnames, 1, 1))
+spec <- unlist(lapply(orgnames, function(x) {  substr(x,2,nchar(x))  } ))
+orgnames <- paste(initial,". ",spec,sep="")
 rownames(x) <- orgnames
 
 colnames(x)="total"

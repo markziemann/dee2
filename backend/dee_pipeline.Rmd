@@ -39,7 +39,7 @@ We could run this as a for loop from bash
 ```
 for ORG in athaliana osativa zmays celegans dmelanogaster drerio rnorvegicus scerevisiae ecoli hsapiens mmusculus
 bdistachyon gmax hvulgare ptrichocarpa sbicolor slycopersicum stuberosum taestivum vvinifera
-mmulatta ggallus sscrofa btaurus oaries mfascicularis pfalciparum pvivax ; do
+mmulatta ggallus sscrofa btaurus oaries mfascicularis pfalciparum pvivax aaegypti aalbopictus agambiae ; do
 
   Rscript -e rmarkdown::render('dee_pipeline.Rmd',params=list(org = "$ORG"))
 
@@ -82,7 +82,8 @@ species_list <- c("3702", "4530", "4577", "6239", "7227", "7955",
   "562", "9606", "10090", "10116", "4932",
   "15368", "3847", "1753", "3694", "4558",
   "1753", "4113", "4565", "1753",
-  "9544", "9031", "9823", "9913", "9940", "9541", "5833", "5855")
+  "9544", "9031", "9823", "9913", "9940", "9541", "5833", "5855",
+  "7159", "7160", "180454")
 
 #now annotate the short names 
 names(species_list) <- c("athaliana", "osativa", "zmays",
@@ -91,7 +92,8 @@ names(species_list) <- c("athaliana", "osativa", "zmays",
   "bdistachyon", "gmax", "hvulgare", "ptrichocarpa", "sbicolor",
   "slycopersicum", "stuberosum", "taestivum", "vvinifera",
   "mmulatta", "ggallus", "sscrofa", "btaurus", "oaries",
-  "mfascicularis", "pfalciparum", "pvivax")
+  "mfascicularis", "pfalciparum", "pvivax", "aaegypti",
+  "aalbopictus", "agambiae")
 
 taxa_name <- species_list[[org]]
 
@@ -108,7 +110,8 @@ species_names <- c("'Arabidopsis thaliana'", "'Oryza sativa'",
   "'Gallus gallus'", "'Sus scrofa'",
   "'Bos taurus'", "'Ovis aries'",
   "'Macaca fascicularis'", "'Plasmodium falciparum'",
-  "'Plasmodium vivax'")
+  "'Plasmodium vivax'", "'Aedes aegypti'",
+  "'Aedes albopictus'", "'Anopheles gambiae'" )
 
 #now annotate the short names 
 names(species_names)<- c("athaliana", "osativa", "zmays",
@@ -117,7 +120,8 @@ names(species_names)<- c("athaliana", "osativa", "zmays",
   "bdistachyon", "gmax", "hvulgare", "ptrichocarpa", "sbicolor",
   "slycopersicum", "stuberosum", "taestivum", "vvinifera",
   "mmulatta", "ggallus", "sscrofa", "btaurus", "oaries",
-  "mfascicularis", "pfalciparum", "pvivax")
+  "mfascicularis", "pfalciparum", "pvivax", "aaegypti",
+  "aalbopictus", "agambiae")
 
 species_name <- species_names[[org]]
 
@@ -126,7 +130,7 @@ print(org)
 #number of protein coding genes from ensembl
 numgenes <- c(27655, 35806, 39756, 20362, 13918, 25903, 4140, 20338, 22598, 22250, 6692,
   34310, 55897, 35826, 34699, 34118, 34658, 39021, 107891, 37480,
-  40304, 25635, 35217, 37580, 56826, 37093, 5188, 5433)
+  40304, 25635, 35217, 37580, 56826, 37093, 5188, 5433, 14718, 20424, 13107)
 
 names(numgenes) <- c("athaliana", "osativa", "zmays",
   "celegans", "dmelanogaster", "drerio",
@@ -134,7 +138,8 @@ names(numgenes) <- c("athaliana", "osativa", "zmays",
   "bdistachyon", "gmax", "hvulgare", "ptrichocarpa", "sbicolor",
   "slycopersicum", "stuberosum", "taestivum", "vvinifera",
   "mmulatta", "ggallus", "sscrofa", "btaurus", "oaries",
-  "mfascicularis", "pfalciparum", "pvivax")
+  "mfascicularis", "pfalciparum", "pvivax", "aaegypti",
+  "aalbopictus", "agambiae")
 
 numgenes = numgenes[[org]]
 
@@ -523,16 +528,6 @@ save.image(file = paste(org,".RData",sep=""))
 
 ```
 
-## Update the dataset numbers on the dee2.io website
-
-This is the last step.
-
-```{r, updatepng}
-
-source("website_update.R")
-
-```
-
 ## Update bundles for this organism
 
 ```{r,bundles}
@@ -652,6 +647,15 @@ harvest_bundle_metadata(org)
 
 ```
 
+## Update the dataset numbers on the dee2.io website
+
+This is the last step.
+
+```{r, updatepng}
+
+source("website_update.R")
+
+```
 
 ## Session information
 
