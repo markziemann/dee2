@@ -178,18 +178,6 @@ sra_metadata <-  lapply(mdfiles, function(x) {
   y <- read.csv(x)
 })
 
-
-#sra_metadata <-  lapply(mdfiles, function(x) {
-#  y <- read.csv(x)
-#  z <- length(which(colnames(y) == "pool_member_spots"))
-#  if ( z == 1 ) {
-#    y$pool_member_spots = NULL
-#  }
-#  if ( ncol(y) == 15 ) {
-#    return(y)
-#  }
-#})
-
 md_df <- do.call(rbind,sra_metadata)
 CSVOLD=paste(SRADBWD,"/",org,"_old.csv",sep="")
 CSVNEW=paste(SRADBWD,"/",org,"_new.csv",sep="")
@@ -284,7 +272,7 @@ save.image(file = paste(org,".RData",sep=""))
 
 The GEO information is already in the md_df object. Winning!
 
-```{r,tidymetadata1}
+```{r,get_geo_metadata_informatio}
 
 QC_summary <- "NA"
 
@@ -318,7 +306,7 @@ system(SCP_COMMAND)
 
 ## Quality control
 
-```{r,qc1}
+```{r,quality_control}
 
 source("dee_pipeline_functions.R")
 library("parallel")
@@ -350,7 +338,7 @@ write.table(x2,file=paste(SRADBWD,"/",org,"_metadata.tsv.cut",sep=""),
 
 SE, KE, then QC files in HDF5 format.
 
-```{r,dataagg_hdf5}
+```{r,aggregate_data_for_hdf5_bulk_files}
 
 CORES=8
 
@@ -483,7 +471,7 @@ system(CMD)
 Calculate which datasets need to be uploaded, then collect them in a single folder on the host.
 Then copy them all over in one rsync command.
 
-```{r,transfer1}
+```{r,transfer_run_data}
 
 CMDX=paste('ssh -i ~/.ssh/dee2_2026 ubuntu@dee2.io "ls /dee2_data/data/',org,'"' , sep="")
 svr_contents <- system(CMDX, intern=TRUE)
@@ -493,6 +481,7 @@ to_transfer <- x2$SRR_accession[which(!x2$SRR_accession %in% rr_contents)]
 dest_path <- paste("/mnt/hdd1/dee2/tmp","/",org,sep="")
 if ( ! file.exists(dest_path) ) { dir.create(dest_path) }
 
+blah()
 lapply(to_transfer, function(srr) {
   origin_path <- paste("/mnt/hdd1/dee2/data/",org,"/",srr,sep="")
   file.copy(origin_path,dest_path,recursive=TRUE)
@@ -504,11 +493,13 @@ lapply(to_delete,unlink)
 rsync_command <- "rsync -azh -e \"ssh -i  ~/.ssh/dee2_2026 \" /mnt/hdd1/dee2/tmp/ORG ubuntu@dee2.io:/dee2_data/data/"
 rsync_command <- gsub("ORG",org,rsync_command)
 system(rsync_command)
+message("fix permissions for newly transferred folders that have been transferred")
+CMDY=paste('ssh -i ~/.ssh/dee2_2026 ubuntu@dee2.io "cd /dee2_data/data/',org,' ;  ls -l | grep \'r--\' | tr -s \' \' | cut -d \' \' -f9 | parallel -j1 chmod +x {}   "',sep="")
+system(CMDY)
 unlink(dest_path,recursive=TRUE)
 
-#now attach the additional metadata and upload
+message("now attach the additional metadata and upload")
 x <- x2[,c("SRR_accession","QC_summary","SRX_accession","SRS_accession","SRP_accession","GEO_series","Experiment_title")]
-
 x <- x[which(x$SRR_accession %in% runs_done),]
 x <- apply(x,2,as.character)
 x <- gsub("\r?\n|\r", " ", x)
@@ -530,7 +521,7 @@ save.image(file = paste(org,".RData",sep=""))
 
 ## Update bundles for this organism
 
-```{r,bundles}
+```{r,update_bundles}
 
 CMD_BUNDLES <- paste("bash bundles.sh",org)
 system(CMD_BUNDLES)
@@ -651,7 +642,7 @@ harvest_bundle_metadata(org)
 
 This is the last step.
 
-```{r, updatepng}
+```{r, update_website_info}
 
 source("website_update.R")
 
