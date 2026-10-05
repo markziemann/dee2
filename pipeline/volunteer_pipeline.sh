@@ -781,7 +781,7 @@ else
 # OWN data SE
 ##########################################################################
   FQS=$(echo $@ | tr ' ' '\n' | grep FASTQ | cut -d '=' -f2)
-  4FQCNT=$(echo $FQS | tr ',' ' ' | wc -w)
+  FQCNT=$(echo $FQS | tr ',' ' ' | wc -w)
   if [ $FQCNT -gt "2" ] ; then
     echo Error: more than 2 fastq files provided.
     exit1; return 1
