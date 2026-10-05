@@ -725,6 +725,9 @@ if [ $MODE != 'FASTQ' ] ; then
   if [ $CSPACE == "FALSE" ] ; then
     #$PARALLEL_FASTQ_DUMP -T tmpdir --threads $THREADS --outdir . --split-files --defline-qual + -s ${SRR}.sra >> $SRR.log 2>&1
     $FASTERQ_DUMP ${SRR}.sra --split-files --threads $THREADS >> $SRR.log 2>&1
+    if [ $RDS == "SE" ] ; then
+      mv $SRR.fastq ${SRR}_1.fastq
+    fi
   fi
 
   if [ $RDS == "PE" ] ; then
@@ -778,7 +781,7 @@ else
 # OWN data SE
 ##########################################################################
   FQS=$(echo $@ | tr ' ' '\n' | grep FASTQ | cut -d '=' -f2)
-  FQCNT=$(echo $FQS | tr ',' ' ' | wc -w)
+  4FQCNT=$(echo $FQS | tr ',' ' ' | wc -w)
   if [ $FQCNT -gt "2" ] ; then
     echo Error: more than 2 fastq files provided.
     exit1; return 1
