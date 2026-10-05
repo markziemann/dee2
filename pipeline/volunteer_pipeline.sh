@@ -723,7 +723,7 @@ if [ $MODE != 'FASTQ' ] ; then
 ##########################################################################
   rm ${SRR}*fastq
   if [ $CSPACE == "FALSE" ] ; then
-    $PARALLEL_FASTQ_DUMP --threads $THREADS --outdir . --split-files --defline-qual + -s ${SRR}.sra >> $SRR.log 2>&1
+    $PARALLEL_FASTQ_DUMP -T tmpdir --threads $THREADS --outdir . --split-files --defline-qual + -s ${SRR}.sra >> $SRR.log 2>&1
   fi
 
   if [ $RDS == "PE" ] ; then
@@ -1572,7 +1572,7 @@ pfalciparum	3044684
 pvivax	3044684
 aaegypti	11484465
 aalbopictus	11484465
-agambiae	2550000' | grep -w $MY_ORG | awk -v f=$MEM_FACTOR '{print $2*f}')
+agambiae	2550000' | grep -w $MY_ORG | awk -v f=$MEM_FACTOR '{print int($2*f)}')
 
   if [ $MEM_REQD -gt $MEM ] ; then
     echo Error, analysis of $ORG data requires at least $MEM_REQD $MEM_FACTOR kB in RAM, but there is only $MEM available.
