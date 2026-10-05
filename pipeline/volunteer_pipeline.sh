@@ -200,7 +200,7 @@ FASTQC=/usr/local/bin/fastqc
 NUMAVERAGE=/usr/bin/numaverage
 NUMROUND=/usr/bin/numround
 NUMSUM=/usr/bin/numsum
-PARALLEL_FASTQ_DUMP=/usr/local/bin/parallel-fastq-dump
+FASTERQ_DUMP=/usr/local/bin/fasterq-dump
 PBZIP2=/usr/bin/pbzip2
 SKEWER=/usr/local/bin/skewer
 MINION=/usr/local/bin/minion
@@ -723,7 +723,8 @@ if [ $MODE != 'FASTQ' ] ; then
 ##########################################################################
   rm ${SRR}*fastq
   if [ $CSPACE == "FALSE" ] ; then
-    $PARALLEL_FASTQ_DUMP -T tmpdir --threads $THREADS --outdir . --split-files --defline-qual + -s ${SRR}.sra >> $SRR.log 2>&1
+    #$PARALLEL_FASTQ_DUMP -T tmpdir --threads $THREADS --outdir . --split-files --defline-qual + -s ${SRR}.sra >> $SRR.log 2>&1
+    $FASTERQ_DUMP ${SRR}.sra --split-files --threads $THREADS >> $SRR.log 2>&1
   fi
 
   if [ $RDS == "PE" ] ; then
